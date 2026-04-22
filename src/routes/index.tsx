@@ -1,26 +1,37 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Hero } from "@/components/home/Hero";
+import { ClientLogos } from "@/components/home/ClientLogos";
+import { Manifesto } from "@/components/home/Manifesto";
+import { Services } from "@/components/home/Services";
+import { HomeCTA } from "@/components/home/HomeCTA";
 
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () => ({
+    meta: [
+      { title: "Edmundo — Designer & Art Director" },
+      {
+        name: "description",
+        content:
+          "Identidades visuais, direção de arte e experiências digitais para marcas que querem ser lembradas.",
+      },
+      { property: "og:title", content: "Edmundo — Designer & Art Director" },
+      {
+        property: "og:description",
+        content: "Sistemas visuais editoriais, futuristas e autorais.",
+      },
+    ],
+  }),
+  component: HomePage,
 });
 
-// IMPORTANT: Replace this placeholder. For sites with multiple pages (About, Services, Contact, etc.),
-// create separate route files (about.tsx, services.tsx, contact.tsx) — don't put all pages in this file.
-function PlaceholderIndex() {
+function HomePage() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <>
+      <Hero />
+      <ClientLogos />
+      <Manifesto />
+      <Services />
+      <HomeCTA />
+    </>
   );
-}
-
-function Index() {
-  return <PlaceholderIndex />;
 }
