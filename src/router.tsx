@@ -1,11 +1,11 @@
-import { QueryClient } from "@tanstack/react-query";
 import { createRouter, useRouter } from "@tanstack/react-router";
+import { QueryClient } from "@tanstack/react-query";
 import { routeTree } from "./routeTree.gen";
 
 function DefaultErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#01040a] px-4">
+    <div className="flex min-h-screen items-center justify-center bg-[var(--color-bg)] px-4">
       <div className="max-w-md text-center">
         <p className="mono text-[10px] text-[var(--color-acc-blue)]">/// ERROR</p>
         <h1 className="display text-3xl mt-3 text-metal">Something went wrong</h1>
@@ -20,7 +20,7 @@ function DefaultErrorComponent({ error, reset }: { error: Error; reset: () => vo
               router.invalidate();
               reset();
             }}
-            className="inline-flex items-center justify-center rounded-full bg-[#1d9bff] px-4 py-2 text-sm font-medium text-black hover:bg-[#6ddcff]"
+            className="inline-flex items-center justify-center rounded-full bg-[var(--color-acc-blue)] px-4 py-2 text-sm font-medium text-black"
           >
             Try again
           </button>
