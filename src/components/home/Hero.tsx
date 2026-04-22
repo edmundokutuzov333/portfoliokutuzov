@@ -1,132 +1,127 @@
-import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
+import { Link } from "@tanstack/react-router";
 import { ArrowUpRight, Send } from "lucide-react";
-
-const capabilities = [
-  "Direção de Arte",
-  "Identidade Visual",
-  "Campanhas",
-  "Design Digital",
-];
 
 export function Hero() {
   return (
-    <section className="relative flex min-h-[100svh] items-center px-5 pb-20 pt-32 md:px-8">
-      <div className="pointer-events-none absolute inset-x-0 top-24 mx-auto h-px max-w-[1240px] bg-gradient-to-r from-transparent via-sky-300/20 to-transparent" />
-
-      <div className="relative mx-auto w-full max-w-[1240px]">
-        <motion.div
-          initial={{ opacity: 0, y: 12, filter: "blur(8px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="mb-10 flex flex-wrap items-center justify-between gap-4"
-        >
-          <p className="mono text-[10px] font-medium tracking-[0.28em] text-sky-300/75">
-            EDMUNDO / DESIGNER & ART DIRECTOR
-          </p>
-
-          <div className="flex items-center gap-2 text-sm text-slate-400">
-            <span className="h-2 w-2 rounded-full bg-sky-300 shadow-[0_0_18px_rgba(125,211,252,0.7)]" />
-            Disponível para projetos selecionados
+    <section className="relative min-h-[100svh] pt-32 pb-20 px-5 md:px-8">
+      <div className="max-w-[1240px] mx-auto relative">
+        {/* Top bar with editorial coordinates */}
+        <div className="flex items-start justify-between mono text-[10px] text-[var(--color-text-ghost)]">
+          <div className="space-y-1">
+            <div>N° 001 — INDEX</div>
+            <div>EDMUNDO / DESIGNER &amp; ART DIRECTOR</div>
           </div>
+          <div className="text-right space-y-1">
+            <div>LAT -25.9692</div>
+            <div>LON +32.5732</div>
+            <div>VOL. XII / 2026</div>
+          </div>
+        </div>
+
+        {/* Microcopy line */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, duration: 0.6 }}
+          className="mt-14 mono text-[11px] text-[var(--color-acc-cyan)]"
+        >
+          BRAND IDENTITY &nbsp;/&nbsp; EDITORIAL SYSTEMS &nbsp;/&nbsp; DIGITAL ART DIRECTION
         </motion.div>
 
-        <div className="grid items-end gap-12 lg:grid-cols-[1fr_340px]">
-          <div>
+        {/* Main headline + sidecar grid */}
+        <div className="mt-8 grid grid-cols-12 gap-6">
+          <div className="col-span-12 lg:col-span-9">
             <motion.h1
-              initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              transition={{ delay: 0.08, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-              className="display max-w-6xl text-[48px] font-semibold leading-[0.9] tracking-[-0.045em] text-slate-100 sm:text-[72px] md:text-[104px] lg:text-[126px]"
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: [0.2, 0.8, 0.2, 1] }}
+              className="display text-[44px] sm:text-[64px] md:text-[88px] lg:text-[112px] leading-[0.92] font-semibold tracking-[-0.02em]"
             >
-              <span className="text-metal">Design visual</span>
+              <span className="text-metal">Design systems</span>
               <br />
-              <span className="text-metal">para marcas</span>
+              <span className="text-metal">for brands that</span>
               <br />
-              <span className="text-sky-200">memoráveis.</span>
+              <span className="italic font-medium text-acid">refuse</span>{" "}
+              <span className="text-metal">to look</span>
+              <br />
+              <span className="text-metal">ordinary.</span>
             </motion.h1>
 
             <motion.p
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.32, duration: 0.7 }}
-              className="mt-8 max-w-2xl text-[15px] leading-7 text-slate-400 md:text-lg md:leading-8"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4, duration: 0.8 }}
+              className="mt-10 max-w-xl text-[15px] md:text-base text-[var(--color-text-muted)] leading-relaxed"
             >
-              Identidades visuais, direção de arte, campanhas e experiências
-              digitais construídas com clareza estratégica, precisão técnica e
-              presença visual.
+              Identidades visuais, direção de arte e experiências digitais para
+              marcas que querem ser lembradas. Sistemas construídos com
+              precisão, contraste e ritmo editorial.
             </motion.p>
 
             <motion.div
-              initial={{ opacity: 0, y: 12 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.46, duration: 0.7 }}
-              className="mt-9 flex flex-wrap items-center gap-3"
+              transition={{ delay: 0.55, duration: 0.6 }}
+              className="mt-8 flex flex-wrap items-center gap-3"
             >
               <Link
                 to="/portfolio"
-                className="group inline-flex items-center gap-2 rounded-full bg-slate-100 px-6 py-3.5 text-sm font-semibold text-[#01040A] transition duration-300 hover:bg-sky-200 hover:shadow-[0_0_42px_rgba(56,189,248,0.22)] focus:outline-none focus:ring-2 focus:ring-sky-300/70 focus:ring-offset-2 focus:ring-offset-[#01040A]"
+                className="group inline-flex items-center gap-2 rounded-full bg-white text-black px-5 py-3 text-sm font-semibold hover:bg-[var(--color-acc-acid)] transition"
               >
                 Ver portfolio
-                <ArrowUpRight
-                  size={16}
-                  strokeWidth={1.8}
-                  className="transition duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                />
+                <ArrowUpRight size={16} className="group-hover:rotate-45 transition-transform" />
               </Link>
-
               <Link
                 to="/contact"
-                className="group inline-flex items-center gap-2 rounded-full border border-white/[0.12] bg-white/[0.03] px-6 py-3.5 text-sm font-medium text-slate-300 transition duration-300 hover:border-sky-300/35 hover:bg-sky-300/[0.06] hover:text-white focus:outline-none focus:ring-2 focus:ring-sky-300/60 focus:ring-offset-2 focus:ring-offset-[#01040A]"
+                className="inline-flex items-center gap-2 rounded-full border border-white/15 px-5 py-3 text-sm font-medium hover:border-[var(--color-acc-cyan)] hover:text-[var(--color-acc-cyan)] transition"
               >
-                Enviar briefing
-                <Send
-                  size={15}
-                  strokeWidth={1.8}
-                  className="transition duration-300 group-hover:translate-x-0.5"
-                />
+                Enviar briefing <Send size={14} />
               </Link>
             </motion.div>
           </div>
 
+          {/* Sidecar */}
           <motion.aside
-            initial={{ opacity: 0, x: 18, filter: "blur(8px)" }}
-            animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-            transition={{ delay: 0.38, duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
-            className="relative overflow-hidden border-l border-white/[0.08] pl-6 lg:pl-8"
+            initial={{ opacity: 0, x: 14 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.5, duration: 0.7 }}
+            className="col-span-12 lg:col-span-3 lg:pl-6 lg:border-l border-white/8"
           >
-            <div
-              aria-hidden="true"
-              className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-sky-400/[0.08] blur-3xl"
-            />
+            <div className="mono text-[10px] text-[var(--color-text-ghost)]">
+              /// CURRENT STATUS
+            </div>
+            <div className="mt-4 flex items-center gap-2 text-sm">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full rounded-full bg-[var(--color-acc-acid)] opacity-60 animate-ping" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--color-acc-acid)]" />
+              </span>
+              Available for selected projects
+            </div>
+            <div className="mt-6 space-y-2 text-sm text-[var(--color-text-muted)]">
+              <div>Maputo · São Paulo · Remote</div>
+              <div className="display text-3xl text-white">2026</div>
+            </div>
 
-            <p className="mono text-[10px] font-medium tracking-[0.26em] text-slate-500">
-              CORE PRACTICE
-            </p>
-
-            <div className="mt-6 space-y-3">
-              {capabilities.map((item, index) => (
-                <div
-                  key={item}
-                  className="flex items-center justify-between gap-6 border-b border-white/[0.07] pb-3"
-                >
-                  <span className="text-sm text-slate-300">{item}</span>
-                  <span className="mono text-[10px] tracking-[0.18em] text-slate-600">
-                    0{index + 1}
-                  </span>
+            <div className="mt-10 grid grid-cols-2 gap-3">
+              {["08", "120+", "16", "03"].map((n, i) => (
+                <div key={n} className="border border-white/8 p-3 rounded-md">
+                  <div className="display text-xl">{n}</div>
+                  <div className="mono text-[9px] text-[var(--color-text-ghost)] mt-1">
+                    {["YEARS", "PROJECTS", "SECTORS", "CONTINENTS"][i]}
+                  </div>
                 </div>
               ))}
             </div>
-
-            <div className="mt-8">
-              <p className="mono text-[10px] font-medium tracking-[0.24em] text-slate-500">
-                BASED IN
-              </p>
-              <p className="mt-3 text-sm leading-6 text-slate-300">
-                Maputo · São Paulo · Remote
-              </p>
-            </div>
           </motion.aside>
+        </div>
+
+        {/* Bottom hairline data */}
+        <div className="mt-20 pt-6 border-t border-white/8 grid grid-cols-2 md:grid-cols-4 gap-4 mono text-[10px] text-[var(--color-text-ghost)]">
+          <div>FRAME 001 / 004</div>
+          <div>FORMAT — EDITORIAL</div>
+          <div>GRID — 12 COL · 24PX</div>
+          <div className="md:text-right">SCROLL ↓</div>
         </div>
       </div>
     </section>
