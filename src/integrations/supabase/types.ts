@@ -14,13 +14,234 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      about_method: {
+        Row: {
+          description: string | null
+          id: string
+          is_active: boolean
+          number: string
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          number: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          number?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      admin_users: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      clients: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          logo_url: string | null
+          name: string
+          sort_order: number
+          updated_at: string
+          website_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name: string
+          sort_order?: number
+          updated_at?: string
+          website_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name?: string
+          sort_order?: number
+          updated_at?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
+      projects: {
+        Row: {
+          category: string
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          gallery: Json
+          id: string
+          is_published: boolean
+          palette: string | null
+          sort_order: number
+          span: string | null
+          subtitle: string | null
+          tags: Json
+          title: string
+          updated_at: string
+          year: string | null
+        }
+        Insert: {
+          category: string
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          gallery?: Json
+          id?: string
+          is_published?: boolean
+          palette?: string | null
+          sort_order?: number
+          span?: string | null
+          subtitle?: string | null
+          tags?: Json
+          title: string
+          updated_at?: string
+          year?: string | null
+        }
+        Update: {
+          category?: string
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          gallery?: Json
+          id?: string
+          is_published?: boolean
+          palette?: string | null
+          sort_order?: number
+          span?: string | null
+          subtitle?: string | null
+          tags?: Json
+          title?: string
+          updated_at?: string
+          year?: string | null
+        }
+        Relationships: []
+      }
+      services: {
+        Row: {
+          description: string | null
+          icon: string | null
+          id: string
+          is_active: boolean
+          number: string | null
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          number?: string | null
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          number?: string | null
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          id: string
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          id?: string
+          key: string
+          updated_at?: string
+          value?: Json
+        }
+        Update: {
+          id?: string
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
+      stats: {
+        Row: {
+          id: string
+          is_active: boolean
+          label: string
+          sort_order: number
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          id?: string
+          is_active?: boolean
+          label: string
+          sort_order?: number
+          updated_at?: string
+          value: string
+        }
+        Update: {
+          id?: string
+          is_active?: boolean
+          label?: string
+          sort_order?: number
+          updated_at?: string
+          value?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_admin: { Args: never; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
