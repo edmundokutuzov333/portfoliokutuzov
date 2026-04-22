@@ -1,103 +1,179 @@
 import { motion } from "framer-motion";
-import { Layers, Eye, BookOpen, Monitor, ArrowUpRight, type LucideIcon } from "lucide-react";
-import { useRef } from "react";
+import {
+  ArrowUpRight,
+  Eye,
+  Layers,
+  Megaphone,
+  Monitor,
+  type LucideIcon,
+} from "lucide-react";
+import { useRef, type MouseEvent } from "react";
 
 type Service = {
   n: string;
   title: string;
   desc: string;
+  eyebrow: string;
+  deliverables: string[];
   Icon: LucideIcon;
 };
 
 const services: Service[] = [
   {
     n: "01",
-    title: "Identidade Visual",
-    desc: "Sistemas de marca completos: estratégia, naming visual, logotipo, tipografia, cor, grelhas e guidelines.",
-    Icon: Layers,
-  },
-  {
-    n: "02",
     title: "Direção de Arte",
-    desc: "Direção visual para campanhas, produtos digitais e séries editoriais com linguagem consistente.",
+    eyebrow: "ART DIRECTION",
+    desc: "Construção de linguagens visuais para campanhas, marcas e produtos digitais com consistência estética, intenção narrativa e precisão de execução.",
+    deliverables: ["Conceito visual", "Moodboards", "Key visuals", "Guidelines"],
     Icon: Eye,
   },
   {
+    n: "02",
+    title: "Identidade Visual",
+    eyebrow: "BRAND SYSTEM",
+    desc: "Sistemas de marca completos, pensados para funcionar em múltiplos pontos de contacto: logotipo, tipografia, cor, grelhas, aplicações e manual visual.",
+    deliverables: ["Logo system", "Typography", "Color logic", "Brand book"],
+    Icon: Layers,
+  },
+  {
     n: "03",
-    title: "Editorial & Print",
-    desc: "Revistas, livros, catálogos, posters e relatórios anuais com tipografia e ritmo cuidados.",
-    Icon: BookOpen,
+    title: "Concepção de Campanhas",
+    eyebrow: "CAMPAIGN DESIGN",
+    desc: "Desenvolvimento de campanhas com conceito forte, direção visual memorável e peças preparadas para ambientes digitais, impressos e sociais.",
+    deliverables: ["Big idea", "Visual rollout", "Social assets", "Launch kit"],
+    Icon: Megaphone,
   },
   {
     n: "04",
     title: "Design Digital",
-    desc: "Websites editoriais, landing pages, design systems e interfaces com motion language própria.",
+    eyebrow: "DIGITAL EXPERIENCE",
+    desc: "Websites, landing pages, interfaces editoriais e sistemas digitais com atenção a hierarquia, interação, movimento, responsividade e experiência visual.",
+    deliverables: ["Web design", "UI systems", "Motion language", "Responsive layouts"],
     Icon: Monitor,
   },
 ];
 
-function Row({ s, i }: { s: Service; i: number }) {
+function ServiceRow({ service, index }: { service: Service; index: number }) {
   const ref = useRef<HTMLDivElement>(null);
-  const handleMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const el = ref.current;
-    if (!el) return;
-    const r = el.getBoundingClientRect();
-    el.style.setProperty("--lx", `${e.clientX - r.left}px`);
-    el.style.setProperty("--ly", `${e.clientY - r.top}px`);
+
+  const handleMove = (event: MouseEvent<HTMLDivElement>) => {
+    const element = ref.current;
+    if (!element) return;
+
+    const rect = element.getBoundingClientRect();
+    element.style.setProperty("--lx", `${event.clientX - rect.left}px`);
+    element.style.setProperty("--ly", `${event.clientY - rect.top}px`);
   };
+
   return (
-    <motion.div
+    <motion.article
       ref={ref}
       onMouseMove={handleMove}
-      initial={{ opacity: 0, y: 16 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.3 }}
-      transition={{ delay: i * 0.06, duration: 0.6 }}
-      className="group relative border-b border-white/8 py-8 md:py-10 px-2 overflow-hidden"
+      initial={{ opacity: 0, y: 18, filter: "blur(8px)" }}
+      whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+      viewport={{ once: true, amount: 0.35 }}
+      transition={{
+        delay: index * 0.075,
+        duration: 0.72,
+        ease: [0.22, 1, 0.36, 1],
+      }}
+      className="group relative overflow-hidden border-b border-white/[0.08] px-2 py-8 md:px-4 md:py-11"
       style={{
         backgroundImage:
-          "radial-gradient(280px circle at var(--lx, -200px) var(--ly, -200px), rgba(34,211,238,0.08), transparent 60%)",
+          "radial-gradient(420px circle at var(--lx, -220px) var(--ly, -220px), rgba(29,155,255,0.13), transparent 58%)",
       }}
     >
-      <div className="grid grid-cols-12 gap-4 items-center">
-        <div className="col-span-2 md:col-span-1 mono text-[11px] text-[var(--color-acc-acid)]">
-          {s.n}
+      <div className="pointer-events-none absolute inset-0 opacity-0 transition duration-500 group-hover:opacity-100">
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-300/45 to-transparent" />
+        <div className="absolute inset-y-0 right-0 w-px bg-gradient-to-b from-transparent via-sky-400/35 to-transparent" />
+      </div>
+
+      <div className="grid grid-cols-12 items-start gap-x-5 gap-y-6">
+        <div className="col-span-3 md:col-span-1">
+          <div className="mono text-[10px] font-medium tracking-[0.24em] text-sky-300/80">
+            {service.n}
+          </div>
         </div>
-        <div className="col-span-10 md:col-span-5">
-          <h3 className="display text-2xl md:text-4xl tracking-tight">{s.title}</h3>
+
+        <div className="col-span-9 md:col-span-3">
+          <p className="mono mb-3 text-[10px] font-medium tracking-[0.28em] text-slate-500 transition group-hover:text-sky-200/70">
+            {service.eyebrow}
+          </p>
+
+          <h3 className="display max-w-[12ch] text-3xl leading-[0.96] tracking-[-0.02em] text-slate-100 md:text-5xl">
+            {service.title}
+          </h3>
         </div>
-        <div className="col-span-12 md:col-span-5 text-sm text-[var(--color-text-muted)] leading-relaxed">
-          {s.desc}
+
+        <div className="col-span-12 md:col-span-4">
+          <p className="max-w-xl text-sm leading-7 text-slate-400 md:text-[15px]">
+            {service.desc}
+          </p>
         </div>
-        <div className="col-span-12 md:col-span-1 flex md:justify-end">
-          <div className="h-10 w-10 rounded-full border border-white/10 grid place-items-center group-hover:border-[var(--color-acc-cyan)] group-hover:text-[var(--color-acc-cyan)] transition">
-            <s.Icon size={16} />
+
+        <div className="col-span-12 md:col-span-3">
+          <div className="flex flex-wrap gap-2">
+            {service.deliverables.map((item) => (
+              <span
+                key={item}
+                className="mono rounded-full border border-white/[0.08] bg-white/[0.025] px-3 py-1.5 text-[10px] tracking-[0.16em] text-slate-400 transition group-hover:border-sky-300/20 group-hover:text-sky-100"
+              >
+                {item}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="col-span-12 flex items-center justify-between md:col-span-1 md:justify-end">
+          <div className="mono text-[10px] tracking-[0.2em] text-slate-600 md:hidden">
+            SERVICE / {service.n}
+          </div>
+
+          <div className="relative grid h-12 w-12 place-items-center rounded-full border border-white/[0.1] bg-slate-950/40 text-slate-300 transition duration-300 group-hover:border-sky-300/40 group-hover:bg-sky-400/[0.08] group-hover:text-sky-100 group-hover:shadow-[0_0_42px_rgba(29,155,255,0.22)]">
+            <service.Icon
+              size={18}
+              strokeWidth={1.7}
+              className="transition duration-300 group-hover:scale-90 group-hover:opacity-0"
+            />
+            <ArrowUpRight
+              size={18}
+              strokeWidth={1.7}
+              className="absolute scale-75 opacity-0 transition duration-300 group-hover:scale-100 group-hover:opacity-100"
+            />
           </div>
         </div>
       </div>
-    </motion.div>
+    </motion.article>
   );
 }
 
 export function Services() {
   return (
-    <section className="relative px-5 md:px-8 py-28">
-      <div className="max-w-[1240px] mx-auto">
-        <div className="flex items-end justify-between gap-6 mb-10">
+    <section className="relative px-5 py-28 md:px-8 md:py-32">
+      <div className="mx-auto max-w-[1240px]">
+        <div className="mb-12 flex items-end justify-between gap-8">
           <div>
-            <p className="mono text-[10px] text-[var(--color-acc-violet)]">
+            <p className="mono text-[10px] font-medium tracking-[0.28em] text-sky-300/75">
               /// SERVIÇOS — N° 03
             </p>
-            <h2 className="display text-3xl md:text-5xl mt-4 text-metal max-w-2xl leading-[1.05]">
-              Quatro disciplinas. Um sistema.
+
+            <h2 className="display mt-5 max-w-3xl text-4xl leading-[0.98] tracking-[-0.03em] text-metal md:text-6xl">
+              Disciplinas visuais para marcas com precisão.
             </h2>
           </div>
-          <ArrowUpRight className="text-[var(--color-text-ghost)] hidden md:block" />
+
+          <div className="hidden max-w-[260px] border-l border-white/[0.08] pl-6 md:block">
+            <p className="mono text-[10px] leading-5 tracking-[0.2em] text-slate-500">
+              BRAND LOGIC / VISUAL SYSTEMS / DIGITAL PRESENCE
+            </p>
+          </div>
         </div>
 
-        <div className="border-t border-white/8">
-          {services.map((s, i) => (
-            <Row key={s.n} s={s} i={i} />
+        <div className="relative border-t border-white/[0.08]">
+          <div className="pointer-events-none absolute -top-px left-0 h-px w-40 bg-gradient-to-r from-sky-300/70 to-transparent" />
+
+          {services.map((service, index) => (
+            <ServiceRow key={service.n} service={service} index={index} />
           ))}
         </div>
       </div>
