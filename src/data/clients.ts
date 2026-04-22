@@ -1,14 +1,20 @@
-export const clients: string[] = [
-  "NOVA",
-  "KORA",
-  "ALMA",
-  "VOLT",
-  "NEXUS",
-  "AURORA",
-  "MINT",
-  "ORBIT",
-  "LUME",
-  "ATLAS",
-  "NOIR",
-  "BRAVA",
+export const clients = [
+  {
+    name: "NOVA",
+    logo: "/clients/nova.svg",
+    alt: "NOVA",
+    url: "https://example.com",
+    featured: true,
+  },
+  {
+    name: "KORA",
+    logo: "/clients/kora.png",
+    alt: "KORA",
+  },
+  {
+    name: "ALMA",
+  },
+  {
+    name: "VOLT",
+  },
 ];
