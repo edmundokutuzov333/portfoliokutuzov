@@ -1,4 +1,12 @@
-import { Outlet, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import {
+  Outlet,
+  createRootRouteWithContext,
+  HeadContent,
+  Scripts,
+  useRouterState,
+} from "@tanstack/react-router";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "sonner";
 
 import appCss from "../styles.css?url";
 import { InteractiveBackground } from "@/components/visual/InteractiveBackground";
@@ -6,18 +14,22 @@ import { NoiseLayer } from "@/components/visual/NoiseLayer";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 
+interface RouterContext {
+  queryClient: QueryClient;
+}
+
 function NotFoundComponent() {
   return (
     <div className="relative z-10 min-h-screen grid place-items-center px-4">
       <div className="text-center">
-        <p className="mono text-[10px] text-[var(--color-acc-acid)]">/// 404</p>
+        <p className="mono text-[10px] text-[var(--color-acc-blue)]">/// 404</p>
         <h1 className="display text-7xl mt-4 text-metal">Lost in the grid.</h1>
         <p className="mt-3 text-sm text-[var(--color-text-muted)]">
           A página que procuras saiu do sistema.
         </p>
         <a
           href="/"
-          className="mt-8 inline-flex items-center rounded-full bg-white text-black px-5 py-3 text-sm font-semibold"
+          className="mt-8 inline-flex items-center rounded-full bg-[#1d9bff] text-black px-5 py-3 text-sm font-semibold"
         >
           Voltar ao início
         </a>
@@ -26,7 +38,7 @@ function NotFoundComponent() {
   );
 }
 
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext<RouterContext>()({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -35,16 +47,19 @@ export const Route = createRootRoute({
       {
         name: "description",
         content:
-          "Identidades visuais, direção de arte e experiências digitais para marcas que recusam aparência ordinária.",
+          "Identidades visuais, direção de arte e experiências digitais construídas com clareza estratégica e precisão técnica.",
       },
       { name: "author", content: "Edmundo" },
       { property: "og:title", content: "Edmundo — Designer & Art Director" },
       { name: "twitter:title", content: "Edmundo — Designer & Art Director" },
-      { name: "description", content: "A premium portfolio website for Edmundo, a graphic designer and art director, built with React, Vite, and TypeScript." },
-      { property: "og:description", content: "A premium portfolio website for Edmundo, a graphic designer and art director, built with React, Vite, and TypeScript." },
-      { name: "twitter:description", content: "A premium portfolio website for Edmundo, a graphic designer and art director, built with React, Vite, and TypeScript." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/4698235c-2667-4e59-a392-41660e35da00/id-preview-aebadd55--42b99eb3-a083-4211-87df-e3780ebbfa7f.lovable.app-1776862041012.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/4698235c-2667-4e59-a392-41660e35da00/id-preview-aebadd55--42b99eb3-a083-4211-87df-e3780ebbfa7f.lovable.app-1776862041012.png" },
+      {
+        property: "og:description",
+        content: "Dark blue editorial portfolio · brand identity · art direction · digital systems.",
+      },
+      {
+        name: "twitter:description",
+        content: "Dark blue editorial portfolio · brand identity · art direction · digital systems.",
+      },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:type", content: "website" },
     ],
@@ -70,17 +85,32 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
+  const { queryClient } = Route.useRouteContext();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isAdmin = pathname.startsWith("/edmundo-control-room");
+
   return (
-    <>
-      <InteractiveBackground />
-      <NoiseLayer />
+    <QueryClientProvider client={queryClient}>
+      {!isAdmin && <InteractiveBackground />}
+      {!isAdmin && <NoiseLayer />}
       <div className="relative z-10">
-        <Navbar />
+        {!isAdmin && <Navbar />}
         <main>
           <Outlet />
         </main>
-        <Footer />
+        {!isAdmin && <Footer />}
       </div>
-    </>
+      <Toaster
+        theme="dark"
+        position="bottom-right"
+        toastOptions={{
+          style: {
+            background: "#06111f",
+            border: "1px solid rgba(148,163,184,0.14)",
+            color: "#f5f8ff",
+          },
+        }}
+      />
+    </QueryClientProvider>
   );
 }
