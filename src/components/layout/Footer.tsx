@@ -1,51 +1,114 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Mail } from "lucide-react";
+
+const navLinks = [
+  { label: "Home", to: "/" },
+  { label: "Portfolio", to: "/portfolio" },
+  { label: "Sobre", to: "/about" },
+  { label: "Contato", to: "/contact" },
+];
+
+const socialLinks = [
+  { label: "Instagram", href: "#" },
+  { label: "Behance", href: "#" },
+  { label: "Dribbble", href: "#" },
+  { label: "LinkedIn", href: "#" },
+];
 
 export function Footer() {
   return (
-    <footer className="relative z-10 border-t border-white/8 mt-32">
-      <div className="max-w-[1240px] mx-auto px-5 md:px-8 py-16 grid gap-12 md:grid-cols-12">
+    <footer className="relative z-10 mt-32 border-t border-white/[0.08]">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-300/40 to-transparent"
+      />
+
+      <div className="mx-auto grid max-w-[1240px] gap-12 px-5 py-16 md:grid-cols-12 md:px-8 md:py-20">
         <div className="md:col-span-6">
-          <p className="mono text-[10px] text-[var(--color-text-ghost)]">/ EDMUNDO STUDIO</p>
-          <h3 className="display text-3xl md:text-5xl mt-4 leading-[1.05]">
-            Available for selected
+          <p className="mono text-[10px] font-medium tracking-[0.28em] text-slate-500">
+            / EDMUNDO STUDIO
+          </p>
+
+          <h3 className="display mt-5 max-w-2xl text-4xl leading-[1] tracking-[-0.035em] text-slate-100 md:text-6xl">
+            <span className="text-metal">Disponível para projetos</span>
             <br />
-            <span className="text-acid">projects in 2026.</span>
+            <span className="text-sky-200">selecionados em 2026.</span>
           </h3>
-          <Link
-            to="/contact"
-            className="mt-6 inline-flex items-center gap-2 text-sm font-medium border-b border-white/20 pb-1 hover:border-[var(--color-acc-acid)]"
-          >
-            Iniciar conversa <ArrowUpRight size={14} />
-          </Link>
+
+          <div className="mt-8 flex flex-wrap items-center gap-3">
+            <Link
+              to="/contact"
+              className="group inline-flex items-center gap-2 rounded-full bg-slate-100 px-5 py-3 text-sm font-semibold text-[#01040A] transition duration-300 hover:bg-sky-200 hover:shadow-[0_0_36px_rgba(56,189,248,0.22)] focus:outline-none focus:ring-2 focus:ring-sky-300/70 focus:ring-offset-2 focus:ring-offset-[#01040A]"
+            >
+              Iniciar conversa
+              <ArrowUpRight
+                size={15}
+                strokeWidth={1.8}
+                className="transition duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+              />
+            </Link>
+
+            <a
+              href="mailto:edmundo@studio.com"
+              className="group inline-flex items-center gap-2 rounded-full border border-white/[0.1] bg-white/[0.03] px-5 py-3 text-sm text-slate-300 transition duration-300 hover:border-sky-300/35 hover:bg-sky-300/[0.06] hover:text-white focus:outline-none focus:ring-2 focus:ring-sky-300/60 focus:ring-offset-2 focus:ring-offset-[#01040A]"
+            >
+              <Mail size={15} strokeWidth={1.8} />
+              edmundo@studio.com
+            </a>
+          </div>
         </div>
 
-        <div className="md:col-span-3">
-          <p className="mono text-[10px] text-[var(--color-text-ghost)]">/ NAV</p>
-          <ul className="mt-4 space-y-2 text-sm text-[var(--color-text-muted)]">
-            <li><Link to="/" className="hover:text-white">Home</Link></li>
-            <li><Link to="/portfolio" className="hover:text-white">Portfolio</Link></li>
-            <li><Link to="/about" className="hover:text-white">Sobre</Link></li>
-            <li><Link to="/contact" className="hover:text-white">Contato</Link></li>
+        <nav className="md:col-span-3" aria-label="Footer navigation">
+          <p className="mono text-[10px] font-medium tracking-[0.28em] text-slate-500">
+            / NAV
+          </p>
+
+          <ul className="mt-5 space-y-3 text-sm text-slate-400">
+            {navLinks.map((link) => (
+              <li key={link.to}>
+                <Link
+                  to={link.to}
+                  className="inline-flex transition duration-200 hover:translate-x-1 hover:text-white focus:outline-none focus:text-sky-200"
+                >
+                  {link.label}
+                </Link>
+              </li>
+            ))}
           </ul>
-        </div>
+        </nav>
 
         <div className="md:col-span-3">
-          <p className="mono text-[10px] text-[var(--color-text-ghost)]">/ CONTACT</p>
-          <ul className="mt-4 space-y-2 text-sm text-[var(--color-text-muted)]">
-            <li><a href="mailto:edmundo@studio.com" className="hover:text-white">edmundo@studio.com</a></li>
-            <li><a href="#" className="hover:text-white">Instagram</a></li>
-            <li><a href="#" className="hover:text-white">Behance</a></li>
-            <li><a href="#" className="hover:text-white">Dribbble</a></li>
-            <li><a href="#" className="hover:text-white">LinkedIn</a></li>
+          <p className="mono text-[10px] font-medium tracking-[0.28em] text-slate-500">
+            / SOCIAL
+          </p>
+
+          <ul className="mt-5 space-y-3 text-sm text-slate-400">
+            {socialLinks.map((link) => (
+              <li key={link.label}>
+                <a
+                  href={link.href}
+                  target={link.href === "#" ? undefined : "_blank"}
+                  rel={link.href === "#" ? undefined : "noreferrer"}
+                  className="group inline-flex items-center gap-2 transition duration-200 hover:translate-x-1 hover:text-white focus:outline-none focus:text-sky-200"
+                >
+                  {link.label}
+                  <ArrowUpRight
+                    size={13}
+                    strokeWidth={1.8}
+                    className="opacity-40 transition group-hover:opacity-100"
+                  />
+                </a>
+              </li>
+            ))}
           </ul>
         </div>
       </div>
-      <div className="border-t border-white/8">
-        <div className="max-w-[1240px] mx-auto px-5 md:px-8 py-6 flex flex-col md:flex-row items-center justify-between gap-3 mono text-[10px] text-[var(--color-text-ghost)]">
+
+      <div className="border-t border-white/[0.08]">
+        <div className="mx-auto flex max-w-[1240px] flex-col gap-3 px-5 py-6 mono text-[10px] tracking-[0.18em] text-slate-600 md:flex-row md:items-center md:justify-between md:px-8">
           <span>© 2026 EDMUNDO — ALL RIGHTS RESERVED</span>
           <span>MAPUTO · SÃO PAULO · REMOTE</span>
-          <span>LAT -25.96 / LON 32.58</span>
+          <span>CRAFTED WITH PRECISION</span>
         </div>
       </div>
     </footer>
