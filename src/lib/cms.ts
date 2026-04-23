@@ -1,5 +1,6 @@
-// CMS types and fallback content. The site reads from Supabase; if it fails,
-// these fallbacks render so the site never looks empty.
+// CMS types and English fallback content. The site reads from Supabase; if a
+// key is missing or the request fails, these fallbacks render so the site
+// never looks empty.
 
 export type SiteSettings = Record<string, Record<string, unknown>>;
 
@@ -57,51 +58,118 @@ export type DbMethod = {
 
 export const FALLBACK_SETTINGS: SiteSettings = {
   hero: {
-    eyebrow: "BRAND IDENTITY / ART DIRECTION / DIGITAL SYSTEMS",
-    title_1: "Design systems for brands that",
-    title_accent: "move",
-    title_2: "with precision.",
+    top_left: "Edmundo Kutuzov — Art Director",
+    top_right: "Maputo · Mozambique",
+    eyebrow: "Brand Identity · Art Direction · Campaign Design",
+    title_1: "I make ideas",
+    title_2: "stop, take notice,",
+    title_accent: "and act.",
     subtitle:
-      "Identidades visuais, direção de arte e experiências digitais construídas com clareza estratégica, tensão visual e precisão técnica.",
-    cta_primary: "Ver portfolio",
-    cta_secondary: "Enviar briefing",
+      "I'm Edmundo Kutuzov, an art director rooted in Mozambique's creative ecosystem. I design visual identities and communication pieces that capture attention and drive action — blending storytelling, visual hierarchy, and typographic craft.",
+    cta_primary: "I'm ready for the immersion!",
+    cta_secondary: "View Portfolio",
+    status_label: "Current Status",
     status: "Available for selected projects",
-    location: "MAPUTO · SÃO PAULO · REMOTE",
-    volume: "VOL. XII / 2026",
+    location: "Maputo · Remote",
+    year: "2026",
+    disciplines: ["Art Direction", "Brand Identity", "Campaign Design", "Audiovisual Direction"],
   },
   manifesto: {
-    title: "A marca não precisa gritar. Ela precisa ficar na memória.",
-    col1: "Sistemas visuais nascem do cruzamento entre estratégia, forma e contraste.",
-    col2: "Trabalho com ritmo editorial, hierarquia precisa e tensão visual controlada.",
+    eyebrow: "Manifesto",
+    sidebar: "Strategy / Form / Motion / Identity Systems",
+    title_1: "A brand doesn't need to take up",
+    title_accent: "more space.",
+    title_2: "It needs to occupy",
+    title_muted: "memory.",
+    col1: "I treat brands as decision systems: strategy translated into form, rhythm, contrast, typography and behaviour. Every element has to justify its own existence — from the first mark to the last touchpoint.",
+    col2: "The process combines strategic thinking, editorial composition and technical precision. Strict grids, controlled ruptures, cool contrast and visual systems built to grow without losing identity.",
+    principles: [
+      { meta: "01 / Strategy", key: "Clarity", value: "Idea before aesthetic." },
+      { meta: "02 / Composition", key: "Rhythm", value: "Hierarchy, pause, tension." },
+      { meta: "03 / System", key: "Precision", value: "Every detail has a function." },
+      { meta: "04 / Impact", key: "Memory", value: "Recognition, on every touchpoint." },
+    ],
+  },
+  clients_section: {
+    eyebrow: "Selected Clients",
+    title: "Brands and teams\nI have worked with.",
+    subtitle:
+      "A selection of local and international brands I have collaborated with as art director, graphic designer and creative lead.",
+  },
+  services_section: {
+    eyebrow: "Services",
+    title: "Visual disciplines for brands that move with precision.",
+    sidebar: "Brand Logic / Visual Systems / Digital Presence",
   },
   cta_home: {
-    title: "Vamos desenhar uma presença visual impossível de ignorar.",
-    button: "Começar conversa",
+    eyebrow: "Let's collaborate",
+    title_1: "Let's build a visual presence",
+    title_accent: "impossible to ignore.",
+    cta_primary: "Start a project",
+    email: "edmundokutuzov@phantom-mz.com",
   },
   footer: {
-    studio: "Edmundo Studio",
-    tagline: "Design systems & art direction · Built with precision.",
-    email: "edmundo@studio.com",
+    eyebrow: "Edmundo Kutuzov — Art Director",
+    title_1: "Available for selected",
+    title_2: "projects in 2026.",
+    cta: "Start a conversation",
+    email: "edmundokutuzov@phantom-mz.com",
+    copyright: "Edmundo Kutuzov. All rights reserved.",
+    location: 'Magoanine "C", Maputo · Mozambique',
+    phone: "+258 87 601 312 1",
   },
-  navbar: { monogram: "ED.", cta: "Iniciar projeto" },
+  navbar: { brand: "Edmundo Kutuzov", cta: "Start a project" },
   contact: {
-    title: "Vamos construir algo que ninguém esquece.",
-    subtitle: "Conta-me sobre o teu projeto.",
-    email: "edmundo@studio.com",
-    project_types: ["Identidade visual", "Direção de arte", "Editorial & print", "Design digital", "Outro"],
-    budgets: ["< 5k", "5k–15k", "15k–40k", "40k+"],
-  },
-  social: {
-    instagram: "https://instagram.com",
-    behance: "https://behance.net",
-    dribbble: "https://dribbble.com",
-    linkedin: "https://linkedin.com",
+    eyebrow: "Contact",
+    status: "Open for 2026 projects",
+    title_1: "Let's",
+    title_accent: "talk.",
+    subtitle:
+      "Tell me about your project. I respond to every message within 48 hours with an initial process proposal.",
+    email: "edmundokutuzov@phantom-mz.com",
+    phone: "+258 87 601 312 1",
+    location: 'Magoanine "C", Maputo, Mozambique',
+    project_types: ["Brand Identity", "Art Direction", "Campaign Design", "Digital Design", "Other"],
+    budgets: ["< 5K€", "5K — 15K€", "15K — 40K€", "40K€ +"],
   },
   about: {
-    title: "Entre precisão estratégica e acidente visual controlado.",
-    intro: "Edmundo é designer gráfico e art director.",
-    bio: "Há mais de uma década que construo marcas, sistemas e experiências visuais.",
-    values: ["Precisão", "Tensão visual", "Sistema", "Memória"],
+    eyebrow: "The Credentials",
+    top_right: "Edmundo Kutuzov — Art Director",
+    title_1: "Strategy, craft and a sharp",
+    title_accent: "point of view.",
+    bio_p1:
+      "I make ideas stop, take notice, and act. I design visual identities and communication pieces that capture attention and drive action — blending storytelling, visual hierarchy, and typographic craft.",
+    bio_p2:
+      "I'm Edmundo Kutuzov, an art director deeply rooted in Mozambique's creative ecosystem. I lead projects ranging from ad campaigns and music videos to clothing collections and brand development.",
+    bio_p3:
+      "My focus is always on experiences that generate recognition and measurable results — every choice I make is designed to maximise impact and perception.",
+    email: "edmundokutuzov@phantom-mz.com",
+    phone: "+258 87 601 312 1",
+    location: 'Magoanine "C", Maputo, Mozambique',
+    experience: [
+      { role: "Art Director", company: "SPOT Comunicação", period: "2023 — 2024" },
+      { role: "Senior Graphic Designer", company: "Ikigai Moçambique", period: "2023" },
+      { role: "Marketing Assistant & Social Media Manager", company: "Imperial Seguros", period: "2023" },
+      { role: "Graphic Designer", company: "Agência Creer", period: "2020 — 2023" },
+    ],
+    skills: [
+      { name: "Adobe Photoshop", value: 95 },
+      { name: "Adobe Illustrator", value: 75 },
+      { name: "Adobe Premiere", value: 75 },
+      { name: "Adobe After Effects", value: 45 },
+      { name: "Artificial Intelligence", value: 95 },
+    ],
+    brands: [
+      "Absa", "Vodacom", "TotalEnergies", "Galp", "Nissan", "Toyota", "Hyundai",
+      "MultiChoice", "DStv", "GOtv", "Pernod Ricard", "Flying Fish", "Brutal", "Kit Kat",
+      "EMOSE", "Moçambique Companhia de Seguros", "MEREC", "Joaquim Chaves Saúde",
+      "PROMAR", "Hotel Cardoso", "Ponta Apart Hotel", "GIZ", "RONIL",
+    ],
+  },
+  social: {
+    instagram: "https://www.instagram.com/edmundo.kutuzov/",
+    linkedin: "https://www.linkedin.com/in/edmundo-kutuzov-3457351b4",
+    facebook: "https://www.facebook.com/edmundoku/",
   },
 };
 
@@ -111,7 +179,8 @@ export function readSetting<T = unknown>(
   field: string,
   fallback: T,
 ): T {
-  const merged = { ...FALLBACK_SETTINGS, ...(settings ?? {}) };
-  const v = merged[key]?.[field];
-  return (v as T) ?? fallback;
+  const fromDb = settings?.[key]?.[field];
+  if (fromDb !== undefined && fromDb !== null && fromDb !== "") return fromDb as T;
+  const fb = FALLBACK_SETTINGS[key]?.[field];
+  return (fb as T) ?? fallback;
 }
