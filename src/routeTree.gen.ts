@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PortfolioRouteImport } from './routes/portfolio'
+import { Route as EdmundoControlRoomRouteImport } from './routes/edmundo-control-room'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
@@ -17,6 +18,11 @@ import { Route as IndexRouteImport } from './routes/index'
 const PortfolioRoute = PortfolioRouteImport.update({
   id: '/portfolio',
   path: '/portfolio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EdmundoControlRoomRoute = EdmundoControlRoomRouteImport.update({
+  id: '/edmundo-control-room',
+  path: '/edmundo-control-room',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -39,12 +45,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
+  '/edmundo-control-room': typeof EdmundoControlRoomRoute
   '/portfolio': typeof PortfolioRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
+  '/edmundo-control-room': typeof EdmundoControlRoomRoute
   '/portfolio': typeof PortfolioRoute
 }
 export interface FileRoutesById {
@@ -52,20 +60,33 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
+  '/edmundo-control-room': typeof EdmundoControlRoomRoute
   '/portfolio': typeof PortfolioRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/contact' | '/portfolio'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/contact'
+    | '/edmundo-control-room'
+    | '/portfolio'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/contact' | '/portfolio'
-  id: '__root__' | '/' | '/about' | '/contact' | '/portfolio'
+  to: '/' | '/about' | '/contact' | '/edmundo-control-room' | '/portfolio'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/contact'
+    | '/edmundo-control-room'
+    | '/portfolio'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   ContactRoute: typeof ContactRoute
+  EdmundoControlRoomRoute: typeof EdmundoControlRoomRoute
   PortfolioRoute: typeof PortfolioRoute
 }
 
@@ -76,6 +97,13 @@ declare module '@tanstack/react-router' {
       path: '/portfolio'
       fullPath: '/portfolio'
       preLoaderRoute: typeof PortfolioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/edmundo-control-room': {
+      id: '/edmundo-control-room'
+      path: '/edmundo-control-room'
+      fullPath: '/edmundo-control-room'
+      preLoaderRoute: typeof EdmundoControlRoomRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -106,6 +134,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   ContactRoute: ContactRoute,
+  EdmundoControlRoomRoute: EdmundoControlRoomRoute,
   PortfolioRoute: PortfolioRoute,
 }
 export const routeTree = rootRouteImport
