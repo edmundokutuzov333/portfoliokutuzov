@@ -127,7 +127,7 @@ function SettingsManager({ keys }: { keys: string[] }) {
     catch { toast.error("Invalid JSON"); return; }
     setSaving(true);
     const { error } = await supabase.from("site_settings").upsert(
-      { key: activeKey, value: parsed, updated_at: new Date().toISOString() },
+      [{ key: activeKey, value: parsed as never, updated_at: new Date().toISOString() }],
       { onConflict: "key" }
     );
     setSaving(false);
