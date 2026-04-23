@@ -1,26 +1,10 @@
 import { motion } from "framer-motion";
 
 const principles = [
-  {
-    key: "CLAREZA",
-    value: "ideia antes da estética",
-    meta: "01 / STRATEGY",
-  },
-  {
-    key: "RITMO",
-    value: "hierarquia, pausa e tensão",
-    meta: "02 / COMPOSITION",
-  },
-  {
-    key: "PRECISÃO",
-    value: "cada detalhe tem função",
-    meta: "03 / SYSTEM",
-  },
-  {
-    key: "MEMÓRIA",
-    value: "presença visual consistente",
-    meta: "04 / IMPACT",
-  },
+  { key: "Clarity", value: "Idea before aesthetic.", meta: "01 / Strategy" },
+  { key: "Rhythm", value: "Hierarchy, pause, tension.", meta: "02 / Composition" },
+  { key: "Precision", value: "Every detail has a function.", meta: "03 / System" },
+  { key: "Memory", value: "Recognition, on every touchpoint.", meta: "04 / Impact" },
 ];
 
 export function Manifesto() {
@@ -30,12 +14,12 @@ export function Manifesto() {
         <div className="grid gap-10 lg:grid-cols-[0.78fr_1.22fr] lg:gap-16">
           <div className="relative">
             <p className="mono text-[10px] font-medium tracking-[0.28em] text-sky-300/75">
-              /// MANIFESTO — N° 02
+              Manifesto
             </p>
 
             <div className="mt-8 hidden max-w-[260px] border-l border-white/[0.08] pl-5 lg:block">
               <p className="mono text-[10px] leading-5 tracking-[0.22em] text-slate-500">
-                STRATEGY / FORM / MOTION / IDENTITY SYSTEMS
+                Strategy / Form / Motion / Identity Systems
               </p>
             </div>
           </div>
@@ -48,10 +32,10 @@ export function Manifesto() {
               transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
               className="display max-w-5xl text-[38px] leading-[0.96] tracking-[-0.035em] text-slate-100 sm:text-5xl md:text-7xl"
             >
-              <span className="text-metal">A marca não precisa ocupar</span>{" "}
-              <span className="text-sky-200">mais espaço.</span>{" "}
-              <span className="text-metal">Precisa ocupar melhor a</span>{" "}
-              <span className="text-slate-500">memória.</span>
+              <span className="text-metal">A brand doesn’t need to take up</span>{" "}
+              <span className="text-sky-200">more space.</span>{" "}
+              <span className="text-metal">It needs to occupy</span>{" "}
+              <span className="text-slate-500">memory.</span>
             </motion.h2>
 
             <motion.div
@@ -70,10 +54,10 @@ export function Manifesto() {
                 transition={{ delay: 0.08, duration: 0.7 }}
                 className="text-[15px] leading-7 text-slate-400 md:text-base"
               >
-                Trabalho marcas como sistemas de decisão: estratégia traduzida
-                em forma, ritmo, contraste, tipografia e comportamento. Cada
-                elemento precisa justificar a própria existência, do primeiro
-                traço ao último ponto de contacto.
+                I treat brands as decision systems: strategy translated into
+                form, rhythm, contrast, typography and behaviour. Every element
+                has to justify its own existence — from the first mark to the
+                last touchpoint.
               </motion.p>
 
               <motion.p
@@ -83,10 +67,10 @@ export function Manifesto() {
                 transition={{ delay: 0.16, duration: 0.7 }}
                 className="text-[15px] leading-7 text-slate-400 md:text-base"
               >
-                O processo combina pensamento estratégico, composição editorial
-                e precisão técnica. Grelhas rígidas, rupturas controladas,
-                contraste frio e sistemas visuais preparados para crescer sem
-                perder identidade.
+                The process combines strategic thinking, editorial composition
+                and technical precision. Strict grids, controlled ruptures, cool
+                contrast and visual systems built to grow without losing
+                identity.
               </motion.p>
             </div>
           </div>
@@ -97,7 +81,7 @@ export function Manifesto() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.25 }}
           transition={{ delay: 0.08, duration: 0.75 }}
-          className="mt-16 grid grid-cols-1 overflow-hidden border border-white/[0.08] bg-white/[0.06] sm:grid-cols-2 lg:grid-cols-4"
+          className="mt-16 grid grid-cols-1 overflow-hidden border border-white/[0.08] bg-white/[0.02] sm:grid-cols-2 lg:grid-cols-4"
         >
           {principles.map((item) => (
             <div
@@ -114,7 +98,7 @@ export function Manifesto() {
                 <div className="mono text-[11px] font-medium tracking-[0.26em] text-sky-200/80">
                   {item.key}
                 </div>
-                <div className="mt-3 max-w-[12rem] text-sm leading-6 text-slate-300">
+                <div className="mt-3 max-w-[14rem] text-sm leading-6 text-slate-300">
                   {item.value}
                 </div>
               </div>

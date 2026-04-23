@@ -9,25 +9,13 @@ import {
   type ProjectCategory,
 } from "@/data/projects";
 
-type Filter = "Todos" | ProjectCategory;
+type Filter = "All" | ProjectCategory;
 
-type ProjectWithMedia = Project & {
-  coverUrl?: string;
-  tags?: string[];
-};
+type ProjectWithMedia = Project & { coverUrl?: string; tags?: string[] };
 
 function getProjectGradient(project: ProjectWithMedia) {
   if (project.palette) return project.palette;
-
-  const gradients: Record<ProjectCategory, string> = {
-    Branding: "from-slate-950 via-blue-950 to-sky-900",
-    Editorial: "from-slate-950 via-slate-800 to-blue-950",
-    Digital: "from-[#01040A] via-[#071A33] to-[#0B3B73]",
-    Campaign: "from-[#020617] via-[#082F49] to-[#075985]",
-    Experimental: "from-[#030814] via-[#0F172A] to-[#1E3A8A]",
-  };
-
-  return gradients[project.category];
+  return "from-[#01040A] via-[#071A33] to-[#0B3B73]";
 }
 
 function ProjectVisual({ project }: { project: ProjectWithMedia }) {
@@ -41,7 +29,6 @@ function ProjectVisual({ project }: { project: ProjectWithMedia }) {
           className="h-full w-full object-cover opacity-85 grayscale transition duration-500 group-hover:scale-[1.04] group-hover:grayscale-0"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#01040A] via-[#01040A]/35 to-transparent" />
-        <div className="absolute inset-0 bg-sky-950/20 mix-blend-color" />
       </div>
     );
   }
@@ -55,7 +42,6 @@ function ProjectVisual({ project }: { project: ProjectWithMedia }) {
             "radial-gradient(520px circle at 24% 18%, rgba(125,211,252,0.32), transparent 52%), radial-gradient(640px circle at 82% 80%, rgba(30,64,175,0.45), transparent 60%)",
         }}
       />
-
       <div
         className="absolute inset-0 opacity-[0.08]"
         style={{
@@ -64,15 +50,6 @@ function ProjectVisual({ project }: { project: ProjectWithMedia }) {
           backgroundSize: "36px 36px",
         }}
       />
-
-      <div
-        className="absolute inset-0 opacity-[0.16] mix-blend-soft-light"
-        style={{
-          backgroundImage:
-            "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.55'/></svg>\")",
-        }}
-      />
-
       <div className="absolute left-1/2 top-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full border border-sky-200/10 transition duration-500 group-hover:scale-125 group-hover:border-sky-200/20" />
       <div className="absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 rounded-full border border-sky-200/10 transition duration-500 group-hover:scale-110" />
     </div>
@@ -95,11 +72,7 @@ function ProjectCard({
       initial={{ opacity: 0, y: 16, filter: "blur(8px)" }}
       whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
       viewport={{ once: true, amount: 0.2 }}
-      transition={{
-        delay: index * 0.045,
-        duration: 0.58,
-        ease: [0.22, 1, 0.36, 1],
-      }}
+      transition={{ delay: index * 0.045, duration: 0.58, ease: [0.22, 1, 0.36, 1] }}
       whileHover={{ y: -6 }}
       className={clsx(
         "group relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#030814] text-left shadow-[0_24px_90px_rgba(0,0,0,0.28)] focus:outline-none focus:ring-2 focus:ring-sky-300/60",
@@ -114,9 +87,7 @@ function ProjectCard({
       <div className="absolute inset-0 bg-gradient-to-t from-[#01040A]/92 via-[#01040A]/18 to-[#01040A]/8 transition duration-300 group-hover:from-[#01040A]/82" />
 
       <div className="absolute left-4 right-4 top-4 flex items-start justify-between mono text-[10px] tracking-[0.18em] text-slate-300/80">
-        <span>
-          {String(project.id).padStart(2, "0")} / {project.category.toUpperCase()}
-        </span>
+        <span>{project.category}</span>
         <span>{project.year}</span>
       </div>
 
@@ -125,10 +96,10 @@ function ProjectCard({
       </div>
 
       <div className="absolute bottom-5 left-5 right-5">
-        <div className="display text-3xl leading-none tracking-[-0.03em] text-white drop-shadow-[0_2px_18px_rgba(0,0,0,0.45)] md:text-4xl">
+        <div className="display text-3xl leading-[1] tracking-[-0.03em] text-white drop-shadow-[0_2px_18px_rgba(0,0,0,0.45)] md:text-[34px]">
           {project.title}
         </div>
-        <div className="mono mt-2 text-[10px] tracking-[0.2em] text-slate-300/80">
+        <div className="mt-2 text-[12px] tracking-[0.04em] text-slate-300/85">
           {project.subtitle}
         </div>
       </div>
@@ -139,13 +110,13 @@ function ProjectCard({
 }
 
 export function PortfolioGrid() {
-  const [filter, setFilter] = useState<Filter>("Todos");
+  const [filter, setFilter] = useState<Filter>("All");
   const [active, setActive] = useState<ProjectWithMedia | null>(null);
 
   const filtered = useMemo(() => {
-    return filter === "Todos"
+    return filter === "All"
       ? (projects as ProjectWithMedia[])
-      : (projects as ProjectWithMedia[]).filter((project) => project.category === filter);
+      : (projects as ProjectWithMedia[]).filter((p) => p.category === filter);
   }, [filter]);
 
   return (
@@ -153,14 +124,13 @@ export function PortfolioGrid() {
       <div className="mb-8 flex flex-wrap items-center gap-2">
         {categories.map((category) => {
           const activeFilter = filter === category;
-
           return (
             <button
               key={category}
               type="button"
               onClick={() => setFilter(category)}
               className={clsx(
-                "mono rounded-full border px-4 py-2 text-[11px] tracking-[0.16em] transition duration-250 focus:outline-none focus:ring-2 focus:ring-sky-300/50",
+                "mono rounded-full border px-4 py-2 text-[11px] tracking-[0.16em] transition duration-300 focus:outline-none focus:ring-2 focus:ring-sky-300/50",
                 activeFilter
                   ? "border-sky-300/35 bg-sky-300/[0.1] text-sky-100"
                   : "border-white/[0.1] bg-white/[0.025] text-slate-400 hover:border-sky-300/25 hover:text-white"
@@ -209,7 +179,7 @@ export function PortfolioGrid() {
                 type="button"
                 onClick={() => setActive(null)}
                 className="absolute right-4 top-4 z-10 grid h-10 w-10 place-items-center rounded-full border border-white/[0.1] bg-[#01040A]/65 text-slate-200 backdrop-blur transition hover:border-sky-300/35 hover:bg-sky-300/[0.08] focus:outline-none focus:ring-2 focus:ring-sky-300/60"
-                aria-label="Fechar"
+                aria-label="Close"
               >
                 <X size={16} strokeWidth={1.8} />
               </button>
@@ -222,14 +192,14 @@ export function PortfolioGrid() {
               <div className="grid gap-8 p-6 md:grid-cols-3 md:p-10">
                 <div className="md:col-span-2">
                   <div className="mono text-[10px] tracking-[0.22em] text-sky-300/75">
-                    {active.category.toUpperCase()} / {active.year}
+                    {active.category} · {active.year}
                   </div>
 
-                  <h3 className="display mt-3 text-4xl leading-none tracking-[-0.035em] text-slate-100 md:text-6xl">
+                  <h3 className="display mt-3 text-4xl leading-[1] tracking-[-0.035em] text-slate-100 md:text-6xl">
                     {active.title}
                   </h3>
 
-                  <p className="mono mt-2 text-xs tracking-[0.18em] text-slate-500">
+                  <p className="mt-2 text-sm tracking-[0.02em] text-slate-400">
                     {active.subtitle}
                   </p>
 
@@ -251,10 +221,10 @@ export function PortfolioGrid() {
                   )}
 
                   <a
-                    href={`mailto:edmundo@studio.com?subject=Projeto%20semelhante%20a%20${encodeURIComponent(active.title)}`}
+                    href={`mailto:edmundokutuzov@phantom-mz.com?subject=${encodeURIComponent(`Project similar to ${active.title}`)}`}
                     className="group mt-8 inline-flex items-center gap-2 rounded-full bg-slate-100 px-5 py-3 text-sm font-semibold text-[#01040A] transition duration-300 hover:bg-sky-200 hover:shadow-[0_0_36px_rgba(56,189,248,0.2)] focus:outline-none focus:ring-2 focus:ring-sky-300/70 focus:ring-offset-2 focus:ring-offset-[#030814]"
                   >
-                    Solicitar projeto semelhante
+                    Request a similar project
                     <ArrowUpRight
                       size={14}
                       strokeWidth={1.8}
@@ -263,15 +233,14 @@ export function PortfolioGrid() {
                   </a>
                 </div>
 
-                <div className="space-y-5 border-t border-white/[0.08] pt-6 mono text-[11px] text-slate-500 md:border-l md:border-t-0 md:pl-7 md:pt-0">
+                <div className="space-y-5 border-t border-white/[0.08] pt-6 text-[12px] text-slate-400 md:border-l md:border-t-0 md:pl-7 md:pt-0">
                   {[
-                    ["CATEGORIA", active.category],
-                    ["ANO", active.year],
-                    ["REF", `ED-${String(active.id).padStart(3, "0")}`],
-                    ["FORMATO", active.span === "wide" ? "WIDE" : active.span === "tall" ? "TALL" : "STANDARD"],
+                    ["Category", active.category],
+                    ["Year", active.year],
+                    ["Discipline", active.subtitle],
                   ].map(([label, value]) => (
                     <div key={label}>
-                      <div className="tracking-[0.2em] text-slate-600">{label}</div>
+                      <div className="mono tracking-[0.2em] text-slate-600">{label}</div>
                       <div className="mt-1 text-slate-100">{value}</div>
                     </div>
                   ))}

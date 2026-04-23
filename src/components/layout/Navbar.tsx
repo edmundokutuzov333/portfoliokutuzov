@@ -6,8 +6,8 @@ import clsx from "clsx";
 const links = [
   { to: "/", label: "Home" },
   { to: "/portfolio", label: "Portfolio" },
-  { to: "/about", label: "Sobre" },
-  { to: "/contact", label: "Contato" },
+  { to: "/about", label: "The Credentials" },
+  { to: "/contact", label: "Contact" },
 ] as const;
 
 export function Navbar() {
@@ -28,18 +28,18 @@ export function Navbar() {
           <Link
             to="/"
             className="group flex items-center gap-3 focus:outline-none"
-            aria-label="Edmundo Studio home"
+            aria-label="Edmundo Kutuzov — home"
           >
             <span className="grid h-8 w-8 place-items-center rounded-full border border-white/[0.1] bg-white/[0.035] display text-[13px] font-semibold tracking-[-0.02em] text-slate-100 transition group-hover:border-sky-300/35 group-hover:text-sky-200">
-              ED
+              EK
             </span>
 
             <span className="hidden flex-col leading-none sm:flex">
               <span className="display text-[13px] font-semibold tracking-[-0.01em] text-slate-100">
-                Edmundo
+                Edmundo Kutuzov
               </span>
               <span className="mono mt-1 text-[9px] tracking-[0.22em] text-slate-600 transition group-hover:text-sky-300/70">
-                ART DIRECTOR
+                Art Director
               </span>
             </span>
           </Link>
@@ -47,16 +47,13 @@ export function Navbar() {
           <ul className="hidden items-center gap-1 md:flex">
             {links.map((link) => {
               const active = pathname === link.to;
-
               return (
                 <li key={link.to}>
                   <Link
                     to={link.to}
                     className={clsx(
                       "relative rounded-full px-4 py-2 text-[13px] font-medium transition duration-200 focus:outline-none focus:ring-2 focus:ring-sky-300/50",
-                      active
-                        ? "text-white"
-                        : "text-slate-400 hover:text-slate-100"
+                      active ? "text-white" : "text-slate-400 hover:text-slate-100"
                     )}
                   >
                     {active && (
@@ -74,7 +71,7 @@ export function Navbar() {
               to="/contact"
               className="group hidden items-center gap-1.5 rounded-full bg-slate-100 px-4 py-2 text-[13px] font-semibold text-[#01040A] transition duration-300 hover:bg-sky-200 hover:shadow-[0_0_32px_rgba(56,189,248,0.18)] focus:outline-none focus:ring-2 focus:ring-sky-300/70 focus:ring-offset-2 focus:ring-offset-[#01040A] sm:inline-flex"
             >
-              Iniciar projeto
+              Start a project
               <ArrowUpRight
                 size={14}
                 strokeWidth={1.9}
@@ -86,7 +83,7 @@ export function Navbar() {
               type="button"
               onClick={() => setOpen((value) => !value)}
               className="grid h-10 w-10 place-items-center rounded-full border border-white/[0.1] bg-white/[0.03] text-slate-200 transition hover:border-sky-300/35 hover:bg-sky-300/[0.06] focus:outline-none focus:ring-2 focus:ring-sky-300/60 md:hidden"
-              aria-label={open ? "Fechar menu" : "Abrir menu"}
+              aria-label={open ? "Close menu" : "Open menu"}
               aria-expanded={open}
               aria-controls="mobile-navigation"
             >
@@ -103,7 +100,6 @@ export function Navbar() {
             <div className="flex flex-col gap-1">
               {links.map((link) => {
                 const active = pathname === link.to;
-
                 return (
                   <Link
                     key={link.to}
