@@ -21,33 +21,33 @@ type Service = {
 const services: Service[] = [
   {
     n: "01",
-    title: "Direção de Arte",
-    eyebrow: "ART DIRECTION",
-    desc: "Construção de linguagens visuais para campanhas, marcas e produtos digitais com consistência estética, intenção narrativa e precisão de execução.",
-    deliverables: ["Conceito visual", "Moodboards", "Key visuals", "Guidelines"],
+    title: "Art Direction",
+    eyebrow: "Art Direction",
+    desc: "Building visual languages for campaigns, brands and digital products with consistent aesthetic, narrative intent and execution precision.",
+    deliverables: ["Concept", "Moodboards", "Key visuals", "Guidelines"],
     Icon: Eye,
   },
   {
     n: "02",
-    title: "Identidade Visual",
-    eyebrow: "BRAND SYSTEM",
-    desc: "Sistemas de marca completos, pensados para funcionar em múltiplos pontos de contacto: logotipo, tipografia, cor, grelhas, aplicações e manual visual.",
-    deliverables: ["Logo system", "Typography", "Color logic", "Brand book"],
+    title: "Brand Identity",
+    eyebrow: "Brand System",
+    desc: "Complete brand systems built to work across multiple touchpoints: logo, typography, colour, grids, applications and a clear visual manual.",
+    deliverables: ["Logo system", "Typography", "Colour logic", "Brand book"],
     Icon: Layers,
   },
   {
     n: "03",
-    title: "Concepção de Campanhas",
-    eyebrow: "CAMPAIGN DESIGN",
-    desc: "Desenvolvimento de campanhas com conceito forte, direção visual memorável e peças preparadas para ambientes digitais, impressos e sociais.",
+    title: "Campaign Design",
+    eyebrow: "Campaign Design",
+    desc: "Campaign development with a strong concept, memorable visual direction and assets prepared for digital, print and social environments.",
     deliverables: ["Big idea", "Visual rollout", "Social assets", "Launch kit"],
     Icon: Megaphone,
   },
   {
     n: "04",
-    title: "Design Digital",
-    eyebrow: "DIGITAL EXPERIENCE",
-    desc: "Websites, landing pages, interfaces editoriais e sistemas digitais com atenção a hierarquia, interação, movimento, responsividade e experiência visual.",
+    title: "Digital Design",
+    eyebrow: "Digital Experience",
+    desc: "Websites, landing pages and editorial interfaces with attention to hierarchy, interaction, motion, responsiveness and visual experience.",
     deliverables: ["Web design", "UI systems", "Motion language", "Responsive layouts"],
     Icon: Monitor,
   },
@@ -59,7 +59,6 @@ function ServiceRow({ service, index }: { service: Service; index: number }) {
   const handleMove = (event: MouseEvent<HTMLDivElement>) => {
     const element = ref.current;
     if (!element) return;
-
     const rect = element.getBoundingClientRect();
     element.style.setProperty("--lx", `${event.clientX - rect.left}px`);
     element.style.setProperty("--ly", `${event.clientY - rect.top}px`);
@@ -72,11 +71,7 @@ function ServiceRow({ service, index }: { service: Service; index: number }) {
       initial={{ opacity: 0, y: 18, filter: "blur(8px)" }}
       whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
       viewport={{ once: true, amount: 0.35 }}
-      transition={{
-        delay: index * 0.075,
-        duration: 0.72,
-        ease: [0.22, 1, 0.36, 1],
-      }}
+      transition={{ delay: index * 0.075, duration: 0.72, ease: [0.22, 1, 0.36, 1] }}
       className="group relative overflow-hidden border-b border-white/[0.08] px-2 py-8 md:px-4 md:py-11"
       style={{
         backgroundImage:
@@ -99,8 +94,7 @@ function ServiceRow({ service, index }: { service: Service; index: number }) {
           <p className="mono mb-3 text-[10px] font-medium tracking-[0.28em] text-slate-500 transition group-hover:text-sky-200/70">
             {service.eyebrow}
           </p>
-
-          <h3 className="display max-w-[12ch] text-3xl leading-[0.96] tracking-[-0.02em] text-slate-100 md:text-5xl">
+          <h3 className="display max-w-[14ch] text-3xl leading-[0.96] tracking-[-0.02em] text-slate-100 md:text-5xl">
             {service.title}
           </h3>
         </div>
@@ -125,10 +119,6 @@ function ServiceRow({ service, index }: { service: Service; index: number }) {
         </div>
 
         <div className="col-span-12 flex items-center justify-between md:col-span-1 md:justify-end">
-          <div className="mono text-[10px] tracking-[0.2em] text-slate-600 md:hidden">
-            SERVICE / {service.n}
-          </div>
-
           <div className="relative grid h-12 w-12 place-items-center rounded-full border border-white/[0.1] bg-slate-950/40 text-slate-300 transition duration-300 group-hover:border-sky-300/40 group-hover:bg-sky-400/[0.08] group-hover:text-sky-100 group-hover:shadow-[0_0_42px_rgba(29,155,255,0.22)]">
             <service.Icon
               size={18}
@@ -154,24 +144,22 @@ export function Services() {
         <div className="mb-12 flex items-end justify-between gap-8">
           <div>
             <p className="mono text-[10px] font-medium tracking-[0.28em] text-sky-300/75">
-              /// SERVIÇOS — N° 03
+              Services
             </p>
-
             <h2 className="display mt-5 max-w-3xl text-4xl leading-[0.98] tracking-[-0.03em] text-metal md:text-6xl">
-              Disciplinas visuais para marcas com precisão.
+              Visual disciplines for brands that move with precision.
             </h2>
           </div>
 
           <div className="hidden max-w-[260px] border-l border-white/[0.08] pl-6 md:block">
             <p className="mono text-[10px] leading-5 tracking-[0.2em] text-slate-500">
-              BRAND LOGIC / VISUAL SYSTEMS / DIGITAL PRESENCE
+              Brand Logic / Visual Systems / Digital Presence
             </p>
           </div>
         </div>
 
         <div className="relative border-t border-white/[0.08]">
           <div className="pointer-events-none absolute -top-px left-0 h-px w-40 bg-gradient-to-r from-sky-300/70 to-transparent" />
-
           {services.map((service, index) => (
             <ServiceRow key={service.n} service={service} index={index} />
           ))}

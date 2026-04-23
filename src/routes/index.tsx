@@ -8,16 +8,17 @@ import { HomeCTA } from "@/components/home/HomeCTA";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Edmundo — Designer & Art Director" },
+      { title: "Edmundo Kutuzov — Art Director" },
       {
         name: "description",
         content:
-          "Identidades visuais, direção de arte e experiências digitais para marcas que querem ser lembradas.",
+          "Edmundo Kutuzov is an art director based in Maputo, Mozambique. Visual identities, art direction and campaign design for brands that want to be remembered.",
       },
-      { property: "og:title", content: "Edmundo — Designer & Art Director" },
+      { property: "og:title", content: "Edmundo Kutuzov — Art Director" },
       {
         property: "og:description",
-        content: "Sistemas visuais editoriais, futuristas e autorais.",
+        content:
+          "Visual identities, art direction and campaign design built with strategic clarity and typographic craft.",
       },
     ],
   }),

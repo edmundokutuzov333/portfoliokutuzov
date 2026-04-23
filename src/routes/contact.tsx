@@ -1,27 +1,34 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Send, Check, Mail, Instagram, Linkedin, Dribbble } from "lucide-react";
+import { Send, Check, Mail, Instagram, Linkedin, Facebook, Phone, MapPin } from "lucide-react";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
-      { title: "Contato — Edmundo" },
+      { title: "Contact — Edmundo Kutuzov" },
       {
         name: "description",
-        content: "Vamos desenhar uma presença visual impossível de ignorar.",
+        content:
+          "Get in touch with Edmundo Kutuzov, art director based in Maputo, Mozambique. Available for selected projects.",
       },
-      { property: "og:title", content: "Contato — Edmundo" },
+      { property: "og:title", content: "Contact — Edmundo Kutuzov" },
       {
         property: "og:description",
-        content: "Briefing, colaboração e novos projetos visuais.",
+        content: "Briefing, collaborations and new visual projects.",
       },
     ],
   }),
   component: ContactPage,
 });
 
-const projectTypes = ["Identidade Visual", "Direção de Arte", "Editorial", "Digital", "Outro"];
+const projectTypes = [
+  "Brand Identity",
+  "Art Direction",
+  "Campaign Design",
+  "Digital Design",
+  "Other",
+];
 const budgets = ["< 5K€", "5K — 15K€", "15K — 40K€", "40K€ +"];
 
 function ContactPage() {
@@ -37,72 +44,79 @@ function ContactPage() {
     setReady(true);
   };
 
-  const mailto = `mailto:edmundo@studio.com?subject=${encodeURIComponent(
-    `Briefing — ${type} — ${name || "novo projeto"}`
+  const mailto = `mailto:edmundokutuzov@phantom-mz.com?subject=${encodeURIComponent(
+    `Briefing — ${type} — ${name || "new project"}`
   )}&body=${encodeURIComponent(
-    `Nome: ${name}\nEmail: ${email}\nTipo: ${type}\nOrçamento: ${budget}\n\n${msg}`
+    `Name: ${name}\nEmail: ${email}\nProject type: ${type}\nBudget: ${budget}\n\n${msg}`
   )}`;
 
   return (
     <section className="relative px-5 md:px-8 pt-36 pb-24">
       <div className="max-w-[1240px] mx-auto">
-        <div className="flex items-start justify-between mono text-[10px] text-[var(--color-text-ghost)]">
-          <div>N° 004 — INDEX</div>
-          <div>OPEN FOR 2026 PROJECTS</div>
+        <div className="flex items-start justify-between mono text-[10px] tracking-[0.22em] text-slate-500">
+          <div>Contact</div>
+          <div>Open for 2026 projects</div>
         </div>
 
         <div className="mt-8 grid md:grid-cols-12 gap-10">
           <div className="md:col-span-6">
             <h1 className="display text-5xl md:text-7xl leading-[0.98] tracking-[-0.02em]">
-              <span className="text-metal">Vamos </span>
-              <span className="italic text-acid">conversar.</span>
+              <span className="text-metal">Let’s </span>
+              <span className="italic text-accent">talk.</span>
             </h1>
-            <p className="mt-6 max-w-md text-[15px] text-[var(--color-text-muted)] leading-relaxed">
-              Conta-me sobre o teu projeto. Respondo a todas as mensagens em
-              até 48 horas, com uma proposta inicial de processo.
+            <p className="mt-6 max-w-md text-[15px] text-slate-400 leading-relaxed">
+              Tell me about your project. I respond to every message within 48
+              hours with an initial process proposal.
             </p>
 
             <div className="mt-12 space-y-5">
               <a
-                href="mailto:edmundo@studio.com"
+                href="mailto:edmundokutuzov@phantom-mz.com"
                 className="flex items-center gap-3 group"
               >
-                <span className="h-10 w-10 rounded-full border border-white/10 grid place-items-center group-hover:border-[var(--color-acc-cyan)]">
+                <span className="h-10 w-10 rounded-full border border-white/10 grid place-items-center group-hover:border-sky-300/50 transition">
                   <Mail size={15} />
                 </span>
-                <span className="text-sm group-hover:text-[var(--color-acc-cyan)]">
-                  edmundo@studio.com
+                <span className="text-sm group-hover:text-sky-200 transition">
+                  edmundokutuzov@phantom-mz.com
                 </span>
               </a>
 
-              <div className="flex items-center gap-2">
+              <a href="tel:+258876013121" className="flex items-center gap-3 group">
+                <span className="h-10 w-10 rounded-full border border-white/10 grid place-items-center group-hover:border-sky-300/50 transition">
+                  <Phone size={15} />
+                </span>
+                <span className="text-sm group-hover:text-sky-200 transition">
+                  +258 87 601 312 1
+                </span>
+              </a>
+
+              <div className="flex items-center gap-3">
+                <span className="h-10 w-10 rounded-full border border-white/10 grid place-items-center">
+                  <MapPin size={15} />
+                </span>
+                <span className="text-sm text-slate-300">
+                  Magoanine “C”, Maputo, Mozambique
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2 pt-4">
                 {[
-                  { icon: Instagram, label: "Instagram" },
-                  { icon: Dribbble, label: "Dribbble" },
-                  { icon: Linkedin, label: "LinkedIn" },
-                ].map(({ icon: Icon, label }) => (
+                  { icon: Instagram, label: "Instagram", href: "https://www.instagram.com/edmundo.kutuzov/" },
+                  { icon: Linkedin, label: "LinkedIn", href: "https://www.linkedin.com/in/edmundo-kutuzov-3457351b4" },
+                  { icon: Facebook, label: "Facebook", href: "https://www.facebook.com/edmundoku/" },
+                ].map(({ icon: Icon, label, href }) => (
                   <a
                     key={label}
-                    href="#"
+                    href={href}
+                    target="_blank"
+                    rel="noreferrer"
                     aria-label={label}
-                    className="h-10 w-10 rounded-full border border-white/10 grid place-items-center text-[var(--color-text-muted)] hover:text-white hover:border-white/30"
+                    className="h-10 w-10 rounded-full border border-white/10 grid place-items-center text-slate-300 hover:text-white hover:border-sky-300/50 transition"
                   >
                     <Icon size={15} />
                   </a>
                 ))}
-                <a
-                  href="#"
-                  aria-label="Behance"
-                  className="h-10 px-3 rounded-full border border-white/10 grid place-items-center mono text-[10px] text-[var(--color-text-muted)] hover:text-white hover:border-white/30"
-                >
-                  Be.
-                </a>
-              </div>
-
-              <div className="pt-8 border-t border-white/8 mono text-[10px] text-[var(--color-text-ghost)] space-y-1">
-                <div>MAPUTO — MZ &nbsp;·&nbsp; UTC+02</div>
-                <div>SÃO PAULO — BR &nbsp;·&nbsp; UTC-03</div>
-                <div>REMOTE / WORLDWIDE</div>
               </div>
             </div>
           </div>
@@ -112,16 +126,16 @@ function ContactPage() {
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="md:col-span-6 relative rounded-2xl border border-white/8 bg-[var(--color-surface)] p-6 md:p-8"
+            className="md:col-span-6 relative rounded-2xl border border-white/[0.08] bg-[var(--color-surface)] p-6 md:p-8"
           >
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Nome" required>
+              <Field label="Name" required>
                 <input
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="field"
-                  placeholder="Maria Silva"
+                  placeholder="Your name"
                 />
               </Field>
               <Field label="Email" required>
@@ -131,12 +145,12 @@ function ContactPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="field"
-                  placeholder="maria@empresa.com"
+                  placeholder="you@company.com"
                 />
               </Field>
             </div>
 
-            <Field label="Tipo de projeto" className="mt-5">
+            <Field label="Project type" className="mt-5">
               <div className="flex flex-wrap gap-2">
                 {projectTypes.map((p) => (
                   <button
@@ -146,7 +160,7 @@ function ContactPage() {
                     className={`px-3 py-1.5 rounded-full text-[12px] mono border transition ${
                       type === p
                         ? "bg-white text-black border-white"
-                        : "border-white/10 text-[var(--color-text-muted)] hover:text-white"
+                        : "border-white/10 text-slate-400 hover:text-white"
                     }`}
                   >
                     {p}
@@ -155,7 +169,7 @@ function ContactPage() {
               </div>
             </Field>
 
-            <Field label="Orçamento estimado" className="mt-5">
+            <Field label="Estimated budget" className="mt-5">
               <div className="flex flex-wrap gap-2">
                 {budgets.map((b) => (
                   <button
@@ -164,8 +178,8 @@ function ContactPage() {
                     onClick={() => setBudget(b)}
                     className={`px-3 py-1.5 rounded-full text-[12px] mono border transition ${
                       budget === b
-                        ? "bg-[var(--color-acc-acid)] text-black border-[var(--color-acc-acid)]"
-                        : "border-white/10 text-[var(--color-text-muted)] hover:text-white"
+                        ? "bg-sky-300 text-[#01040A] border-sky-300"
+                        : "border-white/10 text-slate-400 hover:text-white"
                     }`}
                   >
                     {b}
@@ -174,14 +188,14 @@ function ContactPage() {
               </div>
             </Field>
 
-            <Field label="Mensagem" className="mt-5" required>
+            <Field label="Message" className="mt-5" required>
               <textarea
                 required
                 value={msg}
                 onChange={(e) => setMsg(e.target.value)}
                 rows={5}
                 className="field resize-none"
-                placeholder="Conta-me sobre a marca, o desafio e os prazos…"
+                placeholder="Tell me about the brand, the challenge and the timeline…"
               />
             </Field>
 
@@ -189,21 +203,18 @@ function ContactPage() {
               {ready ? (
                 <a
                   href={mailto}
-                  className="inline-flex items-center gap-2 rounded-full bg-[var(--color-acc-acid)] text-black px-5 py-3 text-sm font-semibold"
+                  className="inline-flex items-center gap-2 rounded-full bg-sky-300 text-[#01040A] px-5 py-3 text-sm font-semibold"
                 >
-                  <Check size={15} /> Mensagem preparada — abrir email
+                  <Check size={15} /> Message ready — open email
                 </a>
               ) : (
                 <button
                   type="submit"
-                  className="inline-flex items-center gap-2 rounded-full bg-white text-black px-5 py-3 text-sm font-semibold hover:bg-[var(--color-acc-acid)] transition"
+                  className="inline-flex items-center gap-2 rounded-full bg-white text-[#01040A] px-5 py-3 text-sm font-semibold hover:bg-sky-200 transition"
                 >
-                  Preparar mensagem <Send size={14} />
+                  Prepare message <Send size={14} />
                 </button>
               )}
-              <span className="mono text-[10px] text-[var(--color-text-ghost)]">
-                / FORM-001
-              </span>
             </div>
 
             <style>{`
@@ -214,11 +225,11 @@ function ContactPage() {
                 border-radius: 10px;
                 padding: 12px 14px;
                 font-size: 14px;
-                color: #f4f1ff;
+                color: #f5f8ff;
                 transition: border-color .2s, background .2s;
               }
-              .field::placeholder { color: #464254; }
-              .field:focus { outline: none; border-color: #22d3ee; background: rgba(34,211,238,0.04); }
+              .field::placeholder { color: #64748b; }
+              .field:focus { outline: none; border-color: #6ddcff; background: rgba(109,220,255,0.04); }
             `}</style>
           </motion.form>
         </div>
@@ -240,8 +251,8 @@ function Field({
 }) {
   return (
     <label className={`block ${className}`}>
-      <span className="mono text-[10px] text-[var(--color-text-ghost)]">
-        {label.toUpperCase()} {required && <span className="text-[var(--color-acc-acid)]">*</span>}
+      <span className="mono text-[10px] tracking-[0.2em] text-slate-500">
+        {label} {required && <span className="text-sky-300">*</span>}
       </span>
       <div className="mt-2">{children}</div>
     </label>

@@ -1,20 +1,20 @@
+// Real brands and collaborations — wordmarks displayed as text placeholders
+// until logo files are added manually.
 export const clients = [
-  {
-    name: "NOVA",
-    logo: "/clients/nova.svg",
-    alt: "NOVA",
-    url: "https://example.com",
-    featured: true,
-  },
-  {
-    name: "KORA",
-    logo: "/clients/kora.png",
-    alt: "KORA",
-  },
-  {
-    name: "ALMA",
-  },
-  {
-    name: "VOLT",
-  },
+  "Absa",
+  "Vodacom",
+  "TotalEnergies",
+  "Galp",
+  "Nissan",
+  "Toyota",
+  "Hyundai",
+  "MultiChoice",
+  "DStv",
+  "Pernod Ricard",
+  "Flying Fish",
+  "Brutal",
+  "Kit Kat",
+  "EMOSE",
+  "GIZ",
+  "Hotel Cardoso",
 ];
