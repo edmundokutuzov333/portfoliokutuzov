@@ -11,6 +11,8 @@ export type DbClient = {
   website_url: string | null;
   sort_order: number;
   is_active: boolean;
+  logo_width?: number | null;
+  logo_height?: number | null;
 };
 
 export type DbProject = {
@@ -21,12 +23,17 @@ export type DbProject = {
   year: string | null;
   description: string | null;
   cover_url: string | null;
+  cover_width?: number | null;
+  cover_height?: number | null;
   gallery: string[];
   tags: string[];
   palette: string | null;
   span: string | null;
   sort_order: number;
   is_published: boolean;
+  featured?: boolean;
+  client_name?: string | null;
+  image_fit?: "contain" | "cover" | string | null;
 };
 
 export type DbService = {

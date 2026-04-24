@@ -73,7 +73,9 @@ export type Database = {
           created_at: string
           id: string
           is_active: boolean
+          logo_height: number | null
           logo_url: string | null
+          logo_width: number | null
           name: string
           sort_order: number
           updated_at: string
@@ -83,7 +85,9 @@ export type Database = {
           created_at?: string
           id?: string
           is_active?: boolean
+          logo_height?: number | null
           logo_url?: string | null
+          logo_width?: number | null
           name: string
           sort_order?: number
           updated_at?: string
@@ -93,7 +97,9 @@ export type Database = {
           created_at?: string
           id?: string
           is_active?: boolean
+          logo_height?: number | null
           logo_url?: string | null
+          logo_width?: number | null
           name?: string
           sort_order?: number
           updated_at?: string
@@ -104,11 +110,16 @@ export type Database = {
       projects: {
         Row: {
           category: string
+          client_name: string | null
+          cover_height: number | null
           cover_url: string | null
+          cover_width: number | null
           created_at: string
           description: string | null
+          featured: boolean
           gallery: Json
           id: string
+          image_fit: string
           is_published: boolean
           palette: string | null
           sort_order: number
@@ -121,11 +132,16 @@ export type Database = {
         }
         Insert: {
           category: string
+          client_name?: string | null
+          cover_height?: number | null
           cover_url?: string | null
+          cover_width?: number | null
           created_at?: string
           description?: string | null
+          featured?: boolean
           gallery?: Json
           id?: string
+          image_fit?: string
           is_published?: boolean
           palette?: string | null
           sort_order?: number
@@ -138,11 +154,16 @@ export type Database = {
         }
         Update: {
           category?: string
+          client_name?: string | null
+          cover_height?: number | null
           cover_url?: string | null
+          cover_width?: number | null
           created_at?: string
           description?: string | null
+          featured?: boolean
           gallery?: Json
           id?: string
+          image_fit?: string
           is_published?: boolean
           palette?: string | null
           sort_order?: number

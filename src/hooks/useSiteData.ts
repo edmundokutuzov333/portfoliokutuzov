@@ -81,7 +81,7 @@ export function useProjects(includeUnpublished = false) {
         ...p,
         gallery: Array.isArray(p.gallery) ? (p.gallery as string[]) : [],
         tags: Array.isArray(p.tags) ? (p.tags as string[]) : [],
-      })) as DbProject[];
+      })) as unknown as DbProject[];
     },
   });
 }

@@ -41,7 +41,14 @@ export function ClientLogos() {
                 {String(i + 1).padStart(2, "0")}
               </span>
               {c.logo_url ? (
-                <img src={c.logo_url} alt={c.name} className="max-h-12 max-w-[70%] object-contain opacity-70 group-hover:opacity-100 transition" loading="lazy" />
+                <img
+                  src={c.logo_url}
+                  alt={c.name}
+                  width={c.logo_width ?? undefined}
+                  height={c.logo_height ?? undefined}
+                  className="max-h-12 max-w-[70%] w-auto h-auto object-contain opacity-70 group-hover:opacity-100 transition"
+                  loading="lazy"
+                />
               ) : (
                 <span className="display text-base md:text-lg font-medium tracking-[0.04em]">{c.name}</span>
               )}
