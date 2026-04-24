@@ -8,7 +8,7 @@ export function Hero() {
   const { data: settings } = useSiteSettings();
   const r = <T,>(f: string, fb: T) => readSetting<T>(settings, "hero", f, fb);
   const disciplines = r<string[]>("disciplines", [
-    "Art Direction", "Brand Identity", "Campaign Design", "Audiovisual Direction",
+    "Art Direction", "Communication Design", "Campaign Design", "Audiovisual Direction",
   ]);
 
   return (
@@ -16,7 +16,7 @@ export function Hero() {
       <div className="max-w-[1240px] mx-auto relative">
         <div className="flex items-start justify-between mono text-[10px] tracking-[0.22em] text-slate-500">
           <div>{r("top_left", "Edmundo Kutuzov — Art Director")}</div>
-          <div className="text-right">{r("top_right", "Maputo · Mozambique")}</div>
+          <div className="text-right">{r("top_right", "Maputo · Mozambique, Africa")}</div>
         </div>
 
         <motion.div
@@ -24,7 +24,7 @@ export function Hero() {
           transition={{ delay: 0.1, duration: 0.6 }}
           className="mt-14 mono text-[11px] tracking-[0.24em] text-sky-300/85"
         >
-          {r("eyebrow", "Brand Identity · Art Direction · Campaign Design")}
+          {r("eyebrow", "Art Direction · Communication Design · Campaign Strategy")}
         </motion.div>
 
         <div className="mt-8 grid grid-cols-12 gap-6">
@@ -75,7 +75,7 @@ export function Hero() {
                 <span className="absolute inline-flex h-full w-full rounded-full bg-sky-300 opacity-60 animate-ping" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-300" />
               </span>
-              {r("status", "Available for selected projects")}
+              {r("status", "Available for projects")}
             </div>
             <div className="mt-6 space-y-2 text-sm text-slate-400">
               <div>{r("location", "Maputo · Remote")}</div>
