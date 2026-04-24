@@ -19,11 +19,18 @@ const ALL_CATEGORIES = [
 
 function ProjectVisual({ project }: { project: DbProject }) {
   if (project.cover_url) {
+    const fitClass = project.image_fit === "cover" ? "object-cover" : "object-contain";
     return (
-      <div className="absolute inset-0">
-        <img src={project.cover_url} alt={project.title} loading="lazy"
-          className="h-full w-full object-cover opacity-85 grayscale transition duration-500 group-hover:scale-[1.04] group-hover:grayscale-0" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#01040A] via-[#01040A]/35 to-transparent" />
+      <div className="absolute inset-0 grid place-items-center bg-[#01040A]">
+        <img
+          src={project.cover_url}
+          alt={project.title}
+          width={project.cover_width ?? undefined}
+          height={project.cover_height ?? undefined}
+          loading="lazy"
+          className={`h-full w-full ${fitClass} opacity-90 transition duration-500 group-hover:scale-[1.02]`}
+        />
+        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#01040A] via-[#01040A]/40 to-transparent" />
       </div>
     );
   }
