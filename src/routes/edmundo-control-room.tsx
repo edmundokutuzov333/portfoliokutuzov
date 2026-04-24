@@ -738,14 +738,13 @@ function PortfolioManager() {
   const duplicate = async (p: DbProject) => {
     const { id, ...rest } = p;
     void id;
-    const { error } = await supabase.from("projects").insert({
+    const payload = {
       ...rest,
       title: `${p.title} (copy)`,
       sort_order: p.sort_order + 1,
       is_published: false,
-      gallery: rest.gallery as unknown as never,
-      tags: rest.tags as unknown as never,
-    });
+    } as unknown as never;
+    const { error } = await supabase.from("projects").insert(payload);
     if (error) toast.error(error.message);
     else toast.success("Duplicated");
   };
