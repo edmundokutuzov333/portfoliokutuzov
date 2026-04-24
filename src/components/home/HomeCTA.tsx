@@ -7,7 +7,7 @@ import { readSetting } from "@/lib/cms";
 export function HomeCTA() {
   const { data: settings } = useSiteSettings();
   const r = <T,>(f: string, fb: T) => readSetting<T>(settings, "cta_home", f, fb);
-  const email = r("email", "edmundokutuzov@phantom-mz.com");
+  const email = r("email", "edmundokutuzov.mz@gmail.com");
 
   return (
     <section className="relative px-5 md:px-8 py-28">
