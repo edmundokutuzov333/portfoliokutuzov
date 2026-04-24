@@ -10,21 +10,36 @@ import type {
   SiteSettings,
 } from "@/lib/cms";
 
-// ---------- settings ----------
-export function useSiteSettings() {
+// Unique channel name per subscriber to avoid Supabase singleton-channel
+// "cannot add postgres_changes callbacks ... after subscribe()" errors when
+// the same hook mounts in multiple components simultaneously.
+const uid = () =>
+  `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
+
+function useRealtimeInvalidate(table: string, queryKey: unknown[]) {
   const qc = useQueryClient();
   useEffect(() => {
     const ch = supabase
-      .channel("rt-site_settings")
-      .on("postgres_changes", { event: "*", schema: "public", table: "site_settings" }, () => {
-        qc.invalidateQueries({ queryKey: ["site_settings"] });
-      })
+      .channel(`rt-${table}-${uid()}`)
+      .on(
+        // @ts-expect-error - supabase-js typing for postgres_changes is loose
+        "postgres_changes",
+        { event: "*", schema: "public", table },
+        () => {
+          qc.invalidateQueries({ queryKey });
+        }
+      )
       .subscribe();
     return () => {
       supabase.removeChannel(ch);
     };
-  }, [qc]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [qc, table]);
+}
 
+// ---------- settings ----------
+export function useSiteSettings() {
+  useRealtimeInvalidate("site_settings", ["site_settings"]);
   return useQuery({
     queryKey: ["site_settings"],
     queryFn: async (): Promise<SiteSettings> => {
@@ -40,18 +55,7 @@ export function useSiteSettings() {
 
 // ---------- clients ----------
 export function useClients(includeInactive = false) {
-  const qc = useQueryClient();
-  useEffect(() => {
-    const ch = supabase
-      .channel("rt-clients")
-      .on("postgres_changes", { event: "*", schema: "public", table: "clients" }, () => {
-        qc.invalidateQueries({ queryKey: ["clients"] });
-      })
-      .subscribe();
-    return () => {
-      supabase.removeChannel(ch);
-    };
-  }, [qc]);
+  useRealtimeInvalidate("clients", ["clients"]);
   return useQuery({
     queryKey: ["clients", includeInactive],
     queryFn: async (): Promise<DbClient[]> => {
@@ -66,18 +70,7 @@ export function useClients(includeInactive = false) {
 
 // ---------- projects ----------
 export function useProjects(includeUnpublished = false) {
-  const qc = useQueryClient();
-  useEffect(() => {
-    const ch = supabase
-      .channel("rt-projects")
-      .on("postgres_changes", { event: "*", schema: "public", table: "projects" }, () => {
-        qc.invalidateQueries({ queryKey: ["projects"] });
-      })
-      .subscribe();
-    return () => {
-      supabase.removeChannel(ch);
-    };
-  }, [qc]);
+  useRealtimeInvalidate("projects", ["projects"]);
   return useQuery({
     queryKey: ["projects", includeUnpublished],
     queryFn: async (): Promise<DbProject[]> => {
