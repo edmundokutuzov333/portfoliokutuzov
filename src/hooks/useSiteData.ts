@@ -22,7 +22,6 @@ function useRealtimeInvalidate(table: string, queryKey: unknown[]) {
     const ch = supabase
       .channel(`rt-${table}-${uid()}`)
       .on(
-        // @ts-expect-error - supabase-js typing for postgres_changes is loose
         "postgres_changes",
         { event: "*", schema: "public", table },
         () => {
