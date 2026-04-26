@@ -32,7 +32,7 @@ export function Footer() {
             {r("eyebrow", "Edmundo Kutuzov - Art Director")}
           </p>
           <h3 className="display mt-5 max-w-2xl text-4xl leading-[1] tracking-[-0.035em] text-slate-100 md:text-6xl">
-            <span className="text-metal">{r("title_1", "Available for selected")}</span>
+            <span className="text-metal">{r("title_1", "Available for")}</span>
             <br />
             <span className="text-sky-200">{r("title_2", "projects in 2026.")}</span>
           </h3>
@@ -75,10 +75,10 @@ export function Footer() {
       </div>
 
       <div className="border-t border-white/[0.08]">
-        <div className="mx-auto flex max-w-[1240px] flex-col gap-3 px-5 py-6 text-[12px] text-slate-500 md:flex-row md:items-center md:justify-between md:px-8">
-          <span>© {new Date().getFullYear()} {r("copyright", "Edmundo Kutuzov. All rights reserved.")}</span>
-          <span>{r("location", 'Magoanine "C", Maputo · Mozambique')}</span>
-          <span>{r("phone", "+258 87 601 312 1")}</span>
+        <div className="mx-auto flex max-w-[1240px] flex-col gap-1 px-5 py-6 text-[12px] text-slate-500 md:px-8">
+          <span>
+            © {new Date().getFullYear()} Edmundo Kutuzov. All rights reserved. The only one. Less talk, more design.
+          </span>
         </div>
       </div>
     </footer>
