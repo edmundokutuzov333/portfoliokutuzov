@@ -207,7 +207,7 @@ if (typeof document !== "undefined" && !document.getElementById(STYLE_TAG_ID)) {
 }
 
 // ============================================================================
-// SETTINGS HELPERS — read merged value (DB over fallback) and save per-key
+// SETTINGS HELPERS - read merged value (DB over fallback) and save per-key
 // ============================================================================
 function useSectionDraft(key: string) {
   const { data: settings } = useSiteSettings();
@@ -300,9 +300,9 @@ function HeroEditor() {
         <Field label="Top right badge"><TextInput value={get(s.draft, "top_right", "")} onChange={(e) => s.update("top_right", e.target.value)} /></Field>
         <Field label="Eyebrow"><TextInput value={get(s.draft, "eyebrow", "")} onChange={(e) => s.update("eyebrow", e.target.value)} /></Field>
         <Field label="Year"><TextInput value={get(s.draft, "year", "")} onChange={(e) => s.update("year", e.target.value)} /></Field>
-        <Field label="Title — line 1"><TextInput value={get(s.draft, "title_1", "")} onChange={(e) => s.update("title_1", e.target.value)} /></Field>
-        <Field label="Title — line 2"><TextInput value={get(s.draft, "title_2", "")} onChange={(e) => s.update("title_2", e.target.value)} /></Field>
-        <Field label="Title — accent (italic)"><TextInput value={get(s.draft, "title_accent", "")} onChange={(e) => s.update("title_accent", e.target.value)} /></Field>
+        <Field label="Title - line 1"><TextInput value={get(s.draft, "title_1", "")} onChange={(e) => s.update("title_1", e.target.value)} /></Field>
+        <Field label="Title - line 2"><TextInput value={get(s.draft, "title_2", "")} onChange={(e) => s.update("title_2", e.target.value)} /></Field>
+        <Field label="Title - accent (italic)"><TextInput value={get(s.draft, "title_accent", "")} onChange={(e) => s.update("title_accent", e.target.value)} /></Field>
         <Field label="Status">
           <TextInput value={get(s.draft, "status", "")} onChange={(e) => s.update("status", e.target.value)} />
         </Field>
@@ -339,10 +339,10 @@ function ManifestoEditor() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Field label="Eyebrow"><TextInput value={get(s.draft, "eyebrow", "")} onChange={(e) => s.update("eyebrow", e.target.value)} /></Field>
         <Field label="Sidebar text"><TextInput value={get(s.draft, "sidebar", "")} onChange={(e) => s.update("sidebar", e.target.value)} /></Field>
-        <Field label="Title — line 1"><TextInput value={get(s.draft, "title_1", "")} onChange={(e) => s.update("title_1", e.target.value)} /></Field>
-        <Field label="Title — accent"><TextInput value={get(s.draft, "title_accent", "")} onChange={(e) => s.update("title_accent", e.target.value)} /></Field>
-        <Field label="Title — line 2"><TextInput value={get(s.draft, "title_2", "")} onChange={(e) => s.update("title_2", e.target.value)} /></Field>
-        <Field label="Title — muted"><TextInput value={get(s.draft, "title_muted", "")} onChange={(e) => s.update("title_muted", e.target.value)} /></Field>
+        <Field label="Title - line 1"><TextInput value={get(s.draft, "title_1", "")} onChange={(e) => s.update("title_1", e.target.value)} /></Field>
+        <Field label="Title - accent"><TextInput value={get(s.draft, "title_accent", "")} onChange={(e) => s.update("title_accent", e.target.value)} /></Field>
+        <Field label="Title - line 2"><TextInput value={get(s.draft, "title_2", "")} onChange={(e) => s.update("title_2", e.target.value)} /></Field>
+        <Field label="Title - muted"><TextInput value={get(s.draft, "title_muted", "")} onChange={(e) => s.update("title_muted", e.target.value)} /></Field>
         <Field label="Paragraph 1"><TextArea rows={4} value={get(s.draft, "col1", "")} onChange={(e) => s.update("col1", e.target.value)} /></Field>
         <Field label="Paragraph 2"><TextArea rows={4} value={get(s.draft, "col2", "")} onChange={(e) => s.update("col2", e.target.value)} /></Field>
       </div>
@@ -403,8 +403,8 @@ function CtaHomeEditor() {
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Field label="Eyebrow"><TextInput value={get(s.draft, "eyebrow", "")} onChange={(e) => s.update("eyebrow", e.target.value)} /></Field>
-        <Field label="Title — line 1"><TextInput value={get(s.draft, "title_1", "")} onChange={(e) => s.update("title_1", e.target.value)} /></Field>
-        <Field label="Title — accent"><TextInput value={get(s.draft, "title_accent", "")} onChange={(e) => s.update("title_accent", e.target.value)} /></Field>
+        <Field label="Title - line 1"><TextInput value={get(s.draft, "title_1", "")} onChange={(e) => s.update("title_1", e.target.value)} /></Field>
+        <Field label="Title - accent"><TextInput value={get(s.draft, "title_accent", "")} onChange={(e) => s.update("title_accent", e.target.value)} /></Field>
         <Field label="Primary CTA"><TextInput value={get(s.draft, "cta_primary", "")} onChange={(e) => s.update("cta_primary", e.target.value)} /></Field>
         <Field label="Email"><TextInput type="email" value={get(s.draft, "email", "")} onChange={(e) => s.update("email", e.target.value)} /></Field>
       </div>
@@ -433,8 +433,8 @@ function FooterEditor() {
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Field label="Eyebrow"><TextInput value={get(s.draft, "eyebrow", "")} onChange={(e) => s.update("eyebrow", e.target.value)} /></Field>
-        <Field label="Title — line 1"><TextInput value={get(s.draft, "title_1", "")} onChange={(e) => s.update("title_1", e.target.value)} /></Field>
-        <Field label="Title — line 2"><TextInput value={get(s.draft, "title_2", "")} onChange={(e) => s.update("title_2", e.target.value)} /></Field>
+        <Field label="Title - line 1"><TextInput value={get(s.draft, "title_1", "")} onChange={(e) => s.update("title_1", e.target.value)} /></Field>
+        <Field label="Title - line 2"><TextInput value={get(s.draft, "title_2", "")} onChange={(e) => s.update("title_2", e.target.value)} /></Field>
         <Field label="CTA label"><TextInput value={get(s.draft, "cta", "")} onChange={(e) => s.update("cta", e.target.value)} /></Field>
         <Field label="Email"><TextInput type="email" value={get(s.draft, "email", "")} onChange={(e) => s.update("email", e.target.value)} /></Field>
         <Field label="Phone"><TextInput value={get(s.draft, "phone", "")} onChange={(e) => s.update("phone", e.target.value)} /></Field>
@@ -484,8 +484,8 @@ function AboutManager() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Field label="Eyebrow"><TextInput value={get(s.draft, "eyebrow", "")} onChange={(e) => s.update("eyebrow", e.target.value)} /></Field>
           <Field label="Top right tag"><TextInput value={get(s.draft, "top_right", "")} onChange={(e) => s.update("top_right", e.target.value)} /></Field>
-          <Field label="Title — line 1"><TextInput value={get(s.draft, "title_1", "")} onChange={(e) => s.update("title_1", e.target.value)} /></Field>
-          <Field label="Title — accent"><TextInput value={get(s.draft, "title_accent", "")} onChange={(e) => s.update("title_accent", e.target.value)} /></Field>
+          <Field label="Title - line 1"><TextInput value={get(s.draft, "title_1", "")} onChange={(e) => s.update("title_1", e.target.value)} /></Field>
+          <Field label="Title - accent"><TextInput value={get(s.draft, "title_accent", "")} onChange={(e) => s.update("title_accent", e.target.value)} /></Field>
           <Field label="Bio paragraph 1"><TextArea rows={4} value={get(s.draft, "bio_p1", "")} onChange={(e) => s.update("bio_p1", e.target.value)} /></Field>
           <Field label="Bio paragraph 2"><TextArea rows={4} value={get(s.draft, "bio_p2", "")} onChange={(e) => s.update("bio_p2", e.target.value)} /></Field>
           <Field label="Bio paragraph 3"><TextArea rows={4} value={get(s.draft, "bio_p3", "")} onChange={(e) => s.update("bio_p3", e.target.value)} /></Field>
@@ -566,8 +566,8 @@ function ContactManager() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Field label="Eyebrow"><TextInput value={get(s.draft, "eyebrow", "")} onChange={(e) => s.update("eyebrow", e.target.value)} /></Field>
           <Field label="Status"><TextInput value={get(s.draft, "status", "")} onChange={(e) => s.update("status", e.target.value)} /></Field>
-          <Field label="Title — line 1"><TextInput value={get(s.draft, "title_1", "")} onChange={(e) => s.update("title_1", e.target.value)} /></Field>
-          <Field label="Title — accent"><TextInput value={get(s.draft, "title_accent", "")} onChange={(e) => s.update("title_accent", e.target.value)} /></Field>
+          <Field label="Title - line 1"><TextInput value={get(s.draft, "title_1", "")} onChange={(e) => s.update("title_1", e.target.value)} /></Field>
+          <Field label="Title - accent"><TextInput value={get(s.draft, "title_accent", "")} onChange={(e) => s.update("title_accent", e.target.value)} /></Field>
           <Field label="Subtitle"><TextArea rows={3} value={get(s.draft, "subtitle", "")} onChange={(e) => s.update("subtitle", e.target.value)} /></Field>
           <Field label="Email"><TextInput type="email" value={get(s.draft, "email", "")} onChange={(e) => s.update("email", e.target.value)} /></Field>
           <Field label="Phone"><TextInput value={get(s.draft, "phone", "")} onChange={(e) => s.update("phone", e.target.value)} /></Field>
@@ -813,7 +813,7 @@ function PortfolioManager() {
                     {p.is_published ? "LIVE" : "DRAFT"}
                   </span>
                 </div>
-                <div className="text-[11px] text-slate-500 mt-1">{p.category} · {p.year ?? "—"}</div>
+                <div className="text-[11px] text-slate-500 mt-1">{p.category} · {p.year ?? "-"}</div>
                 {p.featured && (
                   <div className="mt-2 inline-flex items-center gap-1 text-[10px] text-amber-300"><Star size={10} /> Featured</div>
                 )}
@@ -1053,7 +1053,7 @@ function BatchAddProjects({ onClose, startSort }: { onClose: () => void; startSo
         <div className="flex items-center justify-between p-5 border-b border-white/[0.08]">
           <div>
             <h3 className="display text-xl text-metal">Batch add projects</h3>
-            <p className="text-xs text-slate-500 mt-1">Up to 10 at once. Created as drafts — open each to add cover, description and tags.</p>
+            <p className="text-xs text-slate-500 mt-1">Up to 10 at once. Created as drafts - open each to add cover, description and tags.</p>
           </div>
           <button onClick={onClose} className="text-slate-500 hover:text-white text-sm">Close</button>
         </div>
@@ -1087,7 +1087,7 @@ function BatchAddProjects({ onClose, startSort }: { onClose: () => void; startSo
 }
 
 // ============================================================================
-// ADVANCED — raw JSON editor (kept for power use)
+// ADVANCED - raw JSON editor (kept for power use)
 // ============================================================================
 function AdvancedJSONManager() {
   const { data: settings } = useSiteSettings();
