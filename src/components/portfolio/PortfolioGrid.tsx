@@ -7,14 +7,11 @@ import type { DbProject } from "@/lib/cms";
 
 const ALL_CATEGORIES = [
   "All",
-  "Brand Identity",
-  "Campaign Design",
-  "Art Direction",
-  "Visual Systems",
-  "Social Media Assets",
-  "Digital Design",
-  "Motion / Content Direction",
-  "Editorial Systems",
+  "Social Media",
+  "Ad Campaigns",
+  "Videos",
+  "Image Manipulation",
+  "Web Design",
 ] as const;
 
 function ProjectVisual({ project }: { project: DbProject }) {

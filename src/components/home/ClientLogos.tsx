@@ -50,7 +50,9 @@ export function ClientLogos() {
                   loading="lazy"
                 />
               ) : (
-                <span className="display text-base md:text-lg font-medium tracking-[0.04em]">{c.name}</span>
+                <span className="display text-base md:text-lg font-medium tracking-[0.04em] text-center px-3">
+                  {c.name}
+                </span>
               )}
               <span className="absolute inset-x-0 bottom-0 h-px bg-sky-300/70 scale-x-0 group-hover:scale-x-100 origin-left transition-transform" />
             </motion.div>

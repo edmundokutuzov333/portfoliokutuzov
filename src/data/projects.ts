@@ -1,12 +1,9 @@
 export type ProjectCategory =
-  | "Brand Identity"
-  | "Campaign Design"
-  | "Art Direction"
-  | "Visual Systems"
-  | "Social Media Assets"
-  | "Digital Design"
-  | "Motion / Content Direction"
-  | "Editorial Systems";
+  | "Social Media"
+  | "Ad Campaigns"
+  | "Videos"
+  | "Image Manipulation"
+  | "Web Design";
 
 export type Project = {
   id: number;
@@ -120,12 +117,9 @@ export const projects: Project[] = [
 
 export const categories: ("All" | ProjectCategory)[] = [
   "All",
-  "Brand Identity",
-  "Campaign Design",
-  "Art Direction",
-  "Visual Systems",
-  "Social Media Assets",
-  "Digital Design",
-  "Motion / Content Direction",
-  "Editorial Systems",
+  "Social Media",
+  "Ad Campaigns",
+  "Videos",
+  "Image Manipulation",
+  "Web Design",
 ];
