@@ -14,7 +14,7 @@ export function Footer() {
   const { data: settings } = useSiteSettings();
   const r = <T,>(f: string, fb: T) => readSetting<T>(settings, "footer", f, fb);
   const s = <T,>(f: string, fb: T) => readSetting<T>(settings, "social", f, fb);
-  const email = r("email", "edmundokutuzov@phantom-mz.com");
+  const email = r("email", "edmundokutuzov.mz@gmail.com");
 
   const socialLinks = [
     { label: "Instagram", href: s("instagram", "#") },
@@ -29,10 +29,10 @@ export function Footer() {
       <div className="mx-auto grid max-w-[1240px] gap-12 px-5 py-16 md:grid-cols-12 md:px-8 md:py-20">
         <div className="md:col-span-6">
           <p className="mono text-[10px] font-medium tracking-[0.28em] text-slate-500">
-            {r("eyebrow", "Edmundo Kutuzov — Art Director")}
+            {r("eyebrow", "Edmundo Kutuzov - Art Director")}
           </p>
           <h3 className="display mt-5 max-w-2xl text-4xl leading-[1] tracking-[-0.035em] text-slate-100 md:text-6xl">
-            <span className="text-metal">{r("title_1", "Available for selected")}</span>
+            <span className="text-metal">{r("title_1", "Available for")}</span>
             <br />
             <span className="text-sky-200">{r("title_2", "projects in 2026.")}</span>
           </h3>
@@ -75,10 +75,10 @@ export function Footer() {
       </div>
 
       <div className="border-t border-white/[0.08]">
-        <div className="mx-auto flex max-w-[1240px] flex-col gap-3 px-5 py-6 text-[12px] text-slate-500 md:flex-row md:items-center md:justify-between md:px-8">
-          <span>© {new Date().getFullYear()} {r("copyright", "Edmundo Kutuzov. All rights reserved.")}</span>
-          <span>{r("location", 'Magoanine "C", Maputo · Mozambique')}</span>
-          <span>{r("phone", "+258 87 601 312 1")}</span>
+        <div className="mx-auto flex max-w-[1240px] flex-col gap-1 px-5 py-6 text-[12px] text-slate-500 md:px-8">
+          <span>
+            © {new Date().getFullYear()} Edmundo Kutuzov. All rights reserved. The only one. Less talk, more design.
+          </span>
         </div>
       </div>
     </footer>

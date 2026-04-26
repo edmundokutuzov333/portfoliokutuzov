@@ -6,9 +6,9 @@ import { readSetting } from "@/lib/cms";
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "The Credentials — Edmundo Kutuzov" },
+      { title: "The Credentials - Edmundo Kutuzov" },
       { name: "description", content: "About Edmundo Kutuzov: art director rooted in Mozambique's creative ecosystem." },
-      { property: "og:title", content: "The Credentials — Edmundo Kutuzov" },
+      { property: "og:title", content: "The Credentials - Edmundo Kutuzov" },
       { property: "og:description", content: "Experience, skills and selected brands worked with as art director and graphic designer." },
     ],
   }),
@@ -32,7 +32,7 @@ function AboutPage() {
       <div className="max-w-[1240px] mx-auto">
         <div className="flex items-start justify-between mono text-[10px] tracking-[0.22em] text-slate-500">
           <div>{r("eyebrow", "The Credentials")}</div>
-          <div>{r("top_right", "Edmundo Kutuzov — Art Director")}</div>
+          <div>{r("top_right", "Edmundo Kutuzov - Art Director")}</div>
         </div>
 
         <motion.h1

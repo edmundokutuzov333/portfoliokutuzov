@@ -8,9 +8,9 @@ import { readSetting } from "@/lib/cms";
 export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
-      { title: "Contact — Edmundo Kutuzov" },
+      { title: "Contact - Edmundo Kutuzov" },
       { name: "description", content: "Get in touch with Edmundo Kutuzov, art director based in Maputo, Mozambique." },
-      { property: "og:title", content: "Contact — Edmundo Kutuzov" },
+      { property: "og:title", content: "Contact - Edmundo Kutuzov" },
       { property: "og:description", content: "Briefing, collaborations and new visual projects." },
     ],
   }),
@@ -23,8 +23,8 @@ function ContactPage() {
   const s = <T,>(f: string, fb: T) => readSetting<T>(settings, "social", f, fb);
 
   const projectTypes = r<string[]>("project_types", ["Brand Identity", "Art Direction", "Other"]);
-  const budgets = r<string[]>("budgets", ["< 5K€", "5K — 15K€", "15K — 40K€", "40K€ +"]);
-  const email = r("email", "edmundokutuzov@phantom-mz.com");
+  const budgets = r<string[]>("budgets", ["< 5K€", "5K - 15K€", "15K - 40K€", "40K€ +"]);
+  const email = r("email", "edmundokutuzov.mz@gmail.com");
   const phone = r("phone", "+258 87 601 312 1");
 
   const [name, setName] = useState("");
@@ -36,7 +36,7 @@ function ContactPage() {
 
   const onSubmit = (e: React.FormEvent) => { e.preventDefault(); setReady(true); };
 
-  const mailto = `mailto:${email}?subject=${encodeURIComponent(`Briefing — ${type} — ${name || "new project"}`)}&body=${encodeURIComponent(`Name: ${name}\nEmail: ${emailVal}\nProject type: ${type}\nBudget: ${budget}\n\n${msg}`)}`;
+  const mailto = `mailto:${email}?subject=${encodeURIComponent(`Briefing - ${type} - ${name || "new project"}`)}&body=${encodeURIComponent(`Name: ${name}\nEmail: ${emailVal}\nProject type: ${type}\nBudget: ${budget}\n\n${msg}`)}`;
 
   return (
     <section className="relative px-5 md:px-8 pt-36 pb-24">
@@ -134,7 +134,7 @@ function ContactPage() {
             <div className="mt-6 flex items-center justify-between gap-4">
               {ready ? (
                 <a href={mailto} className="inline-flex items-center gap-2 rounded-full bg-sky-300 text-[#01040A] px-5 py-3 text-sm font-semibold">
-                  <Check size={15} /> Message ready — open email
+                  <Check size={15} /> Message ready - open email
                 </a>
               ) : (
                 <button type="submit" className="inline-flex items-center gap-2 rounded-full bg-white text-[#01040A] px-5 py-3 text-sm font-semibold hover:bg-sky-200 transition">

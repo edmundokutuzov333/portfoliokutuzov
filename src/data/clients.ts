@@ -1,4 +1,4 @@
-// Real brands and collaborations — wordmarks displayed as text placeholders
+// Real brands and collaborations - wordmarks displayed as text placeholders
 // until logo files are added manually.
 export const clients = [
   "Absa",

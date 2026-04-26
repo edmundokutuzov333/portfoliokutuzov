@@ -7,14 +7,11 @@ import type { DbProject } from "@/lib/cms";
 
 const ALL_CATEGORIES = [
   "All",
-  "Brand Identity",
-  "Campaign Design",
-  "Art Direction",
-  "Visual Systems",
-  "Social Media Assets",
-  "Digital Design",
-  "Motion / Content Direction",
-  "Editorial Systems",
+  "Social Media",
+  "Ad Campaigns",
+  "Videos",
+  "Image Manipulation",
+  "Web Design",
 ] as const;
 
 function ProjectVisual({ project }: { project: DbProject }) {
@@ -154,7 +151,7 @@ export function PortfolioGrid() {
                       ))}
                     </div>
                   )}
-                  <a href={`mailto:edmundokutuzov@phantom-mz.com?subject=${encodeURIComponent(`Project similar to ${active.title}`)}`}
+                  <a href={`mailto:edmundokutuzov.mz@gmail.com?subject=${encodeURIComponent(`Project similar to ${active.title}`)}`}
                     className="mt-8 inline-flex items-center gap-2 rounded-full bg-slate-100 px-5 py-3 text-sm font-semibold text-[#01040A] transition duration-300 hover:bg-sky-200">
                     Request a similar project<ArrowUpRight size={14} strokeWidth={1.8} />
                   </a>

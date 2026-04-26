@@ -6,7 +6,7 @@ import clsx from "clsx";
 const links = [
   { to: "/", label: "Home" },
   { to: "/portfolio", label: "Portfolio" },
-  { to: "/about", label: "The Credentials" },
+  { to: "/services", label: "Services" },
   { to: "/contact", label: "Contact" },
 ] as const;
 
@@ -28,7 +28,7 @@ export function Navbar() {
           <Link
             to="/"
             className="group flex items-center gap-3 focus:outline-none"
-            aria-label="Edmundo Kutuzov — home"
+            aria-label="Edmundo Kutuzov - home"
           >
             <span className="grid h-8 w-8 place-items-center rounded-full border border-white/[0.1] bg-white/[0.035] display text-[13px] font-semibold tracking-[-0.02em] text-slate-100 transition group-hover:border-sky-300/35 group-hover:text-sky-200">
               EK

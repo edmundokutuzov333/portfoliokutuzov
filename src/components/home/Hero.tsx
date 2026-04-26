@@ -15,7 +15,7 @@ export function Hero() {
     <section className="relative min-h-[100svh] pt-32 pb-20 px-5 md:px-8">
       <div className="max-w-[1240px] mx-auto relative">
         <div className="flex items-start justify-between mono text-[10px] tracking-[0.22em] text-slate-500">
-          <div>{r("top_left", "Edmundo Kutuzov — Art Director")}</div>
+          <div>{r("top_left", "Edmundo Kutuzov - Art Director")}</div>
           <div className="text-right">{r("top_right", "Maputo · Mozambique, Africa")}</div>
         </div>
 
@@ -54,12 +54,12 @@ export function Hero() {
               transition={{ delay: 0.55, duration: 0.6 }}
               className="mt-9 flex flex-wrap items-center gap-3"
             >
-              <Link to="/contact" className="group inline-flex items-center gap-2 rounded-full bg-slate-100 text-[#01040A] px-5 py-3 text-sm font-semibold hover:bg-sky-200 transition">
-                {r("cta_primary", "I'm ready for the immersion!")}
+              <Link to="/portfolio" className="group inline-flex items-center gap-2 rounded-full bg-slate-100 text-[#01040A] px-5 py-3 text-sm font-semibold hover:bg-sky-200 transition">
+                {r("cta_primary", "View Portfolio")}
                 <ArrowUpRight size={16} className="group-hover:rotate-45 transition-transform" />
               </Link>
-              <Link to="/portfolio" className="inline-flex items-center gap-2 rounded-full border border-white/15 px-5 py-3 text-sm font-medium text-slate-200 hover:border-sky-300/50 hover:text-sky-200 transition">
-                {r("cta_secondary", "View Portfolio")} <Send size={14} />
+              <Link to="/contact" className="inline-flex items-center gap-2 rounded-full border border-white/15 px-5 py-3 text-sm font-medium text-slate-200 hover:border-sky-300/50 hover:text-sky-200 transition">
+                {r("cta_secondary", "Contact Me")} <Send size={14} />
               </Link>
             </motion.div>
           </div>
