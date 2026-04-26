@@ -65,14 +65,14 @@ export type DbMethod = {
 
 export const FALLBACK_SETTINGS: SiteSettings = {
   hero: {
-    top_left: "Edmundo Kutuzov — Art Director",
+    top_left: "Edmundo Kutuzov - Art Director",
     top_right: "Maputo · Mozambique",
     eyebrow: "Brand Identity · Art Direction · Campaign Design",
     title_1: "I make ideas",
     title_2: "stop, take notice,",
     title_accent: "and act.",
     subtitle:
-      "I'm Edmundo Kutuzov, an art director rooted in Mozambique's creative ecosystem. I design visual identities and communication pieces that capture attention and drive action — blending storytelling, visual hierarchy, and typographic craft.",
+      "I'm Edmundo Kutuzov, an art director rooted in Mozambique's creative ecosystem. I design visual identities and communication pieces that capture attention and drive action - blending storytelling, visual hierarchy, and typographic craft.",
     cta_primary: "I'm ready for the immersion!",
     cta_secondary: "View Portfolio",
     status_label: "Current Status",
@@ -88,7 +88,7 @@ export const FALLBACK_SETTINGS: SiteSettings = {
     title_accent: "more space.",
     title_2: "It needs to occupy",
     title_muted: "memory.",
-    col1: "I treat brands as decision systems: strategy translated into form, rhythm, contrast, typography and behaviour. Every element has to justify its own existence — from the first mark to the last touchpoint.",
+    col1: "I treat brands as decision systems: strategy translated into form, rhythm, contrast, typography and behaviour. Every element has to justify its own existence - from the first mark to the last touchpoint.",
     col2: "The process combines strategic thinking, editorial composition and technical precision. Strict grids, controlled ruptures, cool contrast and visual systems built to grow without losing identity.",
     principles: [
       { meta: "01 / Strategy", key: "Clarity", value: "Idea before aesthetic." },
@@ -113,14 +113,14 @@ export const FALLBACK_SETTINGS: SiteSettings = {
     title_1: "Let's build a visual presence",
     title_accent: "impossible to ignore.",
     cta_primary: "Start a project",
-    email: "edmundokutuzov@phantom-mz.com",
+    email: "edmundokutuzov.mz@gmail.com",
   },
   footer: {
-    eyebrow: "Edmundo Kutuzov — Art Director",
+    eyebrow: "Edmundo Kutuzov - Art Director",
     title_1: "Available for selected",
     title_2: "projects in 2026.",
     cta: "Start a conversation",
-    email: "edmundokutuzov@phantom-mz.com",
+    email: "edmundokutuzov.mz@gmail.com",
     copyright: "Edmundo Kutuzov. All rights reserved.",
     location: 'Magoanine "C", Maputo · Mozambique',
     phone: "+258 87 601 312 1",
@@ -133,31 +133,31 @@ export const FALLBACK_SETTINGS: SiteSettings = {
     title_accent: "talk.",
     subtitle:
       "Tell me about your project. I respond to every message within 48 hours with an initial process proposal.",
-    email: "edmundokutuzov@phantom-mz.com",
+    email: "edmundokutuzov.mz@gmail.com",
     phone: "+258 87 601 312 1",
     location: 'Magoanine "C", Maputo, Mozambique',
     project_types: ["Brand Identity", "Art Direction", "Campaign Design", "Digital Design", "Other"],
-    budgets: ["< 5K€", "5K — 15K€", "15K — 40K€", "40K€ +"],
+    budgets: ["< 5K€", "5K - 15K€", "15K - 40K€", "40K€ +"],
   },
   about: {
     eyebrow: "The Credentials",
-    top_right: "Edmundo Kutuzov — Art Director",
+    top_right: "Edmundo Kutuzov - Art Director",
     title_1: "Strategy, craft and a sharp",
     title_accent: "point of view.",
     bio_p1:
-      "I make ideas stop, take notice, and act. I design visual identities and communication pieces that capture attention and drive action — blending storytelling, visual hierarchy, and typographic craft.",
+      "I make ideas stop, take notice, and act. I design visual identities and communication pieces that capture attention and drive action - blending storytelling, visual hierarchy, and typographic craft.",
     bio_p2:
       "I'm Edmundo Kutuzov, an art director deeply rooted in Mozambique's creative ecosystem. I lead projects ranging from ad campaigns and music videos to clothing collections and brand development.",
     bio_p3:
-      "My focus is always on experiences that generate recognition and measurable results — every choice I make is designed to maximise impact and perception.",
-    email: "edmundokutuzov@phantom-mz.com",
+      "My focus is always on experiences that generate recognition and measurable results - every choice I make is designed to maximise impact and perception.",
+    email: "edmundokutuzov.mz@gmail.com",
     phone: "+258 87 601 312 1",
     location: 'Magoanine "C", Maputo, Mozambique',
     experience: [
-      { role: "Art Director", company: "SPOT Comunicação", period: "2023 — 2024" },
+      { role: "Art Director", company: "SPOT Comunicação", period: "2023 - 2024" },
       { role: "Senior Graphic Designer", company: "Ikigai Moçambique", period: "2023" },
       { role: "Marketing Assistant & Social Media Manager", company: "Imperial Seguros", period: "2023" },
-      { role: "Graphic Designer", company: "Agência Creer", period: "2020 — 2023" },
+      { role: "Graphic Designer", company: "Agência Creer", period: "2020 - 2023" },
     ],
     skills: [
       { name: "Adobe Photoshop", value: 95 },

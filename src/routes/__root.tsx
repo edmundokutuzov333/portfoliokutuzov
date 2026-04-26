@@ -43,15 +43,15 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Edmundo — Designer & Art Director" },
+      { title: "Edmundo - Designer & Art Director" },
       {
         name: "description",
         content:
           "Identidades visuais, direção de arte e experiências digitais construídas com clareza estratégica e precisão técnica.",
       },
       { name: "author", content: "Edmundo" },
-      { property: "og:title", content: "Edmundo — Designer & Art Director" },
-      { name: "twitter:title", content: "Edmundo — Designer & Art Director" },
+      { property: "og:title", content: "Edmundo - Designer & Art Director" },
+      { name: "twitter:title", content: "Edmundo - Designer & Art Director" },
       {
         property: "og:description",
         content: "Dark blue editorial portfolio · brand identity · art direction · digital systems.",

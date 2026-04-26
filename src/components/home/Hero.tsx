@@ -15,7 +15,7 @@ export function Hero() {
     <section className="relative min-h-[100svh] pt-32 pb-20 px-5 md:px-8">
       <div className="max-w-[1240px] mx-auto relative">
         <div className="flex items-start justify-between mono text-[10px] tracking-[0.22em] text-slate-500">
-          <div>{r("top_left", "Edmundo Kutuzov — Art Director")}</div>
+          <div>{r("top_left", "Edmundo Kutuzov - Art Director")}</div>
           <div className="text-right">{r("top_right", "Maputo · Mozambique, Africa")}</div>
         </div>
 

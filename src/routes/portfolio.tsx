@@ -4,13 +4,13 @@ import { PortfolioGrid } from "@/components/portfolio/PortfolioGrid";
 export const Route = createFileRoute("/portfolio")({
   head: () => ({
     meta: [
-      { title: "Portfolio — Edmundo Kutuzov" },
+      { title: "Portfolio - Edmundo Kutuzov" },
       {
         name: "description",
         content:
           "Selected art direction, brand identity and campaign work by Edmundo Kutuzov, art director based in Maputo, Mozambique.",
       },
-      { property: "og:title", content: "Portfolio — Edmundo Kutuzov" },
+      { property: "og:title", content: "Portfolio - Edmundo Kutuzov" },
       {
         property: "og:description",
         content:
