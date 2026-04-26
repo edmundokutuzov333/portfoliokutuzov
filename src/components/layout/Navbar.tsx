@@ -6,7 +6,7 @@ import clsx from "clsx";
 const links = [
   { to: "/", label: "Home" },
   { to: "/portfolio", label: "Portfolio" },
-  { to: "/about", label: "The Credentials" },
+  { to: "/services", label: "Services" },
   { to: "/contact", label: "Contact" },
 ] as const;
 

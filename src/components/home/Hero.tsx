@@ -54,12 +54,12 @@ export function Hero() {
               transition={{ delay: 0.55, duration: 0.6 }}
               className="mt-9 flex flex-wrap items-center gap-3"
             >
-              <Link to="/contact" className="group inline-flex items-center gap-2 rounded-full bg-slate-100 text-[#01040A] px-5 py-3 text-sm font-semibold hover:bg-sky-200 transition">
-                {r("cta_primary", "I'm ready for the immersion!")}
+              <Link to="/portfolio" className="group inline-flex items-center gap-2 rounded-full bg-slate-100 text-[#01040A] px-5 py-3 text-sm font-semibold hover:bg-sky-200 transition">
+                {r("cta_primary", "View Portfolio")}
                 <ArrowUpRight size={16} className="group-hover:rotate-45 transition-transform" />
               </Link>
-              <Link to="/portfolio" className="inline-flex items-center gap-2 rounded-full border border-white/15 px-5 py-3 text-sm font-medium text-slate-200 hover:border-sky-300/50 hover:text-sky-200 transition">
-                {r("cta_secondary", "View Portfolio")} <Send size={14} />
+              <Link to="/contact" className="inline-flex items-center gap-2 rounded-full border border-white/15 px-5 py-3 text-sm font-medium text-slate-200 hover:border-sky-300/50 hover:text-sky-200 transition">
+                {r("cta_secondary", "Contact Me")} <Send size={14} />
               </Link>
             </motion.div>
           </div>
