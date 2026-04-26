@@ -55,13 +55,13 @@ export const projects: Project[] = [
     year: "2023",
     palette: "from-[#01040A] via-[#082F49] to-[#0EA5E9]",
     description:
-      "Visual assets and key visuals supporting TotalEnergies brand activations — coordinated typography, image treatment and on-brand visual hierarchy.",
+      "Visual assets and key visuals supporting TotalEnergies brand activations - coordinated typography, image treatment and on-brand visual hierarchy.",
     span: "wide",
     tags: ["Key visuals", "Activation", "Print + Digital"],
   },
   {
     id: 4,
-    title: "Pernod Ricard — Flying Fish",
+    title: "Pernod Ricard - Flying Fish",
     subtitle: "Product campaign visuals",
     category: "Art Direction",
     year: "2023",
@@ -72,7 +72,7 @@ export const projects: Project[] = [
   },
   {
     id: 5,
-    title: "MultiChoice — DStv & GOtv",
+    title: "MultiChoice - DStv & GOtv",
     subtitle: "Programming & promo assets",
     category: "Motion / Content Direction",
     year: "2024",
@@ -90,12 +90,12 @@ export const projects: Project[] = [
     year: "2023",
     palette: "from-[#01040A] via-[#172554] to-[#38BDF8]",
     description:
-      "Institutional identity and communication assets for EMOSE — Moçambique Companhia de Seguros. Typographic clarity, consistent palette and editorial layouts.",
+      "Institutional identity and communication assets for EMOSE - Moçambique Companhia de Seguros. Typographic clarity, consistent palette and editorial layouts.",
     tags: ["Identity", "Editorial", "Institutional"],
   },
   {
     id: 7,
-    title: "Automotive — Nissan / Toyota / Hyundai",
+    title: "Automotive - Nissan / Toyota / Hyundai",
     subtitle: "Dealer campaign assets",
     category: "Campaign Design",
     year: "2023",
@@ -107,13 +107,13 @@ export const projects: Project[] = [
   },
   {
     id: 8,
-    title: "Hospitality — Hotel Cardoso / Ponta Apart",
+    title: "Hospitality - Hotel Cardoso / Ponta Apart",
     subtitle: "Brand & communication assets",
     category: "Visual Systems",
     year: "2023",
     palette: "from-[#01040A] via-[#06111F] to-[#0B3B73]",
     description:
-      "Visual systems and communication assets for hospitality clients including Hotel Cardoso and Ponta Apart Hotel — quiet typography, strong photography hierarchy.",
+      "Visual systems and communication assets for hospitality clients including Hotel Cardoso and Ponta Apart Hotel - quiet typography, strong photography hierarchy.",
     tags: ["Hospitality", "Visual system", "Editorial"],
   },
 ];
