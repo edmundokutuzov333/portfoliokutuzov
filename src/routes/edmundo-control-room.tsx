@@ -5,11 +5,14 @@ import { useAdminAuth } from "@/hooks/useAdmin";
 import { useClients, useProjects, useSiteSettings } from "@/hooks/useSiteData";
 import { FALLBACK_SETTINGS, type DbClient, type DbProject } from "@/lib/cms";
 import { readImageDimensions, aspectFromDims } from "@/lib/image-utils";
+import { snapshotBefore } from "@/lib/history";
+import { RequestsInbox } from "@/components/admin/RequestsInbox";
+import { HistoryManager } from "@/components/admin/HistoryManager";
 import { toast } from "sonner";
 import {
   LogOut, Save, Trash2, Plus, Upload, Loader2, Image as ImageIcon,
   Briefcase, Users, FileText, Eye, EyeOff, Copy, Star, ChevronDown, ChevronRight,
-  Home, User as UserIcon, Mail, Code2,
+  Home, User as UserIcon, Mail, Code2, Inbox, History,
 } from "lucide-react";
 
 export const Route = createFileRoute("/edmundo-control-room")({
