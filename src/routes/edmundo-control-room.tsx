@@ -595,8 +595,11 @@ function ClientsManager() {
   const { data: clients = [] } = useClients(true);
   const [busyId, setBusyId] = useState<string | null>(null);
 
+  const labelOf = (id: string) => clients.find((c) => c.id === id)?.name ?? id;
+
   const update = async (id: string, patch: Partial<DbClient>) => {
     setBusyId(id);
+    await snapshotBefore("clients", id, labelOf(id));
     const { error } = await supabase
       .from("clients")
       .update({ ...(patch as Record<string, unknown>), updated_at: new Date().toISOString() })
@@ -615,6 +618,7 @@ function ClientsManager() {
 
   const remove = async (id: string) => {
     if (!confirm("Delete this client?")) return;
+    await snapshotBefore("clients", id, `${labelOf(id)} (deleted)`);
     const { error } = await supabase.from("clients").delete().eq("id", id);
     if (error) toast.error(error.message);
     else toast.success("Deleted");
