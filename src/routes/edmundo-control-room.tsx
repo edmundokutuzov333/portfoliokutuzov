@@ -860,6 +860,7 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
     if (!form.title.trim()) { toast.error("Title is required"); return; }
     if (!form.category.trim()) { toast.error("Category is required"); return; }
     setSaving(true);
+    await snapshotBefore("projects", form.id, form.title);
     const { error } = await supabase.from("projects").update({
       title: form.title,
       subtitle: form.subtitle,
