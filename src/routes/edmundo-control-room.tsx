@@ -742,6 +742,8 @@ function PortfolioManager() {
 
   const remove = async (id: string) => {
     if (!confirm("Delete this project?")) return;
+    const proj = projects.find((p) => p.id === id);
+    await snapshotBefore("projects", id, `${proj?.title ?? id} (deleted)`);
     const { error } = await supabase.from("projects").delete().eq("id", id);
     if (error) toast.error(error.message);
     else toast.success("Deleted");
@@ -762,6 +764,7 @@ function PortfolioManager() {
   };
 
   const togglePublish = async (p: DbProject) => {
+    await snapshotBefore("projects", p.id, p.title);
     const { error } = await supabase.from("projects").update({ is_published: !p.is_published, updated_at: new Date().toISOString() }).eq("id", p.id);
     if (error) toast.error(error.message);
   };
