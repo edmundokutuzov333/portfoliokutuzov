@@ -107,6 +107,102 @@ export type Database = {
         }
         Relationships: []
       }
+      contact_requests: {
+        Row: {
+          admin_notes: string | null
+          attachments: Json
+          budget_amount: number | null
+          budget_currency: string | null
+          budget_label: string | null
+          company: string | null
+          created_at: string
+          email: string
+          id: string
+          is_starred: boolean
+          message: string
+          name: string
+          phone: string | null
+          project_type: string | null
+          source: string | null
+          status: string
+          timeline: string | null
+          updated_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          attachments?: Json
+          budget_amount?: number | null
+          budget_currency?: string | null
+          budget_label?: string | null
+          company?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          is_starred?: boolean
+          message: string
+          name: string
+          phone?: string | null
+          project_type?: string | null
+          source?: string | null
+          status?: string
+          timeline?: string | null
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          attachments?: Json
+          budget_amount?: number | null
+          budget_currency?: string | null
+          budget_label?: string | null
+          company?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          is_starred?: boolean
+          message?: string
+          name?: string
+          phone?: string | null
+          project_type?: string | null
+          source?: string | null
+          status?: string
+          timeline?: string | null
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      content_history: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          entity_id: string
+          entity_type: string
+          id: string
+          label: string | null
+          snapshot: Json
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          entity_id: string
+          entity_type: string
+          id?: string
+          label?: string | null
+          snapshot: Json
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          label?: string | null
+          snapshot?: Json
+        }
+        Relationships: []
+      }
       projects: {
         Row: {
           category: string

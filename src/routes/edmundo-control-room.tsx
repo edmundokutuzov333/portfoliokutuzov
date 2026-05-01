@@ -5,18 +5,21 @@ import { useAdminAuth } from "@/hooks/useAdmin";
 import { useClients, useProjects, useSiteSettings } from "@/hooks/useSiteData";
 import { FALLBACK_SETTINGS, type DbClient, type DbProject } from "@/lib/cms";
 import { readImageDimensions, aspectFromDims } from "@/lib/image-utils";
+import { snapshotBefore } from "@/lib/history";
+import { RequestsInbox } from "@/components/admin/RequestsInbox";
+import { HistoryManager } from "@/components/admin/HistoryManager";
 import { toast } from "sonner";
 import {
   LogOut, Save, Trash2, Plus, Upload, Loader2, Image as ImageIcon,
   Briefcase, Users, FileText, Eye, EyeOff, Copy, Star, ChevronDown, ChevronRight,
-  Home, User as UserIcon, Mail, Code2,
+  Home, User as UserIcon, Mail, Code2, Inbox, History,
 } from "lucide-react";
 
 export const Route = createFileRoute("/edmundo-control-room")({
   component: ControlRoom,
 });
 
-type Section = "site" | "clients" | "portfolio" | "about" | "contact" | "advanced";
+type Section = "site" | "clients" | "portfolio" | "about" | "contact" | "inbox" | "history" | "advanced";
 
 function ControlRoom() {
   const { session, isAdmin, loading } = useAdminAuth();
@@ -37,6 +40,8 @@ function ControlRoom() {
     { id: "portfolio" as const, label: "Portfolio", Icon: Briefcase },
     { id: "about" as const, label: "About", Icon: UserIcon },
     { id: "contact" as const, label: "Contact", Icon: Mail },
+    { id: "inbox" as const, label: "Inbox", Icon: Inbox },
+    { id: "history" as const, label: "History", Icon: History },
     { id: "advanced" as const, label: "Advanced", Icon: Code2 },
   ];
 
@@ -75,6 +80,8 @@ function ControlRoom() {
         {section === "portfolio" && <PortfolioManager />}
         {section === "about" && <AboutManager />}
         {section === "contact" && <ContactManager />}
+        {section === "inbox" && <RequestsInbox />}
+        {section === "history" && <HistoryManager />}
         {section === "advanced" && <AdvancedJSONManager />}
       </main>
     </div>
@@ -232,6 +239,7 @@ function useSectionDraft(key: string) {
 
   const save = async () => {
     setSaving(true);
+    await snapshotBefore("site_settings", key, key);
     const { error } = await supabase
       .from("site_settings")
       .upsert(
@@ -587,8 +595,11 @@ function ClientsManager() {
   const { data: clients = [] } = useClients(true);
   const [busyId, setBusyId] = useState<string | null>(null);
 
+  const labelOf = (id: string) => clients.find((c) => c.id === id)?.name ?? id;
+
   const update = async (id: string, patch: Partial<DbClient>) => {
     setBusyId(id);
+    await snapshotBefore("clients", id, labelOf(id));
     const { error } = await supabase
       .from("clients")
       .update({ ...(patch as Record<string, unknown>), updated_at: new Date().toISOString() })
@@ -607,6 +618,7 @@ function ClientsManager() {
 
   const remove = async (id: string) => {
     if (!confirm("Delete this client?")) return;
+    await snapshotBefore("clients", id, `${labelOf(id)} (deleted)`);
     const { error } = await supabase.from("clients").delete().eq("id", id);
     if (error) toast.error(error.message);
     else toast.success("Deleted");
@@ -730,6 +742,8 @@ function PortfolioManager() {
 
   const remove = async (id: string) => {
     if (!confirm("Delete this project?")) return;
+    const proj = projects.find((p) => p.id === id);
+    await snapshotBefore("projects", id, `${proj?.title ?? id} (deleted)`);
     const { error } = await supabase.from("projects").delete().eq("id", id);
     if (error) toast.error(error.message);
     else toast.success("Deleted");
@@ -750,6 +764,7 @@ function PortfolioManager() {
   };
 
   const togglePublish = async (p: DbProject) => {
+    await snapshotBefore("projects", p.id, p.title);
     const { error } = await supabase.from("projects").update({ is_published: !p.is_published, updated_at: new Date().toISOString() }).eq("id", p.id);
     if (error) toast.error(error.message);
   };
@@ -845,6 +860,7 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
     if (!form.title.trim()) { toast.error("Title is required"); return; }
     if (!form.category.trim()) { toast.error("Category is required"); return; }
     setSaving(true);
+    await snapshotBefore("projects", form.id, form.title);
     const { error } = await supabase.from("projects").update({
       title: form.title,
       subtitle: form.subtitle,
@@ -1127,6 +1143,7 @@ function RawEditor({ sectionKey, initial }: { sectionKey: string; initial: Recor
     let parsed: Record<string, unknown>;
     try { parsed = JSON.parse(text); } catch { toast.error("Invalid JSON"); return; }
     setSaving(true);
+    await snapshotBefore("site_settings", sectionKey, sectionKey);
     const { error } = await supabase.from("site_settings").upsert(
       [{ key: sectionKey, value: parsed as never, updated_at: new Date().toISOString() }],
       { onConflict: "key" }
