@@ -19,7 +19,7 @@ export const Route = createFileRoute("/edmundo-control-room")({
   component: ControlRoom,
 });
 
-type Section = "site" | "clients" | "portfolio" | "about" | "contact" | "advanced";
+type Section = "site" | "clients" | "portfolio" | "about" | "contact" | "inbox" | "history" | "advanced";
 
 function ControlRoom() {
   const { session, isAdmin, loading } = useAdminAuth();
@@ -40,6 +40,8 @@ function ControlRoom() {
     { id: "portfolio" as const, label: "Portfolio", Icon: Briefcase },
     { id: "about" as const, label: "About", Icon: UserIcon },
     { id: "contact" as const, label: "Contact", Icon: Mail },
+    { id: "inbox" as const, label: "Inbox", Icon: Inbox },
+    { id: "history" as const, label: "History", Icon: History },
     { id: "advanced" as const, label: "Advanced", Icon: Code2 },
   ];
 
@@ -78,6 +80,8 @@ function ControlRoom() {
         {section === "portfolio" && <PortfolioManager />}
         {section === "about" && <AboutManager />}
         {section === "contact" && <ContactManager />}
+        {section === "inbox" && <RequestsInbox />}
+        {section === "history" && <HistoryManager />}
         {section === "advanced" && <AdvancedJSONManager />}
       </main>
     </div>
