@@ -92,7 +92,7 @@ export function RequestsInbox() {
   const update = async (id: string, patch: Partial<ContactRequest>) => {
     const { error } = await supabase
       .from("contact_requests")
-      .update(patch as Record<string, unknown>)
+      .update(patch as never)
       .eq("id", id);
     if (error) toast.error(error.message);
   };
