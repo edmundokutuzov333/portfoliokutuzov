@@ -239,6 +239,7 @@ function useSectionDraft(key: string) {
 
   const save = async () => {
     setSaving(true);
+    await snapshotBefore("site_settings", key, key);
     const { error } = await supabase
       .from("site_settings")
       .upsert(
