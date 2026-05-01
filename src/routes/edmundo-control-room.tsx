@@ -1143,6 +1143,7 @@ function RawEditor({ sectionKey, initial }: { sectionKey: string; initial: Recor
     let parsed: Record<string, unknown>;
     try { parsed = JSON.parse(text); } catch { toast.error("Invalid JSON"); return; }
     setSaving(true);
+    await snapshotBefore("site_settings", sectionKey, sectionKey);
     const { error } = await supabase.from("site_settings").upsert(
       [{ key: sectionKey, value: parsed as never, updated_at: new Date().toISOString() }],
       { onConflict: "key" }
