@@ -875,10 +875,18 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
       sort_order: form.sort_order,
       tags: form.tags as unknown as never,
       gallery: form.gallery as unknown as never,
+      gallery_meta: (form.gallery_meta ?? []) as unknown as never,
       is_published: form.is_published,
       featured: form.featured ?? false,
       client_name: form.client_name ?? null,
       image_fit: form.image_fit ?? "contain",
+      concept: form.concept ?? null,
+      idea: form.idea ?? null,
+      role: form.role ?? null,
+      notes: form.notes ?? null,
+      collaborators: (form.collaborators ?? []) as unknown as never,
+      tools_used: (form.tools_used ?? []) as unknown as never,
+      deliverables: (form.deliverables ?? []) as unknown as never,
       updated_at: new Date().toISOString(),
     }).eq("id", form.id);
     setSaving(false);
@@ -903,16 +911,26 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
   const uploadGalleryItem = async (file: File) => {
     setUploading(true);
     try {
+      const dims = await readImageDimensions(file).catch(() => null);
       const path = `projects/${form.id}-gallery-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
       const { error: upErr } = await supabase.storage.from("site-assets").upload(path, file, { upsert: true });
       if (upErr) throw upErr;
       const { data } = supabase.storage.from("site-assets").getPublicUrl(path);
       set("gallery", [...(form.gallery ?? []), data.publicUrl]);
+      set("gallery_meta", [
+        ...(form.gallery_meta ?? []),
+        { url: data.publicUrl, width: dims?.width, height: dims?.height },
+      ]);
     } catch (e) { toast.error((e as Error).message); }
     finally { setUploading(false); }
   };
 
   const ratio = aspectFromDims(form.cover_width, form.cover_height) || "16 / 10";
+  const isCampaign = isCampaignCategory(form.category);
+  const toggleTool = (t: string) => {
+    const cur = form.tools_used ?? [];
+    set("tools_used", cur.includes(t) ? cur.filter((x) => x !== t) : [...cur, t]);
+  };
 
   return (
     <div className="fixed inset-0 z-[90] bg-[#01040A]/85 backdrop-blur grid place-items-center p-4 overflow-auto" onClick={onClose}>
