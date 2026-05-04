@@ -207,66 +207,90 @@ export type Database = {
         Row: {
           category: string
           client_name: string | null
+          collaborators: Json
+          concept: string | null
           cover_height: number | null
           cover_url: string | null
           cover_width: number | null
           created_at: string
+          deliverables: Json
           description: string | null
           featured: boolean
           gallery: Json
+          gallery_meta: Json
           id: string
+          idea: string | null
           image_fit: string
           is_published: boolean
+          notes: string | null
           palette: string | null
+          role: string | null
           sort_order: number
           span: string | null
           subtitle: string | null
           tags: Json
           title: string
+          tools_used: Json
           updated_at: string
           year: string | null
         }
         Insert: {
           category: string
           client_name?: string | null
+          collaborators?: Json
+          concept?: string | null
           cover_height?: number | null
           cover_url?: string | null
           cover_width?: number | null
           created_at?: string
+          deliverables?: Json
           description?: string | null
           featured?: boolean
           gallery?: Json
+          gallery_meta?: Json
           id?: string
+          idea?: string | null
           image_fit?: string
           is_published?: boolean
+          notes?: string | null
           palette?: string | null
+          role?: string | null
           sort_order?: number
           span?: string | null
           subtitle?: string | null
           tags?: Json
           title: string
+          tools_used?: Json
           updated_at?: string
           year?: string | null
         }
         Update: {
           category?: string
           client_name?: string | null
+          collaborators?: Json
+          concept?: string | null
           cover_height?: number | null
           cover_url?: string | null
           cover_width?: number | null
           created_at?: string
+          deliverables?: Json
           description?: string | null
           featured?: boolean
           gallery?: Json
+          gallery_meta?: Json
           id?: string
+          idea?: string | null
           image_fit?: string
           is_published?: boolean
+          notes?: string | null
           palette?: string | null
+          role?: string | null
           sort_order?: number
           span?: string | null
           subtitle?: string | null
           tags?: Json
           title?: string
+          tools_used?: Json
           updated_at?: string
           year?: string | null
         }

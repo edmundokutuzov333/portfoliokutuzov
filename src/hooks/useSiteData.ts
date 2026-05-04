@@ -81,6 +81,10 @@ export function useProjects(includeUnpublished = false) {
         ...p,
         gallery: Array.isArray(p.gallery) ? (p.gallery as string[]) : [],
         tags: Array.isArray(p.tags) ? (p.tags as string[]) : [],
+        collaborators: Array.isArray((p as { collaborators?: unknown }).collaborators) ? ((p as { collaborators: string[] }).collaborators) : [],
+        tools_used: Array.isArray((p as { tools_used?: unknown }).tools_used) ? ((p as { tools_used: string[] }).tools_used) : [],
+        deliverables: Array.isArray((p as { deliverables?: unknown }).deliverables) ? ((p as { deliverables: string[] }).deliverables) : [],
+        gallery_meta: Array.isArray((p as { gallery_meta?: unknown }).gallery_meta) ? ((p as unknown as { gallery_meta: DbProject["gallery_meta"] }).gallery_meta) : [],
       })) as unknown as DbProject[];
     },
   });
