@@ -988,6 +988,73 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
                 <input type="checkbox" checked={!!form.featured} onChange={(e) => set("featured", e.target.checked)} /> Featured
               </label>
             </div>
+
+            {/* CASE STUDY (campaign-aware, but available for all) */}
+            <div className="mt-2 rounded-lg border border-white/[0.08] bg-[#01040A]/40 p-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="mono text-[10px] tracking-[0.22em] text-sky-300/70">CASE STUDY</div>
+                {isCampaign && (
+                  <span className="mono text-[9px] tracking-[0.2em] text-amber-300/80">CAMPAIGN</span>
+                )}
+              </div>
+
+              {isCampaign && (
+                <>
+                  <Field label="Campaign concept" hint="The strategic angle behind the campaign.">
+                    <TextArea rows={3} value={form.concept ?? ""} onChange={(e) => set("concept", e.target.value)} />
+                  </Field>
+                  <Field label="Creative idea" hint="The big creative idea or headline thought.">
+                    <TextArea rows={3} value={form.idea ?? ""} onChange={(e) => set("idea", e.target.value)} />
+                  </Field>
+                </>
+              )}
+
+              <Field label="My role">
+                <TextInput value={form.role ?? ""} onChange={(e) => set("role", e.target.value)} placeholder="e.g. Art Director, lead design" />
+              </Field>
+
+              <Field label="Collaborators (comma separated)">
+                <TextInput
+                  value={(form.collaborators ?? []).join(", ")}
+                  onChange={(e) => set("collaborators", e.target.value.split(",").map((t) => t.trim()).filter(Boolean))}
+                  placeholder="e.g. Agency, Photographer, Copywriter"
+                />
+              </Field>
+
+              <Field label="Tools used" hint="Pick the tools used to produce this work.">
+                <div className="flex flex-wrap gap-2">
+                  {TOOL_OPTIONS.map((t) => {
+                    const active = (form.tools_used ?? []).includes(t);
+                    return (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => toggleTool(t)}
+                        className={`mono text-[10px] tracking-[0.16em] rounded-full px-3 py-1.5 border transition ${
+                          active
+                            ? "bg-sky-300/15 border-sky-300/50 text-sky-100"
+                            : "border-white/10 text-slate-400 hover:text-white"
+                        }`}
+                      >
+                        {t}
+                      </button>
+                    );
+                  })}
+                </div>
+              </Field>
+
+              <Field label="Deliverables (comma separated)">
+                <TextInput
+                  value={(form.deliverables ?? []).join(", ")}
+                  onChange={(e) => set("deliverables", e.target.value.split(",").map((t) => t.trim()).filter(Boolean))}
+                  placeholder="e.g. Key visual, Social cutdowns, OOH"
+                />
+              </Field>
+
+              <Field label="Notes / outcome">
+                <TextArea rows={3} value={form.notes ?? ""} onChange={(e) => set("notes", e.target.value)} />
+              </Field>
+            </div>
           </div>
 
           {/* PREVIEW + UPLOADS */}
@@ -1023,7 +1090,7 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
                 {(form.gallery ?? []).map((url, i) => (
                   <div key={url + i} className="relative bg-[#01040A] border border-white/[0.06] rounded overflow-hidden aspect-square">
                     <img src={url} alt="" className="absolute inset-0 w-full h-full object-cover" />
-                    <button onClick={() => set("gallery", form.gallery.filter((_, j) => j !== i))}
+                    <button onClick={() => { set("gallery", form.gallery.filter((_, j) => j !== i)); set("gallery_meta", (form.gallery_meta ?? []).filter((m) => m.url !== url)); }}
                       className="absolute top-1 right-1 bg-[#01040A]/80 rounded p-1 text-slate-300 hover:text-red-300">
                       <Trash2 size={11} />
                     </button>
