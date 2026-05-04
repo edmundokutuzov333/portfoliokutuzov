@@ -34,7 +34,28 @@ export type DbProject = {
   featured?: boolean;
   client_name?: string | null;
   image_fit?: "contain" | "cover" | string | null;
+  concept?: string | null;
+  idea?: string | null;
+  role?: string | null;
+  notes?: string | null;
+  collaborators?: string[];
+  tools_used?: string[];
+  deliverables?: string[];
+  gallery_meta?: { url: string; width?: number; height?: number; alt?: string }[];
 };
+
+export const TOOL_OPTIONS = [
+  "Adobe Photoshop",
+  "Adobe Illustrator",
+  "Adobe Premiere",
+  "Adobe After Effects",
+  "Artificial Intelligence",
+] as const;
+
+export const CAMPAIGN_CATEGORIES = ["Ad Campaigns", "Videos", "Image Manipulation"] as const;
+export function isCampaignCategory(c: string) {
+  return (CAMPAIGN_CATEGORIES as readonly string[]).includes(c);
+}
 
 export type DbService = {
   id: string;
