@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminAuth } from "@/hooks/useAdmin";
 import { useClients, useProjects, useSiteSettings } from "@/hooks/useSiteData";
-import { FALLBACK_SETTINGS, type DbClient, type DbProject } from "@/lib/cms";
+import { FALLBACK_SETTINGS, TOOL_OPTIONS, isCampaignCategory, type DbClient, type DbProject } from "@/lib/cms";
 import { readImageDimensions, aspectFromDims } from "@/lib/image-utils";
 import { snapshotBefore } from "@/lib/history";
 import { RequestsInbox } from "@/components/admin/RequestsInbox";
