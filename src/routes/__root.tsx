@@ -101,6 +101,7 @@ function RootComponent() {
         </main>
         {!isAdmin && <Footer />}
       </div>
+      {!isAdmin && <ScrollToTop />}
       <Toaster
         theme="dark"
         position="bottom-right"
