@@ -704,16 +704,7 @@ function ClientsManager() {
 // ============================================================================
 // PORTFOLIO
 // ============================================================================
-const PROJECT_CATEGORIES = [
-  "Brand Identity",
-  "Campaign Design",
-  "Art Direction",
-  "Visual Systems",
-  "Social Media Assets",
-  "Digital Design",
-  "Motion / Content Direction",
-  "Editorial Systems",
-];
+// Categories come from src/lib/cms.ts (PROJECT_CATEGORIES).
 
 function PortfolioManager() {
   const { data: projects = [] } = useProjects(true);
