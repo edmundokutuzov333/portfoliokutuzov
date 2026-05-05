@@ -1,13 +1,14 @@
 import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import type {
-  DbClient,
-  DbMethod,
-  DbProject,
-  DbService,
-  DbStat,
-  SiteSettings,
+import {
+  normalizeCategory,
+  type DbClient,
+  type DbMethod,
+  type DbProject,
+  type DbService,
+  type DbStat,
+  type SiteSettings,
 } from "@/lib/cms";
 
 // Unique channel name per subscriber to avoid Supabase singleton-channel
@@ -79,6 +80,7 @@ export function useProjects(includeUnpublished = false) {
       if (error) throw error;
       return (data ?? []).map((p) => ({
         ...p,
+        category: normalizeCategory(p.category),
         gallery: Array.isArray(p.gallery) ? (p.gallery as string[]) : [],
         tags: Array.isArray(p.tags) ? (p.tags as string[]) : [],
         collaborators: Array.isArray((p as { collaborators?: unknown }).collaborators) ? ((p as { collaborators: string[] }).collaborators) : [],

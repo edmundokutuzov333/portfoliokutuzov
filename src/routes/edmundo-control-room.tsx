@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminAuth } from "@/hooks/useAdmin";
 import { useClients, useProjects, useSiteSettings } from "@/hooks/useSiteData";
-import { FALLBACK_SETTINGS, TOOL_OPTIONS, isCampaignCategory, type DbClient, type DbProject } from "@/lib/cms";
+import { FALLBACK_SETTINGS, PROJECT_CATEGORIES, TOOL_OPTIONS, isCampaignCategory, normalizeCategory, type DbClient, type DbProject } from "@/lib/cms";
 import { readImageDimensions, aspectFromDims } from "@/lib/image-utils";
 import { snapshotBefore } from "@/lib/history";
 import { RequestsInbox } from "@/components/admin/RequestsInbox";
@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import {
   LogOut, Save, Trash2, Plus, Upload, Loader2, Image as ImageIcon,
   Briefcase, Users, FileText, Eye, EyeOff, Copy, Star, ChevronDown, ChevronRight,
-  Home, User as UserIcon, Mail, Code2, Inbox, History,
+  Home, User as UserIcon, Mail, Code2, Inbox, History, ArrowUp, ArrowDown,
 } from "lucide-react";
 
 export const Route = createFileRoute("/edmundo-control-room")({
@@ -704,16 +704,7 @@ function ClientsManager() {
 // ============================================================================
 // PORTFOLIO
 // ============================================================================
-const PROJECT_CATEGORIES = [
-  "Brand Identity",
-  "Campaign Design",
-  "Art Direction",
-  "Visual Systems",
-  "Social Media Assets",
-  "Digital Design",
-  "Motion / Content Direction",
-  "Editorial Systems",
-];
+// Categories come from src/lib/cms.ts (PROJECT_CATEGORIES).
 
 function PortfolioManager() {
   const { data: projects = [] } = useProjects(true);
@@ -722,18 +713,38 @@ function PortfolioManager() {
   const [statusFilter, setStatusFilter] = useState<"all" | "live" | "draft">("all");
   const [batchOpen, setBatchOpen] = useState(false);
 
+  const ordered = useMemo(
+    () => [...projects].sort((a, b) => a.sort_order - b.sort_order || a.id.localeCompare(b.id)),
+    [projects],
+  );
+
   const filtered = useMemo(() => {
-    return projects
-      .filter((p) => filter === "All" || p.category === filter)
-      .filter((p) => statusFilter === "all" || (statusFilter === "live" ? p.is_published : !p.is_published))
-      .sort((a, b) => a.sort_order - b.sort_order);
-  }, [projects, filter, statusFilter]);
+    return ordered
+      .filter((p) => filter === "All" || normalizeCategory(p.category) === filter)
+      .filter((p) => statusFilter === "all" || (statusFilter === "live" ? p.is_published : !p.is_published));
+  }, [ordered, filter, statusFilter]);
+
+  // Move a project up or down in the global order. Swaps sort_order with the
+  // adjacent project so the persisted order matches what the public site renders.
+  const move = async (p: DbProject, dir: -1 | 1) => {
+    const idx = ordered.findIndex((x) => x.id === p.id);
+    const swapIdx = idx + dir;
+    if (idx < 0 || swapIdx < 0 || swapIdx >= ordered.length) return;
+    const other = ordered[swapIdx];
+    const a = p.sort_order;
+    const b = other.sort_order === a ? a + dir : other.sort_order;
+    const [{ error: e1 }, { error: e2 }] = await Promise.all([
+      supabase.from("projects").update({ sort_order: b, updated_at: new Date().toISOString() }).eq("id", p.id),
+      supabase.from("projects").update({ sort_order: a, updated_at: new Date().toISOString() }).eq("id", other.id),
+    ]);
+    if (e1 || e2) toast.error((e1 || e2)!.message);
+  };
 
   const create = async () => {
     const max = projects.reduce((m, p) => Math.max(m, p.sort_order), 0);
     const { data, error } = await supabase
       .from("projects")
-      .insert({ title: "New project", category: "Brand Identity", sort_order: max + 1, is_published: false })
+      .insert({ title: "New project", category: "Digital Design", sort_order: max + 1, is_published: false })
       .select()
       .single();
     if (error) toast.error(error.message);
@@ -808,31 +819,47 @@ function PortfolioManager() {
       <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
         {filtered.map((p) => {
           const ratio = aspectFromDims(p.cover_width, p.cover_height) || "16 / 10";
+          const orderIdx = ordered.findIndex((x) => x.id === p.id);
+          const isFirst = orderIdx <= 0;
+          const isLast = orderIdx === ordered.length - 1;
+          const cat = normalizeCategory(p.category);
           return (
             <div key={p.id} className="bg-[#030814] border border-white/[0.08] rounded-lg overflow-hidden flex flex-col">
-              <div className="bg-[#01040A] border-b border-white/[0.06] grid place-items-center" style={{ aspectRatio: ratio }}>
+              <div className="relative bg-[#01040A] border-b border-white/[0.06] grid place-items-center" style={{ aspectRatio: ratio }}>
                 {p.cover_url ? (
                   <img src={p.cover_url} alt={p.title}
                     className={`w-full h-full ${p.image_fit === "cover" ? "object-cover" : "object-contain"}`} />
                 ) : (
                   <div className="text-slate-600 text-xs">No cover</div>
                 )}
+                <div className="absolute top-2 left-2 mono text-[10px] tracking-[0.18em] rounded bg-[#01040A]/80 border border-white/10 text-slate-300 px-2 py-0.5">
+                  #{orderIdx + 1}
+                </div>
               </div>
               <div className="p-4 flex-1 flex flex-col">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <div className="text-sm font-medium text-slate-100">{p.title}</div>
-                    {p.client_name && <div className="text-[11px] text-slate-500 mt-0.5">{p.client_name}</div>}
+                    {p.client_name && <div className="text-[12px] text-slate-200">{p.client_name}</div>}
+                    <div className="mono text-[10px] tracking-[0.16em] text-slate-500 mt-0.5">{p.year ?? "-"} · {cat}</div>
+                    <div className="text-sm font-medium text-slate-100 mt-1">{p.title}</div>
                   </div>
                   <span className={`mono text-[9px] px-2 py-0.5 rounded ${p.is_published ? "bg-sky-300/10 text-sky-200" : "bg-amber-300/10 text-amber-200"}`}>
                     {p.is_published ? "LIVE" : "DRAFT"}
                   </span>
                 </div>
-                <div className="text-[11px] text-slate-500 mt-1">{p.category} · {p.year ?? "-"}</div>
                 {p.featured && (
                   <div className="mt-2 inline-flex items-center gap-1 text-[10px] text-amber-300"><Star size={10} /> Featured</div>
                 )}
                 <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center gap-2 text-xs">
+                  <button onClick={() => move(p, -1)} disabled={isFirst} title="Move up"
+                    className="inline-flex items-center text-slate-400 hover:text-white disabled:opacity-30 disabled:hover:text-slate-400">
+                    <ArrowUp size={12} />
+                  </button>
+                  <button onClick={() => move(p, 1)} disabled={isLast} title="Move down"
+                    className="inline-flex items-center text-slate-400 hover:text-white disabled:opacity-30 disabled:hover:text-slate-400">
+                    <ArrowDown size={12} />
+                  </button>
+                  <span className="w-px h-4 bg-white/10 mx-1" />
                   <button onClick={() => setEditing(p)} className="text-sky-300 hover:text-sky-200">Edit</button>
                   <button onClick={() => duplicate(p)} className="text-slate-400 hover:text-white inline-flex items-center gap-1"><Copy size={11} /> Duplicate</button>
                   <button onClick={() => togglePublish(p)} className="text-slate-400 hover:text-white">{p.is_published ? "Unpublish" : "Publish"}</button>
@@ -864,7 +891,7 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
     const { error } = await supabase.from("projects").update({
       title: form.title,
       subtitle: form.subtitle,
-      category: form.category,
+      category: normalizeCategory(form.category),
       year: form.year,
       description: form.description,
       cover_url: form.cover_url,
@@ -947,7 +974,7 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
               <Field label="Project title"><TextInput value={form.title} onChange={(e) => set("title", e.target.value)} /></Field>
               <Field label="Client"><TextInput value={form.client_name ?? ""} onChange={(e) => set("client_name", e.target.value)} /></Field>
               <Field label="Category">
-                <select className="adm-input" value={form.category} onChange={(e) => set("category", e.target.value)}>
+                <select className="adm-input" value={normalizeCategory(form.category)} onChange={(e) => set("category", e.target.value)}>
                   {PROJECT_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
               </Field>
@@ -1119,7 +1146,7 @@ type BatchRow = { title: string; client_name: string; category: string; year: st
 
 function BatchAddProjects({ onClose, startSort }: { onClose: () => void; startSort: number }) {
   const [rows, setRows] = useState<BatchRow[]>(
-    Array.from({ length: 10 }).map(() => ({ title: "", client_name: "", category: "Brand Identity", year: String(new Date().getFullYear()) }))
+    Array.from({ length: 10 }).map(() => ({ title: "", client_name: "", category: "Digital Design", year: String(new Date().getFullYear()) }))
   );
   const [saving, setSaving] = useState(false);
 

@@ -13,6 +13,7 @@ import { InteractiveBackground } from "@/components/visual/InteractiveBackground
 import { NoiseLayer } from "@/components/visual/NoiseLayer";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { ScrollToTop } from "@/components/ScrollToTop";
 
 interface RouterContext {
   queryClient: QueryClient;
@@ -100,6 +101,7 @@ function RootComponent() {
         </main>
         {!isAdmin && <Footer />}
       </div>
+      {!isAdmin && <ScrollToTop />}
       <Toaster
         theme="dark"
         position="bottom-right"
