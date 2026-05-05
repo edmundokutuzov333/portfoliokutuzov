@@ -713,12 +713,32 @@ function PortfolioManager() {
   const [statusFilter, setStatusFilter] = useState<"all" | "live" | "draft">("all");
   const [batchOpen, setBatchOpen] = useState(false);
 
+  const ordered = useMemo(
+    () => [...projects].sort((a, b) => a.sort_order - b.sort_order || a.id.localeCompare(b.id)),
+    [projects],
+  );
+
   const filtered = useMemo(() => {
-    return projects
-      .filter((p) => filter === "All" || p.category === filter)
-      .filter((p) => statusFilter === "all" || (statusFilter === "live" ? p.is_published : !p.is_published))
-      .sort((a, b) => a.sort_order - b.sort_order);
-  }, [projects, filter, statusFilter]);
+    return ordered
+      .filter((p) => filter === "All" || normalizeCategory(p.category) === filter)
+      .filter((p) => statusFilter === "all" || (statusFilter === "live" ? p.is_published : !p.is_published));
+  }, [ordered, filter, statusFilter]);
+
+  // Move a project up or down in the global order. Swaps sort_order with the
+  // adjacent project so the persisted order matches what the public site renders.
+  const move = async (p: DbProject, dir: -1 | 1) => {
+    const idx = ordered.findIndex((x) => x.id === p.id);
+    const swapIdx = idx + dir;
+    if (idx < 0 || swapIdx < 0 || swapIdx >= ordered.length) return;
+    const other = ordered[swapIdx];
+    const a = p.sort_order;
+    const b = other.sort_order === a ? a + dir : other.sort_order;
+    const [{ error: e1 }, { error: e2 }] = await Promise.all([
+      supabase.from("projects").update({ sort_order: b, updated_at: new Date().toISOString() }).eq("id", p.id),
+      supabase.from("projects").update({ sort_order: a, updated_at: new Date().toISOString() }).eq("id", other.id),
+    ]);
+    if (e1 || e2) toast.error((e1 || e2)!.message);
+  };
 
   const create = async () => {
     const max = projects.reduce((m, p) => Math.max(m, p.sort_order), 0);
