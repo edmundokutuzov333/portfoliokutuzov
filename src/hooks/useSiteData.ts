@@ -80,6 +80,7 @@ export function useProjects(includeUnpublished = false) {
       if (error) throw error;
       return (data ?? []).map((p) => ({
         ...p,
+        category: normalizeCategory(p.category),
         gallery: Array.isArray(p.gallery) ? (p.gallery as string[]) : [],
         tags: Array.isArray(p.tags) ? (p.tags as string[]) : [],
         collaborators: Array.isArray((p as { collaborators?: unknown }).collaborators) ? ((p as { collaborators: string[] }).collaborators) : [],
