@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminAuth } from "@/hooks/useAdmin";
 import { useClients, useProjects, useSiteSettings } from "@/hooks/useSiteData";
-import { FALLBACK_SETTINGS, TOOL_OPTIONS, isCampaignCategory, type DbClient, type DbProject } from "@/lib/cms";
+import { FALLBACK_SETTINGS, PROJECT_CATEGORIES, TOOL_OPTIONS, isCampaignCategory, normalizeCategory, type DbClient, type DbProject } from "@/lib/cms";
 import { readImageDimensions, aspectFromDims } from "@/lib/image-utils";
 import { snapshotBefore } from "@/lib/history";
 import { RequestsInbox } from "@/components/admin/RequestsInbox";
@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import {
   LogOut, Save, Trash2, Plus, Upload, Loader2, Image as ImageIcon,
   Briefcase, Users, FileText, Eye, EyeOff, Copy, Star, ChevronDown, ChevronRight,
-  Home, User as UserIcon, Mail, Code2, Inbox, History,
+  Home, User as UserIcon, Mail, Code2, Inbox, History, ArrowUp, ArrowDown,
 } from "lucide-react";
 
 export const Route = createFileRoute("/edmundo-control-room")({
