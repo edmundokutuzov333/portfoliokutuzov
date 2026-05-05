@@ -744,7 +744,7 @@ function PortfolioManager() {
     const max = projects.reduce((m, p) => Math.max(m, p.sort_order), 0);
     const { data, error } = await supabase
       .from("projects")
-      .insert({ title: "New project", category: "Brand Identity", sort_order: max + 1, is_published: false })
+      .insert({ title: "New project", category: "Digital Design", sort_order: max + 1, is_published: false })
       .select()
       .single();
     if (error) toast.error(error.message);
