@@ -52,9 +52,43 @@ export const TOOL_OPTIONS = [
   "Artificial Intelligence",
 ] as const;
 
-export const CAMPAIGN_CATEGORIES = ["Ad Campaigns", "Videos", "Image Manipulation"] as const;
+// Final category set used by the public site and admin.
+export const PROJECT_CATEGORIES = [
+  "Social Media",
+  "Ad Campaigns",
+  "Videos",
+  "Digital Design",
+  "Web Design",
+] as const;
+
+export type ProjectCategory = (typeof PROJECT_CATEGORIES)[number];
+
+// Maps any legacy category label to the new canonical label.
+// We keep canonical labels in their human-readable form (matching what the
+// admin select stores) so the database, admin and public site all agree.
+export function normalizeCategory(input: string | null | undefined): ProjectCategory {
+  const v = (input ?? "").trim().toLowerCase();
+  if (!v) return "Digital Design";
+  if (v === "social media" || v === "social media assets" || v === "social-media") return "Social Media";
+  if (v === "ad campaigns" || v === "campaign design" || v === "ad-campaigns") return "Ad Campaigns";
+  if (v === "videos" || v === "motion / content direction" || v === "motion") return "Videos";
+  if (v === "web design" || v === "web-design") return "Web Design";
+  if (
+    v === "digital design" ||
+    v === "image manipulation" ||
+    v === "brand identity" ||
+    v === "visual systems" ||
+    v === "art direction" ||
+    v === "editorial systems" ||
+    v === "digital-design"
+  )
+    return "Digital Design";
+  return "Digital Design";
+}
+
+export const CAMPAIGN_CATEGORIES = ["Ad Campaigns", "Videos"] as const;
 export function isCampaignCategory(c: string) {
-  return (CAMPAIGN_CATEGORIES as readonly string[]).includes(c);
+  return (CAMPAIGN_CATEGORIES as readonly string[]).includes(normalizeCategory(c));
 }
 
 export type DbService = {
