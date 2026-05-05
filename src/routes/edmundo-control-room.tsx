@@ -891,7 +891,7 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
     const { error } = await supabase.from("projects").update({
       title: form.title,
       subtitle: form.subtitle,
-      category: form.category,
+      category: normalizeCategory(form.category),
       year: form.year,
       description: form.description,
       cover_url: form.cover_url,
