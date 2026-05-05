@@ -1146,7 +1146,7 @@ type BatchRow = { title: string; client_name: string; category: string; year: st
 
 function BatchAddProjects({ onClose, startSort }: { onClose: () => void; startSort: number }) {
   const [rows, setRows] = useState<BatchRow[]>(
-    Array.from({ length: 10 }).map(() => ({ title: "", client_name: "", category: "Brand Identity", year: String(new Date().getFullYear()) }))
+    Array.from({ length: 10 }).map(() => ({ title: "", client_name: "", category: "Digital Design", year: String(new Date().getFullYear()) }))
   );
   const [saving, setSaving] = useState(false);
 
