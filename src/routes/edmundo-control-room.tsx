@@ -974,7 +974,7 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
               <Field label="Project title"><TextInput value={form.title} onChange={(e) => set("title", e.target.value)} /></Field>
               <Field label="Client"><TextInput value={form.client_name ?? ""} onChange={(e) => set("client_name", e.target.value)} /></Field>
               <Field label="Category">
-                <select className="adm-input" value={form.category} onChange={(e) => set("category", e.target.value)}>
+                <select className="adm-input" value={normalizeCategory(form.category)} onChange={(e) => set("category", e.target.value)}>
                   {PROJECT_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
               </Field>
