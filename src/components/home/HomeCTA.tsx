@@ -2,12 +2,12 @@ import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useSiteData";
-import { readSetting } from "@/lib/cms";
+import { readSetting, SITE_EMAIL } from "@/lib/cms";
 
 export function HomeCTA() {
   const { data: settings } = useSiteSettings();
   const r = <T,>(f: string, fb: T) => readSetting<T>(settings, "cta_home", f, fb);
-  const email = r("email", "edmundokutuzov.mz@gmail.com");
+  const email = r("email", SITE_EMAIL);
 
   return (
     <section className="relative px-5 md:px-8 py-28">
