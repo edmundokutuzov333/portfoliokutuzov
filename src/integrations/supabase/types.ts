@@ -68,6 +68,177 @@ export type Database = {
         }
         Relationships: []
       }
+      analytics_events: {
+        Row: {
+          action: string
+          created_at: string
+          device: string | null
+          element: string | null
+          id: string
+          meta: Json
+          page: string
+          session_id: string | null
+          viewport_height: number | null
+          viewport_width: number | null
+          x: number | null
+          y: number | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          device?: string | null
+          element?: string | null
+          id?: string
+          meta?: Json
+          page: string
+          session_id?: string | null
+          viewport_height?: number | null
+          viewport_width?: number | null
+          x?: number | null
+          y?: number | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          device?: string | null
+          element?: string | null
+          id?: string
+          meta?: Json
+          page?: string
+          session_id?: string | null
+          viewport_height?: number | null
+          viewport_width?: number | null
+          x?: number | null
+          y?: number | null
+        }
+        Relationships: []
+      }
+      booking_requests: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          email: string
+          id: string
+          name: string
+          note: string | null
+          preferred_date: string | null
+          preferred_time: string | null
+          status: string
+          timezone: string | null
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          note?: string | null
+          preferred_date?: string | null
+          preferred_time?: string | null
+          status?: string
+          timezone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          note?: string | null
+          preferred_date?: string | null
+          preferred_time?: string | null
+          status?: string
+          timezone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      briefing_submissions: {
+        Row: {
+          admin_notes: string | null
+          attachments: Json
+          budget_range: string | null
+          company_name: string | null
+          country: string | null
+          created_at: string
+          currency: string
+          deadline: string | null
+          email: string
+          exact_amount: number | null
+          full_name: string
+          id: string
+          is_starred: boolean
+          message: string
+          negotiable: boolean
+          phone: string | null
+          position: string | null
+          preferred_contact_method: string | null
+          project_type: string
+          reference_project_id: string | null
+          source: string | null
+          status: string
+          updated_at: string
+          urgency: string
+          user_agent: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          attachments?: Json
+          budget_range?: string | null
+          company_name?: string | null
+          country?: string | null
+          created_at?: string
+          currency?: string
+          deadline?: string | null
+          email: string
+          exact_amount?: number | null
+          full_name: string
+          id?: string
+          is_starred?: boolean
+          message: string
+          negotiable?: boolean
+          phone?: string | null
+          position?: string | null
+          preferred_contact_method?: string | null
+          project_type: string
+          reference_project_id?: string | null
+          source?: string | null
+          status?: string
+          updated_at?: string
+          urgency?: string
+          user_agent?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          attachments?: Json
+          budget_range?: string | null
+          company_name?: string | null
+          country?: string | null
+          created_at?: string
+          currency?: string
+          deadline?: string | null
+          email?: string
+          exact_amount?: number | null
+          full_name?: string
+          id?: string
+          is_starred?: boolean
+          message?: string
+          negotiable?: boolean
+          phone?: string | null
+          position?: string | null
+          preferred_contact_method?: string | null
+          project_type?: string
+          reference_project_id?: string | null
+          source?: string | null
+          status?: string
+          updated_at?: string
+          urgency?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       clients: {
         Row: {
           created_at: string
@@ -203,6 +374,42 @@ export type Database = {
         }
         Relationships: []
       }
+      newsletter_subscribers: {
+        Row: {
+          consent: boolean
+          created_at: string
+          email: string
+          id: string
+          is_active: boolean
+          name: string | null
+          resend_contact_id: string | null
+          source: string | null
+          updated_at: string
+        }
+        Insert: {
+          consent?: boolean
+          created_at?: string
+          email: string
+          id?: string
+          is_active?: boolean
+          name?: string | null
+          resend_contact_id?: string | null
+          source?: string | null
+          updated_at?: string
+        }
+        Update: {
+          consent?: boolean
+          created_at?: string
+          email?: string
+          id?: string
+          is_active?: boolean
+          name?: string | null
+          resend_contact_id?: string | null
+          source?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       projects: {
         Row: {
           category: string
@@ -216,6 +423,7 @@ export type Database = {
           deliverables: Json
           description: string | null
           featured: boolean
+          featured_priority: number
           gallery: Json
           gallery_meta: Json
           id: string
@@ -246,6 +454,7 @@ export type Database = {
           deliverables?: Json
           description?: string | null
           featured?: boolean
+          featured_priority?: number
           gallery?: Json
           gallery_meta?: Json
           id?: string
@@ -276,6 +485,7 @@ export type Database = {
           deliverables?: Json
           description?: string | null
           featured?: boolean
+          featured_priority?: number
           gallery?: Json
           gallery_meta?: Json
           id?: string

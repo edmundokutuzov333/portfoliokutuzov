@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowUpRight, Mail } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useSiteData";
-import { readSetting } from "@/lib/cms";
+import { readSetting, SITE_EMAIL } from "@/lib/cms";
+import { NewsletterForm } from "@/components/contact/NewsletterForm";
 
 const navLinks = [
   { label: "Home", to: "/" as const },
@@ -14,7 +15,7 @@ export function Footer() {
   const { data: settings } = useSiteSettings();
   const r = <T,>(f: string, fb: T) => readSetting<T>(settings, "footer", f, fb);
   const s = <T,>(f: string, fb: T) => readSetting<T>(settings, "social", f, fb);
-  const email = r("email", "edmundokutuzov.mz@gmail.com");
+  const email = r("email", SITE_EMAIL);
 
   const socialLinks = [
     { label: "Instagram", href: s("instagram", "#") },
@@ -59,7 +60,11 @@ export function Footer() {
           </ul>
         </nav>
 
-        <div className="md:col-span-3">
+        <div className="md:col-span-3 space-y-6">
+          <div>
+            <p className="mono text-[10px] font-medium tracking-[0.28em] text-slate-500">Mailing list</p>
+            <div className="mt-3"><NewsletterForm source="footer" compact /></div>
+          </div>
           <p className="mono text-[10px] font-medium tracking-[0.28em] text-slate-500">Social</p>
           <ul className="mt-5 space-y-3 text-sm text-slate-400">
             {socialLinks.map((link) => (
