@@ -4,6 +4,11 @@
 
 export type SiteSettings = Record<string, Record<string, unknown>>;
 
+export const SITE_EMAIL = "contact@edmundokutuzov.art";
+export const SITE_PHONE = "+258 87 601 312 1";
+export const SITE_PHONE_DIGITS = "258876013121";
+export const LINKEDIN_URL = "https://www.linkedin.com/in/edmundo-kutuzov-3457351b4";
+
 export type DbClient = {
   id: string;
   name: string;
@@ -32,6 +37,7 @@ export type DbProject = {
   sort_order: number;
   is_published: boolean;
   featured?: boolean;
+  featured_priority?: number;
   client_name?: string | null;
   image_fit?: "contain" | "cover" | string | null;
   concept?: string | null;
@@ -53,25 +59,26 @@ export const TOOL_OPTIONS = [
 ] as const;
 
 // Final category set used by the public site and admin.
+// Order: Social Media, Ad Campaigns, Digital Design, Videos (new), Web Design, Offline Actions.
 export const PROJECT_CATEGORIES = [
   "Social Media",
   "Ad Campaigns",
-  "Videos",
   "Digital Design",
+  "Videos",
   "Web Design",
+  "Offline Actions",
 ] as const;
 
 export type ProjectCategory = (typeof PROJECT_CATEGORIES)[number];
 
 // Maps any legacy category label to the new canonical label.
-// We keep canonical labels in their human-readable form (matching what the
-// admin select stores) so the database, admin and public site all agree.
 export function normalizeCategory(input: string | null | undefined): ProjectCategory {
   const v = (input ?? "").trim().toLowerCase();
   if (!v) return "Digital Design";
   if (v === "social media" || v === "social media assets" || v === "social-media") return "Social Media";
   if (v === "ad campaigns" || v === "campaign design" || v === "ad-campaigns") return "Ad Campaigns";
-  if (v === "videos" || v === "motion / content direction" || v === "motion") return "Videos";
+  if (v === "videos" || v === "video") return "Videos";
+  if (v === "offline actions" || v === "motion / content direction" || v === "motion") return "Offline Actions";
   if (v === "web design" || v === "web-design") return "Web Design";
   if (
     v === "digital design" ||
@@ -86,7 +93,7 @@ export function normalizeCategory(input: string | null | undefined): ProjectCate
   return "Digital Design";
 }
 
-export const CAMPAIGN_CATEGORIES = ["Ad Campaigns", "Videos"] as const;
+export const CAMPAIGN_CATEGORIES = ["Ad Campaigns", "Videos", "Offline Actions"] as const;
 export function isCampaignCategory(c: string) {
   return (CAMPAIGN_CATEGORIES as readonly string[]).includes(normalizeCategory(c));
 }
@@ -158,6 +165,11 @@ export const FALLBACK_SETTINGS: SiteSettings = {
     subtitle:
       "A selection of local and international brands I have collaborated with as art director, graphic designer and creative lead.",
   },
+  featured_section: {
+    eyebrow: "Featured work",
+    title: "Selected projects.",
+    subtitle: "A handful of recent pieces hand-picked from the studio.",
+  },
   credentials: {
     experience: [
       { period: "2020 - 2023", role: "Graphic Designer", company: "Agência Creer" },
@@ -194,17 +206,17 @@ export const FALLBACK_SETTINGS: SiteSettings = {
     title_1: "Let's build a visual presence",
     title_accent: "impossible to ignore.",
     cta_primary: "Start a project",
-    email: "edmundokutuzov.mz@gmail.com",
+    email: SITE_EMAIL,
   },
   footer: {
     eyebrow: "Edmundo Kutuzov - Art Director",
     title_1: "Available for",
     title_2: "projects in 2026.",
     cta: "Start a conversation",
-    email: "edmundokutuzov.mz@gmail.com",
+    email: SITE_EMAIL,
     copyright: "Edmundo Kutuzov. All rights reserved. The only one. Less talk, more design.",
     location: 'Magoanine "C", Maputo · Mozambique',
-    phone: "+258 87 601 312 1",
+    phone: SITE_PHONE,
   },
   navbar: { brand: "Edmundo Kutuzov", cta: "Start a project" },
   contact: {
@@ -214,23 +226,24 @@ export const FALLBACK_SETTINGS: SiteSettings = {
     title_accent: "talk.",
     subtitle:
       "Tell me about your project. I respond to every message within 48 hours with an initial process proposal.",
-    email: "edmundokutuzov.mz@gmail.com",
-    phone: "+258 87 601 312 1",
+    email: SITE_EMAIL,
+    phone: SITE_PHONE,
     location: 'Magoanine "C", Maputo, Mozambique',
     project_types: [
       "Brand Identity",
       "Art Direction",
       "Campaign Design",
       "Social Media",
-      "Ad Campaign",
-      "Video / Music Video",
-      "Image Manipulation",
+      "Motion Content",
       "Web Design",
-      "UI / UX",
-      "Motion Graphics",
-      "Other",
+      "Image Manipulation",
+      "Video Direction",
+      "Creative Strategy",
+      "Content Creation",
+      "Product Launch Design",
+      "Visual Systems",
     ],
-    budgets: ["< 5K€", "5K - 15K€", "15K - 40K€", "40K€ +"],
+    booking_url: "",
   },
   about: {
     eyebrow: "The Credentials",
@@ -243,8 +256,8 @@ export const FALLBACK_SETTINGS: SiteSettings = {
       "I'm Edmundo Kutuzov, an art director deeply rooted in Mozambique's creative ecosystem. I lead projects ranging from ad campaigns and music videos to clothing collections and brand development.",
     bio_p3:
       "My focus is always on experiences that generate recognition and measurable results - every choice I make is designed to maximise impact and perception.",
-    email: "edmundokutuzov.mz@gmail.com",
-    phone: "+258 87 601 312 1",
+    email: SITE_EMAIL,
+    phone: SITE_PHONE,
     location: 'Magoanine "C", Maputo, Mozambique',
     experience: [
       { role: "Art Director & Content Creator", company: "WEBMASTERS Limitada", period: "2024 - Present" },
@@ -271,7 +284,7 @@ export const FALLBACK_SETTINGS: SiteSettings = {
   },
   social: {
     instagram: "https://www.instagram.com/edmundo.kutuzov/",
-    linkedin: "https://www.linkedin.com/in/edmundo-kutuzov-3457351b4",
+    linkedin: LINKEDIN_URL,
     facebook: "https://www.facebook.com/edmundoku/",
   },
 };
