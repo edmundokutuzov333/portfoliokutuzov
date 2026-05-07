@@ -451,6 +451,32 @@ function ContactPage() {
                             </label>
                           )}
                         </Field>
+                        <Field label="Reference links" hint="Optional · Behance, Instagram, Drive, Pinterest...">
+                          {refLinks.length > 0 && (
+                            <ul className="mb-3 space-y-1.5">
+                              {refLinks.map((l, i) => (
+                                <li key={l.url} className="flex items-center gap-2 rounded-lg border border-white/10 bg-[#01040A] px-3 py-2 text-[12px]">
+                                  <span className="mono text-[10px] tracking-[0.18em] text-sky-300/70 shrink-0">URL</span>
+                                  <a href={l.url} target="_blank" rel="noopener noreferrer" className="truncate text-slate-200 hover:text-sky-200">{l.url}</a>
+                                  <button type="button" onClick={() => removeRefLink(i)} className="ml-auto text-slate-500 hover:text-white"><X size={12} /></button>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                          <div className="flex gap-2">
+                            <input
+                              value={refLinkInput}
+                              onChange={(e) => setRefLinkInput(e.target.value)}
+                              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addRefLink(); } }}
+                              placeholder="https://..."
+                              className="field"
+                            />
+                            <button type="button" onClick={addRefLink}
+                              className="shrink-0 rounded-lg border border-white/10 bg-white/[0.04] px-4 text-[12px] mono text-slate-200 hover:border-sky-300/50 hover:text-sky-200 transition">
+                              Add
+                            </button>
+                          </div>
+                        </Field>
                       </div>
                     )}
                   </motion.div>
