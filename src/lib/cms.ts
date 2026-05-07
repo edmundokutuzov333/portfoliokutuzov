@@ -64,10 +64,13 @@ export const PROJECT_CATEGORIES = [
   "Social Media",
   "Ad Campaigns",
   "Digital Design",
+  "Offline Actions",
+  "Clothes Design",
   "Videos",
   "Web Design",
-  "Offline Actions",
 ] as const;
+
+export const MAX_FEATURED = 3;
 
 export type ProjectCategory = (typeof PROJECT_CATEGORIES)[number];
 
@@ -80,6 +83,7 @@ export function normalizeCategory(input: string | null | undefined): ProjectCate
   if (v === "videos" || v === "video") return "Videos";
   if (v === "offline actions" || v === "motion / content direction" || v === "motion") return "Offline Actions";
   if (v === "web design" || v === "web-design") return "Web Design";
+  if (v === "clothes design" || v === "clothes-design" || v === "clothing" || v === "clothing design" || v === "fashion") return "Clothes Design";
   if (
     v === "digital design" ||
     v === "image manipulation" ||
@@ -129,7 +133,7 @@ export const FALLBACK_SETTINGS: SiteSettings = {
   hero: {
     top_left: "Edmundo Kutuzov - Art Director",
     top_right: "Maputo · Mozambique",
-    eyebrow: "Brand Identity · Art Direction · Campaign Design",
+    eyebrow: "",
     title_1: "I make ideas",
     title_2: "stop, take notice,",
     title_accent: "and act.",
