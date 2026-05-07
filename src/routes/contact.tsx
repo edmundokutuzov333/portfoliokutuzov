@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Send, Check, Mail, Instagram, Linkedin, Facebook, Phone, MapPin,
@@ -14,13 +14,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   CURRENCIES, CURRENCY_META, PROJECT_TYPES, URGENCY, URGENCY_META, CONTACT_METHODS,
-  briefingSchema, type Currency, type BriefingAttachment,
+  briefingSchema, isValidUrl,
+  type Currency, type BriefingAttachment, type BriefReferenceLink,
 } from "@/lib/contact-schema";
 import { WhatsAppButton } from "@/components/contact/WhatsAppButton";
 import { LinkedInCard } from "@/components/contact/LinkedInCard";
 import { NewsletterForm } from "@/components/contact/NewsletterForm";
 import { BookingModal } from "@/components/contact/BookingModal";
 import { trackEvent } from "@/lib/analytics";
+import { LINKEDIN_URL } from "@/lib/cms";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -72,6 +74,8 @@ function ContactPage() {
   const [message, setMessage] = useState("");
   const [preferredContact, setPreferredContact] = useState<typeof CONTACT_METHODS[number] | "">("");
   const [files, setFiles] = useState<BriefingAttachment[]>([]);
+  const [refLinks, setRefLinks] = useState<BriefReferenceLink[]>([]);
+  const [refLinkInput, setRefLinkInput] = useState("");
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
@@ -135,18 +139,28 @@ function ContactPage() {
   };
   const prev = () => setStep((s) => Math.max(1, s - 1));
 
+  const addRefLink = () => {
+    const v = refLinkInput.trim();
+    if (!v) return;
+    if (!isValidUrl(v)) { toast.error("Enter a valid URL (https://...)"); return; }
+    if (refLinks.some((l) => l.url === v)) { setRefLinkInput(""); return; }
+    setRefLinks((l) => [...l, { url: v }]);
+    setRefLinkInput("");
+  };
+  const removeRefLink = (i: number) => setRefLinks((l) => l.filter((_, j) => j !== i));
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateStep(5)) { toast.error("Please complete the message"); return; }
-    const payload = {
+    const rawPayload = {
       full_name: fullName, company_name: companyName, position, country,
       email: emailVal, phone: phoneVal,
       project_type: projectType, urgency, deadline,
       currency, budget_range: selectedBudget?.label ?? "", exact_amount: exactAmount,
       negotiable, message,
-      preferred_contact_method: preferredContact || undefined,
+      preferred_contact_method: preferredContact || null,
     };
-    const parsed = briefingSchema.safeParse(payload);
+    const parsed = briefingSchema.safeParse(rawPayload);
     if (!parsed.success) {
       const errs: Record<string, string> = {};
       for (const issue of parsed.error.issues) {
@@ -158,12 +172,20 @@ function ContactPage() {
       return;
     }
     setSubmitting(true);
-    const { error } = await supabase.from("briefing_submissions").insert({
-      ...parsed.data,
+    // Drop undefined keys so the database receives proper nulls/values only.
+    const clean = Object.fromEntries(
+      Object.entries(parsed.data).filter(([, v]) => v !== undefined),
+    ) as typeof parsed.data;
+    const insertRow = {
+      ...clean,
       attachments: files,
+      reference_links: refLinks,
       source: "website",
       user_agent: typeof navigator !== "undefined" ? navigator.userAgent.slice(0, 240) : null,
-    });
+    };
+    const { error } = await supabase
+      .from("briefing_submissions")
+      .insert(insertRow as never);
     setSubmitting(false);
     if (error) return toast.error(error.message);
     trackEvent({ action: "submit", element: "briefing" });
@@ -229,7 +251,7 @@ function ContactPage() {
             <div className="flex items-center gap-2">
               {[
                 { icon: Instagram, label: "Instagram", href: s("instagram", "#") },
-                { icon: Linkedin, label: "LinkedIn", href: s("linkedin", "#") },
+                { icon: Linkedin, label: "LinkedIn", href: LINKEDIN_URL },
                 { icon: Facebook, label: "Facebook", href: s("facebook", "#") },
               ].map(({ icon: Icon, label, href }) => (
                 <a key={label} href={href} target="_blank" rel="noreferrer" aria-label={label}
@@ -428,6 +450,32 @@ function ContactPage() {
                               <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => { onFiles(e.target.files); e.target.value = ""; }} />
                             </label>
                           )}
+                        </Field>
+                        <Field label="Reference links" hint="Optional · Behance, Instagram, Drive, Pinterest...">
+                          {refLinks.length > 0 && (
+                            <ul className="mb-3 space-y-1.5">
+                              {refLinks.map((l, i) => (
+                                <li key={l.url} className="flex items-center gap-2 rounded-lg border border-white/10 bg-[#01040A] px-3 py-2 text-[12px]">
+                                  <span className="mono text-[10px] tracking-[0.18em] text-sky-300/70 shrink-0">URL</span>
+                                  <a href={l.url} target="_blank" rel="noopener noreferrer" className="truncate text-slate-200 hover:text-sky-200">{l.url}</a>
+                                  <button type="button" onClick={() => removeRefLink(i)} className="ml-auto text-slate-500 hover:text-white"><X size={12} /></button>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                          <div className="flex gap-2">
+                            <input
+                              value={refLinkInput}
+                              onChange={(e) => setRefLinkInput(e.target.value)}
+                              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addRefLink(); } }}
+                              placeholder="https://..."
+                              className="field"
+                            />
+                            <button type="button" onClick={addRefLink}
+                              className="shrink-0 rounded-lg border border-white/10 bg-white/[0.04] px-4 text-[12px] mono text-slate-200 hover:border-sky-300/50 hover:text-sky-200 transition">
+                              Add
+                            </button>
+                          </div>
                         </Field>
                       </div>
                     )}

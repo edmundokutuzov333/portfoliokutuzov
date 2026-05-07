@@ -905,6 +905,7 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
       gallery_meta: (form.gallery_meta ?? []) as unknown as never,
       is_published: form.is_published,
       featured: form.featured ?? false,
+      featured_priority: form.featured_priority ?? 0,
       client_name: form.client_name ?? null,
       image_fit: form.image_fit ?? "contain",
       concept: form.concept ?? null,
@@ -1007,13 +1008,24 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
               </Field>
             </div>
 
-            <div className="flex flex-wrap gap-4 pt-2">
+            <div className="flex flex-wrap items-center gap-4 pt-2">
               <label className="inline-flex items-center gap-2 text-sm text-slate-300">
                 <input type="checkbox" checked={form.is_published} onChange={(e) => set("is_published", e.target.checked)} /> Published (live)
               </label>
               <label className="inline-flex items-center gap-2 text-sm text-slate-300">
-                <input type="checkbox" checked={!!form.featured} onChange={(e) => set("featured", e.target.checked)} /> Featured
+                <input type="checkbox" checked={!!form.featured} onChange={(e) => set("featured", e.target.checked)} /> Featured (max 3 on home)
               </label>
+              {form.featured && (
+                <label className="inline-flex items-center gap-2 text-sm text-slate-300">
+                  Priority
+                  <input
+                    type="number"
+                    className="adm-input w-20"
+                    value={String(form.featured_priority ?? 0)}
+                    onChange={(e) => set("featured_priority", Number(e.target.value) || 0)}
+                  />
+                </label>
+              )}
             </div>
 
             {/* CASE STUDY (campaign-aware, but available for all) */}

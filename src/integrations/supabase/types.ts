@@ -176,6 +176,7 @@ export type Database = {
           position: string | null
           preferred_contact_method: string | null
           project_type: string
+          reference_links: Json
           reference_project_id: string | null
           source: string | null
           status: string
@@ -203,6 +204,7 @@ export type Database = {
           position?: string | null
           preferred_contact_method?: string | null
           project_type: string
+          reference_links?: Json
           reference_project_id?: string | null
           source?: string | null
           status?: string
@@ -230,6 +232,7 @@ export type Database = {
           position?: string | null
           preferred_contact_method?: string | null
           project_type?: string
+          reference_links?: Json
           reference_project_id?: string | null
           source?: string | null
           status?: string

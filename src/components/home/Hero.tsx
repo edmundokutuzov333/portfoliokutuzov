@@ -19,13 +19,8 @@ export function Hero() {
           <div className="text-right">{r("top_right", "Maputo · Mozambique, Africa")}</div>
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1, duration: 0.6 }}
-          className="mt-14 mono text-[11px] tracking-[0.24em] text-sky-300/85"
-        >
-          {r("eyebrow", "Art Direction · Communication Design · Campaign Strategy")}
-        </motion.div>
+        <div className="mt-14" />
+
 
         <div className="mt-8 grid grid-cols-12 gap-6">
           <div className="col-span-12 lg:col-span-9">

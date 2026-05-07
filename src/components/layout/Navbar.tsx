@@ -2,6 +2,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { ArrowUpRight, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import clsx from "clsx";
+import logoUrl from "@/assets/logo.webp";
 
 const links = [
   { to: "/", label: "Home" },
@@ -30,8 +31,8 @@ export function Navbar() {
             className="group flex items-center gap-3 focus:outline-none"
             aria-label="Edmundo Kutuzov - home"
           >
-            <span className="grid h-8 w-8 place-items-center rounded-full border border-white/[0.1] bg-white/[0.035] display text-[13px] font-semibold tracking-[-0.02em] text-slate-100 transition group-hover:border-sky-300/35 group-hover:text-sky-200">
-              EK
+            <span className="grid h-9 w-9 place-items-center rounded-full border border-white/[0.1] bg-white/[0.035] overflow-hidden transition group-hover:border-sky-300/35">
+              <img src={logoUrl} alt="Edmundo Kutuzov logo" width={28} height={28} className="h-7 w-7 object-contain" />
             </span>
 
             <span className="hidden flex-col leading-none sm:flex">
