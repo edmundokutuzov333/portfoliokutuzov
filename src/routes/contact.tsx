@@ -251,7 +251,7 @@ function ContactPage() {
             <div className="flex items-center gap-2">
               {[
                 { icon: Instagram, label: "Instagram", href: s("instagram", "#") },
-                { icon: Linkedin, label: "LinkedIn", href: s("linkedin", "#") },
+                { icon: Linkedin, label: "LinkedIn", href: LINKEDIN_URL },
                 { icon: Facebook, label: "Facebook", href: s("facebook", "#") },
               ].map(({ icon: Icon, label, href }) => (
                 <a key={label} href={href} target="_blank" rel="noreferrer" aria-label={label}
