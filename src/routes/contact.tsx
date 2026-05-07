@@ -14,13 +14,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   CURRENCIES, CURRENCY_META, PROJECT_TYPES, URGENCY, URGENCY_META, CONTACT_METHODS,
-  briefingSchema, type Currency, type BriefingAttachment,
+  briefingSchema, isValidUrl,
+  type Currency, type BriefingAttachment, type BriefReferenceLink,
 } from "@/lib/contact-schema";
 import { WhatsAppButton } from "@/components/contact/WhatsAppButton";
 import { LinkedInCard } from "@/components/contact/LinkedInCard";
 import { NewsletterForm } from "@/components/contact/NewsletterForm";
 import { BookingModal } from "@/components/contact/BookingModal";
 import { trackEvent } from "@/lib/analytics";
+import { LINKEDIN_URL } from "@/lib/cms";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -72,6 +74,8 @@ function ContactPage() {
   const [message, setMessage] = useState("");
   const [preferredContact, setPreferredContact] = useState<typeof CONTACT_METHODS[number] | "">("");
   const [files, setFiles] = useState<BriefingAttachment[]>([]);
+  const [refLinks, setRefLinks] = useState<BriefReferenceLink[]>([]);
+  const [refLinkInput, setRefLinkInput] = useState("");
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
@@ -135,18 +139,28 @@ function ContactPage() {
   };
   const prev = () => setStep((s) => Math.max(1, s - 1));
 
+  const addRefLink = () => {
+    const v = refLinkInput.trim();
+    if (!v) return;
+    if (!isValidUrl(v)) { toast.error("Enter a valid URL (https://...)"); return; }
+    if (refLinks.some((l) => l.url === v)) { setRefLinkInput(""); return; }
+    setRefLinks((l) => [...l, { url: v }]);
+    setRefLinkInput("");
+  };
+  const removeRefLink = (i: number) => setRefLinks((l) => l.filter((_, j) => j !== i));
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateStep(5)) { toast.error("Please complete the message"); return; }
-    const payload = {
+    const rawPayload = {
       full_name: fullName, company_name: companyName, position, country,
       email: emailVal, phone: phoneVal,
       project_type: projectType, urgency, deadline,
       currency, budget_range: selectedBudget?.label ?? "", exact_amount: exactAmount,
       negotiable, message,
-      preferred_contact_method: preferredContact || undefined,
+      preferred_contact_method: preferredContact || null,
     };
-    const parsed = briefingSchema.safeParse(payload);
+    const parsed = briefingSchema.safeParse(rawPayload);
     if (!parsed.success) {
       const errs: Record<string, string> = {};
       for (const issue of parsed.error.issues) {
@@ -158,12 +172,20 @@ function ContactPage() {
       return;
     }
     setSubmitting(true);
-    const { error } = await supabase.from("briefing_submissions").insert({
-      ...parsed.data,
+    // Drop undefined keys so the database receives proper nulls/values only.
+    const clean = Object.fromEntries(
+      Object.entries(parsed.data).filter(([, v]) => v !== undefined),
+    ) as typeof parsed.data;
+    const insertRow = {
+      ...clean,
       attachments: files,
+      reference_links: refLinks,
       source: "website",
       user_agent: typeof navigator !== "undefined" ? navigator.userAgent.slice(0, 240) : null,
-    });
+    };
+    const { error } = await supabase
+      .from("briefing_submissions")
+      .insert(insertRow as never);
     setSubmitting(false);
     if (error) return toast.error(error.message);
     trackEvent({ action: "submit", element: "briefing" });
