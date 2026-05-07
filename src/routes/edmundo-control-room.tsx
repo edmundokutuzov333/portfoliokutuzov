@@ -905,6 +905,7 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
       gallery_meta: (form.gallery_meta ?? []) as unknown as never,
       is_published: form.is_published,
       featured: form.featured ?? false,
+      featured_priority: form.featured_priority ?? 0,
       client_name: form.client_name ?? null,
       image_fit: form.image_fit ?? "contain",
       concept: form.concept ?? null,
