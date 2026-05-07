@@ -3,6 +3,7 @@ import { Hero } from "@/components/home/Hero";
 import { ClientLogos } from "@/components/home/ClientLogos";
 import { Credentials } from "@/components/home/Credentials";
 import { HomeCTA } from "@/components/home/HomeCTA";
+import { FeaturedWork } from "@/components/home/FeaturedWork";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -28,6 +29,7 @@ function HomePage() {
   return (
     <>
       <Hero />
+      <FeaturedWork />
       <ClientLogos />
       <Credentials />
       <HomeCTA />
