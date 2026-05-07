@@ -64,7 +64,12 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:type", content: "website" },
     ],
-    links: [{ rel: "stylesheet", href: appCss }],
+    links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "icon", type: "image/webp", href: "/favicon.webp" },
+      { rel: "shortcut icon", type: "image/webp", href: "/favicon.webp" },
+      { rel: "apple-touch-icon", href: "/favicon.webp" },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,
