@@ -145,6 +145,17 @@ export type BriefingAttachment = {
   height?: number;
 };
 
+export type BriefReferenceLink = { url: string; label?: string };
+
+export function isValidUrl(value: string): boolean {
+  try {
+    const u = new URL(value.trim());
+    return u.protocol === "http:" || u.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 // ---------- Booking ----------
 export const bookingSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(120),
