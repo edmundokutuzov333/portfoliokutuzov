@@ -85,23 +85,54 @@ export const CONTACT_METHODS = ["email", "phone", "whatsapp", "linkedin"] as con
 export type ContactMethod = (typeof CONTACT_METHODS)[number];
 
 // ---------- Briefing schema (the new smart form) ----------
+// Helpers - keep optional fields safe for the database (numerics + dates).
+const optionalString = z.preprocess(
+  (v) => (typeof v === "string" && v.trim() === "" ? null : v),
+  z.string().trim().max(200).nullable().optional(),
+);
+
+const optionalNumeric = z.preprocess((v) => {
+  if (v === "" || v === null || v === undefined) return null;
+  if (typeof v === "number") return Number.isFinite(v) ? v : null;
+  if (typeof v === "string") {
+    const cleaned = v.replace(/[^0-9.\-]/g, "");
+    if (!cleaned) return null;
+    const n = Number(cleaned);
+    return Number.isFinite(n) ? n : null;
+  }
+  return null;
+}, z.number().nullable().optional());
+
+const optionalDate = z.preprocess(
+  (v) => (typeof v === "string" && v.trim() === "" ? null : v),
+  z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date").nullable().optional(),
+);
+
+const optionalUuid = z.preprocess(
+  (v) => (typeof v === "string" && v.trim() === "" ? null : v),
+  z.string().uuid("Invalid id").nullable().optional(),
+);
+
 export const briefingSchema = z.object({
   full_name: z.string().trim().min(1, "Your name is required").max(120),
-  company_name: z.string().trim().max(160).optional().or(z.literal("")),
-  position: z.string().trim().max(120).optional().or(z.literal("")),
-  country: z.string().trim().max(80).optional().or(z.literal("")),
+  company_name: optionalString,
+  position: optionalString,
+  country: optionalString,
   email: z.string().trim().email("Invalid email").max(200),
-  phone: z.string().trim().max(40).optional().or(z.literal("")),
+  phone: optionalString,
   project_type: z.string().trim().min(1, "Pick a project type").max(80),
   urgency: z.enum(URGENCY),
-  deadline: z.string().trim().max(20).optional().or(z.literal("")),
+  deadline: optionalDate,
   currency: z.enum(CURRENCIES),
-  budget_range: z.string().trim().max(40).optional().or(z.literal("")),
-  exact_amount: z.string().trim().max(40).optional().or(z.literal("")),
-  negotiable: z.boolean().optional(),
+  budget_range: optionalString,
+  exact_amount: optionalNumeric,
+  negotiable: z.boolean().optional().default(false),
   message: z.string().trim().min(10, "Tell me a bit more (10+ chars)").max(4000),
-  preferred_contact_method: z.enum(CONTACT_METHODS).optional().or(z.literal("")),
-  reference_project_id: z.string().uuid().optional().or(z.literal("")),
+  preferred_contact_method: z.preprocess(
+    (v) => (v === "" || v === undefined ? null : v),
+    z.enum(CONTACT_METHODS).nullable().optional(),
+  ),
+  reference_project_id: optionalUuid,
 });
 
 export type BriefingInput = z.infer<typeof briefingSchema>;
