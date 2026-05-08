@@ -6,7 +6,7 @@ import { useClients, useProjects, useSiteSettings } from "@/hooks/useSiteData";
 import { FALLBACK_SETTINGS, PROJECT_CATEGORIES, TOOL_OPTIONS, isCampaignCategory, normalizeCategory, type DbClient, type DbProject } from "@/lib/cms";
 import { readImageDimensions, aspectFromDims } from "@/lib/image-utils";
 import { snapshotBefore } from "@/lib/history";
-import { RequestsInbox } from "@/components/admin/RequestsInbox";
+import { InboxHub } from "@/components/admin/InboxHub";
 import { HistoryManager } from "@/components/admin/HistoryManager";
 import { toast } from "sonner";
 import {
@@ -80,7 +80,7 @@ function ControlRoom() {
         {section === "portfolio" && <PortfolioManager />}
         {section === "about" && <AboutManager />}
         {section === "contact" && <ContactManager />}
-        {section === "inbox" && <RequestsInbox />}
+        {section === "inbox" && <InboxHub />}
         {section === "history" && <HistoryManager />}
         {section === "advanced" && <AdvancedJSONManager />}
       </main>
@@ -628,7 +628,8 @@ function ClientsManager() {
     setBusyId(id);
     try {
       const dims = await readImageDimensions(file).catch(() => null);
-      const path = `clients/${id}-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
+      // Use 'logos/' prefix so the public SELECT policy on site-assets allows it.
+      const path = `logos/client-${id}-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
       const { error: upErr } = await supabase.storage.from("site-assets").upload(path, file, { upsert: true });
       if (upErr) throw upErr;
       const { data } = supabase.storage.from("site-assets").getPublicUrl(path);
