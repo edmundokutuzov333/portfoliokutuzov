@@ -628,7 +628,8 @@ function ClientsManager() {
     setBusyId(id);
     try {
       const dims = await readImageDimensions(file).catch(() => null);
-      const path = `clients/${id}-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
+      // Use 'logos/' prefix so the public SELECT policy on site-assets allows it.
+      const path = `logos/client-${id}-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
       const { error: upErr } = await supabase.storage.from("site-assets").upload(path, file, { upsert: true });
       if (upErr) throw upErr;
       const { data } = supabase.storage.from("site-assets").getPublicUrl(path);
