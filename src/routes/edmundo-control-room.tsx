@@ -6,7 +6,7 @@ import { useClients, useProjects, useSiteSettings } from "@/hooks/useSiteData";
 import { FALLBACK_SETTINGS, PROJECT_CATEGORIES, TOOL_OPTIONS, isCampaignCategory, normalizeCategory, type DbClient, type DbProject } from "@/lib/cms";
 import { readImageDimensions, aspectFromDims } from "@/lib/image-utils";
 import { snapshotBefore } from "@/lib/history";
-import { RequestsInbox } from "@/components/admin/RequestsInbox";
+import { InboxHub } from "@/components/admin/InboxHub";
 import { HistoryManager } from "@/components/admin/HistoryManager";
 import { toast } from "sonner";
 import {
@@ -80,7 +80,7 @@ function ControlRoom() {
         {section === "portfolio" && <PortfolioManager />}
         {section === "about" && <AboutManager />}
         {section === "contact" && <ContactManager />}
-        {section === "inbox" && <RequestsInbox />}
+        {section === "inbox" && <InboxHub />}
         {section === "history" && <HistoryManager />}
         {section === "advanced" && <AdvancedJSONManager />}
       </main>
