@@ -63,6 +63,11 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:type", content: "website" },
+      { name: "description", content: "KUTUZOV SITE" },
+      { property: "og:description", content: "KUTUZOV SITE" },
+      { name: "twitter:description", content: "KUTUZOV SITE" },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/pHZRYs3DGCdOPGZzeAdkZH1MMif2/social-images/social-1778488549600-EKLOGO.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/pHZRYs3DGCdOPGZzeAdkZH1MMif2/social-images/social-1778488549600-EKLOGO.webp" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
