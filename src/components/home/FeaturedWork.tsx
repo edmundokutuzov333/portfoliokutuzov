@@ -97,11 +97,19 @@ function FeaturedCard({ project, primary = false }: { project: DbProject; primar
                 {project.category}
                 {project.year ? ` · ${project.year}` : ""}
               </div>
-              <div className={primary ? "display text-2xl sm:text-3xl mt-2 text-white truncate" : "display text-lg mt-2 text-white truncate"}>
+              <div
+                className={
+                  primary
+                    ? "display text-2xl sm:text-3xl mt-2 text-white truncate"
+                    : "display text-lg mt-2 text-white truncate"
+                }
+              >
                 {project.title}
               </div>
               {project.client_name && (
-                <div className="text-[12px] text-slate-300 mt-0.5 truncate">{project.client_name}</div>
+                <div className="text-[12px] text-slate-300 mt-0.5 truncate">
+                  {project.client_name}
+                </div>
               )}
             </div>
             <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/15 bg-white/[0.06] text-white transition group-hover:border-sky-300/55 group-hover:bg-sky-300/[0.12]">

@@ -14,21 +14,16 @@ import {
 // Unique channel name per subscriber to avoid Supabase singleton-channel
 // "cannot add postgres_changes callbacks ... after subscribe()" errors when
 // the same hook mounts in multiple components simultaneously.
-const uid = () =>
-  `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
+const uid = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
 
 function useRealtimeInvalidate(table: string, queryKey: unknown[]) {
   const qc = useQueryClient();
   useEffect(() => {
     const ch = supabase
       .channel(`rt-${table}-${uid()}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table },
-        () => {
-          qc.invalidateQueries({ queryKey });
-        }
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table }, () => {
+        qc.invalidateQueries({ queryKey });
+      })
       .subscribe();
     return () => {
       supabase.removeChannel(ch);
@@ -83,10 +78,18 @@ export function useProjects(includeUnpublished = false) {
         category: normalizeCategory(p.category),
         gallery: Array.isArray(p.gallery) ? (p.gallery as string[]) : [],
         tags: Array.isArray(p.tags) ? (p.tags as string[]) : [],
-        collaborators: Array.isArray((p as { collaborators?: unknown }).collaborators) ? ((p as { collaborators: string[] }).collaborators) : [],
-        tools_used: Array.isArray((p as { tools_used?: unknown }).tools_used) ? ((p as { tools_used: string[] }).tools_used) : [],
-        deliverables: Array.isArray((p as { deliverables?: unknown }).deliverables) ? ((p as { deliverables: string[] }).deliverables) : [],
-        gallery_meta: Array.isArray((p as { gallery_meta?: unknown }).gallery_meta) ? ((p as unknown as { gallery_meta: DbProject["gallery_meta"] }).gallery_meta) : [],
+        collaborators: Array.isArray((p as { collaborators?: unknown }).collaborators)
+          ? (p as { collaborators: string[] }).collaborators
+          : [],
+        tools_used: Array.isArray((p as { tools_used?: unknown }).tools_used)
+          ? (p as { tools_used: string[] }).tools_used
+          : [],
+        deliverables: Array.isArray((p as { deliverables?: unknown }).deliverables)
+          ? (p as { deliverables: string[] }).deliverables
+          : [],
+        gallery_meta: Array.isArray((p as { gallery_meta?: unknown }).gallery_meta)
+          ? (p as unknown as { gallery_meta: DbProject["gallery_meta"] }).gallery_meta
+          : [],
       })) as unknown as DbProject[];
     },
   });

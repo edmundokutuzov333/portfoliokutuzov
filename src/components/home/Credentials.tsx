@@ -7,10 +7,18 @@ type Card = { value: string; label: string };
 
 const FALLBACK_EXPERIENCE: Exp[] = [
   { period: "2020 - 2023", role: "Graphic Designer", company: "Agência Creer" },
-  { period: "2023", role: "Marketing Assistant & Social Media Manager", company: "Imperial Seguros" },
+  {
+    period: "2023",
+    role: "Marketing Assistant & Social Media Manager",
+    company: "Imperial Seguros",
+  },
   { period: "2023", role: "Graphic Designer", company: "Ikigai Moçambique" },
   { period: "2023 - 2024", role: "Art Director", company: "SPOT Comunicação" },
-  { period: "2024 - Present", role: "Art Director & Content Creator", company: "WEBMASTERS Limitada" },
+  {
+    period: "2024 - Present",
+    role: "Art Director & Content Creator",
+    company: "WEBMASTERS Limitada",
+  },
 ];
 
 const FALLBACK_CARDS: Card[] = [
@@ -46,17 +54,15 @@ export function Credentials() {
         {/* Section header */}
         <div className="grid grid-cols-12 gap-6 mb-14">
           <div className="col-span-12 md:col-span-5">
-            <p className="mono text-[10px] tracking-[0.28em] text-sky-300/75">
-              The Credentials
-            </p>
+            <p className="mono text-[10px] tracking-[0.28em] text-sky-300/75">The Credentials</p>
             <h2 className="display text-3xl md:text-5xl mt-4 text-metal leading-[1.02] tracking-[-0.025em]">
               Strategy, craft and a sharp <span className="italic text-accent">point of view.</span>
             </h2>
           </div>
           <div className="col-span-12 md:col-span-5 md:col-start-8 self-end">
             <p className="text-sm text-slate-400 leading-relaxed">
-              Six years building visual systems and campaigns for brands across
-              Mozambique and beyond. The work below is the receipts.
+              Six years building visual systems and campaigns for brands across Mozambique and
+              beyond. The work below is the receipts.
             </p>
           </div>
         </div>
@@ -104,9 +110,7 @@ export function Credentials() {
                 <div className="display text-3xl md:text-4xl text-white tracking-[-0.02em]">
                   {c.value}
                 </div>
-                <div className="mt-3 text-[12px] leading-snug text-slate-400">
-                  {c.label}
-                </div>
+                <div className="mt-3 text-[12px] leading-snug text-slate-400">{c.label}</div>
               </motion.div>
             ))}
           </div>

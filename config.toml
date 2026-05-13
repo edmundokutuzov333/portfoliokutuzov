@@ -1,0 +1,7 @@
+project_id = "ncdfmivmcggbyjkwmokp"
+
+[functions.handle-request]
+verify_jwt = false
+
+[functions.kutuzov-chat]
+verify_jwt = false

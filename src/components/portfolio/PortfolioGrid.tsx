@@ -18,7 +18,15 @@ function attachmentCount(p: DbProject) {
   return (p.cover_url ? 1 : 0) + (p.gallery?.length ?? 0);
 }
 
-function ProjectCard({ project, index, onOpen }: { project: DbProject; index: number; onOpen: (p: DbProject) => void }) {
+function ProjectCard({
+  project,
+  index,
+  onOpen,
+}: {
+  project: DbProject;
+  index: number;
+  onOpen: (p: DbProject) => void;
+}) {
   const ratio = aspectFromDims(project.cover_width, project.cover_height) || "4 / 5";
   const palette = project.palette || "from-[#01040A] via-[#071A33] to-[#0B3B73]";
   const count = attachmentCount(project);
@@ -57,7 +65,9 @@ function ProjectCard({ project, index, onOpen }: { project: DbProject; index: nu
       <div className="flex flex-1 items-end justify-between gap-3 border-t border-white/[0.06] bg-[#030814] px-5 py-4">
         <div className="min-w-0">
           {project.client_name && (
-            <div className="truncate text-[13px] font-medium text-slate-100">{project.client_name}</div>
+            <div className="truncate text-[13px] font-medium text-slate-100">
+              {project.client_name}
+            </div>
           )}
           <div className="mono mt-1 text-[10px] tracking-[0.18em] text-slate-500">
             {project.year ?? "-"} · {project.category}
@@ -162,14 +172,18 @@ function ProjectDetail({ project, onClose }: { project: DbProject; onClose: () =
               <h3 className="display mt-3 text-4xl leading-[1] tracking-[-0.035em] text-slate-100 md:text-6xl">
                 {project.title}
               </h3>
-              {project.subtitle && <p className="mt-3 text-base text-slate-400">{project.subtitle}</p>}
+              {project.subtitle && (
+                <p className="mt-3 text-base text-slate-400">{project.subtitle}</p>
+              )}
             </header>
 
             {project.description && (
               <p className="text-[15px] leading-7 text-slate-300">{project.description}</p>
             )}
 
-            {isCampaign && project.concept && <Section title="Campaign concept">{project.concept}</Section>}
+            {isCampaign && project.concept && (
+              <Section title="Campaign concept">{project.concept}</Section>
+            )}
             {isCampaign && project.idea && <Section title="Creative idea">{project.idea}</Section>}
             {project.role && <Section title="My role">{project.role}</Section>}
             {project.notes && <Section title="Notes / outcome">{project.notes}</Section>}
@@ -193,7 +207,9 @@ function ProjectDetail({ project, onClose }: { project: DbProject; onClose: () =
               <Section title="Deliverables">
                 <ul className="grid grid-cols-1 gap-1 sm:grid-cols-2">
                   {deliverables.map((d) => (
-                    <li key={d} className="text-slate-300">- {d}</li>
+                    <li key={d} className="text-slate-300">
+                      - {d}
+                    </li>
                   ))}
                 </ul>
               </Section>
@@ -347,7 +363,10 @@ export function PortfolioGrid() {
       {isLoading ? (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="aspect-[4/5] rounded-2xl border border-white/[0.06] bg-white/[0.02] animate-pulse" />
+            <div
+              key={i}
+              className="aspect-[4/5] rounded-2xl border border-white/[0.06] bg-white/[0.02] animate-pulse"
+            />
           ))}
         </div>
       ) : filtered.length === 0 ? (

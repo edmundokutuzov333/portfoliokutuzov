@@ -8,7 +8,10 @@ export function Hero() {
   const { data: settings } = useSiteSettings();
   const r = <T,>(f: string, fb: T) => readSetting<T>(settings, "hero", f, fb);
   const disciplines = r<string[]>("disciplines", [
-    "Art Direction", "Communication Design", "Campaign Design", "Audiovisual Direction",
+    "Art Direction",
+    "Communication Design",
+    "Campaign Design",
+    "Audiovisual Direction",
   ]);
 
   return (
@@ -21,11 +24,11 @@ export function Hero() {
 
         <div className="mt-14" />
 
-
         <div className="mt-8 grid grid-cols-12 gap-6">
           <div className="col-span-12 lg:col-span-9">
             <motion.h1
-              initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: [0.2, 0.8, 0.2, 1] }}
               className="display text-[44px] sm:text-[64px] md:text-[88px] lg:text-[108px] leading-[0.94] font-semibold tracking-[-0.025em]"
             >
@@ -33,11 +36,14 @@ export function Hero() {
               <br />
               <span className="text-metal">{r("title_2", "stop, take notice,")}</span>
               <br />
-              <span className="italic font-medium text-accent">{r("title_accent", "and act.")}</span>
+              <span className="italic font-medium text-accent">
+                {r("title_accent", "and act.")}
+              </span>
             </motion.h1>
 
             <motion.p
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               transition={{ delay: 0.4, duration: 0.8 }}
               className="mt-10 max-w-xl text-[15px] md:text-base text-slate-400 leading-relaxed"
             >
@@ -45,26 +51,36 @@ export function Hero() {
             </motion.p>
 
             <motion.div
-              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.55, duration: 0.6 }}
               className="mt-9 flex flex-wrap items-center gap-3"
             >
-              <Link to="/portfolio" className="group inline-flex items-center gap-2 rounded-full bg-slate-100 text-[#01040A] px-5 py-3 text-sm font-semibold hover:bg-sky-200 transition">
+              <Link
+                to="/portfolio"
+                className="group inline-flex items-center gap-2 rounded-full bg-slate-100 text-[#01040A] px-5 py-3 text-sm font-semibold hover:bg-sky-200 transition"
+              >
                 {r("cta_primary", "View Portfolio")}
                 <ArrowUpRight size={16} className="group-hover:rotate-45 transition-transform" />
               </Link>
-              <Link to="/contact" className="inline-flex items-center gap-2 rounded-full border border-white/15 px-5 py-3 text-sm font-medium text-slate-200 hover:border-sky-300/50 hover:text-sky-200 transition">
+              <Link
+                to="/contact"
+                className="inline-flex items-center gap-2 rounded-full border border-white/15 px-5 py-3 text-sm font-medium text-slate-200 hover:border-sky-300/50 hover:text-sky-200 transition"
+              >
                 {r("cta_secondary", "Contact Me")} <Send size={14} />
               </Link>
             </motion.div>
           </div>
 
           <motion.aside
-            initial={{ opacity: 0, x: 14 }} animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, x: 14 }}
+            animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.5, duration: 0.7 }}
             className="col-span-12 lg:col-span-3 lg:pl-6 lg:border-l border-white/[0.08]"
           >
-            <div className="mono text-[10px] tracking-[0.24em] text-slate-500">{r("status_label", "Current Status")}</div>
+            <div className="mono text-[10px] tracking-[0.24em] text-slate-500">
+              {r("status_label", "Current Status")}
+            </div>
             <div className="mt-4 flex items-center gap-2 text-sm text-slate-200">
               <span className="relative flex h-2 w-2">
                 <span className="absolute inline-flex h-full w-full rounded-full bg-sky-300 opacity-60 animate-ping" />
@@ -80,7 +96,9 @@ export function Hero() {
             <div className="mt-10 space-y-3">
               <div className="mono text-[10px] tracking-[0.22em] text-slate-500">Disciplines</div>
               <ul className="space-y-2 text-[13px] text-slate-300">
-                {disciplines.map((d) => <li key={d}>{d}</li>)}
+                {disciplines.map((d) => (
+                  <li key={d}>{d}</li>
+                ))}
               </ul>
             </div>
           </motion.aside>

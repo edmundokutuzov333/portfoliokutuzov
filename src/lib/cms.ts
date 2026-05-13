@@ -78,12 +78,22 @@ export type ProjectCategory = (typeof PROJECT_CATEGORIES)[number];
 export function normalizeCategory(input: string | null | undefined): ProjectCategory {
   const v = (input ?? "").trim().toLowerCase();
   if (!v) return "Digital Design";
-  if (v === "social media" || v === "social media assets" || v === "social-media") return "Social Media";
-  if (v === "ad campaigns" || v === "campaign design" || v === "ad-campaigns") return "Ad Campaigns";
+  if (v === "social media" || v === "social media assets" || v === "social-media")
+    return "Social Media";
+  if (v === "ad campaigns" || v === "campaign design" || v === "ad-campaigns")
+    return "Ad Campaigns";
   if (v === "videos" || v === "video") return "Videos";
-  if (v === "offline actions" || v === "motion / content direction" || v === "motion") return "Offline Actions";
+  if (v === "offline actions" || v === "motion / content direction" || v === "motion")
+    return "Offline Actions";
   if (v === "web design" || v === "web-design") return "Web Design";
-  if (v === "clothes design" || v === "clothes-design" || v === "clothing" || v === "clothing design" || v === "fashion") return "Clothes Design";
+  if (
+    v === "clothes design" ||
+    v === "clothes-design" ||
+    v === "clothing" ||
+    v === "clothing design" ||
+    v === "fashion"
+  )
+    return "Clothes Design";
   if (
     v === "digital design" ||
     v === "image manipulation" ||
@@ -177,10 +187,18 @@ export const FALLBACK_SETTINGS: SiteSettings = {
   credentials: {
     experience: [
       { period: "2020 - 2023", role: "Graphic Designer", company: "Agência Creer" },
-      { period: "2023", role: "Marketing Assistant & Social Media Manager", company: "Imperial Seguros" },
+      {
+        period: "2023",
+        role: "Marketing Assistant & Social Media Manager",
+        company: "Imperial Seguros",
+      },
       { period: "2023", role: "Graphic Designer", company: "Ikigai Moçambique" },
       { period: "2023 - 2024", role: "Art Director", company: "SPOT Comunicação" },
-      { period: "2024 - Present", role: "Art Director & Content Creator", company: "WEBMASTERS Limitada" },
+      {
+        period: "2024 - Present",
+        role: "Art Director & Content Creator",
+        company: "WEBMASTERS Limitada",
+      },
     ],
     cards: [
       { value: "6+", label: "Years of experience" },
@@ -264,10 +282,18 @@ export const FALLBACK_SETTINGS: SiteSettings = {
     phone: SITE_PHONE,
     location: 'Magoanine "C", Maputo, Mozambique',
     experience: [
-      { role: "Art Director & Content Creator", company: "WEBMASTERS Limitada", period: "2024 - Present" },
+      {
+        role: "Art Director & Content Creator",
+        company: "WEBMASTERS Limitada",
+        period: "2024 - Present",
+      },
       { role: "Art Director", company: "SPOT Comunicação", period: "2023 - 2024" },
       { role: "Graphic Designer", company: "Ikigai Moçambique", period: "2023" },
-      { role: "Marketing Assistant & Social Media Manager", company: "Imperial Seguros", period: "2023" },
+      {
+        role: "Marketing Assistant & Social Media Manager",
+        company: "Imperial Seguros",
+        period: "2023",
+      },
       { role: "Graphic Designer", company: "Agência Creer", period: "2020 - 2023" },
     ],
     skills: [
@@ -278,12 +304,26 @@ export const FALLBACK_SETTINGS: SiteSettings = {
       { name: "Artificial Intelligence", value: 95 },
     ],
     brands: [
-      "Absa", "Toyota Moçambique", "Nissan Moçambique", "Hyundai Moçambique",
-      "Galp", "TotalEnergies", "Vodacom", "Ronil Auto Moçambique",
-      "Pernod Ricard Moçambique", "GIZ", "MultiChoice (DSTV & GOTV)",
-      "KitKat", "Flying Fish", "Brutal Fruit", "Joaquim Chaves Saúde",
-      "Ponta Apart Hotel", "Hotel Cardoso", "EMOSE",
-      "Moçambique Companhia de Seguros", "PROMAR",
+      "Absa",
+      "Toyota Moçambique",
+      "Nissan Moçambique",
+      "Hyundai Moçambique",
+      "Galp",
+      "TotalEnergies",
+      "Vodacom",
+      "Ronil Auto Moçambique",
+      "Pernod Ricard Moçambique",
+      "GIZ",
+      "MultiChoice (DSTV & GOTV)",
+      "KitKat",
+      "Flying Fish",
+      "Brutal Fruit",
+      "Joaquim Chaves Saúde",
+      "Ponta Apart Hotel",
+      "Hotel Cardoso",
+      "EMOSE",
+      "Moçambique Companhia de Seguros",
+      "PROMAR",
     ],
   },
   social: {

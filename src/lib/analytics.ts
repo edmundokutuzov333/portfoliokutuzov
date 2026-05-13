@@ -35,7 +35,7 @@ function deviceFromWidth(w: number): "mobile" | "tablet" | "desktop" {
   return "desktop";
 }
 
-let queue: Record<string, unknown>[] = [];
+const queue: Record<string, unknown>[] = [];
 let timer: ReturnType<typeof setTimeout> | null = null;
 
 async function flush() {

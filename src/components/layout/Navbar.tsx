@@ -32,7 +32,13 @@ export function Navbar() {
             aria-label="Edmundo Kutuzov - home"
           >
             <span className="grid h-9 w-9 place-items-center rounded-full border border-white/[0.1] bg-white/[0.035] overflow-hidden transition group-hover:border-sky-300/35">
-              <img src={logoUrl} alt="Edmundo Kutuzov logo" width={28} height={28} className="h-7 w-7 object-contain" />
+              <img
+                src={logoUrl}
+                alt="Edmundo Kutuzov logo"
+                width={28}
+                height={28}
+                className="h-7 w-7 object-contain"
+              />
             </span>
 
             <span className="hidden flex-col leading-none sm:flex">
@@ -54,7 +60,7 @@ export function Navbar() {
                     to={link.to}
                     className={clsx(
                       "relative rounded-full px-4 py-2 text-[13px] font-medium transition duration-200 focus:outline-none focus:ring-2 focus:ring-sky-300/50",
-                      active ? "text-white" : "text-slate-400 hover:text-slate-100"
+                      active ? "text-white" : "text-slate-400 hover:text-slate-100",
                     )}
                   >
                     {active && (
@@ -109,7 +115,7 @@ export function Navbar() {
                       "rounded-2xl px-4 py-3 text-sm transition",
                       active
                         ? "bg-sky-300/[0.08] text-white"
-                        : "text-slate-400 hover:bg-white/[0.04] hover:text-white"
+                        : "text-slate-400 hover:bg-white/[0.04] hover:text-white",
                     )}
                   >
                     {link.label}

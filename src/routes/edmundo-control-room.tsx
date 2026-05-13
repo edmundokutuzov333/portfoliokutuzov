@@ -3,23 +3,60 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminAuth } from "@/hooks/useAdmin";
 import { useClients, useProjects, useSiteSettings } from "@/hooks/useSiteData";
-import { FALLBACK_SETTINGS, PROJECT_CATEGORIES, TOOL_OPTIONS, isCampaignCategory, normalizeCategory, type DbClient, type DbProject } from "@/lib/cms";
+import {
+  FALLBACK_SETTINGS,
+  PROJECT_CATEGORIES,
+  TOOL_OPTIONS,
+  isCampaignCategory,
+  normalizeCategory,
+  type DbClient,
+  type DbProject,
+} from "@/lib/cms";
 import { readImageDimensions, aspectFromDims } from "@/lib/image-utils";
 import { snapshotBefore } from "@/lib/history";
 import { InboxHub } from "@/components/admin/InboxHub";
 import { HistoryManager } from "@/components/admin/HistoryManager";
 import { toast } from "sonner";
 import {
-  LogOut, Save, Trash2, Plus, Upload, Loader2, Image as ImageIcon,
-  Briefcase, Users, FileText, Eye, EyeOff, Copy, Star, ChevronDown, ChevronRight,
-  Home, User as UserIcon, Mail, Code2, Inbox, History, ArrowUp, ArrowDown,
+  LogOut,
+  Save,
+  Trash2,
+  Plus,
+  Upload,
+  Loader2,
+  Image as ImageIcon,
+  Briefcase,
+  Users,
+  FileText,
+  Eye,
+  EyeOff,
+  Copy,
+  Star,
+  ChevronDown,
+  ChevronRight,
+  Home,
+  User as UserIcon,
+  Mail,
+  Code2,
+  Inbox,
+  History,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
 
 export const Route = createFileRoute("/edmundo-control-room")({
   component: ControlRoom,
 });
 
-type Section = "site" | "clients" | "portfolio" | "about" | "contact" | "inbox" | "history" | "advanced";
+type Section =
+  | "site"
+  | "clients"
+  | "portfolio"
+  | "about"
+  | "contact"
+  | "inbox"
+  | "history"
+  | "advanced";
 
 function ControlRoom() {
   const { session, isAdmin, loading } = useAdminAuth();
@@ -116,18 +153,25 @@ function LoginForm({ hasSession }: { hasSession: boolean }) {
         {hasSession && <p className="mt-2 text-xs text-amber-400">Signed in but not authorized.</p>}
         <Field label="Email">
           <input
-            type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             className="adm-input"
           />
         </Field>
         <Field label="Password">
           <input
-            type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
+            type="password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             className="adm-input"
           />
         </Field>
         <button
-          type="submit" disabled={busy}
+          type="submit"
+          disabled={busy}
           className="mt-6 w-full inline-flex justify-center items-center gap-2 rounded bg-sky-300 text-[#01040A] px-4 py-2.5 text-sm font-semibold disabled:opacity-50"
         >
           {busy ? <Loader2 size={14} className="animate-spin" /> : null} Enter Control Room
@@ -141,8 +185,14 @@ function LoginForm({ hasSession }: { hasSession: boolean }) {
 // SHARED PRIMITIVES
 // ============================================================================
 function Field({
-  label, hint, children,
-}: { label: string; hint?: string; children: React.ReactNode }) {
+  label,
+  hint,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
   return (
     <label className="block mt-4">
       <span className="mono text-[10px] tracking-[0.2em] text-slate-500">{label}</span>
@@ -161,7 +211,10 @@ function TextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
 }
 
 function SectionCard({
-  title, description, children, footer,
+  title,
+  description,
+  children,
+  footer,
 }: {
   title: string;
   description?: string;
@@ -180,7 +233,15 @@ function SectionCard({
   );
 }
 
-function SaveButton({ saving, onClick, label = "Save" }: { saving: boolean; onClick: () => void; label?: string }) {
+function SaveButton({
+  saving,
+  onClick,
+  label = "Save",
+}: {
+  saving: boolean;
+  onClick: () => void;
+  label?: string;
+}) {
   return (
     <button
       onClick={onClick}
@@ -220,7 +281,7 @@ function useSectionDraft(key: string) {
   const { data: settings } = useSiteSettings();
   const merged = useMemo(
     () => ({ ...(FALLBACK_SETTINGS[key] ?? {}), ...(settings?.[key] ?? {}) }),
-    [settings, key]
+    [settings, key],
   );
   const [draft, setDraft] = useState<Record<string, unknown>>(merged);
   const [saving, setSaving] = useState(false);
@@ -242,10 +303,9 @@ function useSectionDraft(key: string) {
     await snapshotBefore("site_settings", key, key);
     const { error } = await supabase
       .from("site_settings")
-      .upsert(
-        [{ key, value: draft as never, updated_at: new Date().toISOString() }],
-        { onConflict: "key" }
-      );
+      .upsert([{ key, value: draft as never, updated_at: new Date().toISOString() }], {
+        onConflict: "key",
+      });
     setSaving(false);
     if (error) toast.error(error.message);
     else {
@@ -264,7 +324,7 @@ function useSectionDraft(key: string) {
 
 function get<T>(d: Record<string, unknown>, k: string, fb: T): T {
   const v = d[k];
-  return (v === undefined || v === null ? fb : (v as T));
+  return v === undefined || v === null ? fb : (v as T);
 }
 
 // ============================================================================
@@ -275,13 +335,25 @@ function SiteContentManager() {
     <div>
       <header>
         <h2 className="display text-2xl text-metal">Site content</h2>
-        <p className="text-sm text-slate-500 mt-1">Edit the homepage and shared layout sections. Changes go live immediately.</p>
+        <p className="text-sm text-slate-500 mt-1">
+          Edit the homepage and shared layout sections. Changes go live immediately.
+        </p>
       </header>
 
       <HeroEditor />
       <ManifestoEditor />
-      <SectionLabelEditor sectionKey="clients_section" title="Clients section" fields={["eyebrow", "title", "subtitle"]} multiline={["title", "subtitle"]} />
-      <SectionLabelEditor sectionKey="services_section" title="Services section" fields={["eyebrow", "title", "sidebar"]} multiline={["title"]} />
+      <SectionLabelEditor
+        sectionKey="clients_section"
+        title="Clients section"
+        fields={["eyebrow", "title", "subtitle"]}
+        multiline={["title", "subtitle"]}
+      />
+      <SectionLabelEditor
+        sectionKey="services_section"
+        title="Services section"
+        fields={["eyebrow", "title", "sidebar"]}
+        multiline={["title"]}
+      />
       <CtaHomeEditor />
       <NavbarEditor />
       <FooterEditor />
@@ -298,33 +370,105 @@ function HeroEditor() {
       description="Top of the homepage. Headline, subtitle, CTAs and status panel."
       footer={
         <>
-          <button onClick={s.restore} className="text-xs text-slate-500 hover:text-white px-3 py-2">Restore default</button>
+          <button onClick={s.restore} className="text-xs text-slate-500 hover:text-white px-3 py-2">
+            Restore default
+          </button>
           <SaveButton saving={s.saving} onClick={s.save} />
         </>
       }
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Field label="Top left badge"><TextInput value={get(s.draft, "top_left", "")} onChange={(e) => s.update("top_left", e.target.value)} /></Field>
-        <Field label="Top right badge"><TextInput value={get(s.draft, "top_right", "")} onChange={(e) => s.update("top_right", e.target.value)} /></Field>
-        <Field label="Eyebrow"><TextInput value={get(s.draft, "eyebrow", "")} onChange={(e) => s.update("eyebrow", e.target.value)} /></Field>
-        <Field label="Year"><TextInput value={get(s.draft, "year", "")} onChange={(e) => s.update("year", e.target.value)} /></Field>
-        <Field label="Title - line 1"><TextInput value={get(s.draft, "title_1", "")} onChange={(e) => s.update("title_1", e.target.value)} /></Field>
-        <Field label="Title - line 2"><TextInput value={get(s.draft, "title_2", "")} onChange={(e) => s.update("title_2", e.target.value)} /></Field>
-        <Field label="Title - accent (italic)"><TextInput value={get(s.draft, "title_accent", "")} onChange={(e) => s.update("title_accent", e.target.value)} /></Field>
+        <Field label="Top left badge">
+          <TextInput
+            value={get(s.draft, "top_left", "")}
+            onChange={(e) => s.update("top_left", e.target.value)}
+          />
+        </Field>
+        <Field label="Top right badge">
+          <TextInput
+            value={get(s.draft, "top_right", "")}
+            onChange={(e) => s.update("top_right", e.target.value)}
+          />
+        </Field>
+        <Field label="Eyebrow">
+          <TextInput
+            value={get(s.draft, "eyebrow", "")}
+            onChange={(e) => s.update("eyebrow", e.target.value)}
+          />
+        </Field>
+        <Field label="Year">
+          <TextInput
+            value={get(s.draft, "year", "")}
+            onChange={(e) => s.update("year", e.target.value)}
+          />
+        </Field>
+        <Field label="Title - line 1">
+          <TextInput
+            value={get(s.draft, "title_1", "")}
+            onChange={(e) => s.update("title_1", e.target.value)}
+          />
+        </Field>
+        <Field label="Title - line 2">
+          <TextInput
+            value={get(s.draft, "title_2", "")}
+            onChange={(e) => s.update("title_2", e.target.value)}
+          />
+        </Field>
+        <Field label="Title - accent (italic)">
+          <TextInput
+            value={get(s.draft, "title_accent", "")}
+            onChange={(e) => s.update("title_accent", e.target.value)}
+          />
+        </Field>
         <Field label="Status">
-          <TextInput value={get(s.draft, "status", "")} onChange={(e) => s.update("status", e.target.value)} />
+          <TextInput
+            value={get(s.draft, "status", "")}
+            onChange={(e) => s.update("status", e.target.value)}
+          />
         </Field>
         <Field label="Subtitle" hint="Short paragraph below the headline.">
-          <TextArea rows={4} value={get(s.draft, "subtitle", "")} onChange={(e) => s.update("subtitle", e.target.value)} />
+          <TextArea
+            rows={4}
+            value={get(s.draft, "subtitle", "")}
+            onChange={(e) => s.update("subtitle", e.target.value)}
+          />
         </Field>
-        <Field label="CTA primary"><TextInput value={get(s.draft, "cta_primary", "")} onChange={(e) => s.update("cta_primary", e.target.value)} /></Field>
-        <Field label="CTA secondary"><TextInput value={get(s.draft, "cta_secondary", "")} onChange={(e) => s.update("cta_secondary", e.target.value)} /></Field>
-        <Field label="Status label"><TextInput value={get(s.draft, "status_label", "")} onChange={(e) => s.update("status_label", e.target.value)} /></Field>
-        <Field label="Location"><TextInput value={get(s.draft, "location", "")} onChange={(e) => s.update("location", e.target.value)} /></Field>
+        <Field label="CTA primary">
+          <TextInput
+            value={get(s.draft, "cta_primary", "")}
+            onChange={(e) => s.update("cta_primary", e.target.value)}
+          />
+        </Field>
+        <Field label="CTA secondary">
+          <TextInput
+            value={get(s.draft, "cta_secondary", "")}
+            onChange={(e) => s.update("cta_secondary", e.target.value)}
+          />
+        </Field>
+        <Field label="Status label">
+          <TextInput
+            value={get(s.draft, "status_label", "")}
+            onChange={(e) => s.update("status_label", e.target.value)}
+          />
+        </Field>
+        <Field label="Location">
+          <TextInput
+            value={get(s.draft, "location", "")}
+            onChange={(e) => s.update("location", e.target.value)}
+          />
+        </Field>
         <Field label="Disciplines (comma separated)" hint="Shown in the right side panel.">
           <TextInput
-            value={(get<string[]>(s.draft, "disciplines", [])).join(", ")}
-            onChange={(e) => s.update("disciplines", e.target.value.split(",").map((x) => x.trim()).filter(Boolean))}
+            value={get<string[]>(s.draft, "disciplines", []).join(", ")}
+            onChange={(e) =>
+              s.update(
+                "disciplines",
+                e.target.value
+                  .split(",")
+                  .map((x) => x.trim())
+                  .filter(Boolean),
+              )
+            }
           />
         </Field>
       </div>
@@ -342,17 +486,66 @@ function ManifestoEditor() {
     <SectionCard
       title="Manifesto"
       description="The philosophical block on the homepage."
-      footer={<><button onClick={s.restore} className="text-xs text-slate-500 hover:text-white px-3 py-2">Restore default</button><SaveButton saving={s.saving} onClick={s.save} /></>}
+      footer={
+        <>
+          <button onClick={s.restore} className="text-xs text-slate-500 hover:text-white px-3 py-2">
+            Restore default
+          </button>
+          <SaveButton saving={s.saving} onClick={s.save} />
+        </>
+      }
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Field label="Eyebrow"><TextInput value={get(s.draft, "eyebrow", "")} onChange={(e) => s.update("eyebrow", e.target.value)} /></Field>
-        <Field label="Sidebar text"><TextInput value={get(s.draft, "sidebar", "")} onChange={(e) => s.update("sidebar", e.target.value)} /></Field>
-        <Field label="Title - line 1"><TextInput value={get(s.draft, "title_1", "")} onChange={(e) => s.update("title_1", e.target.value)} /></Field>
-        <Field label="Title - accent"><TextInput value={get(s.draft, "title_accent", "")} onChange={(e) => s.update("title_accent", e.target.value)} /></Field>
-        <Field label="Title - line 2"><TextInput value={get(s.draft, "title_2", "")} onChange={(e) => s.update("title_2", e.target.value)} /></Field>
-        <Field label="Title - muted"><TextInput value={get(s.draft, "title_muted", "")} onChange={(e) => s.update("title_muted", e.target.value)} /></Field>
-        <Field label="Paragraph 1"><TextArea rows={4} value={get(s.draft, "col1", "")} onChange={(e) => s.update("col1", e.target.value)} /></Field>
-        <Field label="Paragraph 2"><TextArea rows={4} value={get(s.draft, "col2", "")} onChange={(e) => s.update("col2", e.target.value)} /></Field>
+        <Field label="Eyebrow">
+          <TextInput
+            value={get(s.draft, "eyebrow", "")}
+            onChange={(e) => s.update("eyebrow", e.target.value)}
+          />
+        </Field>
+        <Field label="Sidebar text">
+          <TextInput
+            value={get(s.draft, "sidebar", "")}
+            onChange={(e) => s.update("sidebar", e.target.value)}
+          />
+        </Field>
+        <Field label="Title - line 1">
+          <TextInput
+            value={get(s.draft, "title_1", "")}
+            onChange={(e) => s.update("title_1", e.target.value)}
+          />
+        </Field>
+        <Field label="Title - accent">
+          <TextInput
+            value={get(s.draft, "title_accent", "")}
+            onChange={(e) => s.update("title_accent", e.target.value)}
+          />
+        </Field>
+        <Field label="Title - line 2">
+          <TextInput
+            value={get(s.draft, "title_2", "")}
+            onChange={(e) => s.update("title_2", e.target.value)}
+          />
+        </Field>
+        <Field label="Title - muted">
+          <TextInput
+            value={get(s.draft, "title_muted", "")}
+            onChange={(e) => s.update("title_muted", e.target.value)}
+          />
+        </Field>
+        <Field label="Paragraph 1">
+          <TextArea
+            rows={4}
+            value={get(s.draft, "col1", "")}
+            onChange={(e) => s.update("col1", e.target.value)}
+          />
+        </Field>
+        <Field label="Paragraph 2">
+          <TextArea
+            rows={4}
+            value={get(s.draft, "col2", "")}
+            onChange={(e) => s.update("col2", e.target.value)}
+          />
+        </Field>
       </div>
 
       <div className="mt-6">
@@ -367,11 +560,46 @@ function ManifestoEditor() {
         </div>
         <div className="mt-3 space-y-2">
           {principles.map((p, i) => (
-            <div key={i} className="grid grid-cols-12 gap-2 items-center bg-[#01040A] border border-white/[0.06] rounded p-2">
-              <input className="adm-input col-span-3" placeholder="Meta (e.g. 01 / Strategy)" value={p.meta} onChange={(e) => { const n = [...principles]; n[i] = { ...p, meta: e.target.value }; setPrinciples(n); }} />
-              <input className="adm-input col-span-3" placeholder="Key" value={p.key} onChange={(e) => { const n = [...principles]; n[i] = { ...p, key: e.target.value }; setPrinciples(n); }} />
-              <input className="adm-input col-span-5" placeholder="Value" value={p.value} onChange={(e) => { const n = [...principles]; n[i] = { ...p, value: e.target.value }; setPrinciples(n); }} />
-              <button onClick={() => setPrinciples(principles.filter((_, j) => j !== i))} className="col-span-1 text-slate-500 hover:text-red-300 inline-flex justify-end"><Trash2 size={14} /></button>
+            <div
+              key={i}
+              className="grid grid-cols-12 gap-2 items-center bg-[#01040A] border border-white/[0.06] rounded p-2"
+            >
+              <input
+                className="adm-input col-span-3"
+                placeholder="Meta (e.g. 01 / Strategy)"
+                value={p.meta}
+                onChange={(e) => {
+                  const n = [...principles];
+                  n[i] = { ...p, meta: e.target.value };
+                  setPrinciples(n);
+                }}
+              />
+              <input
+                className="adm-input col-span-3"
+                placeholder="Key"
+                value={p.key}
+                onChange={(e) => {
+                  const n = [...principles];
+                  n[i] = { ...p, key: e.target.value };
+                  setPrinciples(n);
+                }}
+              />
+              <input
+                className="adm-input col-span-5"
+                placeholder="Value"
+                value={p.value}
+                onChange={(e) => {
+                  const n = [...principles];
+                  n[i] = { ...p, value: e.target.value };
+                  setPrinciples(n);
+                }}
+              />
+              <button
+                onClick={() => setPrinciples(principles.filter((_, j) => j !== i))}
+                className="col-span-1 text-slate-500 hover:text-red-300 inline-flex justify-end"
+              >
+                <Trash2 size={14} />
+              </button>
             </div>
           ))}
         </div>
@@ -381,20 +609,44 @@ function ManifestoEditor() {
 }
 
 function SectionLabelEditor({
-  sectionKey, title, fields, multiline = [],
-}: { sectionKey: string; title: string; fields: string[]; multiline?: string[] }) {
+  sectionKey,
+  title,
+  fields,
+  multiline = [],
+}: {
+  sectionKey: string;
+  title: string;
+  fields: string[];
+  multiline?: string[];
+}) {
   const s = useSectionDraft(sectionKey);
   return (
     <SectionCard
       title={title}
-      footer={<><button onClick={s.restore} className="text-xs text-slate-500 hover:text-white px-3 py-2">Restore default</button><SaveButton saving={s.saving} onClick={s.save} /></>}
+      footer={
+        <>
+          <button onClick={s.restore} className="text-xs text-slate-500 hover:text-white px-3 py-2">
+            Restore default
+          </button>
+          <SaveButton saving={s.saving} onClick={s.save} />
+        </>
+      }
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {fields.map((f) => (
           <Field key={f} label={f.replace(/_/g, " ")}>
-            {multiline.includes(f)
-              ? <TextArea rows={3} value={get(s.draft, f, "")} onChange={(e) => s.update(f, e.target.value)} />
-              : <TextInput value={get(s.draft, f, "")} onChange={(e) => s.update(f, e.target.value)} />}
+            {multiline.includes(f) ? (
+              <TextArea
+                rows={3}
+                value={get(s.draft, f, "")}
+                onChange={(e) => s.update(f, e.target.value)}
+              />
+            ) : (
+              <TextInput
+                value={get(s.draft, f, "")}
+                onChange={(e) => s.update(f, e.target.value)}
+              />
+            )}
           </Field>
         ))}
       </div>
@@ -407,14 +659,47 @@ function CtaHomeEditor() {
   return (
     <SectionCard
       title="Home CTA block"
-      footer={<><button onClick={s.restore} className="text-xs text-slate-500 hover:text-white px-3 py-2">Restore default</button><SaveButton saving={s.saving} onClick={s.save} /></>}
+      footer={
+        <>
+          <button onClick={s.restore} className="text-xs text-slate-500 hover:text-white px-3 py-2">
+            Restore default
+          </button>
+          <SaveButton saving={s.saving} onClick={s.save} />
+        </>
+      }
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Field label="Eyebrow"><TextInput value={get(s.draft, "eyebrow", "")} onChange={(e) => s.update("eyebrow", e.target.value)} /></Field>
-        <Field label="Title - line 1"><TextInput value={get(s.draft, "title_1", "")} onChange={(e) => s.update("title_1", e.target.value)} /></Field>
-        <Field label="Title - accent"><TextInput value={get(s.draft, "title_accent", "")} onChange={(e) => s.update("title_accent", e.target.value)} /></Field>
-        <Field label="Primary CTA"><TextInput value={get(s.draft, "cta_primary", "")} onChange={(e) => s.update("cta_primary", e.target.value)} /></Field>
-        <Field label="Email"><TextInput type="email" value={get(s.draft, "email", "")} onChange={(e) => s.update("email", e.target.value)} /></Field>
+        <Field label="Eyebrow">
+          <TextInput
+            value={get(s.draft, "eyebrow", "")}
+            onChange={(e) => s.update("eyebrow", e.target.value)}
+          />
+        </Field>
+        <Field label="Title - line 1">
+          <TextInput
+            value={get(s.draft, "title_1", "")}
+            onChange={(e) => s.update("title_1", e.target.value)}
+          />
+        </Field>
+        <Field label="Title - accent">
+          <TextInput
+            value={get(s.draft, "title_accent", "")}
+            onChange={(e) => s.update("title_accent", e.target.value)}
+          />
+        </Field>
+        <Field label="Primary CTA">
+          <TextInput
+            value={get(s.draft, "cta_primary", "")}
+            onChange={(e) => s.update("cta_primary", e.target.value)}
+          />
+        </Field>
+        <Field label="Email">
+          <TextInput
+            type="email"
+            value={get(s.draft, "email", "")}
+            onChange={(e) => s.update("email", e.target.value)}
+          />
+        </Field>
       </div>
     </SectionCard>
   );
@@ -425,8 +710,18 @@ function NavbarEditor() {
   return (
     <SectionCard title="Navbar" footer={<SaveButton saving={s.saving} onClick={s.save} />}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Field label="Brand"><TextInput value={get(s.draft, "brand", "")} onChange={(e) => s.update("brand", e.target.value)} /></Field>
-        <Field label="CTA label"><TextInput value={get(s.draft, "cta", "")} onChange={(e) => s.update("cta", e.target.value)} /></Field>
+        <Field label="Brand">
+          <TextInput
+            value={get(s.draft, "brand", "")}
+            onChange={(e) => s.update("brand", e.target.value)}
+          />
+        </Field>
+        <Field label="CTA label">
+          <TextInput
+            value={get(s.draft, "cta", "")}
+            onChange={(e) => s.update("cta", e.target.value)}
+          />
+        </Field>
       </div>
     </SectionCard>
   );
@@ -437,17 +732,65 @@ function FooterEditor() {
   return (
     <SectionCard
       title="Footer"
-      footer={<><button onClick={s.restore} className="text-xs text-slate-500 hover:text-white px-3 py-2">Restore default</button><SaveButton saving={s.saving} onClick={s.save} /></>}
+      footer={
+        <>
+          <button onClick={s.restore} className="text-xs text-slate-500 hover:text-white px-3 py-2">
+            Restore default
+          </button>
+          <SaveButton saving={s.saving} onClick={s.save} />
+        </>
+      }
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Field label="Eyebrow"><TextInput value={get(s.draft, "eyebrow", "")} onChange={(e) => s.update("eyebrow", e.target.value)} /></Field>
-        <Field label="Title - line 1"><TextInput value={get(s.draft, "title_1", "")} onChange={(e) => s.update("title_1", e.target.value)} /></Field>
-        <Field label="Title - line 2"><TextInput value={get(s.draft, "title_2", "")} onChange={(e) => s.update("title_2", e.target.value)} /></Field>
-        <Field label="CTA label"><TextInput value={get(s.draft, "cta", "")} onChange={(e) => s.update("cta", e.target.value)} /></Field>
-        <Field label="Email"><TextInput type="email" value={get(s.draft, "email", "")} onChange={(e) => s.update("email", e.target.value)} /></Field>
-        <Field label="Phone"><TextInput value={get(s.draft, "phone", "")} onChange={(e) => s.update("phone", e.target.value)} /></Field>
-        <Field label="Location"><TextInput value={get(s.draft, "location", "")} onChange={(e) => s.update("location", e.target.value)} /></Field>
-        <Field label="Copyright text"><TextInput value={get(s.draft, "copyright", "")} onChange={(e) => s.update("copyright", e.target.value)} /></Field>
+        <Field label="Eyebrow">
+          <TextInput
+            value={get(s.draft, "eyebrow", "")}
+            onChange={(e) => s.update("eyebrow", e.target.value)}
+          />
+        </Field>
+        <Field label="Title - line 1">
+          <TextInput
+            value={get(s.draft, "title_1", "")}
+            onChange={(e) => s.update("title_1", e.target.value)}
+          />
+        </Field>
+        <Field label="Title - line 2">
+          <TextInput
+            value={get(s.draft, "title_2", "")}
+            onChange={(e) => s.update("title_2", e.target.value)}
+          />
+        </Field>
+        <Field label="CTA label">
+          <TextInput
+            value={get(s.draft, "cta", "")}
+            onChange={(e) => s.update("cta", e.target.value)}
+          />
+        </Field>
+        <Field label="Email">
+          <TextInput
+            type="email"
+            value={get(s.draft, "email", "")}
+            onChange={(e) => s.update("email", e.target.value)}
+          />
+        </Field>
+        <Field label="Phone">
+          <TextInput
+            value={get(s.draft, "phone", "")}
+            onChange={(e) => s.update("phone", e.target.value)}
+          />
+        </Field>
+        <Field label="Location">
+          <TextInput
+            value={get(s.draft, "location", "")}
+            onChange={(e) => s.update("location", e.target.value)}
+          />
+        </Field>
+        <Field label="Copyright text">
+          <TextInput
+            value={get(s.draft, "copyright", "")}
+            onChange={(e) => s.update("copyright", e.target.value)}
+          />
+        </Field>
       </div>
     </SectionCard>
   );
@@ -458,9 +801,24 @@ function SocialEditor() {
   return (
     <SectionCard title="Social links" footer={<SaveButton saving={s.saving} onClick={s.save} />}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Field label="Instagram URL"><TextInput value={get(s.draft, "instagram", "")} onChange={(e) => s.update("instagram", e.target.value)} /></Field>
-        <Field label="LinkedIn URL"><TextInput value={get(s.draft, "linkedin", "")} onChange={(e) => s.update("linkedin", e.target.value)} /></Field>
-        <Field label="Facebook URL"><TextInput value={get(s.draft, "facebook", "")} onChange={(e) => s.update("facebook", e.target.value)} /></Field>
+        <Field label="Instagram URL">
+          <TextInput
+            value={get(s.draft, "instagram", "")}
+            onChange={(e) => s.update("instagram", e.target.value)}
+          />
+        </Field>
+        <Field label="LinkedIn URL">
+          <TextInput
+            value={get(s.draft, "linkedin", "")}
+            onChange={(e) => s.update("linkedin", e.target.value)}
+          />
+        </Field>
+        <Field label="Facebook URL">
+          <TextInput
+            value={get(s.draft, "facebook", "")}
+            onChange={(e) => s.update("facebook", e.target.value)}
+          />
+        </Field>
       </div>
     </SectionCard>
   );
@@ -482,43 +840,155 @@ function AboutManager() {
     <div>
       <header>
         <h2 className="display text-2xl text-metal">About page</h2>
-        <p className="text-sm text-slate-500 mt-1">Bio, contact, experience, skills and selected brands shown on /about.</p>
+        <p className="text-sm text-slate-500 mt-1">
+          Bio, contact, experience, skills and selected brands shown on /about.
+        </p>
       </header>
 
       <SectionCard
         title="Headline & bio"
-        footer={<><button onClick={s.restore} className="text-xs text-slate-500 hover:text-white px-3 py-2">Restore default</button><SaveButton saving={s.saving} onClick={s.save} /></>}
+        footer={
+          <>
+            <button
+              onClick={s.restore}
+              className="text-xs text-slate-500 hover:text-white px-3 py-2"
+            >
+              Restore default
+            </button>
+            <SaveButton saving={s.saving} onClick={s.save} />
+          </>
+        }
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Field label="Eyebrow"><TextInput value={get(s.draft, "eyebrow", "")} onChange={(e) => s.update("eyebrow", e.target.value)} /></Field>
-          <Field label="Top right tag"><TextInput value={get(s.draft, "top_right", "")} onChange={(e) => s.update("top_right", e.target.value)} /></Field>
-          <Field label="Title - line 1"><TextInput value={get(s.draft, "title_1", "")} onChange={(e) => s.update("title_1", e.target.value)} /></Field>
-          <Field label="Title - accent"><TextInput value={get(s.draft, "title_accent", "")} onChange={(e) => s.update("title_accent", e.target.value)} /></Field>
-          <Field label="Bio paragraph 1"><TextArea rows={4} value={get(s.draft, "bio_p1", "")} onChange={(e) => s.update("bio_p1", e.target.value)} /></Field>
-          <Field label="Bio paragraph 2"><TextArea rows={4} value={get(s.draft, "bio_p2", "")} onChange={(e) => s.update("bio_p2", e.target.value)} /></Field>
-          <Field label="Bio paragraph 3"><TextArea rows={4} value={get(s.draft, "bio_p3", "")} onChange={(e) => s.update("bio_p3", e.target.value)} /></Field>
+          <Field label="Eyebrow">
+            <TextInput
+              value={get(s.draft, "eyebrow", "")}
+              onChange={(e) => s.update("eyebrow", e.target.value)}
+            />
+          </Field>
+          <Field label="Top right tag">
+            <TextInput
+              value={get(s.draft, "top_right", "")}
+              onChange={(e) => s.update("top_right", e.target.value)}
+            />
+          </Field>
+          <Field label="Title - line 1">
+            <TextInput
+              value={get(s.draft, "title_1", "")}
+              onChange={(e) => s.update("title_1", e.target.value)}
+            />
+          </Field>
+          <Field label="Title - accent">
+            <TextInput
+              value={get(s.draft, "title_accent", "")}
+              onChange={(e) => s.update("title_accent", e.target.value)}
+            />
+          </Field>
+          <Field label="Bio paragraph 1">
+            <TextArea
+              rows={4}
+              value={get(s.draft, "bio_p1", "")}
+              onChange={(e) => s.update("bio_p1", e.target.value)}
+            />
+          </Field>
+          <Field label="Bio paragraph 2">
+            <TextArea
+              rows={4}
+              value={get(s.draft, "bio_p2", "")}
+              onChange={(e) => s.update("bio_p2", e.target.value)}
+            />
+          </Field>
+          <Field label="Bio paragraph 3">
+            <TextArea
+              rows={4}
+              value={get(s.draft, "bio_p3", "")}
+              onChange={(e) => s.update("bio_p3", e.target.value)}
+            />
+          </Field>
         </div>
 
         <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Field label="Email"><TextInput type="email" value={get(s.draft, "email", "")} onChange={(e) => s.update("email", e.target.value)} /></Field>
-          <Field label="Phone"><TextInput value={get(s.draft, "phone", "")} onChange={(e) => s.update("phone", e.target.value)} /></Field>
-          <Field label="Location"><TextInput value={get(s.draft, "location", "")} onChange={(e) => s.update("location", e.target.value)} /></Field>
+          <Field label="Email">
+            <TextInput
+              type="email"
+              value={get(s.draft, "email", "")}
+              onChange={(e) => s.update("email", e.target.value)}
+            />
+          </Field>
+          <Field label="Phone">
+            <TextInput
+              value={get(s.draft, "phone", "")}
+              onChange={(e) => s.update("phone", e.target.value)}
+            />
+          </Field>
+          <Field label="Location">
+            <TextInput
+              value={get(s.draft, "location", "")}
+              onChange={(e) => s.update("location", e.target.value)}
+            />
+          </Field>
         </div>
 
         {/* Experience */}
         <div className="mt-8">
           <div className="flex items-center justify-between">
             <div className="mono text-[10px] tracking-[0.2em] text-slate-500">EXPERIENCE</div>
-            <button onClick={() => s.update("experience", [...experience, { role: "", company: "", period: "" }])}
-              className="text-xs text-sky-300 hover:text-sky-200 inline-flex items-center gap-1"><Plus size={12} /> Add</button>
+            <button
+              onClick={() =>
+                s.update("experience", [...experience, { role: "", company: "", period: "" }])
+              }
+              className="text-xs text-sky-300 hover:text-sky-200 inline-flex items-center gap-1"
+            >
+              <Plus size={12} /> Add
+            </button>
           </div>
           <div className="mt-3 space-y-2">
             {experience.map((x, i) => (
-              <div key={i} className="grid grid-cols-12 gap-2 items-center bg-[#01040A] border border-white/[0.06] rounded p-2">
-                <input className="adm-input col-span-4" placeholder="Role" value={x.role} onChange={(e) => { const n = [...experience]; n[i] = { ...x, role: e.target.value }; s.update("experience", n); }} />
-                <input className="adm-input col-span-4" placeholder="Company" value={x.company} onChange={(e) => { const n = [...experience]; n[i] = { ...x, company: e.target.value }; s.update("experience", n); }} />
-                <input className="adm-input col-span-3" placeholder="Period" value={x.period} onChange={(e) => { const n = [...experience]; n[i] = { ...x, period: e.target.value }; s.update("experience", n); }} />
-                <button onClick={() => s.update("experience", experience.filter((_, j) => j !== i))} className="col-span-1 text-slate-500 hover:text-red-300 inline-flex justify-end"><Trash2 size={14} /></button>
+              <div
+                key={i}
+                className="grid grid-cols-12 gap-2 items-center bg-[#01040A] border border-white/[0.06] rounded p-2"
+              >
+                <input
+                  className="adm-input col-span-4"
+                  placeholder="Role"
+                  value={x.role}
+                  onChange={(e) => {
+                    const n = [...experience];
+                    n[i] = { ...x, role: e.target.value };
+                    s.update("experience", n);
+                  }}
+                />
+                <input
+                  className="adm-input col-span-4"
+                  placeholder="Company"
+                  value={x.company}
+                  onChange={(e) => {
+                    const n = [...experience];
+                    n[i] = { ...x, company: e.target.value };
+                    s.update("experience", n);
+                  }}
+                />
+                <input
+                  className="adm-input col-span-3"
+                  placeholder="Period"
+                  value={x.period}
+                  onChange={(e) => {
+                    const n = [...experience];
+                    n[i] = { ...x, period: e.target.value };
+                    s.update("experience", n);
+                  }}
+                />
+                <button
+                  onClick={() =>
+                    s.update(
+                      "experience",
+                      experience.filter((_, j) => j !== i),
+                    )
+                  }
+                  className="col-span-1 text-slate-500 hover:text-red-300 inline-flex justify-end"
+                >
+                  <Trash2 size={14} />
+                </button>
               </div>
             ))}
           </div>
@@ -528,16 +998,56 @@ function AboutManager() {
         <div className="mt-8">
           <div className="flex items-center justify-between">
             <div className="mono text-[10px] tracking-[0.2em] text-slate-500">SKILLS</div>
-            <button onClick={() => s.update("skills", [...skills, { name: "", value: 50 }])}
-              className="text-xs text-sky-300 hover:text-sky-200 inline-flex items-center gap-1"><Plus size={12} /> Add</button>
+            <button
+              onClick={() => s.update("skills", [...skills, { name: "", value: 50 }])}
+              className="text-xs text-sky-300 hover:text-sky-200 inline-flex items-center gap-1"
+            >
+              <Plus size={12} /> Add
+            </button>
           </div>
           <div className="mt-3 space-y-2">
             {skills.map((sk, i) => (
-              <div key={i} className="grid grid-cols-12 gap-2 items-center bg-[#01040A] border border-white/[0.06] rounded p-2">
-                <input className="adm-input col-span-7" placeholder="Skill" value={sk.name} onChange={(e) => { const n = [...skills]; n[i] = { ...sk, name: e.target.value }; s.update("skills", n); }} />
-                <input type="number" min={0} max={100} className="adm-input col-span-3" value={sk.value} onChange={(e) => { const n = [...skills]; n[i] = { ...sk, value: Math.min(100, Math.max(0, Number(e.target.value) || 0)) }; s.update("skills", n); }} />
+              <div
+                key={i}
+                className="grid grid-cols-12 gap-2 items-center bg-[#01040A] border border-white/[0.06] rounded p-2"
+              >
+                <input
+                  className="adm-input col-span-7"
+                  placeholder="Skill"
+                  value={sk.name}
+                  onChange={(e) => {
+                    const n = [...skills];
+                    n[i] = { ...sk, name: e.target.value };
+                    s.update("skills", n);
+                  }}
+                />
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  className="adm-input col-span-3"
+                  value={sk.value}
+                  onChange={(e) => {
+                    const n = [...skills];
+                    n[i] = {
+                      ...sk,
+                      value: Math.min(100, Math.max(0, Number(e.target.value) || 0)),
+                    };
+                    s.update("skills", n);
+                  }}
+                />
                 <span className="col-span-1 text-xs text-slate-500">%</span>
-                <button onClick={() => s.update("skills", skills.filter((_, j) => j !== i))} className="col-span-1 text-slate-500 hover:text-red-300 inline-flex justify-end"><Trash2 size={14} /></button>
+                <button
+                  onClick={() =>
+                    s.update(
+                      "skills",
+                      skills.filter((_, j) => j !== i),
+                    )
+                  }
+                  className="col-span-1 text-slate-500 hover:text-red-300 inline-flex justify-end"
+                >
+                  <Trash2 size={14} />
+                </button>
               </div>
             ))}
           </div>
@@ -546,7 +1056,19 @@ function AboutManager() {
         {/* Brands */}
         <div className="mt-8">
           <Field label="Selected brands (comma separated)" hint="Names shown in the brands list.">
-            <TextArea rows={3} value={brands.join(", ")} onChange={(e) => s.update("brands", e.target.value.split(",").map((x) => x.trim()).filter(Boolean))} />
+            <TextArea
+              rows={3}
+              value={brands.join(", ")}
+              onChange={(e) =>
+                s.update(
+                  "brands",
+                  e.target.value
+                    .split(",")
+                    .map((x) => x.trim())
+                    .filter(Boolean),
+                )
+              }
+            />
           </Field>
         </div>
       </SectionCard>
@@ -565,23 +1087,103 @@ function ContactManager() {
     <div>
       <header>
         <h2 className="display text-2xl text-metal">Contact page</h2>
-        <p className="text-sm text-slate-500 mt-1">Headline, status, contact details and form options.</p>
+        <p className="text-sm text-slate-500 mt-1">
+          Headline, status, contact details and form options.
+        </p>
       </header>
       <SectionCard
         title="Contact content"
-        footer={<><button onClick={s.restore} className="text-xs text-slate-500 hover:text-white px-3 py-2">Restore default</button><SaveButton saving={s.saving} onClick={s.save} /></>}
+        footer={
+          <>
+            <button
+              onClick={s.restore}
+              className="text-xs text-slate-500 hover:text-white px-3 py-2"
+            >
+              Restore default
+            </button>
+            <SaveButton saving={s.saving} onClick={s.save} />
+          </>
+        }
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Field label="Eyebrow"><TextInput value={get(s.draft, "eyebrow", "")} onChange={(e) => s.update("eyebrow", e.target.value)} /></Field>
-          <Field label="Status"><TextInput value={get(s.draft, "status", "")} onChange={(e) => s.update("status", e.target.value)} /></Field>
-          <Field label="Title - line 1"><TextInput value={get(s.draft, "title_1", "")} onChange={(e) => s.update("title_1", e.target.value)} /></Field>
-          <Field label="Title - accent"><TextInput value={get(s.draft, "title_accent", "")} onChange={(e) => s.update("title_accent", e.target.value)} /></Field>
-          <Field label="Subtitle"><TextArea rows={3} value={get(s.draft, "subtitle", "")} onChange={(e) => s.update("subtitle", e.target.value)} /></Field>
-          <Field label="Email"><TextInput type="email" value={get(s.draft, "email", "")} onChange={(e) => s.update("email", e.target.value)} /></Field>
-          <Field label="Phone"><TextInput value={get(s.draft, "phone", "")} onChange={(e) => s.update("phone", e.target.value)} /></Field>
-          <Field label="Location"><TextInput value={get(s.draft, "location", "")} onChange={(e) => s.update("location", e.target.value)} /></Field>
-          <Field label="Project types (comma separated)"><TextInput value={projectTypes.join(", ")} onChange={(e) => s.update("project_types", e.target.value.split(",").map((x) => x.trim()).filter(Boolean))} /></Field>
-          <Field label="Budgets (comma separated)"><TextInput value={budgets.join(", ")} onChange={(e) => s.update("budgets", e.target.value.split(",").map((x) => x.trim()).filter(Boolean))} /></Field>
+          <Field label="Eyebrow">
+            <TextInput
+              value={get(s.draft, "eyebrow", "")}
+              onChange={(e) => s.update("eyebrow", e.target.value)}
+            />
+          </Field>
+          <Field label="Status">
+            <TextInput
+              value={get(s.draft, "status", "")}
+              onChange={(e) => s.update("status", e.target.value)}
+            />
+          </Field>
+          <Field label="Title - line 1">
+            <TextInput
+              value={get(s.draft, "title_1", "")}
+              onChange={(e) => s.update("title_1", e.target.value)}
+            />
+          </Field>
+          <Field label="Title - accent">
+            <TextInput
+              value={get(s.draft, "title_accent", "")}
+              onChange={(e) => s.update("title_accent", e.target.value)}
+            />
+          </Field>
+          <Field label="Subtitle">
+            <TextArea
+              rows={3}
+              value={get(s.draft, "subtitle", "")}
+              onChange={(e) => s.update("subtitle", e.target.value)}
+            />
+          </Field>
+          <Field label="Email">
+            <TextInput
+              type="email"
+              value={get(s.draft, "email", "")}
+              onChange={(e) => s.update("email", e.target.value)}
+            />
+          </Field>
+          <Field label="Phone">
+            <TextInput
+              value={get(s.draft, "phone", "")}
+              onChange={(e) => s.update("phone", e.target.value)}
+            />
+          </Field>
+          <Field label="Location">
+            <TextInput
+              value={get(s.draft, "location", "")}
+              onChange={(e) => s.update("location", e.target.value)}
+            />
+          </Field>
+          <Field label="Project types (comma separated)">
+            <TextInput
+              value={projectTypes.join(", ")}
+              onChange={(e) =>
+                s.update(
+                  "project_types",
+                  e.target.value
+                    .split(",")
+                    .map((x) => x.trim())
+                    .filter(Boolean),
+                )
+              }
+            />
+          </Field>
+          <Field label="Budgets (comma separated)">
+            <TextInput
+              value={budgets.join(", ")}
+              onChange={(e) =>
+                s.update(
+                  "budgets",
+                  e.target.value
+                    .split(",")
+                    .map((x) => x.trim())
+                    .filter(Boolean),
+                )
+              }
+            />
+          </Field>
         </div>
       </SectionCard>
     </div>
@@ -611,7 +1213,9 @@ function ClientsManager() {
 
   const create = async () => {
     const max = clients.reduce((m, c) => Math.max(m, c.sort_order), 0);
-    const { error } = await supabase.from("clients").insert({ name: "New client", sort_order: max + 1, is_active: true });
+    const { error } = await supabase
+      .from("clients")
+      .insert({ name: "New client", sort_order: max + 1, is_active: true });
     if (error) toast.error(error.message);
     else toast.success("Client added");
   };
@@ -630,11 +1234,16 @@ function ClientsManager() {
       const dims = await readImageDimensions(file).catch(() => null);
       // Use 'logos/' prefix so the public SELECT policy on site-assets allows it.
       const path = `logos/client-${id}-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
-      const { error: upErr } = await supabase.storage.from("site-assets").upload(path, file, { upsert: true });
+      const { error: upErr } = await supabase.storage
+        .from("site-assets")
+        .upload(path, file, { upsert: true });
       if (upErr) throw upErr;
       const { data } = supabase.storage.from("site-assets").getPublicUrl(path);
       const patch: Partial<DbClient> = { logo_url: data.publicUrl };
-      if (dims) { patch.logo_width = dims.width; patch.logo_height = dims.height; }
+      if (dims) {
+        patch.logo_width = dims.width;
+        patch.logo_height = dims.height;
+      }
       await update(id, patch);
     } catch (e) {
       toast.error((e as Error).message);
@@ -648,9 +1257,15 @@ function ClientsManager() {
       <header className="flex items-start justify-between">
         <div>
           <h2 className="display text-2xl text-metal">Clients</h2>
-          <p className="text-sm text-slate-500 mt-1">Logos appear on the homepage strip in real time. Logos preserve their natural proportion.</p>
+          <p className="text-sm text-slate-500 mt-1">
+            Logos appear on the homepage strip in real time. Logos preserve their natural
+            proportion.
+          </p>
         </div>
-        <button onClick={create} className="inline-flex items-center gap-2 bg-sky-300 text-[#01040A] px-4 py-2 rounded text-sm font-semibold">
+        <button
+          onClick={create}
+          className="inline-flex items-center gap-2 bg-sky-300 text-[#01040A] px-4 py-2 rounded text-sm font-semibold"
+        >
           <Plus size={14} /> Add client
         </button>
       </header>
@@ -662,7 +1277,10 @@ function ClientsManager() {
           </div>
         )}
         {clients.map((c) => (
-          <div key={c.id} className="grid grid-cols-12 gap-3 items-center bg-[#030814] border border-white/[0.08] rounded p-3">
+          <div
+            key={c.id}
+            className="grid grid-cols-12 gap-3 items-center bg-[#030814] border border-white/[0.08] rounded p-3"
+          >
             <div className="col-span-2 grid place-items-center h-16 bg-[#01040A] border border-white/[0.06] rounded p-2">
               {c.logo_url ? (
                 <img src={c.logo_url} alt={c.name} className="max-h-12 max-w-full object-contain" />
@@ -671,28 +1289,52 @@ function ClientsManager() {
               )}
             </div>
             <div className="col-span-3">
-              <input className="adm-input" placeholder="Name" defaultValue={c.name}
-                onBlur={(e) => e.target.value !== c.name && update(c.id, { name: e.target.value })} />
+              <input
+                className="adm-input"
+                placeholder="Name"
+                defaultValue={c.name}
+                onBlur={(e) => e.target.value !== c.name && update(c.id, { name: e.target.value })}
+              />
             </div>
             <div className="col-span-3">
-              <input className="adm-input" placeholder="https://..." defaultValue={c.website_url ?? ""}
-                onBlur={(e) => update(c.id, { website_url: e.target.value || null })} />
+              <input
+                className="adm-input"
+                placeholder="https://..."
+                defaultValue={c.website_url ?? ""}
+                onBlur={(e) => update(c.id, { website_url: e.target.value || null })}
+              />
             </div>
             <div className="col-span-1">
-              <input type="number" className="adm-input" defaultValue={c.sort_order}
-                onBlur={(e) => update(c.id, { sort_order: Number(e.target.value) || 0 })} />
+              <input
+                type="number"
+                className="adm-input"
+                defaultValue={c.sort_order}
+                onBlur={(e) => update(c.id, { sort_order: Number(e.target.value) || 0 })}
+              />
             </div>
             <label className="col-span-2 inline-flex items-center gap-2 text-xs text-slate-300 border border-white/10 rounded px-3 py-2 cursor-pointer hover:border-sky-300/40">
               <Upload size={13} /> {c.logo_url ? "Replace logo" : "Upload logo"}
-              <input type="file" accept="image/*" className="hidden"
-                onChange={(e) => e.target.files?.[0] && uploadLogo(c.id, e.target.files[0])} />
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => e.target.files?.[0] && uploadLogo(c.id, e.target.files[0])}
+              />
             </label>
             <div className="col-span-1 flex items-center justify-end gap-2">
-              <button onClick={() => update(c.id, { is_active: !c.is_active })} className="text-slate-400 hover:text-white" title={c.is_active ? "Visible" : "Hidden"}>
+              <button
+                onClick={() => update(c.id, { is_active: !c.is_active })}
+                className="text-slate-400 hover:text-white"
+                title={c.is_active ? "Visible" : "Hidden"}
+              >
                 {c.is_active ? <Eye size={14} /> : <EyeOff size={14} className="text-slate-600" />}
               </button>
               <button onClick={() => remove(c.id)} className="text-slate-500 hover:text-red-300">
-                {busyId === c.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                {busyId === c.id ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : (
+                  <Trash2 size={14} />
+                )}
               </button>
             </div>
           </div>
@@ -722,7 +1364,10 @@ function PortfolioManager() {
   const filtered = useMemo(() => {
     return ordered
       .filter((p) => filter === "All" || normalizeCategory(p.category) === filter)
-      .filter((p) => statusFilter === "all" || (statusFilter === "live" ? p.is_published : !p.is_published));
+      .filter(
+        (p) =>
+          statusFilter === "all" || (statusFilter === "live" ? p.is_published : !p.is_published),
+      );
   }, [ordered, filter, statusFilter]);
 
   // Move a project up or down in the global order. Swaps sort_order with the
@@ -735,8 +1380,14 @@ function PortfolioManager() {
     const a = p.sort_order;
     const b = other.sort_order === a ? a + dir : other.sort_order;
     const [{ error: e1 }, { error: e2 }] = await Promise.all([
-      supabase.from("projects").update({ sort_order: b, updated_at: new Date().toISOString() }).eq("id", p.id),
-      supabase.from("projects").update({ sort_order: a, updated_at: new Date().toISOString() }).eq("id", other.id),
+      supabase
+        .from("projects")
+        .update({ sort_order: b, updated_at: new Date().toISOString() })
+        .eq("id", p.id),
+      supabase
+        .from("projects")
+        .update({ sort_order: a, updated_at: new Date().toISOString() })
+        .eq("id", other.id),
     ]);
     if (e1 || e2) toast.error((e1 || e2)!.message);
   };
@@ -745,7 +1396,12 @@ function PortfolioManager() {
     const max = projects.reduce((m, p) => Math.max(m, p.sort_order), 0);
     const { data, error } = await supabase
       .from("projects")
-      .insert({ title: "New project", category: "Digital Design", sort_order: max + 1, is_published: false })
+      .insert({
+        title: "New project",
+        category: "Digital Design",
+        sort_order: max + 1,
+        is_published: false,
+      })
       .select()
       .single();
     if (error) toast.error(error.message);
@@ -777,7 +1433,10 @@ function PortfolioManager() {
 
   const togglePublish = async (p: DbProject) => {
     await snapshotBefore("projects", p.id, p.title);
-    const { error } = await supabase.from("projects").update({ is_published: !p.is_published, updated_at: new Date().toISOString() }).eq("id", p.id);
+    const { error } = await supabase
+      .from("projects")
+      .update({ is_published: !p.is_published, updated_at: new Date().toISOString() })
+      .eq("id", p.id);
     if (error) toast.error(error.message);
   };
 
@@ -786,13 +1445,21 @@ function PortfolioManager() {
       <header className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h2 className="display text-2xl text-metal">Portfolio</h2>
-          <p className="text-sm text-slate-500 mt-1">Selected work shown on /portfolio. Images preserve real proportions.</p>
+          <p className="text-sm text-slate-500 mt-1">
+            Selected work shown on /portfolio. Images preserve real proportions.
+          </p>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => setBatchOpen(true)} className="inline-flex items-center gap-2 border border-white/10 hover:border-sky-300/40 px-4 py-2 rounded text-sm">
+          <button
+            onClick={() => setBatchOpen(true)}
+            className="inline-flex items-center gap-2 border border-white/10 hover:border-sky-300/40 px-4 py-2 rounded text-sm"
+          >
             <Plus size={14} /> Batch add
           </button>
-          <button onClick={create} className="inline-flex items-center gap-2 bg-sky-300 text-[#01040A] px-4 py-2 rounded text-sm font-semibold">
+          <button
+            onClick={create}
+            className="inline-flex items-center gap-2 bg-sky-300 text-[#01040A] px-4 py-2 rounded text-sm font-semibold"
+          >
             <Plus size={14} /> New project
           </button>
         </div>
@@ -801,19 +1468,33 @@ function PortfolioManager() {
       <div className="mt-5 flex flex-wrap gap-2 items-center">
         <div className="mono text-[10px] text-slate-500 mr-2">CATEGORY</div>
         {["All", ...PROJECT_CATEGORIES].map((c) => (
-          <button key={c} onClick={() => setFilter(c)}
+          <button
+            key={c}
+            onClick={() => setFilter(c)}
             className={`mono text-[11px] px-3 py-1.5 rounded-full border transition ${
-              filter === c ? "bg-sky-300/15 border-sky-300/40 text-sky-100" : "border-white/10 text-slate-400 hover:text-white"
-            }`}>{c}</button>
+              filter === c
+                ? "bg-sky-300/15 border-sky-300/40 text-sky-100"
+                : "border-white/10 text-slate-400 hover:text-white"
+            }`}
+          >
+            {c}
+          </button>
         ))}
       </div>
       <div className="mt-3 flex flex-wrap gap-2 items-center">
         <div className="mono text-[10px] text-slate-500 mr-2">STATUS</div>
         {(["all", "live", "draft"] as const).map((c) => (
-          <button key={c} onClick={() => setStatusFilter(c)}
+          <button
+            key={c}
+            onClick={() => setStatusFilter(c)}
             className={`mono text-[11px] px-3 py-1.5 rounded-full border transition ${
-              statusFilter === c ? "bg-sky-300/15 border-sky-300/40 text-sky-100" : "border-white/10 text-slate-400 hover:text-white"
-            }`}>{c}</button>
+              statusFilter === c
+                ? "bg-sky-300/15 border-sky-300/40 text-sky-100"
+                : "border-white/10 text-slate-400 hover:text-white"
+            }`}
+          >
+            {c}
+          </button>
         ))}
       </div>
 
@@ -825,11 +1506,20 @@ function PortfolioManager() {
           const isLast = orderIdx === ordered.length - 1;
           const cat = normalizeCategory(p.category);
           return (
-            <div key={p.id} className="bg-[#030814] border border-white/[0.08] rounded-lg overflow-hidden flex flex-col">
-              <div className="relative bg-[#01040A] border-b border-white/[0.06] grid place-items-center" style={{ aspectRatio: ratio }}>
+            <div
+              key={p.id}
+              className="bg-[#030814] border border-white/[0.08] rounded-lg overflow-hidden flex flex-col"
+            >
+              <div
+                className="relative bg-[#01040A] border-b border-white/[0.06] grid place-items-center"
+                style={{ aspectRatio: ratio }}
+              >
                 {p.cover_url ? (
-                  <img src={p.cover_url} alt={p.title}
-                    className={`w-full h-full ${p.image_fit === "cover" ? "object-cover" : "object-contain"}`} />
+                  <img
+                    src={p.cover_url}
+                    alt={p.title}
+                    className={`w-full h-full ${p.image_fit === "cover" ? "object-cover" : "object-contain"}`}
+                  />
                 ) : (
                   <div className="text-slate-600 text-xs">No cover</div>
                 )}
@@ -840,31 +1530,64 @@ function PortfolioManager() {
               <div className="p-4 flex-1 flex flex-col">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    {p.client_name && <div className="text-[12px] text-slate-200">{p.client_name}</div>}
-                    <div className="mono text-[10px] tracking-[0.16em] text-slate-500 mt-0.5">{p.year ?? "-"} · {cat}</div>
+                    {p.client_name && (
+                      <div className="text-[12px] text-slate-200">{p.client_name}</div>
+                    )}
+                    <div className="mono text-[10px] tracking-[0.16em] text-slate-500 mt-0.5">
+                      {p.year ?? "-"} · {cat}
+                    </div>
                     <div className="text-sm font-medium text-slate-100 mt-1">{p.title}</div>
                   </div>
-                  <span className={`mono text-[9px] px-2 py-0.5 rounded ${p.is_published ? "bg-sky-300/10 text-sky-200" : "bg-amber-300/10 text-amber-200"}`}>
+                  <span
+                    className={`mono text-[9px] px-2 py-0.5 rounded ${p.is_published ? "bg-sky-300/10 text-sky-200" : "bg-amber-300/10 text-amber-200"}`}
+                  >
                     {p.is_published ? "LIVE" : "DRAFT"}
                   </span>
                 </div>
                 {p.featured && (
-                  <div className="mt-2 inline-flex items-center gap-1 text-[10px] text-amber-300"><Star size={10} /> Featured</div>
+                  <div className="mt-2 inline-flex items-center gap-1 text-[10px] text-amber-300">
+                    <Star size={10} /> Featured
+                  </div>
                 )}
                 <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center gap-2 text-xs">
-                  <button onClick={() => move(p, -1)} disabled={isFirst} title="Move up"
-                    className="inline-flex items-center text-slate-400 hover:text-white disabled:opacity-30 disabled:hover:text-slate-400">
+                  <button
+                    onClick={() => move(p, -1)}
+                    disabled={isFirst}
+                    title="Move up"
+                    className="inline-flex items-center text-slate-400 hover:text-white disabled:opacity-30 disabled:hover:text-slate-400"
+                  >
                     <ArrowUp size={12} />
                   </button>
-                  <button onClick={() => move(p, 1)} disabled={isLast} title="Move down"
-                    className="inline-flex items-center text-slate-400 hover:text-white disabled:opacity-30 disabled:hover:text-slate-400">
+                  <button
+                    onClick={() => move(p, 1)}
+                    disabled={isLast}
+                    title="Move down"
+                    className="inline-flex items-center text-slate-400 hover:text-white disabled:opacity-30 disabled:hover:text-slate-400"
+                  >
                     <ArrowDown size={12} />
                   </button>
                   <span className="w-px h-4 bg-white/10 mx-1" />
-                  <button onClick={() => setEditing(p)} className="text-sky-300 hover:text-sky-200">Edit</button>
-                  <button onClick={() => duplicate(p)} className="text-slate-400 hover:text-white inline-flex items-center gap-1"><Copy size={11} /> Duplicate</button>
-                  <button onClick={() => togglePublish(p)} className="text-slate-400 hover:text-white">{p.is_published ? "Unpublish" : "Publish"}</button>
-                  <button onClick={() => remove(p.id)} className="ml-auto text-slate-500 hover:text-red-300 inline-flex items-center gap-1"><Trash2 size={11} /></button>
+                  <button onClick={() => setEditing(p)} className="text-sky-300 hover:text-sky-200">
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => duplicate(p)}
+                    className="text-slate-400 hover:text-white inline-flex items-center gap-1"
+                  >
+                    <Copy size={11} /> Duplicate
+                  </button>
+                  <button
+                    onClick={() => togglePublish(p)}
+                    className="text-slate-400 hover:text-white"
+                  >
+                    {p.is_published ? "Unpublish" : "Publish"}
+                  </button>
+                  <button
+                    onClick={() => remove(p.id)}
+                    className="ml-auto text-slate-500 hover:text-red-300 inline-flex items-center gap-1"
+                  >
+                    <Trash2 size={11} />
+                  </button>
                 </div>
               </div>
             </div>
@@ -873,7 +1596,12 @@ function PortfolioManager() {
       </div>
 
       {editing && <ProjectEditor project={editing} onClose={() => setEditing(null)} />}
-      {batchOpen && <BatchAddProjects onClose={() => setBatchOpen(false)} startSort={projects.reduce((m, p) => Math.max(m, p.sort_order), 0) + 1} />}
+      {batchOpen && (
+        <BatchAddProjects
+          onClose={() => setBatchOpen(false)}
+          startSort={projects.reduce((m, p) => Math.max(m, p.sort_order), 0) + 1}
+        />
+      )}
     </div>
   );
 }
@@ -882,45 +1610,58 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
   const [form, setForm] = useState<DbProject>(project);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const set = <K extends keyof DbProject>(k: K, v: DbProject[K]) => setForm((f) => ({ ...f, [k]: v }));
+  const set = <K extends keyof DbProject>(k: K, v: DbProject[K]) =>
+    setForm((f) => ({ ...f, [k]: v }));
 
   const save = async () => {
-    if (!form.title.trim()) { toast.error("Title is required"); return; }
-    if (!form.category.trim()) { toast.error("Category is required"); return; }
+    if (!form.title.trim()) {
+      toast.error("Title is required");
+      return;
+    }
+    if (!form.category.trim()) {
+      toast.error("Category is required");
+      return;
+    }
     setSaving(true);
     await snapshotBefore("projects", form.id, form.title);
-    const { error } = await supabase.from("projects").update({
-      title: form.title,
-      subtitle: form.subtitle,
-      category: normalizeCategory(form.category),
-      year: form.year,
-      description: form.description,
-      cover_url: form.cover_url,
-      cover_width: form.cover_width ?? null,
-      cover_height: form.cover_height ?? null,
-      palette: form.palette,
-      span: form.span,
-      sort_order: form.sort_order,
-      tags: form.tags as unknown as never,
-      gallery: form.gallery as unknown as never,
-      gallery_meta: (form.gallery_meta ?? []) as unknown as never,
-      is_published: form.is_published,
-      featured: form.featured ?? false,
-      featured_priority: form.featured_priority ?? 0,
-      client_name: form.client_name ?? null,
-      image_fit: form.image_fit ?? "contain",
-      concept: form.concept ?? null,
-      idea: form.idea ?? null,
-      role: form.role ?? null,
-      notes: form.notes ?? null,
-      collaborators: (form.collaborators ?? []) as unknown as never,
-      tools_used: (form.tools_used ?? []) as unknown as never,
-      deliverables: (form.deliverables ?? []) as unknown as never,
-      updated_at: new Date().toISOString(),
-    }).eq("id", form.id);
+    const { error } = await supabase
+      .from("projects")
+      .update({
+        title: form.title,
+        subtitle: form.subtitle,
+        category: normalizeCategory(form.category),
+        year: form.year,
+        description: form.description,
+        cover_url: form.cover_url,
+        cover_width: form.cover_width ?? null,
+        cover_height: form.cover_height ?? null,
+        palette: form.palette,
+        span: form.span,
+        sort_order: form.sort_order,
+        tags: form.tags as unknown as never,
+        gallery: form.gallery as unknown as never,
+        gallery_meta: (form.gallery_meta ?? []) as unknown as never,
+        is_published: form.is_published,
+        featured: form.featured ?? false,
+        featured_priority: form.featured_priority ?? 0,
+        client_name: form.client_name ?? null,
+        image_fit: form.image_fit ?? "contain",
+        concept: form.concept ?? null,
+        idea: form.idea ?? null,
+        role: form.role ?? null,
+        notes: form.notes ?? null,
+        collaborators: (form.collaborators ?? []) as unknown as never,
+        tools_used: (form.tools_used ?? []) as unknown as never,
+        deliverables: (form.deliverables ?? []) as unknown as never,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", form.id);
     setSaving(false);
     if (error) toast.error(error.message);
-    else { toast.success("Saved"); onClose(); }
+    else {
+      toast.success("Saved");
+      onClose();
+    }
   };
 
   const uploadCover = async (file: File) => {
@@ -928,13 +1669,21 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
     try {
       const dims = await readImageDimensions(file).catch(() => null);
       const path = `projects/${form.id}-cover-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
-      const { error: upErr } = await supabase.storage.from("site-assets").upload(path, file, { upsert: true });
+      const { error: upErr } = await supabase.storage
+        .from("site-assets")
+        .upload(path, file, { upsert: true });
       if (upErr) throw upErr;
       const { data } = supabase.storage.from("site-assets").getPublicUrl(path);
       set("cover_url", data.publicUrl);
-      if (dims) { set("cover_width", dims.width); set("cover_height", dims.height); }
-    } catch (e) { toast.error((e as Error).message); }
-    finally { setUploading(false); }
+      if (dims) {
+        set("cover_width", dims.width);
+        set("cover_height", dims.height);
+      }
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setUploading(false);
+    }
   };
 
   const uploadGalleryItem = async (file: File) => {
@@ -942,7 +1691,9 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
     try {
       const dims = await readImageDimensions(file).catch(() => null);
       const path = `projects/${form.id}-gallery-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
-      const { error: upErr } = await supabase.storage.from("site-assets").upload(path, file, { upsert: true });
+      const { error: upErr } = await supabase.storage
+        .from("site-assets")
+        .upload(path, file, { upsert: true });
       if (upErr) throw upErr;
       const { data } = supabase.storage.from("site-assets").getPublicUrl(path);
       set("gallery", [...(form.gallery ?? []), data.publicUrl]);
@@ -950,8 +1701,11 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
         ...(form.gallery_meta ?? []),
         { url: data.publicUrl, width: dims?.width, height: dims?.height },
       ]);
-    } catch (e) { toast.error((e as Error).message); }
-    finally { setUploading(false); }
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setUploading(false);
+    }
   };
 
   const ratio = aspectFromDims(form.cover_width, form.cover_height) || "16 / 10";
@@ -962,46 +1716,108 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
   };
 
   return (
-    <div className="fixed inset-0 z-[90] bg-[#01040A]/85 backdrop-blur grid place-items-center p-4 overflow-auto" onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} className="w-full max-w-5xl my-8 bg-[#030814] border border-white/[0.1] rounded-lg">
+    <div
+      className="fixed inset-0 z-[90] bg-[#01040A]/85 backdrop-blur grid place-items-center p-4 overflow-auto"
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-5xl my-8 bg-[#030814] border border-white/[0.1] rounded-lg"
+      >
         <div className="flex items-center justify-between p-5 border-b border-white/[0.08]">
           <h3 className="display text-xl text-metal">Edit project</h3>
-          <button onClick={onClose} className="text-slate-500 hover:text-white text-sm">Close</button>
+          <button onClick={onClose} className="text-slate-500 hover:text-white text-sm">
+            Close
+          </button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 p-6">
           {/* FORM */}
           <div className="lg:col-span-3 space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Project title"><TextInput value={form.title} onChange={(e) => set("title", e.target.value)} /></Field>
-              <Field label="Client"><TextInput value={form.client_name ?? ""} onChange={(e) => set("client_name", e.target.value)} /></Field>
+              <Field label="Project title">
+                <TextInput value={form.title} onChange={(e) => set("title", e.target.value)} />
+              </Field>
+              <Field label="Client">
+                <TextInput
+                  value={form.client_name ?? ""}
+                  onChange={(e) => set("client_name", e.target.value)}
+                />
+              </Field>
               <Field label="Category">
-                <select className="adm-input" value={normalizeCategory(form.category)} onChange={(e) => set("category", e.target.value)}>
-                  {PROJECT_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                <select
+                  className="adm-input"
+                  value={normalizeCategory(form.category)}
+                  onChange={(e) => set("category", e.target.value)}
+                >
+                  {PROJECT_CATEGORIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
                 </select>
               </Field>
-              <Field label="Year"><TextInput value={form.year ?? ""} onChange={(e) => set("year", e.target.value)} /></Field>
-              <Field label="Subtitle / discipline"><TextInput value={form.subtitle ?? ""} onChange={(e) => set("subtitle", e.target.value)} /></Field>
-              <Field label="Sort order"><TextInput type="number" value={String(form.sort_order)} onChange={(e) => set("sort_order", Number(e.target.value) || 0)} /></Field>
+              <Field label="Year">
+                <TextInput value={form.year ?? ""} onChange={(e) => set("year", e.target.value)} />
+              </Field>
+              <Field label="Subtitle / discipline">
+                <TextInput
+                  value={form.subtitle ?? ""}
+                  onChange={(e) => set("subtitle", e.target.value)}
+                />
+              </Field>
+              <Field label="Sort order">
+                <TextInput
+                  type="number"
+                  value={String(form.sort_order)}
+                  onChange={(e) => set("sort_order", Number(e.target.value) || 0)}
+                />
+              </Field>
             </div>
 
             <Field label="Short description">
-              <TextArea rows={4} value={form.description ?? ""} onChange={(e) => set("description", e.target.value)} />
+              <TextArea
+                rows={4}
+                value={form.description ?? ""}
+                onChange={(e) => set("description", e.target.value)}
+              />
             </Field>
 
             <Field label="Tags (comma separated)">
-              <TextInput value={(form.tags ?? []).join(", ")} onChange={(e) => set("tags", e.target.value.split(",").map((t) => t.trim()).filter(Boolean))} />
+              <TextInput
+                value={(form.tags ?? []).join(", ")}
+                onChange={(e) =>
+                  set(
+                    "tags",
+                    e.target.value
+                      .split(",")
+                      .map((t) => t.trim())
+                      .filter(Boolean),
+                  )
+                }
+              />
             </Field>
 
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Image fit" hint="Contain keeps the full image visible. Cover crops to fill.">
-                <select className="adm-input" value={form.image_fit ?? "contain"} onChange={(e) => set("image_fit", e.target.value)}>
+              <Field
+                label="Image fit"
+                hint="Contain keeps the full image visible. Cover crops to fill."
+              >
+                <select
+                  className="adm-input"
+                  value={form.image_fit ?? "contain"}
+                  onChange={(e) => set("image_fit", e.target.value)}
+                >
                   <option value="contain">Contain (preserve full image)</option>
                   <option value="cover">Cover (fill, may crop)</option>
                 </select>
               </Field>
               <Field label="Card size" hint="Layout span on the public grid.">
-                <select className="adm-input" value={form.span ?? "normal"} onChange={(e) => set("span", e.target.value)}>
+                <select
+                  className="adm-input"
+                  value={form.span ?? "normal"}
+                  onChange={(e) => set("span", e.target.value)}
+                >
                   <option value="normal">Normal</option>
                   <option value="wide">Wide</option>
                   <option value="tall">Tall</option>
@@ -1011,10 +1827,20 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
 
             <div className="flex flex-wrap items-center gap-4 pt-2">
               <label className="inline-flex items-center gap-2 text-sm text-slate-300">
-                <input type="checkbox" checked={form.is_published} onChange={(e) => set("is_published", e.target.checked)} /> Published (live)
+                <input
+                  type="checkbox"
+                  checked={form.is_published}
+                  onChange={(e) => set("is_published", e.target.checked)}
+                />{" "}
+                Published (live)
               </label>
               <label className="inline-flex items-center gap-2 text-sm text-slate-300">
-                <input type="checkbox" checked={!!form.featured} onChange={(e) => set("featured", e.target.checked)} /> Featured (max 3 on home)
+                <input
+                  type="checkbox"
+                  checked={!!form.featured}
+                  onChange={(e) => set("featured", e.target.checked)}
+                />{" "}
+                Featured (max 3 on home)
               </label>
               {form.featured && (
                 <label className="inline-flex items-center gap-2 text-sm text-slate-300">
@@ -1034,29 +1860,51 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
               <div className="flex items-center justify-between">
                 <div className="mono text-[10px] tracking-[0.22em] text-sky-300/70">CASE STUDY</div>
                 {isCampaign && (
-                  <span className="mono text-[9px] tracking-[0.2em] text-amber-300/80">CAMPAIGN</span>
+                  <span className="mono text-[9px] tracking-[0.2em] text-amber-300/80">
+                    CAMPAIGN
+                  </span>
                 )}
               </div>
 
               {isCampaign && (
                 <>
                   <Field label="Campaign concept" hint="The strategic angle behind the campaign.">
-                    <TextArea rows={3} value={form.concept ?? ""} onChange={(e) => set("concept", e.target.value)} />
+                    <TextArea
+                      rows={3}
+                      value={form.concept ?? ""}
+                      onChange={(e) => set("concept", e.target.value)}
+                    />
                   </Field>
                   <Field label="Creative idea" hint="The big creative idea or headline thought.">
-                    <TextArea rows={3} value={form.idea ?? ""} onChange={(e) => set("idea", e.target.value)} />
+                    <TextArea
+                      rows={3}
+                      value={form.idea ?? ""}
+                      onChange={(e) => set("idea", e.target.value)}
+                    />
                   </Field>
                 </>
               )}
 
               <Field label="My role">
-                <TextInput value={form.role ?? ""} onChange={(e) => set("role", e.target.value)} placeholder="e.g. Art Director, lead design" />
+                <TextInput
+                  value={form.role ?? ""}
+                  onChange={(e) => set("role", e.target.value)}
+                  placeholder="e.g. Art Director, lead design"
+                />
               </Field>
 
               <Field label="Collaborators (comma separated)">
                 <TextInput
                   value={(form.collaborators ?? []).join(", ")}
-                  onChange={(e) => set("collaborators", e.target.value.split(",").map((t) => t.trim()).filter(Boolean))}
+                  onChange={(e) =>
+                    set(
+                      "collaborators",
+                      e.target.value
+                        .split(",")
+                        .map((t) => t.trim())
+                        .filter(Boolean),
+                    )
+                  }
                   placeholder="e.g. Agency, Photographer, Copywriter"
                 />
               </Field>
@@ -1086,13 +1934,25 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
               <Field label="Deliverables (comma separated)">
                 <TextInput
                   value={(form.deliverables ?? []).join(", ")}
-                  onChange={(e) => set("deliverables", e.target.value.split(",").map((t) => t.trim()).filter(Boolean))}
+                  onChange={(e) =>
+                    set(
+                      "deliverables",
+                      e.target.value
+                        .split(",")
+                        .map((t) => t.trim())
+                        .filter(Boolean),
+                    )
+                  }
                   placeholder="e.g. Key visual, Social cutdowns, OOH"
                 />
               </Field>
 
               <Field label="Notes / outcome">
-                <TextArea rows={3} value={form.notes ?? ""} onChange={(e) => set("notes", e.target.value)} />
+                <TextArea
+                  rows={3}
+                  value={form.notes ?? ""}
+                  onChange={(e) => set("notes", e.target.value)}
+                />
               </Field>
             </div>
           </div>
@@ -1100,45 +1960,94 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
           {/* PREVIEW + UPLOADS */}
           <div className="lg:col-span-2 space-y-4">
             <div>
-              <div className="mono text-[10px] tracking-[0.2em] text-slate-500 mb-2">COVER PREVIEW</div>
-              <div className="bg-[#01040A] border border-white/[0.06] rounded grid place-items-center overflow-hidden" style={{ aspectRatio: ratio }}>
+              <div className="mono text-[10px] tracking-[0.2em] text-slate-500 mb-2">
+                COVER PREVIEW
+              </div>
+              <div
+                className="bg-[#01040A] border border-white/[0.06] rounded grid place-items-center overflow-hidden"
+                style={{ aspectRatio: ratio }}
+              >
                 {form.cover_url ? (
-                  <img src={form.cover_url} alt="" className={`w-full h-full ${form.image_fit === "cover" ? "object-cover" : "object-contain"}`} />
+                  <img
+                    src={form.cover_url}
+                    alt=""
+                    className={`w-full h-full ${form.image_fit === "cover" ? "object-cover" : "object-contain"}`}
+                  />
                 ) : (
                   <div className="text-slate-600 text-xs">No image yet</div>
                 )}
               </div>
               {form.cover_width && form.cover_height && (
-                <div className="text-[11px] text-slate-500 mt-1">Real size: {form.cover_width}×{form.cover_height}px</div>
+                <div className="text-[11px] text-slate-500 mt-1">
+                  Real size: {form.cover_width}×{form.cover_height}px
+                </div>
               )}
               <div className="flex items-center gap-2 mt-3">
                 <label className="inline-flex items-center gap-2 text-sm text-slate-300 border border-white/10 px-3 py-2 rounded cursor-pointer hover:border-sky-300/40">
-                  {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+                  {uploading ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <Upload size={14} />
+                  )}
                   {form.cover_url ? "Replace cover" : "Upload cover"}
-                  <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && uploadCover(e.target.files[0])} />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => e.target.files?.[0] && uploadCover(e.target.files[0])}
+                  />
                 </label>
                 {form.cover_url && (
-                  <button onClick={() => { set("cover_url", null); set("cover_width", null); set("cover_height", null); }}
-                    className="text-xs text-slate-500 hover:text-red-300">Clear</button>
+                  <button
+                    onClick={() => {
+                      set("cover_url", null);
+                      set("cover_width", null);
+                      set("cover_height", null);
+                    }}
+                    className="text-xs text-slate-500 hover:text-red-300"
+                  >
+                    Clear
+                  </button>
                 )}
               </div>
             </div>
 
             <div>
-              <div className="mono text-[10px] tracking-[0.2em] text-slate-500 mb-2">GALLERY ({(form.gallery ?? []).length})</div>
+              <div className="mono text-[10px] tracking-[0.2em] text-slate-500 mb-2">
+                GALLERY ({(form.gallery ?? []).length})
+              </div>
               <div className="grid grid-cols-3 gap-2">
                 {(form.gallery ?? []).map((url, i) => (
-                  <div key={url + i} className="relative bg-[#01040A] border border-white/[0.06] rounded overflow-hidden aspect-square">
+                  <div
+                    key={url + i}
+                    className="relative bg-[#01040A] border border-white/[0.06] rounded overflow-hidden aspect-square"
+                  >
                     <img src={url} alt="" className="absolute inset-0 w-full h-full object-cover" />
-                    <button onClick={() => { set("gallery", form.gallery.filter((_, j) => j !== i)); set("gallery_meta", (form.gallery_meta ?? []).filter((m) => m.url !== url)); }}
-                      className="absolute top-1 right-1 bg-[#01040A]/80 rounded p-1 text-slate-300 hover:text-red-300">
+                    <button
+                      onClick={() => {
+                        set(
+                          "gallery",
+                          form.gallery.filter((_, j) => j !== i),
+                        );
+                        set(
+                          "gallery_meta",
+                          (form.gallery_meta ?? []).filter((m) => m.url !== url),
+                        );
+                      }}
+                      className="absolute top-1 right-1 bg-[#01040A]/80 rounded p-1 text-slate-300 hover:text-red-300"
+                    >
                       <Trash2 size={11} />
                     </button>
                   </div>
                 ))}
                 <label className="aspect-square grid place-items-center border border-dashed border-white/10 rounded text-xs text-slate-500 hover:border-sky-300/50 hover:text-sky-300 cursor-pointer">
                   <Plus size={16} />
-                  <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && uploadGalleryItem(e.target.files[0])} />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => e.target.files?.[0] && uploadGalleryItem(e.target.files[0])}
+                  />
                 </label>
               </div>
             </div>
@@ -1146,7 +2055,9 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
         </div>
 
         <div className="flex items-center justify-end gap-3 p-5 border-t border-white/[0.08]">
-          <button onClick={onClose} className="text-sm text-slate-400 hover:text-white px-4 py-2">Cancel</button>
+          <button onClick={onClose} className="text-sm text-slate-400 hover:text-white px-4 py-2">
+            Cancel
+          </button>
           <SaveButton saving={saving} onClick={save} />
         </div>
       </div>
@@ -1159,7 +2070,12 @@ type BatchRow = { title: string; client_name: string; category: string; year: st
 
 function BatchAddProjects({ onClose, startSort }: { onClose: () => void; startSort: number }) {
   const [rows, setRows] = useState<BatchRow[]>(
-    Array.from({ length: 10 }).map(() => ({ title: "", client_name: "", category: "Digital Design", year: String(new Date().getFullYear()) }))
+    Array.from({ length: 10 }).map(() => ({
+      title: "",
+      client_name: "",
+      category: "Digital Design",
+      year: String(new Date().getFullYear()),
+    })),
   );
   const [saving, setSaving] = useState(false);
 
@@ -1171,7 +2087,10 @@ function BatchAddProjects({ onClose, startSort }: { onClose: () => void; startSo
     const valid = rows
       .map((r, i) => ({ ...r, sort_order: startSort + i }))
       .filter((r) => r.title.trim().length > 0);
-    if (valid.length === 0) { toast.error("Add at least one title."); return; }
+    if (valid.length === 0) {
+      toast.error("Add at least one title.");
+      return;
+    }
     setSaving(true);
     const { error } = await supabase.from("projects").insert(
       valid.map((r) => ({
@@ -1181,22 +2100,35 @@ function BatchAddProjects({ onClose, startSort }: { onClose: () => void; startSo
         year: r.year || null,
         sort_order: r.sort_order,
         is_published: false,
-      }))
+      })),
     );
     setSaving(false);
     if (error) toast.error(error.message);
-    else { toast.success(`Added ${valid.length} project${valid.length > 1 ? "s" : ""} as drafts`); onClose(); }
+    else {
+      toast.success(`Added ${valid.length} project${valid.length > 1 ? "s" : ""} as drafts`);
+      onClose();
+    }
   };
 
   return (
-    <div className="fixed inset-0 z-[90] bg-[#01040A]/85 backdrop-blur grid place-items-center p-4 overflow-auto" onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} className="w-full max-w-4xl my-8 bg-[#030814] border border-white/[0.1] rounded-lg">
+    <div
+      className="fixed inset-0 z-[90] bg-[#01040A]/85 backdrop-blur grid place-items-center p-4 overflow-auto"
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-4xl my-8 bg-[#030814] border border-white/[0.1] rounded-lg"
+      >
         <div className="flex items-center justify-between p-5 border-b border-white/[0.08]">
           <div>
             <h3 className="display text-xl text-metal">Batch add projects</h3>
-            <p className="text-xs text-slate-500 mt-1">Up to 10 at once. Created as drafts - open each to add cover, description and tags.</p>
+            <p className="text-xs text-slate-500 mt-1">
+              Up to 10 at once. Created as drafts - open each to add cover, description and tags.
+            </p>
           </div>
-          <button onClick={onClose} className="text-slate-500 hover:text-white text-sm">Close</button>
+          <button onClick={onClose} className="text-slate-500 hover:text-white text-sm">
+            Close
+          </button>
         </div>
         <div className="p-5 space-y-2">
           <div className="grid grid-cols-12 gap-2 mono text-[10px] text-slate-500 px-2">
@@ -1207,19 +2139,47 @@ function BatchAddProjects({ onClose, startSort }: { onClose: () => void; startSo
             <div className="col-span-1">YEAR</div>
           </div>
           {rows.map((r, i) => (
-            <div key={i} className="grid grid-cols-12 gap-2 items-center bg-[#01040A] border border-white/[0.06] rounded p-2">
+            <div
+              key={i}
+              className="grid grid-cols-12 gap-2 items-center bg-[#01040A] border border-white/[0.06] rounded p-2"
+            >
               <div className="col-span-1 text-xs text-slate-500 pl-2">{i + 1}</div>
-              <input className="adm-input col-span-4" placeholder="Project title" value={r.title} onChange={(e) => setRow(i, { title: e.target.value })} />
-              <input className="adm-input col-span-3" placeholder="Client name" value={r.client_name} onChange={(e) => setRow(i, { client_name: e.target.value })} />
-              <select className="adm-input col-span-3" value={r.category} onChange={(e) => setRow(i, { category: e.target.value })}>
-                {PROJECT_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+              <input
+                className="adm-input col-span-4"
+                placeholder="Project title"
+                value={r.title}
+                onChange={(e) => setRow(i, { title: e.target.value })}
+              />
+              <input
+                className="adm-input col-span-3"
+                placeholder="Client name"
+                value={r.client_name}
+                onChange={(e) => setRow(i, { client_name: e.target.value })}
+              />
+              <select
+                className="adm-input col-span-3"
+                value={r.category}
+                onChange={(e) => setRow(i, { category: e.target.value })}
+              >
+                {PROJECT_CATEGORIES.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
               </select>
-              <input className="adm-input col-span-1" placeholder="2026" value={r.year} onChange={(e) => setRow(i, { year: e.target.value })} />
+              <input
+                className="adm-input col-span-1"
+                placeholder="2026"
+                value={r.year}
+                onChange={(e) => setRow(i, { year: e.target.value })}
+              />
             </div>
           ))}
         </div>
         <div className="flex items-center justify-end gap-3 p-5 border-t border-white/[0.08]">
-          <button onClick={onClose} className="text-sm text-slate-400 hover:text-white px-4 py-2">Cancel</button>
+          <button onClick={onClose} className="text-sm text-slate-400 hover:text-white px-4 py-2">
+            Cancel
+          </button>
           <SaveButton saving={saving} onClick={submit} label="Create projects" />
         </div>
       </div>
@@ -1239,7 +2199,9 @@ function AdvancedJSONManager() {
     <div>
       <header>
         <h2 className="display text-2xl text-metal">Advanced</h2>
-        <p className="text-sm text-slate-500 mt-1">Raw JSON editing for every setting key. Use only if you know the schema.</p>
+        <p className="text-sm text-slate-500 mt-1">
+          Raw JSON editing for every setting key. Use only if you know the schema.
+        </p>
       </header>
 
       <div className="mt-6 space-y-2">
@@ -1248,9 +2210,16 @@ function AdvancedJSONManager() {
           const isOpen = open === k;
           return (
             <div key={k} className="bg-[#030814] border border-white/[0.08] rounded">
-              <button onClick={() => setOpen(isOpen ? null : k)} className="w-full flex items-center justify-between p-4 text-left">
+              <button
+                onClick={() => setOpen(isOpen ? null : k)}
+                className="w-full flex items-center justify-between p-4 text-left"
+              >
                 <div className="font-mono text-sm text-slate-200">{k}</div>
-                {isOpen ? <ChevronDown size={14} className="text-slate-500" /> : <ChevronRight size={14} className="text-slate-500" />}
+                {isOpen ? (
+                  <ChevronDown size={14} className="text-slate-500" />
+                ) : (
+                  <ChevronRight size={14} className="text-slate-500" />
+                )}
               </button>
               {isOpen && <RawEditor sectionKey={k} initial={merged} />}
             </div>
@@ -1261,20 +2230,33 @@ function AdvancedJSONManager() {
   );
 }
 
-function RawEditor({ sectionKey, initial }: { sectionKey: string; initial: Record<string, unknown> }) {
+function RawEditor({
+  sectionKey,
+  initial,
+}: {
+  sectionKey: string;
+  initial: Record<string, unknown>;
+}) {
   const [text, setText] = useState(JSON.stringify(initial, null, 2));
   const [saving, setSaving] = useState(false);
   const save = async () => {
     let parsed: Record<string, unknown>;
-    try { parsed = JSON.parse(text); } catch { toast.error("Invalid JSON"); return; }
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      toast.error("Invalid JSON");
+      return;
+    }
     setSaving(true);
     await snapshotBefore("site_settings", sectionKey, sectionKey);
-    const { error } = await supabase.from("site_settings").upsert(
-      [{ key: sectionKey, value: parsed as never, updated_at: new Date().toISOString() }],
-      { onConflict: "key" }
-    );
+    const { error } = await supabase
+      .from("site_settings")
+      .upsert([{ key: sectionKey, value: parsed as never, updated_at: new Date().toISOString() }], {
+        onConflict: "key",
+      });
     setSaving(false);
-    if (error) toast.error(error.message); else toast.success(`Saved ${sectionKey}`);
+    if (error) toast.error(error.message);
+    else toast.success(`Saved ${sectionKey}`);
   };
   return (
     <div className="px-4 pb-4">

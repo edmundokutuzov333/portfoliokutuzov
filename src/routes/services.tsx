@@ -36,9 +36,8 @@ function ServicesPage() {
             Visual disciplines for brands that move with precision.
           </h1>
           <p className="mt-6 max-w-2xl text-[15px] text-slate-400 leading-relaxed">
-            From the first strategic decision to the last visual asset, every
-            project is built with intent. Below, the principles that guide the
-            work and the services I offer.
+            From the first strategic decision to the last visual asset, every project is built with
+            intent. Below, the principles that guide the work and the services I offer.
           </p>
         </div>
       </section>
@@ -49,9 +48,7 @@ function ServicesPage() {
       <section className="relative px-5 md:px-8 py-24">
         <div className="max-w-[1240px] mx-auto">
           <div className="rounded-2xl border border-white/[0.08] bg-[var(--color-surface)] p-8 md:p-14 text-center">
-            <p className="mono text-[10px] tracking-[0.28em] text-sky-300/80">
-              Ready when you are
-            </p>
+            <p className="mono text-[10px] tracking-[0.28em] text-sky-300/80">Ready when you are</p>
             <h2 className="display text-3xl md:text-5xl mt-5 max-w-3xl mx-auto leading-[1.02] tracking-[-0.025em]">
               <span className="text-metal">Tell me about your brand and</span>{" "}
               <span className="italic text-accent">let's get to work.</span>

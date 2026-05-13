@@ -20,7 +20,7 @@ export function BookingModal({
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [tz, setTz] = useState(
-    typeof Intl !== "undefined" ? Intl.DateTimeFormat().resolvedOptions().timeZone : ""
+    typeof Intl !== "undefined" ? Intl.DateTimeFormat().resolvedOptions().timeZone : "",
   );
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
@@ -38,7 +38,12 @@ export function BookingModal({
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const parsed = bookingSchema.safeParse({
-      name, email, preferred_date: date, preferred_time: time, timezone: tz, note,
+      name,
+      email,
+      preferred_date: date,
+      preferred_time: time,
+      timezone: tz,
+      note,
     });
     if (!parsed.success) {
       toast.error(parsed.error.issues[0].message);
@@ -103,26 +108,53 @@ export function BookingModal({
 
             <div className="mt-5 grid gap-3">
               <input
-                value={name} onChange={(e) => setName(e.target.value)} required
-                placeholder="Your name" className="adm-field"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                placeholder="Your name"
+                className="adm-field"
               />
               <input
-                type="email" value={email} onChange={(e) => setEmail(e.target.value)} required
-                placeholder="Email" className="adm-field"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                placeholder="Email"
+                className="adm-field"
               />
               <div className="grid grid-cols-2 gap-3">
-                <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required className="adm-field" />
-                <input type="time" value={time} onChange={(e) => setTime(e.target.value)} className="adm-field" />
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  required
+                  className="adm-field"
+                />
+                <input
+                  type="time"
+                  value={time}
+                  onChange={(e) => setTime(e.target.value)}
+                  className="adm-field"
+                />
               </div>
-              <input value={tz} onChange={(e) => setTz(e.target.value)} placeholder="Timezone" className="adm-field" />
+              <input
+                value={tz}
+                onChange={(e) => setTz(e.target.value)}
+                placeholder="Timezone"
+                className="adm-field"
+              />
               <textarea
-                value={note} onChange={(e) => setNote(e.target.value)} rows={3}
-                placeholder="Anything I should know? (optional)" className="adm-field resize-none"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                rows={3}
+                placeholder="Anything I should know? (optional)"
+                className="adm-field resize-none"
               />
             </div>
 
             <button
-              type="submit" disabled={busy}
+              type="submit"
+              disabled={busy}
               className="mt-5 w-full inline-flex justify-center items-center gap-2 rounded-full bg-sky-300 px-5 py-3 text-sm font-semibold text-[#01040A] hover:bg-sky-200 disabled:opacity-60"
             >
               {busy ? <Loader2 size={14} className="animate-spin" /> : <CalendarDays size={14} />}

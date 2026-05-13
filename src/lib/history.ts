@@ -23,11 +23,7 @@ export async function snapshotBefore(
       // Only snapshot if a row already existed.
       if (data) snapshot = (data.value as Record<string, unknown>) ?? {};
     } else {
-      const { data } = await supabase
-        .from(entity)
-        .select("*")
-        .eq("id", entityId)
-        .maybeSingle();
+      const { data } = await supabase.from(entity).select("*").eq("id", entityId).maybeSingle();
       if (data) snapshot = data as Record<string, unknown>;
     }
 

@@ -9,7 +9,8 @@ export const CURRENCY_META: Record<
   { symbol: string; label: string; brackets: { value: number; label: string }[] }
 > = {
   EUR: {
-    symbol: "€", label: "Euro",
+    symbol: "€",
+    label: "Euro",
     brackets: [
       { value: 3000, label: "< €5K" },
       { value: 10000, label: "€5K - €15K" },
@@ -18,7 +19,8 @@ export const CURRENCY_META: Record<
     ],
   },
   USD: {
-    symbol: "$", label: "Dollar",
+    symbol: "$",
+    label: "Dollar",
     brackets: [
       { value: 3500, label: "< $5K" },
       { value: 11000, label: "$5K - $17K" },
@@ -27,7 +29,8 @@ export const CURRENCY_META: Record<
     ],
   },
   MZN: {
-    symbol: "MT", label: "Metical",
+    symbol: "MT",
+    label: "Metical",
     brackets: [
       { value: 200000, label: "< 350k MT" },
       { value: 700000, label: "350k - 1M MT" },
@@ -36,7 +39,8 @@ export const CURRENCY_META: Record<
     ],
   },
   GBP: {
-    symbol: "£", label: "Pounds",
+    symbol: "£",
+    label: "Pounds",
     brackets: [
       { value: 2500, label: "< £4K" },
       { value: 9000, label: "£4K - £13K" },
@@ -45,7 +49,8 @@ export const CURRENCY_META: Record<
     ],
   },
   BRL: {
-    symbol: "R$", label: "Reais",
+    symbol: "R$",
+    label: "Reais",
     brackets: [
       { value: 15000, label: "< R$25K" },
       { value: 60000, label: "R$25K - R$90K" },
@@ -95,7 +100,7 @@ const optionalNumeric = z.preprocess((v) => {
   if (v === "" || v === null || v === undefined) return null;
   if (typeof v === "number") return Number.isFinite(v) ? v : null;
   if (typeof v === "string") {
-    const cleaned = v.replace(/[^0-9.\-]/g, "");
+    const cleaned = v.replace(/[^0-9.-]/g, "");
     if (!cleaned) return null;
     const n = Number(cleaned);
     return Number.isFinite(n) ? n : null;
@@ -105,7 +110,11 @@ const optionalNumeric = z.preprocess((v) => {
 
 const optionalDate = z.preprocess(
   (v) => (typeof v === "string" && v.trim() === "" ? null : v),
-  z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date").nullable().optional(),
+  z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date")
+    .nullable()
+    .optional(),
 );
 
 const optionalUuid = z.preprocess(

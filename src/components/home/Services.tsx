@@ -1,12 +1,5 @@
 import { motion } from "framer-motion";
-import {
-  ArrowUpRight,
-  Eye,
-  Layers,
-  Megaphone,
-  Monitor,
-  type LucideIcon,
-} from "lucide-react";
+import { ArrowUpRight, Eye, Layers, Megaphone, Monitor, type LucideIcon } from "lucide-react";
 import { useRef, type MouseEvent } from "react";
 
 type Service = {
@@ -100,9 +93,7 @@ function ServiceRow({ service, index }: { service: Service; index: number }) {
         </div>
 
         <div className="col-span-12 md:col-span-4">
-          <p className="max-w-xl text-sm leading-7 text-slate-400 md:text-[15px]">
-            {service.desc}
-          </p>
+          <p className="max-w-xl text-sm leading-7 text-slate-400 md:text-[15px]">{service.desc}</p>
         </div>
 
         <div className="col-span-12 md:col-span-3">

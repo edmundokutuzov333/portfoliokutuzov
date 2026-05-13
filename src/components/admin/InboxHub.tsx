@@ -3,9 +3,23 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
-  Inbox, Mail, Trash2, Loader2, Phone, Building2, Clock, CalendarClock,
-  Paperclip, Link as LinkIcon, MessageSquare, Send, AlertCircle, CheckCircle2,
-  MapPin, Globe, ExternalLink,
+  Inbox,
+  Mail,
+  Trash2,
+  Loader2,
+  Phone,
+  Building2,
+  Clock,
+  CalendarClock,
+  Paperclip,
+  Link as LinkIcon,
+  MessageSquare,
+  Send,
+  AlertCircle,
+  CheckCircle2,
+  MapPin,
+  Globe,
+  ExternalLink,
 } from "lucide-react";
 import { RequestsInbox } from "./RequestsInbox";
 
@@ -85,34 +99,45 @@ export function InboxHub() {
     const ch = supabase
       .channel(`rt-inbox-hub-${Math.random().toString(36).slice(2, 8)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "briefing_submissions" }, () =>
-        qc.invalidateQueries({ queryKey: ["briefings"] }))
+        qc.invalidateQueries({ queryKey: ["briefings"] }),
+      )
       .on("postgres_changes", { event: "*", schema: "public", table: "booking_requests" }, () =>
-        qc.invalidateQueries({ queryKey: ["bookings"] }))
-      .on("postgres_changes", { event: "*", schema: "public", table: "newsletter_subscribers" }, () =>
-        qc.invalidateQueries({ queryKey: ["subscribers"] }))
+        qc.invalidateQueries({ queryKey: ["bookings"] }),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "newsletter_subscribers" },
+        () => qc.invalidateQueries({ queryKey: ["subscribers"] }),
+      )
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    return () => {
+      supabase.removeChannel(ch);
+    };
   }, [qc]);
 
-  const briefingCount = useQuery({
-    queryKey: ["briefings-count"],
-    queryFn: async () => {
-      const { count } = await supabase
-        .from("briefing_submissions").select("id", { count: "exact", head: true })
-        .eq("status", "new");
-      return count ?? 0;
-    },
-  }).data ?? 0;
+  const briefingCount =
+    useQuery({
+      queryKey: ["briefings-count"],
+      queryFn: async () => {
+        const { count } = await supabase
+          .from("briefing_submissions")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "new");
+        return count ?? 0;
+      },
+    }).data ?? 0;
 
-  const bookingCount = useQuery({
-    queryKey: ["bookings-count"],
-    queryFn: async () => {
-      const { count } = await supabase
-        .from("booking_requests").select("id", { count: "exact", head: true })
-        .eq("status", "new");
-      return count ?? 0;
-    },
-  }).data ?? 0;
+  const bookingCount =
+    useQuery({
+      queryKey: ["bookings-count"],
+      queryFn: async () => {
+        const { count } = await supabase
+          .from("booking_requests")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "new");
+        return count ?? 0;
+      },
+    }).data ?? 0;
 
   const tabs: { id: Tab; label: string; badge?: number }[] = [
     { id: "briefings", label: "Briefings", badge: briefingCount },
@@ -180,19 +205,29 @@ function BriefingsPanel() {
       if (error) throw error;
       return (data ?? []).map((r) => ({
         ...r,
-        attachments: Array.isArray(r.attachments) ? (r.attachments as unknown as BriefAttachment[]) : [],
-        reference_links: Array.isArray(r.reference_links) ? (r.reference_links as unknown as BriefRefLink[]) : [],
+        attachments: Array.isArray(r.attachments)
+          ? (r.attachments as unknown as BriefAttachment[])
+          : [],
+        reference_links: Array.isArray(r.reference_links)
+          ? (r.reference_links as unknown as BriefRefLink[])
+          : [],
       })) as Briefing[];
     },
   });
 
   const filtered = useMemo(
     () => rows.filter((r) => statusFilter === "all" || r.status === statusFilter),
-    [rows, statusFilter]
+    [rows, statusFilter],
   );
 
   const counts = useMemo(() => {
-    const c: Record<string, number> = { all: rows.length, new: 0, reviewing: 0, accepted: 0, closed: 0 };
+    const c: Record<string, number> = {
+      all: rows.length,
+      new: 0,
+      reviewing: 0,
+      accepted: 0,
+      closed: 0,
+    };
     for (const r of rows) c[r.status] = (c[r.status] ?? 0) + 1;
     return c;
   }, [rows]);
@@ -202,7 +237,8 @@ function BriefingsPanel() {
   const update = async (id: string, patch: Partial<Briefing>) => {
     const { error } = await supabase
       .from("briefing_submissions")
-      .update(patch as never).eq("id", id);
+      .update(patch as never)
+      .eq("id", id);
     if (error) toast.error(error.message);
   };
 
@@ -210,7 +246,10 @@ function BriefingsPanel() {
     if (!confirm("Delete this briefing? This cannot be undone.")) return;
     const { error } = await supabase.from("briefing_submissions").delete().eq("id", id);
     if (error) toast.error(error.message);
-    else { toast.success("Deleted"); setSelected(null); }
+    else {
+      toast.success("Deleted");
+      setSelected(null);
+    }
   };
 
   const onOpen = (r: Briefing) => {
@@ -253,29 +292,45 @@ function BriefingsPanel() {
               key={r.id}
               onClick={() => onOpen(r)}
               className={`w-full text-left bg-[#030814] border rounded p-3 transition ${
-                current?.id === r.id ? "border-sky-300/40" : "border-white/[0.06] hover:border-white/[0.15]"
+                current?.id === r.id
+                  ? "border-sky-300/40"
+                  : "border-white/[0.06] hover:border-white/[0.15]"
               }`}
             >
               <div className="flex items-center justify-between gap-2">
                 <div className="text-sm font-medium text-slate-100 truncate">
-                  {r.full_name}{r.company_name ? ` · ${r.company_name}` : ""}
+                  {r.full_name}
+                  {r.company_name ? ` · ${r.company_name}` : ""}
                 </div>
-                <span className={`mono text-[9px] px-1.5 py-0.5 rounded border ${STATUS_TONE[r.status] ?? STATUS_TONE.new}`}>
+                <span
+                  className={`mono text-[9px] px-1.5 py-0.5 rounded border ${STATUS_TONE[r.status] ?? STATUS_TONE.new}`}
+                >
                   {r.status.toUpperCase()}
                 </span>
               </div>
               <div className="text-[11px] text-slate-500 mt-0.5 truncate">{r.email}</div>
               <div className="text-[12px] text-slate-400 mt-1.5 line-clamp-2">{r.message}</div>
               <div className="flex flex-wrap items-center gap-2 text-[10px] text-slate-600 mt-2 mono">
-                <span className="inline-flex items-center gap-1"><Clock size={10} />{new Date(r.created_at).toLocaleString()}</span>
-                <span className={`px-1.5 py-0.5 rounded border ${URGENCY_TONE[r.urgency] ?? URGENCY_TONE.normal}`}>
+                <span className="inline-flex items-center gap-1">
+                  <Clock size={10} />
+                  {new Date(r.created_at).toLocaleString()}
+                </span>
+                <span
+                  className={`px-1.5 py-0.5 rounded border ${URGENCY_TONE[r.urgency] ?? URGENCY_TONE.normal}`}
+                >
                   {String(r.urgency).toUpperCase()}
                 </span>
                 {r.attachments?.length > 0 && (
-                  <span className="inline-flex items-center gap-1"><Paperclip size={10} />{r.attachments.length}</span>
+                  <span className="inline-flex items-center gap-1">
+                    <Paperclip size={10} />
+                    {r.attachments.length}
+                  </span>
                 )}
                 {r.reference_links?.length > 0 && (
-                  <span className="inline-flex items-center gap-1"><LinkIcon size={10} />{r.reference_links.length}</span>
+                  <span className="inline-flex items-center gap-1">
+                    <LinkIcon size={10} />
+                    {r.reference_links.length}
+                  </span>
                 )}
                 <span className="ml-auto truncate">{r.project_type}</span>
               </div>
@@ -290,7 +345,12 @@ function BriefingsPanel() {
               Select a briefing to view it.
             </div>
           ) : (
-            <BriefingDetail key={current.id} req={current} onUpdate={update} onDelete={() => remove(current.id)} />
+            <BriefingDetail
+              key={current.id}
+              req={current}
+              onUpdate={update}
+              onDelete={() => remove(current.id)}
+            />
           )}
         </div>
       </div>
@@ -299,14 +359,18 @@ function BriefingsPanel() {
 }
 
 function BriefingDetail({
-  req, onUpdate, onDelete,
+  req,
+  onUpdate,
+  onDelete,
 }: {
   req: Briefing;
   onUpdate: (id: string, patch: Partial<Briefing>) => Promise<void>;
   onDelete: () => void;
 }) {
   const [notes, setNotes] = useState(req.admin_notes ?? "");
-  useEffect(() => { setNotes(req.admin_notes ?? ""); }, [req.id, req.admin_notes]);
+  useEffect(() => {
+    setNotes(req.admin_notes ?? "");
+  }, [req.id, req.admin_notes]);
 
   const reply = `mailto:${req.email}?subject=${encodeURIComponent(`Re: ${req.project_type}`)}&body=${encodeURIComponent(`Hi ${req.full_name.split(" ")[0]},\n\n`)}`;
 
@@ -321,24 +385,51 @@ function BriefingDetail({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="display text-xl text-metal truncate">{req.full_name}</div>
-          <a href={`mailto:${req.email}`} className="text-sm text-sky-200 hover:underline inline-flex items-center gap-1">
+          <a
+            href={`mailto:${req.email}`}
+            className="text-sm text-sky-200 hover:underline inline-flex items-center gap-1"
+          >
             <Mail size={12} /> {req.email}
           </a>
           <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-500 mt-2">
-            {req.phone && <span className="inline-flex items-center gap-1"><Phone size={11} />{req.phone}</span>}
-            {req.company_name && <span className="inline-flex items-center gap-1"><Building2 size={11} />{req.company_name}{req.position ? ` · ${req.position}` : ""}</span>}
-            {req.country && <span className="inline-flex items-center gap-1"><MapPin size={11} />{req.country}</span>}
+            {req.phone && (
+              <span className="inline-flex items-center gap-1">
+                <Phone size={11} />
+                {req.phone}
+              </span>
+            )}
+            {req.company_name && (
+              <span className="inline-flex items-center gap-1">
+                <Building2 size={11} />
+                {req.company_name}
+                {req.position ? ` · ${req.position}` : ""}
+              </span>
+            )}
+            {req.country && (
+              <span className="inline-flex items-center gap-1">
+                <MapPin size={11} />
+                {req.country}
+              </span>
+            )}
             <span className="mono">{new Date(req.created_at).toLocaleString()}</span>
           </div>
         </div>
-        <button title="Delete" onClick={onDelete} className="p-2 rounded hover:bg-white/[0.05] text-slate-500 hover:text-red-300">
+        <button
+          title="Delete"
+          onClick={onDelete}
+          className="p-2 rounded hover:bg-white/[0.05] text-slate-500 hover:text-red-300"
+        >
           <Trash2 size={14} />
         </button>
       </div>
 
       <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-[11px]">
         <Meta label="Project" value={req.project_type} />
-        <Meta label="Urgency" value={String(req.urgency).toUpperCase()} tone={URGENCY_TONE[req.urgency]} />
+        <Meta
+          label="Urgency"
+          value={String(req.urgency).toUpperCase()}
+          tone={URGENCY_TONE[req.urgency]}
+        />
         <Meta label="Deadline" value={req.deadline ?? "—"} icon={<CalendarClock size={11} />} />
         <Meta label="Budget" value={budget} />
       </div>
@@ -361,8 +452,13 @@ function BriefingDetail({
           <div className="mono text-[10px] tracking-[0.2em] text-slate-500 mb-2">ATTACHMENTS</div>
           <div className="flex flex-wrap gap-2">
             {req.attachments.map((a) => (
-              <a key={a.url} href={a.url} target="_blank" rel="noreferrer"
-                className="inline-flex items-center gap-2 text-[12px] bg-[#01040A] border border-white/10 rounded px-3 py-1.5 hover:border-sky-300/40">
+              <a
+                key={a.url}
+                href={a.url}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 text-[12px] bg-[#01040A] border border-white/10 rounded px-3 py-1.5 hover:border-sky-300/40"
+              >
                 <Paperclip size={11} /> <span className="truncate max-w-[180px]">{a.name}</span>
                 <ExternalLink size={11} className="text-slate-500" />
               </a>
@@ -373,11 +469,18 @@ function BriefingDetail({
 
       {req.reference_links?.length > 0 && (
         <div className="mt-5">
-          <div className="mono text-[10px] tracking-[0.2em] text-slate-500 mb-2">REFERENCE LINKS</div>
+          <div className="mono text-[10px] tracking-[0.2em] text-slate-500 mb-2">
+            REFERENCE LINKS
+          </div>
           <div className="flex flex-col gap-1.5">
             {req.reference_links.map((l, i) => (
-              <a key={i} href={l.url} target="_blank" rel="noreferrer"
-                className="inline-flex items-center gap-2 text-[12px] text-sky-200 hover:underline truncate">
+              <a
+                key={i}
+                href={l.url}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 text-[12px] text-sky-200 hover:underline truncate"
+              >
                 <LinkIcon size={11} /> {l.label || l.url}
               </a>
             ))}
@@ -390,7 +493,9 @@ function BriefingDetail({
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          onBlur={() => notes !== (req.admin_notes ?? "") && void onUpdate(req.id, { admin_notes: notes })}
+          onBlur={() =>
+            notes !== (req.admin_notes ?? "") && void onUpdate(req.id, { admin_notes: notes })
+          }
           rows={3}
           placeholder="Notes for yourself."
           className="w-full bg-[#01040A] border border-white/10 rounded p-3 text-[13px] text-slate-200 focus:outline-none focus:border-sky-300/50"
@@ -398,7 +503,10 @@ function BriefingDetail({
       </div>
 
       <div className="mt-5 pt-4 border-t border-white/[0.06] flex flex-wrap items-center gap-2">
-        <a href={reply} className="inline-flex items-center gap-2 bg-sky-300 text-[#01040A] px-4 py-2 rounded text-sm font-semibold">
+        <a
+          href={reply}
+          className="inline-flex items-center gap-2 bg-sky-300 text-[#01040A] px-4 py-2 rounded text-sm font-semibold"
+        >
           <Send size={13} /> Reply by email
         </a>
         {(["new", "reviewing", "accepted", "closed"] as const).map((s) => (
@@ -439,14 +547,20 @@ function BookingsPanel() {
   const current = rows.find((r) => r.id === selected) ?? null;
 
   const update = async (id: string, patch: Partial<Booking>) => {
-    const { error } = await supabase.from("booking_requests").update(patch as never).eq("id", id);
+    const { error } = await supabase
+      .from("booking_requests")
+      .update(patch as never)
+      .eq("id", id);
     if (error) toast.error(error.message);
   };
   const remove = async (id: string) => {
     if (!confirm("Delete this booking?")) return;
     const { error } = await supabase.from("booking_requests").delete().eq("id", id);
     if (error) toast.error(error.message);
-    else { toast.success("Deleted"); setSelected(null); }
+    else {
+      toast.success("Deleted");
+      setSelected(null);
+    }
   };
 
   return (
@@ -467,21 +581,31 @@ function BookingsPanel() {
             key={r.id}
             onClick={() => setSelected(r.id)}
             className={`w-full text-left bg-[#030814] border rounded p-3 transition ${
-              current?.id === r.id ? "border-sky-300/40" : "border-white/[0.06] hover:border-white/[0.15]"
+              current?.id === r.id
+                ? "border-sky-300/40"
+                : "border-white/[0.06] hover:border-white/[0.15]"
             }`}
           >
             <div className="flex items-center justify-between gap-2">
               <div className="text-sm font-medium text-slate-100 truncate">{r.name}</div>
-              <span className={`mono text-[9px] px-1.5 py-0.5 rounded border ${STATUS_TONE[r.status] ?? STATUS_TONE.new}`}>
+              <span
+                className={`mono text-[9px] px-1.5 py-0.5 rounded border ${STATUS_TONE[r.status] ?? STATUS_TONE.new}`}
+              >
                 {r.status.toUpperCase()}
               </span>
             </div>
             <div className="text-[11px] text-slate-500 mt-0.5 truncate">{r.email}</div>
             <div className="flex flex-wrap items-center gap-2 text-[10px] text-slate-600 mt-2 mono">
-              <span className="inline-flex items-center gap-1"><CalendarClock size={10} />
-                {r.preferred_date ?? "—"}{r.preferred_time ? ` ${r.preferred_time}` : ""}{r.timezone ? ` ${r.timezone}` : ""}
+              <span className="inline-flex items-center gap-1">
+                <CalendarClock size={10} />
+                {r.preferred_date ?? "—"}
+                {r.preferred_time ? ` ${r.preferred_time}` : ""}
+                {r.timezone ? ` ${r.timezone}` : ""}
               </span>
-              <span className="ml-auto inline-flex items-center gap-1"><Clock size={10} />{new Date(r.created_at).toLocaleString()}</span>
+              <span className="ml-auto inline-flex items-center gap-1">
+                <Clock size={10} />
+                {new Date(r.created_at).toLocaleString()}
+              </span>
             </div>
           </button>
         ))}
@@ -498,17 +622,27 @@ function BookingsPanel() {
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="display text-xl text-metal">{current.name}</div>
-                <a href={`mailto:${current.email}`} className="text-sm text-sky-200 hover:underline inline-flex items-center gap-1">
+                <a
+                  href={`mailto:${current.email}`}
+                  className="text-sm text-sky-200 hover:underline inline-flex items-center gap-1"
+                >
                   <Mail size={12} /> {current.email}
                 </a>
               </div>
-              <button onClick={() => remove(current.id)} className="p-2 rounded hover:bg-white/[0.05] text-slate-500 hover:text-red-300">
+              <button
+                onClick={() => remove(current.id)}
+                className="p-2 rounded hover:bg-white/[0.05] text-slate-500 hover:text-red-300"
+              >
                 <Trash2 size={14} />
               </button>
             </div>
 
             <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3 text-[11px]">
-              <Meta label="Date" value={current.preferred_date ?? "—"} icon={<CalendarClock size={11} />} />
+              <Meta
+                label="Date"
+                value={current.preferred_date ?? "—"}
+                icon={<CalendarClock size={11} />}
+              />
               <Meta label="Time" value={current.preferred_time ?? "—"} />
               <Meta label="Timezone" value={current.timezone ?? "—"} icon={<Globe size={11} />} />
             </div>
@@ -562,13 +696,17 @@ function SubscribersPanel() {
   const exportCsv = () => {
     const header = ["email", "name", "source", "is_active", "created_at"];
     const lines = [header.join(",")].concat(
-      rows.map((r) => [r.email, r.name ?? "", r.source ?? "", String(r.is_active), r.created_at]
-        .map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","))
+      rows.map((r) =>
+        [r.email, r.name ?? "", r.source ?? "", String(r.is_active), r.created_at]
+          .map((v) => `"${String(v).replace(/"/g, '""')}"`)
+          .join(","),
+      ),
     );
     const blob = new Blob([lines.join("\n")], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url; a.download = `subscribers-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.href = url;
+    a.download = `subscribers-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -576,7 +714,9 @@ function SubscribersPanel() {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <div className="text-sm text-slate-400">{rows.length} subscriber{rows.length === 1 ? "" : "s"}</div>
+        <div className="text-sm text-slate-400">
+          {rows.length} subscriber{rows.length === 1 ? "" : "s"}
+        </div>
         <button
           onClick={exportCsv}
           disabled={rows.length === 0}
@@ -623,7 +763,9 @@ function SubscribersPanel() {
                       </span>
                     )}
                   </td>
-                  <td className="px-4 py-2 text-slate-500 text-[12px] mono">{new Date(r.created_at).toLocaleDateString()}</td>
+                  <td className="px-4 py-2 text-slate-500 text-[12px] mono">
+                    {new Date(r.created_at).toLocaleDateString()}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -634,12 +776,23 @@ function SubscribersPanel() {
   );
 }
 
-function Meta({ label, value, icon, tone }: { label: string; value: string; icon?: React.ReactNode; tone?: string }) {
+function Meta({
+  label,
+  value,
+  icon,
+  tone,
+}: {
+  label: string;
+  value: string;
+  icon?: React.ReactNode;
+  tone?: string;
+}) {
   return (
     <div className={`bg-[#01040A] border rounded px-3 py-2 ${tone ?? "border-white/[0.06]"}`}>
       <div className="mono text-[9px] tracking-[0.2em] text-slate-500">{label}</div>
       <div className="text-slate-200 mt-0.5 truncate inline-flex items-center gap-1.5">
-        {icon}{value}
+        {icon}
+        {value}
       </div>
     </div>
   );

@@ -3,8 +3,19 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
-  Inbox, Mail, Star, Trash2, Loader2, ExternalLink, Phone, Building2,
-  Clock, CheckCircle2, Archive, MessageSquare, Paperclip,
+  Inbox,
+  Mail,
+  Star,
+  Trash2,
+  Loader2,
+  ExternalLink,
+  Phone,
+  Building2,
+  Clock,
+  CheckCircle2,
+  Archive,
+  MessageSquare,
+  Paperclip,
 } from "lucide-react";
 
 type Attachment = { url: string; name: string; size: number };
@@ -73,16 +84,24 @@ export function RequestsInbox() {
         qc.invalidateQueries({ queryKey: ["contact_requests"] });
       })
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    return () => {
+      supabase.removeChannel(ch);
+    };
   }, [qc]);
 
   const filtered = useMemo(
     () => rows.filter((r) => filter === "all" || r.status === filter),
-    [rows, filter]
+    [rows, filter],
   );
 
   const counts = useMemo(() => {
-    const c: Record<string, number> = { all: rows.length, new: 0, read: 0, replied: 0, archived: 0 };
+    const c: Record<string, number> = {
+      all: rows.length,
+      new: 0,
+      read: 0,
+      replied: 0,
+      archived: 0,
+    };
     for (const r of rows) c[r.status] = (c[r.status] ?? 0) + 1;
     return c;
   }, [rows]);
@@ -101,7 +120,10 @@ export function RequestsInbox() {
     if (!confirm("Delete this request? This cannot be undone.")) return;
     const { error } = await supabase.from("contact_requests").delete().eq("id", id);
     if (error) toast.error(error.message);
-    else { toast.success("Deleted"); setSelected(null); }
+    else {
+      toast.success("Deleted");
+      setSelected(null);
+    }
   };
 
   const onOpen = (r: ContactRequest) => {
@@ -117,19 +139,23 @@ export function RequestsInbox() {
             <Inbox size={20} className="text-sky-300" /> Requests inbox
           </h2>
           <p className="text-sm text-slate-500 mt-1">
-            Messages submitted from the public contact form. {counts.new > 0 && (
-              <span className="text-sky-300">· {counts.new} new</span>
-            )}
+            Messages submitted from the public contact form.{" "}
+            {counts.new > 0 && <span className="text-sky-300">· {counts.new} new</span>}
           </p>
         </div>
       </header>
 
       <div className="mt-5 flex flex-wrap gap-2 items-center">
         {STATUS_FILTERS.map((f) => (
-          <button key={f.id} onClick={() => setFilter(f.id)}
+          <button
+            key={f.id}
+            onClick={() => setFilter(f.id)}
             className={`mono text-[11px] px-3 py-1.5 rounded-full border transition ${
-              filter === f.id ? "bg-sky-300/15 border-sky-300/40 text-sky-100" : "border-white/10 text-slate-400 hover:text-white"
-            }`}>
+              filter === f.id
+                ? "bg-sky-300/15 border-sky-300/40 text-sky-100"
+                : "border-white/10 text-slate-400 hover:text-white"
+            }`}
+          >
             {f.label} <span className="text-slate-500">({counts[f.id] ?? 0})</span>
           </button>
         ))}
@@ -149,16 +175,25 @@ export function RequestsInbox() {
             </div>
           )}
           {filtered.map((r) => (
-            <button key={r.id} onClick={() => onOpen(r)}
+            <button
+              key={r.id}
+              onClick={() => onOpen(r)}
               className={`w-full text-left bg-[#030814] border rounded p-3 transition ${
-                current?.id === r.id ? "border-sky-300/40" : "border-white/[0.06] hover:border-white/[0.15]"
-              }`}>
+                current?.id === r.id
+                  ? "border-sky-300/40"
+                  : "border-white/[0.06] hover:border-white/[0.15]"
+              }`}
+            >
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
-                  {r.is_starred && <Star size={12} className="text-amber-300 shrink-0" fill="currentColor" />}
+                  {r.is_starred && (
+                    <Star size={12} className="text-amber-300 shrink-0" fill="currentColor" />
+                  )}
                   <div className="text-sm font-medium text-slate-100 truncate">{r.name}</div>
                 </div>
-                <span className={`mono text-[9px] px-1.5 py-0.5 rounded border ${STATUS_BADGE[r.status] ?? STATUS_BADGE.new}`}>
+                <span
+                  className={`mono text-[9px] px-1.5 py-0.5 rounded border ${STATUS_BADGE[r.status] ?? STATUS_BADGE.new}`}
+                >
                   {r.status.toUpperCase()}
                 </span>
               </div>
@@ -167,7 +202,9 @@ export function RequestsInbox() {
               <div className="flex items-center gap-2 text-[10px] text-slate-600 mt-2 mono">
                 <Clock size={10} /> {new Date(r.created_at).toLocaleString()}
                 {r.attachments?.length > 0 && (
-                  <span className="inline-flex items-center gap-1"><Paperclip size={10} /> {r.attachments.length}</span>
+                  <span className="inline-flex items-center gap-1">
+                    <Paperclip size={10} /> {r.attachments.length}
+                  </span>
                 )}
                 {r.project_type && <span className="ml-auto">{r.project_type}</span>}
               </div>
@@ -183,7 +220,12 @@ export function RequestsInbox() {
               Select a message to view it.
             </div>
           ) : (
-            <RequestDetail key={current.id} req={current} onUpdate={update} onDelete={() => remove(current.id)} />
+            <RequestDetail
+              key={current.id}
+              req={current}
+              onUpdate={update}
+              onDelete={() => remove(current.id)}
+            />
           )}
         </div>
       </div>
@@ -192,14 +234,18 @@ export function RequestsInbox() {
 }
 
 function RequestDetail({
-  req, onUpdate, onDelete,
+  req,
+  onUpdate,
+  onDelete,
 }: {
   req: ContactRequest;
   onUpdate: (id: string, patch: Partial<ContactRequest>) => Promise<void>;
   onDelete: () => void;
 }) {
   const [notes, setNotes] = useState(req.admin_notes ?? "");
-  useEffect(() => { setNotes(req.admin_notes ?? ""); }, [req.id, req.admin_notes]);
+  useEffect(() => {
+    setNotes(req.admin_notes ?? "");
+  }, [req.id, req.admin_notes]);
 
   const reply = `mailto:${req.email}?subject=${encodeURIComponent(`Re: ${req.project_type ?? "your project"}`)}&body=${encodeURIComponent(`Hi ${req.name.split(" ")[0]},\n\n`)}`;
 
@@ -208,21 +254,43 @@ function RequestDetail({
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="display text-xl text-metal">{req.name}</div>
-          <a href={`mailto:${req.email}`} className="text-sm text-sky-200 hover:underline inline-flex items-center gap-1">
+          <a
+            href={`mailto:${req.email}`}
+            className="text-sm text-sky-200 hover:underline inline-flex items-center gap-1"
+          >
             <Mail size={12} /> {req.email}
           </a>
           <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-500 mt-2">
-            {req.phone && <span className="inline-flex items-center gap-1"><Phone size={11} /> {req.phone}</span>}
-            {req.company && <span className="inline-flex items-center gap-1"><Building2 size={11} /> {req.company}</span>}
+            {req.phone && (
+              <span className="inline-flex items-center gap-1">
+                <Phone size={11} /> {req.phone}
+              </span>
+            )}
+            {req.company && (
+              <span className="inline-flex items-center gap-1">
+                <Building2 size={11} /> {req.company}
+              </span>
+            )}
             <span className="mono">{new Date(req.created_at).toLocaleString()}</span>
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <button title={req.is_starred ? "Unstar" : "Star"} onClick={() => onUpdate(req.id, { is_starred: !req.is_starred })}
-            className="p-2 rounded hover:bg-white/[0.05]">
-            <Star size={14} className={req.is_starred ? "text-amber-300" : "text-slate-500"} fill={req.is_starred ? "currentColor" : "none"} />
+          <button
+            title={req.is_starred ? "Unstar" : "Star"}
+            onClick={() => onUpdate(req.id, { is_starred: !req.is_starred })}
+            className="p-2 rounded hover:bg-white/[0.05]"
+          >
+            <Star
+              size={14}
+              className={req.is_starred ? "text-amber-300" : "text-slate-500"}
+              fill={req.is_starred ? "currentColor" : "none"}
+            />
           </button>
-          <button title="Delete" onClick={onDelete} className="p-2 rounded hover:bg-white/[0.05] text-slate-500 hover:text-red-300">
+          <button
+            title="Delete"
+            onClick={onDelete}
+            className="p-2 rounded hover:bg-white/[0.05] text-slate-500 hover:text-red-300"
+          >
             <Trash2 size={14} />
           </button>
         </div>
@@ -230,7 +298,10 @@ function RequestDetail({
 
       <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-[11px]">
         <Meta label="Type" value={req.project_type ?? "-"} />
-        <Meta label="Budget" value={req.budget_label ? `${req.budget_label} (${req.budget_currency})` : "-"} />
+        <Meta
+          label="Budget"
+          value={req.budget_label ? `${req.budget_label} (${req.budget_currency})` : "-"}
+        />
         <Meta label="Timeline" value={req.timeline ?? "-"} />
         <Meta label="Source" value={req.source ?? "-"} />
       </div>
@@ -247,8 +318,13 @@ function RequestDetail({
           <div className="mono text-[10px] tracking-[0.2em] text-slate-500 mb-2">ATTACHMENTS</div>
           <div className="flex flex-wrap gap-2">
             {req.attachments.map((a) => (
-              <a key={a.url} href={a.url} target="_blank" rel="noreferrer"
-                className="inline-flex items-center gap-2 text-[12px] bg-[#01040A] border border-white/10 rounded px-3 py-1.5 hover:border-sky-300/40">
+              <a
+                key={a.url}
+                href={a.url}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 text-[12px] bg-[#01040A] border border-white/10 rounded px-3 py-1.5 hover:border-sky-300/40"
+              >
                 <Paperclip size={11} /> <span className="truncate max-w-[180px]">{a.name}</span>
                 <ExternalLink size={11} className="text-slate-500" />
               </a>
@@ -262,7 +338,9 @@ function RequestDetail({
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          onBlur={() => notes !== (req.admin_notes ?? "") && void onUpdate(req.id, { admin_notes: notes })}
+          onBlur={() =>
+            notes !== (req.admin_notes ?? "") && void onUpdate(req.id, { admin_notes: notes })
+          }
           rows={3}
           placeholder="Notes for yourself - not visible to the sender."
           className="w-full bg-[#01040A] border border-white/10 rounded p-3 text-[13px] text-slate-200 focus:outline-none focus:border-sky-300/50"
@@ -270,15 +348,24 @@ function RequestDetail({
       </div>
 
       <div className="mt-5 pt-4 border-t border-white/[0.06] flex flex-wrap items-center gap-2">
-        <a href={reply} className="inline-flex items-center gap-2 bg-sky-300 text-[#01040A] px-4 py-2 rounded text-sm font-semibold">
+        <a
+          href={reply}
+          className="inline-flex items-center gap-2 bg-sky-300 text-[#01040A] px-4 py-2 rounded text-sm font-semibold"
+        >
           <Mail size={13} /> Reply by email
         </a>
-        <button onClick={() => onUpdate(req.id, { status: "replied" })}
-          className="inline-flex items-center gap-2 border border-white/10 text-slate-300 hover:border-emerald-300/40 hover:text-emerald-200 px-4 py-2 rounded text-sm">
+        <button
+          onClick={() => onUpdate(req.id, { status: "replied" })}
+          className="inline-flex items-center gap-2 border border-white/10 text-slate-300 hover:border-emerald-300/40 hover:text-emerald-200 px-4 py-2 rounded text-sm"
+        >
           <CheckCircle2 size={13} /> Mark replied
         </button>
-        <button onClick={() => onUpdate(req.id, { status: req.status === "archived" ? "read" : "archived" })}
-          className="inline-flex items-center gap-2 border border-white/10 text-slate-300 hover:border-amber-300/40 hover:text-amber-200 px-4 py-2 rounded text-sm">
+        <button
+          onClick={() =>
+            onUpdate(req.id, { status: req.status === "archived" ? "read" : "archived" })
+          }
+          className="inline-flex items-center gap-2 border border-white/10 text-slate-300 hover:border-amber-300/40 hover:text-amber-200 px-4 py-2 rounded text-sm"
+        >
           <Archive size={13} /> {req.status === "archived" ? "Unarchive" : "Archive"}
         </button>
       </div>

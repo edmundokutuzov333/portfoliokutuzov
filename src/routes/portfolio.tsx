@@ -13,8 +13,7 @@ export const Route = createFileRoute("/portfolio")({
       { property: "og:title", content: "Portfolio - Edmundo Kutuzov" },
       {
         property: "og:description",
-        content:
-          "A curated selection of campaigns, identities and visual systems.",
+        content: "A curated selection of campaigns, identities and visual systems.",
       },
     ],
   }),
@@ -33,9 +32,8 @@ function PortfolioPage() {
           Selected work.
         </h1>
         <p className="mt-5 max-w-xl text-[15px] text-slate-400 leading-relaxed">
-          A curated selection of campaigns, brand identity work and visual
-          systems developed for local and international clients across
-          Mozambique and beyond.
+          A curated selection of campaigns, brand identity work and visual systems developed for
+          local and international clients across Mozambique and beyond.
         </p>
         <div className="mt-12 border-t border-white/[0.08] pt-10">
           <PortfolioGrid />

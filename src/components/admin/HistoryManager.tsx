@@ -46,7 +46,9 @@ export function HistoryManager() {
         qc.invalidateQueries({ queryKey: ["content_history"] });
       })
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    return () => {
+      supabase.removeChannel(ch);
+    };
   }, [qc]);
 
   const filtered = rows.filter((r) => filter === "all" || r.entity_type === filter);
@@ -72,17 +74,22 @@ export function HistoryManager() {
           <History size={20} className="text-sky-300" /> Version history
         </h2>
         <p className="text-sm text-slate-500 mt-1">
-          The last 5 versions of every site setting, project and client are kept automatically.
-          Open any entry to inspect or restore it.
+          The last 5 versions of every site setting, project and client are kept automatically. Open
+          any entry to inspect or restore it.
         </p>
       </header>
 
       <div className="mt-5 flex flex-wrap gap-2 items-center">
         {(["all", "site_settings", "projects", "clients"] as const).map((f) => (
-          <button key={f} onClick={() => setFilter(f)}
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
             className={`mono text-[11px] px-3 py-1.5 rounded-full border transition ${
-              filter === f ? "bg-sky-300/15 border-sky-300/40 text-sky-100" : "border-white/10 text-slate-400 hover:text-white"
-            }`}>
+              filter === f
+                ? "bg-sky-300/15 border-sky-300/40 text-sky-100"
+                : "border-white/10 text-slate-400 hover:text-white"
+            }`}
+          >
             {f === "all" ? "All" : TYPE_LABEL[f]}
           </button>
         ))}
@@ -104,23 +111,42 @@ export function HistoryManager() {
           const isOpen = openId === row.id;
           return (
             <div key={row.id} className="bg-[#030814] border border-white/[0.08] rounded">
-              <button onClick={() => setOpenId(isOpen ? null : row.id)} className="w-full flex items-center justify-between p-3 text-left">
+              <button
+                onClick={() => setOpenId(isOpen ? null : row.id)}
+                className="w-full flex items-center justify-between p-3 text-left"
+              >
                 <div className="flex items-center gap-3 min-w-0">
-                  {isOpen ? <ChevronDown size={14} className="text-slate-500" /> : <ChevronRight size={14} className="text-slate-500" />}
+                  {isOpen ? (
+                    <ChevronDown size={14} className="text-slate-500" />
+                  ) : (
+                    <ChevronRight size={14} className="text-slate-500" />
+                  )}
                   <div className="min-w-0">
                     <div className="text-sm text-slate-100 truncate">
-                      <span className="mono text-[10px] text-sky-300/80 mr-2">{TYPE_LABEL[row.entity_type]}</span>
+                      <span className="mono text-[10px] text-sky-300/80 mr-2">
+                        {TYPE_LABEL[row.entity_type]}
+                      </span>
                       {row.label ?? row.entity_id}
                     </div>
-                    <div className="text-[11px] text-slate-500 mono">{new Date(row.created_at).toLocaleString()}</div>
+                    <div className="text-[11px] text-slate-500 mono">
+                      {new Date(row.created_at).toLocaleString()}
+                    </div>
                   </div>
                 </div>
                 <button
-                  onClick={(e) => { e.stopPropagation(); void onRestore(row); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    void onRestore(row);
+                  }}
                   disabled={restoringId === row.id}
                   className="inline-flex items-center gap-1.5 text-xs border border-white/10 hover:border-sky-300/40 text-slate-300 hover:text-sky-200 px-3 py-1.5 rounded disabled:opacity-50"
                 >
-                  {restoringId === row.id ? <Loader2 size={12} className="animate-spin" /> : <RotateCcw size={12} />} Restore
+                  {restoringId === row.id ? (
+                    <Loader2 size={12} className="animate-spin" />
+                  ) : (
+                    <RotateCcw size={12} />
+                  )}{" "}
+                  Restore
                 </button>
               </button>
               {isOpen && (

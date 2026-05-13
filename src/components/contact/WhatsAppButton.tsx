@@ -14,8 +14,7 @@ export function WhatsAppButton({
   children?: React.ReactNode;
 }) {
   const href = whatsappLink(message);
-  const base =
-    "inline-flex items-center gap-2 rounded-full text-sm font-medium transition";
+  const base = "inline-flex items-center gap-2 rounded-full text-sm font-medium transition";
   if (variant === "icon") {
     return (
       <a
@@ -25,7 +24,7 @@ export function WhatsAppButton({
         aria-label="Chat on WhatsApp"
         className={clsx(
           "h-10 w-10 grid place-items-center rounded-full border border-emerald-300/30 bg-emerald-300/[0.07] text-emerald-200 hover:border-emerald-300/60 hover:bg-emerald-300/[0.12] transition",
-          className
+          className,
         )}
       >
         <MessageCircle size={15} strokeWidth={1.8} />
@@ -42,7 +41,7 @@ export function WhatsAppButton({
         variant === "primary"
           ? "bg-emerald-300 text-[#01040A] px-5 py-3 hover:bg-emerald-200"
           : "border border-emerald-300/30 text-emerald-200 px-4 py-2 hover:border-emerald-300/55 hover:bg-emerald-300/[0.06]",
-        className
+        className,
       )}
     >
       <MessageCircle size={15} strokeWidth={1.8} />

@@ -7,9 +7,7 @@ const RESEND_GATEWAY = "https://connector-gateway.lovable.dev/resend";
 const SubscribeInput = z.object({
   email: z.string().trim().email().max(200).toLowerCase(),
   name: z.string().trim().max(120).optional(),
-  source: z
-    .enum(["contact-page", "footer", "briefing-confirmation"])
-    .default("contact-page"),
+  source: z.enum(["contact-page", "footer", "briefing-confirmation"]).default("contact-page"),
   consent: z.literal(true),
 });
 
@@ -55,23 +53,20 @@ async function addToResendAudience(email: string, name?: string) {
   const audienceId = process.env.RESEND_AUDIENCE_ID;
   if (!lovableKey || !resendKey || !audienceId) return null;
   try {
-    const res = await fetch(
-      `${RESEND_GATEWAY}/audiences/${audienceId}/contacts`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${lovableKey}`,
-          "X-Connection-Api-Key": resendKey,
-        },
-        body: JSON.stringify({
-          email,
-          first_name: name?.split(" ")[0] ?? undefined,
-          last_name: name?.split(" ").slice(1).join(" ") || undefined,
-          unsubscribed: false,
-        }),
-      }
-    );
+    const res = await fetch(`${RESEND_GATEWAY}/audiences/${audienceId}/contacts`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${lovableKey}`,
+        "X-Connection-Api-Key": resendKey,
+      },
+      body: JSON.stringify({
+        email,
+        first_name: name?.split(" ")[0] ?? undefined,
+        last_name: name?.split(" ").slice(1).join(" ") || undefined,
+        unsubscribed: false,
+      }),
+    });
     if (!res.ok) return null;
     const data = (await res.json()) as { id?: string };
     return data.id ?? null;

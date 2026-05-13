@@ -32,7 +32,9 @@ export function NewsletterForm({
       const res = await subscribe({ data: parsed.data });
       setDone(true);
       trackEvent({ action: "submit", element: `newsletter:${source}` });
-      toast.success(res.alreadySubscribed ? "You're already on the list." : "You're in. Check your inbox.");
+      toast.success(
+        res.alreadySubscribed ? "You're already on the list." : "You're in. Check your inbox.",
+      );
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Subscription failed");
     } finally {
@@ -42,14 +44,27 @@ export function NewsletterForm({
 
   if (done) {
     return (
-      <div className={compact ? "text-[12px] text-emerald-200 inline-flex items-center gap-2" : "rounded-xl border border-emerald-300/25 bg-emerald-300/[0.05] p-4 text-sm text-emerald-100 inline-flex items-center gap-2"}>
+      <div
+        className={
+          compact
+            ? "text-[12px] text-emerald-200 inline-flex items-center gap-2"
+            : "rounded-xl border border-emerald-300/25 bg-emerald-300/[0.05] p-4 text-sm text-emerald-100 inline-flex items-center gap-2"
+        }
+      >
         <Check size={14} /> Subscribed - thank you.
       </div>
     );
   }
 
   return (
-    <form onSubmit={submit} className={compact ? "flex flex-col gap-2 sm:flex-row" : "rounded-xl border border-white/[0.08] bg-[#030814] p-4"}>
+    <form
+      onSubmit={submit}
+      className={
+        compact
+          ? "flex flex-col gap-2 sm:flex-row"
+          : "rounded-xl border border-white/[0.08] bg-[#030814] p-4"
+      }
+    >
       {!compact && (
         <>
           <div className="mono text-[10px] tracking-[0.22em] text-sky-300/70">Mailing list</div>
@@ -90,7 +105,10 @@ export function NewsletterForm({
             onChange={(e) => setConsent(e.target.checked)}
             className="mt-0.5"
           />
-          <span>I agree to receive occasional emails about new work and availability. Unsubscribe anytime.</span>
+          <span>
+            I agree to receive occasional emails about new work and availability. Unsubscribe
+            anytime.
+          </span>
         </label>
       )}
     </form>
