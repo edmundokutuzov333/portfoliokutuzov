@@ -8,9 +8,14 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
 server: {
-    preset: 'cloudflare-pages',
+    preset: 'vercel',
   },
   vite: {
+    server: {
+      allowedHosts: [
+        "operations-remedy-congressional-hotels.trycloudflare.com"
+      ]
+    },
     build: {
       rollupOptions: {
         output: {
