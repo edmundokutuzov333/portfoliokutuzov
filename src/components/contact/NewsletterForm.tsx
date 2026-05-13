@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Loader2, Send, Check } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
-import { subscribeNewsletter } from "@/server/newsletter.functions.server";
+import { subscribeNewsletter } from "@/server/newsletter.functions.server.ts";
 import { newsletterSchema } from "@/lib/contact-schema";
 import { trackEvent } from "@/lib/analytics";
 
