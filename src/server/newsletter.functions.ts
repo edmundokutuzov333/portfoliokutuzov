@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { supabaseAdmin } from "@/integrations/supabase/server/index.server";
 
 const RESEND_GATEWAY = "https://connector-gateway.lovable.dev/resend";
 
