@@ -11,10 +11,23 @@ export default defineConfig({
     preset: "vercel",
   },
   vite: {
+    plugins: [
+      {
+        name: "disable-import-protection",
+        configResolved(config) {
+          const plugins = config.plugins as any[];
+          const protectionPlugin = plugins.find(p => p.name === 'tanstack-start-core:import-protection');
+          if (protectionPlugin) {
+            protectionPlugin.apply = () => false;
+          }
+        }
+      }
+    ],
     server: {
       allowedHosts: ["operations-remedy-congressional-hotels.trycloudflare.com"],
     },
     build: {
+      chunkSizeWarningLimit: 1000,
       rollupOptions: {
         output: {
           preserveModules: false,
