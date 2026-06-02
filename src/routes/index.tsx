@@ -32,6 +32,7 @@ function HomePage() {
       <Hero />
       <FeaturedWork />
       <ClientLogos />
+      <StudiosSection />
       <Credentials />
       <HomeCTA />
     </>
