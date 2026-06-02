@@ -51,6 +51,7 @@ export const Route = createFileRoute("/edmundo-control-room")({
 type Section =
   | "site"
   | "clients"
+  | "studios"
   | "portfolio"
   | "about"
   | "contact"
