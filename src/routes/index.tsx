@@ -4,6 +4,7 @@ import { ClientLogos } from "@/components/home/ClientLogos";
 import { Credentials } from "@/components/home/Credentials";
 import { HomeCTA } from "@/components/home/HomeCTA";
 import { FeaturedWork } from "@/components/home/FeaturedWork";
+import { StudiosSection } from "@/components/home/StudiosSection";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -31,6 +32,7 @@ function HomePage() {
       <Hero />
       <FeaturedWork />
       <ClientLogos />
+      <StudiosSection />
       <Credentials />
       <HomeCTA />
     </>

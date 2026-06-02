@@ -16,6 +16,7 @@ export type DbClient = {
   website_url: string | null;
   sort_order: number;
   is_active: boolean;
+  kind?: string;
   logo_width?: number | null;
   logo_height?: number | null;
 };
