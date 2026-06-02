@@ -1373,15 +1373,57 @@ function ClientsManager() {
   );
 }
 
+const STUDIO_SIZE_OPTIONS: { value: string; label: string }[] = [
+  { value: "xs", label: "Extra small" },
+  { value: "sm", label: "Small" },
+  { value: "md", label: "Medium" },
+  { value: "lg", label: "Large" },
+  { value: "xl", label: "Extra large" },
+  { value: "xxl", label: "Huge" },
+];
+
 function StudiosManager() {
+  const s = useSectionDraft("studios_section");
+  const current = get<string>(s.draft, "logo_size", "md");
   return (
-    <LogoManager
-      kind="studio"
-      title="Studios"
-      description='Logos shown under "Forged across the studios of" on the homepage. Maximum of 3.'
-      addLabel="Add studio"
-      maxItems={3}
-    />
+    <div className="space-y-6">
+      <div className="rounded-lg border border-white/[0.08] bg-[#0a0d14] p-5">
+        <div className="flex flex-col md:flex-row md:items-end gap-4 md:justify-between">
+          <div>
+            <h3 className="display text-lg text-metal">Studio logo size</h3>
+            <p className="text-xs text-[var(--color-text-muted)] mt-1">
+              Applies to all logos in the “Forged across the studios of” row. Updates the public site in real time.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <select
+              value={current}
+              onChange={(e) => s.update("logo_size", e.target.value)}
+              className="bg-[#01040A] border border-white/[0.12] rounded px-3 py-2 text-sm text-metal"
+            >
+              {STUDIO_SIZE_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+            <button
+              onClick={s.save}
+              disabled={!s.dirty || s.saving}
+              className="inline-flex items-center gap-2 bg-sky-300/90 hover:bg-sky-300 text-[#01040A] px-3 py-2 rounded text-sm disabled:opacity-40"
+            >
+              {s.saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+      <LogoManager
+        kind="studio"
+        title="Studios"
+        description='Logos shown under "Forged across the studios of" on the homepage. Maximum of 3.'
+        addLabel="Add studio"
+        maxItems={3}
+      />
+    </div>
   );
 }
 
