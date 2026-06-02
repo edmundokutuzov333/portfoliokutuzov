@@ -49,18 +49,23 @@ export function useSiteSettings() {
 }
 
 // ---------- clients ----------
-export function useClients(includeInactive = false) {
+export function useClients(includeInactive = false, kind: string = "client") {
   useRealtimeInvalidate("clients", ["clients"]);
   return useQuery({
-    queryKey: ["clients", includeInactive],
+    queryKey: ["clients", includeInactive, kind],
     queryFn: async (): Promise<DbClient[]> => {
-      let q = supabase.from("clients").select("*").order("sort_order");
+      let q = supabase.from("clients").select("*").eq("kind", kind).order("sort_order");
       if (!includeInactive) q = q.eq("is_active", true);
       const { data, error } = await q;
       if (error) throw error;
       return (data ?? []) as DbClient[];
     },
   });
+}
+
+// ---------- studios (same table, kind='studio') ----------
+export function useStudios(includeInactive = false) {
+  return useClients(includeInactive, "studio");
 }
 
 // ---------- projects ----------
