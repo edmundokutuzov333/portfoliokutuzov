@@ -75,6 +75,7 @@ function ControlRoom() {
   const items = [
     { id: "site" as const, label: "Site Content", Icon: Home },
     { id: "clients" as const, label: "Clients", Icon: Users },
+    { id: "studios" as const, label: "Studios", Icon: Users },
     { id: "portfolio" as const, label: "Portfolio", Icon: Briefcase },
     { id: "about" as const, label: "About", Icon: UserIcon },
     { id: "contact" as const, label: "Contact", Icon: Mail },
