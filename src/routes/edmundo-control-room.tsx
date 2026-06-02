@@ -1194,13 +1194,25 @@ function ContactManager() {
 }
 
 // ============================================================================
-// CLIENTS
+// CLIENTS / STUDIOS (shared logo manager)
 // ============================================================================
-function ClientsManager() {
-  const { data: clients = [] } = useClients(true);
+function LogoManager({
+  kind,
+  title,
+  description,
+  addLabel,
+  maxItems,
+}: {
+  kind: "client" | "studio";
+  title: string;
+  description: string;
+  addLabel: string;
+  maxItems?: number;
+}) {
+  const { data: items = [] } = useClients(true, kind);
   const [busyId, setBusyId] = useState<string | null>(null);
 
-  const labelOf = (id: string) => clients.find((c) => c.id === id)?.name ?? id;
+  const labelOf = (id: string) => items.find((c) => c.id === id)?.name ?? id;
 
   const update = async (id: string, patch: Partial<DbClient>) => {
     setBusyId(id);
@@ -1215,16 +1227,20 @@ function ClientsManager() {
   };
 
   const create = async () => {
-    const max = clients.reduce((m, c) => Math.max(m, c.sort_order), 0);
+    if (maxItems && items.length >= maxItems) {
+      toast.error(`Maximum of ${maxItems} ${kind}s reached.`);
+      return;
+    }
+    const max = items.reduce((m, c) => Math.max(m, c.sort_order), 0);
     const { error } = await supabase
       .from("clients")
-      .insert({ name: "New client", sort_order: max + 1, is_active: true });
+      .insert({ name: `New ${kind}`, sort_order: max + 1, is_active: true, kind });
     if (error) toast.error(error.message);
-    else toast.success("Client added");
+    else toast.success(`${kind === "client" ? "Client" : "Studio"} added`);
   };
 
   const remove = async (id: string) => {
-    if (!confirm("Delete this client?")) return;
+    if (!confirm(`Delete this ${kind}?`)) return;
     await snapshotBefore("clients", id, `${labelOf(id)} (deleted)`);
     const { error } = await supabase.from("clients").delete().eq("id", id);
     if (error) toast.error(error.message);
@@ -1235,8 +1251,7 @@ function ClientsManager() {
     setBusyId(id);
     try {
       const dims = await readImageDimensions(file).catch(() => null);
-      // Use 'logos/' prefix so the public SELECT policy on site-assets allows it.
-      const path = `logos/client-${id}-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
+      const path = `logos/${kind}-${id}-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
       const { error: upErr } = await supabase.storage
         .from("site-assets")
         .upload(path, file, { upsert: true });
@@ -1255,31 +1270,31 @@ function ClientsManager() {
     }
   };
 
+  const canAdd = !maxItems || items.length < maxItems;
+
   return (
     <div>
       <header className="flex items-start justify-between">
         <div>
-          <h2 className="display text-2xl text-metal">Clients</h2>
-          <p className="text-sm text-slate-500 mt-1">
-            Logos appear on the homepage strip in real time. Logos preserve their natural
-            proportion.
-          </p>
+          <h2 className="display text-2xl text-metal">{title}</h2>
+          <p className="text-sm text-slate-500 mt-1">{description}</p>
         </div>
         <button
           onClick={create}
-          className="inline-flex items-center gap-2 bg-sky-300 text-[#01040A] px-4 py-2 rounded text-sm font-semibold"
+          disabled={!canAdd}
+          className="inline-flex items-center gap-2 bg-sky-300 text-[#01040A] px-4 py-2 rounded text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          <Plus size={14} /> Add client
+          <Plus size={14} /> {addLabel}
         </button>
       </header>
 
       <div className="mt-6 space-y-3">
-        {clients.length === 0 && (
+        {items.length === 0 && (
           <div className="text-sm text-slate-500 bg-[#030814] border border-white/[0.06] rounded p-6 text-center">
-            No clients yet. Click "Add client".
+            No {kind}s yet. Click "{addLabel}".
           </div>
         )}
-        {clients.map((c) => (
+        {items.map((c) => (
           <div
             key={c.id}
             className="grid grid-cols-12 gap-3 items-center bg-[#030814] border border-white/[0.08] rounded p-3"
@@ -1344,6 +1359,29 @@ function ClientsManager() {
         ))}
       </div>
     </div>
+  );
+}
+
+function ClientsManager() {
+  return (
+    <LogoManager
+      kind="client"
+      title="Clients"
+      description="Logos appear on the homepage strip in real time. Logos preserve their natural proportion."
+      addLabel="Add client"
+    />
+  );
+}
+
+function StudiosManager() {
+  return (
+    <LogoManager
+      kind="studio"
+      title="Studios"
+      description='Logos shown under "Forged across the studios of" on the homepage. Maximum of 3.'
+      addLabel="Add studio"
+      maxItems={3}
+    />
   );
 }
 
