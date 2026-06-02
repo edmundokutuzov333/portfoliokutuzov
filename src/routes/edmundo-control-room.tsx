@@ -116,6 +116,7 @@ function ControlRoom() {
       <main className="flex-1 p-6 md:p-10 overflow-auto">
         {section === "site" && <SiteContentManager />}
         {section === "clients" && <ClientsManager />}
+        {section === "studios" && <StudiosManager />}
         {section === "portfolio" && <PortfolioManager />}
         {section === "about" && <AboutManager />}
         {section === "contact" && <ContactManager />}
