@@ -4,12 +4,12 @@ import { useSiteSettings } from "@/hooks/useSiteData";
 import { readSetting } from "@/lib/cms";
 
 export const STUDIO_LOGO_SIZES = {
-  xs: { row: "h-28 md:h-32", img: "max-h-10" },
-  sm: { row: "h-32 md:h-36", img: "max-h-14" },
-  md: { row: "h-40 md:h-44", img: "max-h-20" },
-  lg: { row: "h-48 md:h-56", img: "max-h-28" },
-  xl: { row: "h-56 md:h-64", img: "max-h-36" },
-  xxl: { row: "h-64 md:h-80", img: "max-h-48" },
+  xs: { row: "h-20 sm:h-24 md:h-32", img: "max-h-8 sm:max-h-9 md:max-h-10" },
+  sm: { row: "h-24 sm:h-28 md:h-36", img: "max-h-10 sm:max-h-12 md:max-h-14" },
+  md: { row: "h-28 sm:h-32 md:h-44", img: "max-h-12 sm:max-h-16 md:max-h-20" },
+  lg: { row: "h-32 sm:h-40 md:h-56", img: "max-h-16 sm:max-h-20 md:max-h-28" },
+  xl: { row: "h-36 sm:h-44 md:h-64", img: "max-h-20 sm:max-h-24 md:max-h-36" },
+  xxl: { row: "h-40 sm:h-52 md:h-80", img: "max-h-24 sm:max-h-32 md:max-h-48" },
 } as const;
 
 export type StudioLogoSize = keyof typeof STUDIO_LOGO_SIZES;
