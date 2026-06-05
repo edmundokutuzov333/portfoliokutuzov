@@ -1804,6 +1804,41 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
     }
   };
 
+  const MAX_VIDEO_MB = 200;
+  const VIDEO_MIME = ["video/mp4", "video/webm", "video/ogg"];
+  const uploadVideo = async (file: File) => {
+    if (!VIDEO_MIME.includes(file.type) && !/\.(mp4|webm|ogg)$/i.test(file.name)) {
+      toast.error("Unsupported video format. Use .mp4, .webm or .ogg");
+      return;
+    }
+    if (file.size > MAX_VIDEO_MB * 1024 * 1024) {
+      toast.error(`Video is too large (max ${MAX_VIDEO_MB}MB)`);
+      return;
+    }
+    setUploading(true);
+    try {
+      const path = `projects/${form.id}-video-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
+      const { error: upErr } = await supabase.storage
+        .from("site-assets")
+        .upload(path, file, { upsert: true, contentType: file.type || undefined });
+      if (upErr) throw upErr;
+      const { data } = supabase.storage.from("site-assets").getPublicUrl(path);
+      set("video_url", data.publicUrl);
+      set("video_provider", "file");
+      toast.success("Video uploaded");
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const detectProvider = (url: string): "youtube" | "vimeo" | "file" => {
+    if (/youtube\.com|youtu\.be/i.test(url)) return "youtube";
+    if (/vimeo\.com/i.test(url)) return "vimeo";
+    return "file";
+  };
+
   const ratio = aspectFromDims(form.cover_width, form.cover_height) || "16 / 10";
   const isCampaign = isCampaignCategory(form.category);
   const toggleTool = (t: string) => {
