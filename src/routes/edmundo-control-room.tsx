@@ -1705,6 +1705,17 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
       toast.error("Category is required");
       return;
     }
+    const isVideoCat = normalizeCategory(form.category) === "Videos";
+    if (isVideoCat) {
+      if (!form.video_url) {
+        toast.error("Video file or external link is required for Videos");
+        return;
+      }
+      if (!form.cover_url) {
+        toast.error("Poster image is required for Videos");
+        return;
+      }
+    }
     setSaving(true);
     await snapshotBefore("projects", form.id, form.title);
     const { error } = await supabase
@@ -1736,6 +1747,8 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
         collaborators: (form.collaborators ?? []) as unknown as never,
         tools_used: (form.tools_used ?? []) as unknown as never,
         deliverables: (form.deliverables ?? []) as unknown as never,
+        video_url: form.video_url ?? null,
+        video_provider: form.video_provider ?? null,
         updated_at: new Date().toISOString(),
       })
       .eq("id", form.id);
