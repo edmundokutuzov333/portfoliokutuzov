@@ -61,6 +61,13 @@ function ProjectCard({
             {count} files
           </div>
         )}
+        {project.video_url && (
+          <div className="pointer-events-none absolute inset-0 grid place-items-center">
+            <div className="grid h-14 w-14 place-items-center rounded-full border border-white/30 bg-[#01040A]/55 text-white backdrop-blur transition group-hover:scale-105">
+              <Play size={20} strokeWidth={1.8} className="translate-x-[1px]" />
+            </div>
+          </div>
+        )}
       </div>
       <div className="flex flex-1 items-end justify-between gap-3 border-t border-white/[0.06] bg-[#030814] px-5 py-4">
         <div className="min-w-0">
