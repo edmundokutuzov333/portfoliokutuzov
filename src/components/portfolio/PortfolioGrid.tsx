@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowUpRight, Search, X, Layers } from "lucide-react";
+import { ArrowUpRight, Search, X, Layers, Play } from "lucide-react";
 import clsx from "clsx";
 import { useProjects } from "@/hooks/useSiteData";
 import {
