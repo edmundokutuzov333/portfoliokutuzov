@@ -109,6 +109,55 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
+function youtubeEmbed(url: string): string | null {
+  const m =
+    url.match(/youtu\.be\/([\w-]{6,})/i) ||
+    url.match(/youtube\.com\/(?:watch\?v=|embed\/|shorts\/)([\w-]{6,})/i);
+  return m ? `https://www.youtube.com/embed/${m[1]}` : null;
+}
+function vimeoEmbed(url: string): string | null {
+  const m = url.match(/vimeo\.com\/(?:video\/)?(\d+)/i);
+  return m ? `https://player.vimeo.com/video/${m[1]}` : null;
+}
+
+function VideoPlayer({
+  url,
+  provider,
+  poster,
+  title,
+}: {
+  url: string;
+  provider?: string | null;
+  poster?: string | null;
+  title: string;
+}) {
+  const yt = provider === "youtube" || /youtu/i.test(url) ? youtubeEmbed(url) : null;
+  const vm = provider === "vimeo" || /vimeo/i.test(url) ? vimeoEmbed(url) : null;
+  if (yt || vm) {
+    return (
+      <div className="relative w-full" style={{ aspectRatio: "16 / 9" }}>
+        <iframe
+          src={(yt || vm)!}
+          title={title}
+          className="absolute inset-0 h-full w-full"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      </div>
+    );
+  }
+  return (
+    <video
+      src={url}
+      poster={poster ?? undefined}
+      controls
+      playsInline
+      preload="metadata"
+      className="h-auto max-h-[78vh] w-full bg-black"
+    />
+  );
+}
+
 function ProjectDetail({ project, onClose }: { project: DbProject; onClose: () => void }) {
   useEffect(() => {
     const onEsc = (e: KeyboardEvent) => e.key === "Escape" && onClose();
