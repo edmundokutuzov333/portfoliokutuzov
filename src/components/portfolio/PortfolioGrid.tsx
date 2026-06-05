@@ -155,18 +155,31 @@ function ProjectDetail({ project, onClose }: { project: DbProject; onClose: () =
           <X size={16} strokeWidth={1.8} />
         </button>
 
-        {project.cover_url && (
+        {project.video_url ? (
           <div className="px-4 pt-4 md:px-8 md:pt-8">
-            <div className="grid place-items-center rounded-xl bg-[#01040A]">
-              <img
-                src={project.cover_url}
-                alt={project.title}
-                width={project.cover_width ?? undefined}
-                height={project.cover_height ?? undefined}
-                className="h-auto max-h-[78vh] w-auto max-w-full object-contain"
+            <div className="overflow-hidden rounded-xl bg-black">
+              <VideoPlayer
+                url={project.video_url}
+                provider={project.video_provider}
+                poster={project.cover_url}
+                title={project.title}
               />
             </div>
           </div>
+        ) : (
+          project.cover_url && (
+            <div className="px-4 pt-4 md:px-8 md:pt-8">
+              <div className="grid place-items-center rounded-xl bg-[#01040A]">
+                <img
+                  src={project.cover_url}
+                  alt={project.title}
+                  width={project.cover_width ?? undefined}
+                  height={project.cover_height ?? undefined}
+                  className="h-auto max-h-[78vh] w-auto max-w-full object-contain"
+                />
+              </div>
+            </div>
+          )
         )}
 
         <div className="grid gap-10 p-6 md:grid-cols-3 md:p-10">
