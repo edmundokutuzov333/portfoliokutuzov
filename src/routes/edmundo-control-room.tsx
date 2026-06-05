@@ -2144,6 +2144,78 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
             </div>
 
             <div>
+              <div className="mono text-[10px] tracking-[0.2em] text-slate-500 mb-2 flex items-center justify-between">
+                <span>VIDEO {form.video_provider ? `(${form.video_provider})` : ""}</span>
+                {form.video_url && (
+                  <span className="text-emerald-300/80">Ready</span>
+                )}
+              </div>
+              {form.video_url && form.video_provider === "file" ? (
+                <video
+                  src={form.video_url}
+                  controls
+                  playsInline
+                  preload="metadata"
+                  className="w-full rounded border border-white/[0.06] bg-[#01040A]"
+                />
+              ) : form.video_url ? (
+                <div className="text-[12px] text-slate-400 break-all border border-white/[0.06] rounded p-2 bg-[#01040A]">
+                  {form.video_url}
+                </div>
+              ) : (
+                <div className="text-slate-600 text-xs border border-dashed border-white/10 rounded p-3">
+                  No video yet
+                </div>
+              )}
+              <div className="flex items-center gap-2 mt-3 flex-wrap">
+                <label className="inline-flex items-center gap-2 text-sm text-slate-300 border border-white/10 px-3 py-2 rounded cursor-pointer hover:border-sky-300/40">
+                  {uploading ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <Upload size={14} />
+                  )}
+                  {form.video_url ? "Replace video" : "Upload video"}
+                  <input
+                    type="file"
+                    accept="video/mp4,video/webm,video/ogg"
+                    className="hidden"
+                    onChange={(e) => e.target.files?.[0] && uploadVideo(e.target.files[0])}
+                  />
+                </label>
+                {form.video_url && (
+                  <button
+                    onClick={() => {
+                      set("video_url", null);
+                      set("video_provider", null);
+                    }}
+                    className="text-xs text-slate-500 hover:text-red-300"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              <div className="mt-2">
+                <input
+                  type="url"
+                  placeholder="...or paste YouTube / Vimeo URL"
+                  className="adm-input w-full text-sm"
+                  defaultValue={form.video_provider !== "file" ? (form.video_url ?? "") : ""}
+                  onBlur={(e) => {
+                    const v = e.target.value.trim();
+                    if (!v) return;
+                    set("video_url", v);
+                    set("video_provider", detectProvider(v));
+                  }}
+                />
+                <div className="text-[11px] text-slate-500 mt-1">
+                  Accepts .mp4 / .webm / .ogg (max 200MB) or an external link.
+                </div>
+              </div>
+            </div>
+
+
+
+            <div>
               <div className="mono text-[10px] tracking-[0.2em] text-slate-500 mb-2">
                 GALLERY ({(form.gallery ?? []).length})
               </div>
