@@ -1705,6 +1705,17 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
       toast.error("Category is required");
       return;
     }
+    const isVideoCat = normalizeCategory(form.category) === "Videos";
+    if (isVideoCat) {
+      if (!form.video_url) {
+        toast.error("Video file or external link is required for Videos");
+        return;
+      }
+      if (!form.cover_url) {
+        toast.error("Poster image is required for Videos");
+        return;
+      }
+    }
     setSaving(true);
     await snapshotBefore("projects", form.id, form.title);
     const { error } = await supabase
@@ -1736,6 +1747,8 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
         collaborators: (form.collaborators ?? []) as unknown as never,
         tools_used: (form.tools_used ?? []) as unknown as never,
         deliverables: (form.deliverables ?? []) as unknown as never,
+        video_url: form.video_url ?? null,
+        video_provider: form.video_provider ?? null,
         updated_at: new Date().toISOString(),
       })
       .eq("id", form.id);
@@ -1789,6 +1802,41 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
     } finally {
       setUploading(false);
     }
+  };
+
+  const MAX_VIDEO_MB = 200;
+  const VIDEO_MIME = ["video/mp4", "video/webm", "video/ogg"];
+  const uploadVideo = async (file: File) => {
+    if (!VIDEO_MIME.includes(file.type) && !/\.(mp4|webm|ogg)$/i.test(file.name)) {
+      toast.error("Unsupported video format. Use .mp4, .webm or .ogg");
+      return;
+    }
+    if (file.size > MAX_VIDEO_MB * 1024 * 1024) {
+      toast.error(`Video is too large (max ${MAX_VIDEO_MB}MB)`);
+      return;
+    }
+    setUploading(true);
+    try {
+      const path = `projects/${form.id}-video-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
+      const { error: upErr } = await supabase.storage
+        .from("site-assets")
+        .upload(path, file, { upsert: true, contentType: file.type || undefined });
+      if (upErr) throw upErr;
+      const { data } = supabase.storage.from("site-assets").getPublicUrl(path);
+      set("video_url", data.publicUrl);
+      set("video_provider", "file");
+      toast.success("Video uploaded");
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const detectProvider = (url: string): "youtube" | "vimeo" | "file" => {
+    if (/youtube\.com|youtu\.be/i.test(url)) return "youtube";
+    if (/vimeo\.com/i.test(url)) return "vimeo";
+    return "file";
   };
 
   const ratio = aspectFromDims(form.cover_width, form.cover_height) || "16 / 10";
@@ -2094,6 +2142,78 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
                 )}
               </div>
             </div>
+
+            <div>
+              <div className="mono text-[10px] tracking-[0.2em] text-slate-500 mb-2 flex items-center justify-between">
+                <span>VIDEO {form.video_provider ? `(${form.video_provider})` : ""}</span>
+                {form.video_url && (
+                  <span className="text-emerald-300/80">Ready</span>
+                )}
+              </div>
+              {form.video_url && form.video_provider === "file" ? (
+                <video
+                  src={form.video_url}
+                  controls
+                  playsInline
+                  preload="metadata"
+                  className="w-full rounded border border-white/[0.06] bg-[#01040A]"
+                />
+              ) : form.video_url ? (
+                <div className="text-[12px] text-slate-400 break-all border border-white/[0.06] rounded p-2 bg-[#01040A]">
+                  {form.video_url}
+                </div>
+              ) : (
+                <div className="text-slate-600 text-xs border border-dashed border-white/10 rounded p-3">
+                  No video yet
+                </div>
+              )}
+              <div className="flex items-center gap-2 mt-3 flex-wrap">
+                <label className="inline-flex items-center gap-2 text-sm text-slate-300 border border-white/10 px-3 py-2 rounded cursor-pointer hover:border-sky-300/40">
+                  {uploading ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <Upload size={14} />
+                  )}
+                  {form.video_url ? "Replace video" : "Upload video"}
+                  <input
+                    type="file"
+                    accept="video/mp4,video/webm,video/ogg"
+                    className="hidden"
+                    onChange={(e) => e.target.files?.[0] && uploadVideo(e.target.files[0])}
+                  />
+                </label>
+                {form.video_url && (
+                  <button
+                    onClick={() => {
+                      set("video_url", null);
+                      set("video_provider", null);
+                    }}
+                    className="text-xs text-slate-500 hover:text-red-300"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              <div className="mt-2">
+                <input
+                  type="url"
+                  placeholder="...or paste YouTube / Vimeo URL"
+                  className="adm-input w-full text-sm"
+                  defaultValue={form.video_provider !== "file" ? (form.video_url ?? "") : ""}
+                  onBlur={(e) => {
+                    const v = e.target.value.trim();
+                    if (!v) return;
+                    set("video_url", v);
+                    set("video_provider", detectProvider(v));
+                  }}
+                />
+                <div className="text-[11px] text-slate-500 mt-1">
+                  Accepts .mp4 / .webm / .ogg (max 200MB) or an external link.
+                </div>
+              </div>
+            </div>
+
+
 
             <div>
               <div className="mono text-[10px] tracking-[0.2em] text-slate-500 mb-2">

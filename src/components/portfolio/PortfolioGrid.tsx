@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowUpRight, Search, X, Layers } from "lucide-react";
+import { ArrowUpRight, Search, X, Layers, Play } from "lucide-react";
 import clsx from "clsx";
 import { useProjects } from "@/hooks/useSiteData";
 import {
@@ -61,6 +61,13 @@ function ProjectCard({
             {count} files
           </div>
         )}
+        {project.video_url && (
+          <div className="pointer-events-none absolute inset-0 grid place-items-center">
+            <div className="grid h-14 w-14 place-items-center rounded-full border border-white/30 bg-[#01040A]/55 text-white backdrop-blur transition group-hover:scale-105">
+              <Play size={20} strokeWidth={1.8} className="translate-x-[1px]" />
+            </div>
+          </div>
+        )}
       </div>
       <div className="flex flex-1 items-end justify-between gap-3 border-t border-white/[0.06] bg-[#030814] px-5 py-4">
         <div className="min-w-0">
@@ -99,6 +106,55 @@ function Section({ title, children }: { title: string; children: React.ReactNode
       <div className="mono text-[10px] tracking-[0.22em] text-sky-300/70">{title}</div>
       <div className="mt-3 text-[15px] leading-7 text-slate-300">{children}</div>
     </section>
+  );
+}
+
+function youtubeEmbed(url: string): string | null {
+  const m =
+    url.match(/youtu\.be\/([\w-]{6,})/i) ||
+    url.match(/youtube\.com\/(?:watch\?v=|embed\/|shorts\/)([\w-]{6,})/i);
+  return m ? `https://www.youtube.com/embed/${m[1]}` : null;
+}
+function vimeoEmbed(url: string): string | null {
+  const m = url.match(/vimeo\.com\/(?:video\/)?(\d+)/i);
+  return m ? `https://player.vimeo.com/video/${m[1]}` : null;
+}
+
+function VideoPlayer({
+  url,
+  provider,
+  poster,
+  title,
+}: {
+  url: string;
+  provider?: string | null;
+  poster?: string | null;
+  title: string;
+}) {
+  const yt = provider === "youtube" || /youtu/i.test(url) ? youtubeEmbed(url) : null;
+  const vm = provider === "vimeo" || /vimeo/i.test(url) ? vimeoEmbed(url) : null;
+  if (yt || vm) {
+    return (
+      <div className="relative w-full" style={{ aspectRatio: "16 / 9" }}>
+        <iframe
+          src={(yt || vm)!}
+          title={title}
+          className="absolute inset-0 h-full w-full"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      </div>
+    );
+  }
+  return (
+    <video
+      src={url}
+      poster={poster ?? undefined}
+      controls
+      playsInline
+      preload="metadata"
+      className="h-auto max-h-[78vh] w-full bg-black"
+    />
   );
 }
 
@@ -148,18 +204,31 @@ function ProjectDetail({ project, onClose }: { project: DbProject; onClose: () =
           <X size={16} strokeWidth={1.8} />
         </button>
 
-        {project.cover_url && (
+        {project.video_url ? (
           <div className="px-4 pt-4 md:px-8 md:pt-8">
-            <div className="grid place-items-center rounded-xl bg-[#01040A]">
-              <img
-                src={project.cover_url}
-                alt={project.title}
-                width={project.cover_width ?? undefined}
-                height={project.cover_height ?? undefined}
-                className="h-auto max-h-[78vh] w-auto max-w-full object-contain"
+            <div className="overflow-hidden rounded-xl bg-black">
+              <VideoPlayer
+                url={project.video_url}
+                provider={project.video_provider}
+                poster={project.cover_url}
+                title={project.title}
               />
             </div>
           </div>
+        ) : (
+          project.cover_url && (
+            <div className="px-4 pt-4 md:px-8 md:pt-8">
+              <div className="grid place-items-center rounded-xl bg-[#01040A]">
+                <img
+                  src={project.cover_url}
+                  alt={project.title}
+                  width={project.cover_width ?? undefined}
+                  height={project.cover_height ?? undefined}
+                  className="h-auto max-h-[78vh] w-auto max-w-full object-contain"
+                />
+              </div>
+            </div>
+          )
         )}
 
         <div className="grid gap-10 p-6 md:grid-cols-3 md:p-10">
