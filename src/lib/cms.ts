@@ -49,6 +49,8 @@ export type DbProject = {
   tools_used?: string[];
   deliverables?: string[];
   gallery_meta?: { url: string; width?: number; height?: number; alt?: string }[];
+  video_url?: string | null;
+  video_provider?: "file" | "youtube" | "vimeo" | string | null;
 };
 
 export const TOOL_OPTIONS = [
