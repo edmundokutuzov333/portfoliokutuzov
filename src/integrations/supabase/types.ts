@@ -446,6 +446,8 @@ export type Database = {
           title: string
           tools_used: Json
           updated_at: string
+          video_provider: string | null
+          video_url: string | null
           year: string | null
         }
         Insert: {
@@ -477,6 +479,8 @@ export type Database = {
           title: string
           tools_used?: Json
           updated_at?: string
+          video_provider?: string | null
+          video_url?: string | null
           year?: string | null
         }
         Update: {
@@ -508,6 +512,8 @@ export type Database = {
           title?: string
           tools_used?: Json
           updated_at?: string
+          video_provider?: string | null
+          video_url?: string | null
           year?: string | null
         }
         Relationships: []
