@@ -11,5 +11,11 @@
   "assets": {
     "binding": "ASSETS",
     "directory": "dist/client"
+  },
+  "observability": {
+    "enabled": true
+  },
+  "placement": {
+    "mode": "smart"
   }
 }
