@@ -3,13 +3,16 @@
   "private": true,
   "sideEffects": false,
   "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "vite dev",
     "build": "vite build && node scripts/build-pages.mjs",
     "build:dev": "vite build --mode development && node scripts/build-pages.mjs",
     "start": "node dist/server/index.mjs",
-    "preview": "wrangler dev",
-    "deploy": "wrangler deploy",
+    "preview": "vite preview",
+    "deploy": "npm run deploy:pages",
     "deploy:pages": "wrangler pages deploy dist/client --project-name tanstack-start-app --commit-dirty=true",
     "lint": "eslint .",
     "format": "prettier --write ."
