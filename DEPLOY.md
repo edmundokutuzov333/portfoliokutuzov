@@ -18,8 +18,7 @@ The build targets Cloudflare and produces both deployment shapes from a single
    - **Build command:** `npm run build`
    - **Build output directory:** `dist/client`
    - **Node version:** `22` (env var `NODE_VERSION=22`)
-4. Add the same env vars used locally (`VITE_SUPABASE_URL`,
-   `VITE_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, etc.) under
+4. Add the same public/backend environment variables used locally under
    **Settings → Environment variables** for both Production and Preview.
 5. Deploy. Pages will pick up `dist/client/_worker.js/index.js` automatically
    and serve static assets (excluded in `_routes.json`) from the edge cache.
@@ -35,8 +34,8 @@ Or the shortcut: `npm run deploy:pages`.
 
 ## Notes
 
-- Server functions read secrets via `process.env.*` inside `.handler()` — set
-  those in the Cloudflare dashboard, not as `VITE_*`.
+- Server functions read secrets via `process.env.*` inside `.handler()`; public
+  browser variables keep the `VITE_*` prefix.
 - Do not commit `bun.lock`, `bun.lockb`, `bunfig.toml`, `wrangler.json`, or
   `wrangler.jsonc` for this Pages setup; `package-lock.json` is the single
   dependency lockfile used by automatic deploys.
