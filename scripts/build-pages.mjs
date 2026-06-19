@@ -39,7 +39,7 @@ mkdirSync(workerDir, { recursive: true });
 
 // Copy every server artifact (index.mjs + _libs/* + _ssr/*) into _worker.js/.
 for (const entry of readdirSync(serverDir, { withFileTypes: true })) {
-  // Skip the generated wrangler.json — it is only used by `wrangler deploy`.
+  // Skip deployment metadata generated inside the server build output.
   if (entry.name === "wrangler.json") continue;
   cpSync(join(serverDir, entry.name), join(workerDir, entry.name), {
     recursive: true,
