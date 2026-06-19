@@ -17,7 +17,7 @@ The build targets Cloudflare and produces both deployment shapes from a single
    - **Install command:** `npm ci`
    - **Build command:** `npm run build`
    - **Build output directory:** `dist/client`
-   - **Node version:** `20` (env var `NODE_VERSION=20`)
+   - **Node version:** `22` (env var `NODE_VERSION=22`)
 4. Add the same env vars used locally (`VITE_SUPABASE_URL`,
    `VITE_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, etc.) under
    **Settings → Environment variables** for both Production and Preview.
