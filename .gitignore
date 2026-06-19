@@ -14,11 +14,14 @@ dist-ssr
 .vinxi
 .tanstack/**
 .nitro
+*.tsbuildinfo
 *.local
 
 # Wrangler / Cloudflare
 .wrangler/
 .dev.vars
+wrangler.json
+wrangler.jsonc
 
 # Editor directories and files
 .vscode/*
@@ -30,4 +33,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+bun.lock
 bun.lockb
+bunfig.toml
