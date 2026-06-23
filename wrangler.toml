@@ -1,0 +1,15 @@
+name = "tanstack-start-app"
+type = "javascript"
+account_id = ""
+workers_dev = true
+
+[env.production]
+name = "tanstack-start-app"
+routes = [
+  { pattern = "example.com/*", zone_name = "example.com" }
+]
+
+[build]
+command = "npm run build"
+cwd = "./"
+watch_paths = ["src/**/*.ts", "src/**/*.tsx"]
