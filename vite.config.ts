@@ -8,19 +8,6 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
   vite: {
-    plugins: [
-      {
-        name: "force-static-build",
-        configResolved(config) {
-          const plugins = config.plugins as any[];
-          // Disable TanStack Start import protection
-          const protectionPlugin = plugins.find(p => p.name === 'tanstack-start-core:import-protection');
-          if (protectionPlugin) {
-            protectionPlugin.apply = () => false;
-          }
-        }
-      }
-    ],
     server: {
       allowedHosts: ["operations-remedy-congressional-hotels.trycloudflare.com"],
     },
