@@ -439,6 +439,7 @@ export type Database = {
           notes: string | null
           palette: string | null
           role: string | null
+          slug: string | null
           sort_order: number
           span: string | null
           subtitle: string | null
@@ -472,6 +473,7 @@ export type Database = {
           notes?: string | null
           palette?: string | null
           role?: string | null
+          slug?: string | null
           sort_order?: number
           span?: string | null
           subtitle?: string | null
@@ -505,6 +507,7 @@ export type Database = {
           notes?: string | null
           palette?: string | null
           role?: string | null
+          slug?: string | null
           sort_order?: number
           span?: string | null
           subtitle?: string | null
@@ -605,6 +608,7 @@ export type Database = {
     }
     Functions: {
       is_admin: { Args: never; Returns: boolean }
+      slugify: { Args: { input: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never
