@@ -23,6 +23,7 @@ export type DbClient = {
 
 export type DbProject = {
   id: string;
+  slug?: string | null;
   title: string;
   subtitle: string | null;
   category: string;
