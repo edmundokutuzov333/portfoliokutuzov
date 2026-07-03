@@ -423,37 +423,84 @@ function ContactPage() {
             ) : (
               <form onSubmit={onSubmit} noValidate>
                 {/* Stepper */}
-                <ol className="flex items-center justify-between mb-6 gap-2">
-                  {STEPS.map((s) => {
-                    const active = step === s.id;
-                    const done = step > s.id;
-                    return (
-                      <li key={s.id} className="flex-1 flex items-center gap-2 min-w-0">
-                        <button
-                          type="button"
-                          onClick={() => setStep(s.id)}
-                          className={`h-7 w-7 shrink-0 rounded-full grid place-items-center text-[11px] mono transition ${
-                            active
-                              ? "bg-sky-300 text-[#01040A]"
-                              : done
-                                ? "bg-sky-300/20 text-sky-200"
-                                : "bg-white/[0.04] text-slate-500 border border-white/10"
-                          }`}
-                        >
-                          {s.id}
-                        </button>
-                        <span
-                          className={`mono text-[10px] tracking-[0.18em] truncate ${active ? "text-sky-200" : "text-slate-500"}`}
-                        >
-                          {s.label}
-                        </span>
-                        {s.id < STEPS.length && (
-                          <span className="hidden sm:block flex-1 h-px bg-white/10" />
-                        )}
-                      </li>
-                    );
-                  })}
-                </ol>
+                <div className="mb-6">
+                  {/* Mobile header: step X of N + current label */}
+                  <div className="sm:hidden flex items-center justify-between mb-3">
+                    <span className="mono text-[10px] tracking-[0.22em] text-slate-500">
+                      Step {step} of {STEPS.length}
+                    </span>
+                    <span className="mono text-[10px] tracking-[0.22em] text-sky-200">
+                      {STEPS[step - 1].label}
+                    </span>
+                  </div>
+                  {/* Mobile progress bar */}
+                  <div className="sm:hidden h-[3px] rounded-full bg-white/[0.06] overflow-hidden">
+                    <motion.div
+                      initial={false}
+                      animate={{ width: `${(step / STEPS.length) * 100}%` }}
+                      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                      className="h-full bg-gradient-to-r from-sky-300 to-sky-500"
+                    />
+                  </div>
+                  {/* Mobile dots for direct nav */}
+                  <ol className="sm:hidden mt-3 flex items-center justify-center gap-2">
+                    {STEPS.map((s) => {
+                      const active = step === s.id;
+                      const done = step > s.id;
+                      const Icon = s.Icon;
+                      return (
+                        <li key={s.id}>
+                          <button
+                            type="button"
+                            onClick={() => setStep(s.id)}
+                            aria-label={`Go to step ${s.id}: ${s.label}`}
+                            className={`h-9 w-9 rounded-full grid place-items-center transition ${
+                              active
+                                ? "bg-sky-300 text-[#01040A]"
+                                : done
+                                  ? "bg-sky-300/20 text-sky-200 border border-sky-300/30"
+                                  : "bg-white/[0.04] text-slate-500 border border-white/10"
+                            }`}
+                          >
+                            <Icon size={14} strokeWidth={1.8} />
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ol>
+                  {/* Desktop stepper */}
+                  <ol className="hidden sm:flex items-center justify-between gap-2">
+                    {STEPS.map((s) => {
+                      const active = step === s.id;
+                      const done = step > s.id;
+                      return (
+                        <li key={s.id} className="flex-1 flex items-center gap-2 min-w-0">
+                          <button
+                            type="button"
+                            onClick={() => setStep(s.id)}
+                            className={`h-7 w-7 shrink-0 rounded-full grid place-items-center text-[11px] mono transition ${
+                              active
+                                ? "bg-sky-300 text-[#01040A]"
+                                : done
+                                  ? "bg-sky-300/20 text-sky-200"
+                                  : "bg-white/[0.04] text-slate-500 border border-white/10"
+                            }`}
+                          >
+                            {s.id}
+                          </button>
+                          <span
+                            className={`mono text-[10px] tracking-[0.18em] truncate ${active ? "text-sky-200" : "text-slate-500"}`}
+                          >
+                            {s.label}
+                          </span>
+                          {s.id < STEPS.length && (
+                            <span className="flex-1 h-px bg-white/10" />
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ol>
+                </div>
 
                 <AnimatePresence mode="wait">
                   <motion.div
