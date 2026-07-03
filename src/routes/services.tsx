@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowUpRight } from "lucide-react";
 import { Manifesto } from "@/components/home/Manifesto";
-import { Services } from "@/components/home/Services";
+import { ServicesDetailed } from "@/components/home/ServicesDetailed";
 
 export const Route = createFileRoute("/services")({
   head: () => ({
@@ -43,7 +43,7 @@ function ServicesPage() {
       </section>
 
       <Manifesto />
-      <Services />
+      <ServicesDetailed />
 
       <section className="relative px-5 md:px-8 py-24">
         <div className="max-w-[1240px] mx-auto">
