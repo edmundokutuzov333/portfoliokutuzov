@@ -77,6 +77,7 @@ const STEPS = [
 
 function ContactPage() {
   const { data: settings } = useSiteSettings();
+  const sendEmails = useServerFn(sendBriefingEmails);
   const r = <T,>(f: string, fb: T) => readSetting<T>(settings, "contact", f, fb);
   const s = <T,>(f: string, fb: T) => readSetting<T>(settings, "social", f, fb);
 
@@ -262,6 +263,28 @@ function ContactPage() {
     setSubmitting(false);
     if (error) return toast.error(error.message);
     trackEvent({ action: "submit", element: "briefing" });
+    // Fire-and-forget confirmation + admin notification emails.
+    sendEmails({
+      data: {
+        full_name: parsed.data.full_name,
+        email: parsed.data.email,
+        company_name: parsed.data.company_name ?? null,
+        project_type: parsed.data.project_type,
+        urgency: parsed.data.urgency,
+        deadline: parsed.data.deadline ?? null,
+        currency: parsed.data.currency,
+        budget_range: parsed.data.budget_range ?? null,
+        exact_amount: parsed.data.exact_amount ?? null,
+        message: parsed.data.message,
+        preferred_contact_method: parsed.data.preferred_contact_method ?? null,
+        phone: parsed.data.phone ?? null,
+        country: parsed.data.country ?? null,
+        reference_links: refLinks,
+        attachments: files.map((f) => ({ url: f.url, name: f.name, size: f.size })),
+      },
+    }).catch(() => {
+      /* silent — submission is already stored */
+    });
     setDone(true);
     toast.success("Brief received. I'll be in touch within 48h.");
   };
