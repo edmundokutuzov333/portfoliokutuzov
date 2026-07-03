@@ -25,6 +25,8 @@ import {
 import { useSiteSettings } from "@/hooks/useSiteData";
 import { readSetting, SITE_EMAIL, SITE_PHONE } from "@/lib/cms";
 import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { sendBriefingEmails } from "@/lib/briefing.functions";
 import { toast } from "sonner";
 import {
   CURRENCIES,
