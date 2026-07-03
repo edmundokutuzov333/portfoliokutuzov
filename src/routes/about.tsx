@@ -59,7 +59,29 @@ function AboutPage() {
             <p>{r("bio_p3", "")}</p>
           </div>
 
-          <div className="md:col-span-5">
+          <div className="md:col-span-5 space-y-6">
+            {r("portrait_url", "") ? (
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+                className="relative aspect-[4/5] overflow-hidden rounded-lg border border-white/[0.08] bg-[#030814]"
+              >
+                <img
+                  src={r("portrait_url", "")}
+                  alt={r("portrait_alt", "Edmundo Kutuzov, art director")}
+                  className="absolute inset-0 h-full w-full object-cover"
+                  loading="lazy"
+                />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#01040A]/60 via-transparent to-transparent" />
+                <div className="absolute bottom-4 left-4 right-4">
+                  <div className="mono text-[10px] tracking-[0.24em] text-sky-200/80">
+                    {r("portrait_caption", "Maputo · Studio")}
+                  </div>
+                </div>
+              </motion.div>
+            ) : null}
+
             <div className="border border-white/[0.08] bg-[#030814] p-6 rounded-lg">
               <p className="mono text-[10px] tracking-[0.24em] text-slate-500">Direct contact</p>
               <div className="mt-5 space-y-4 text-sm text-slate-300">

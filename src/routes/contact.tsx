@@ -25,6 +25,8 @@ import {
 import { useSiteSettings } from "@/hooks/useSiteData";
 import { readSetting, SITE_EMAIL, SITE_PHONE } from "@/lib/cms";
 import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { sendBriefingEmails } from "@/lib/briefing.functions";
 import { toast } from "sonner";
 import {
   CURRENCIES,
@@ -75,6 +77,7 @@ const STEPS = [
 
 function ContactPage() {
   const { data: settings } = useSiteSettings();
+  const sendEmails = useServerFn(sendBriefingEmails);
   const r = <T,>(f: string, fb: T) => readSetting<T>(settings, "contact", f, fb);
   const s = <T,>(f: string, fb: T) => readSetting<T>(settings, "social", f, fb);
 
@@ -260,6 +263,28 @@ function ContactPage() {
     setSubmitting(false);
     if (error) return toast.error(error.message);
     trackEvent({ action: "submit", element: "briefing" });
+    // Fire-and-forget confirmation + admin notification emails.
+    sendEmails({
+      data: {
+        full_name: parsed.data.full_name,
+        email: parsed.data.email,
+        company_name: parsed.data.company_name ?? null,
+        project_type: parsed.data.project_type,
+        urgency: parsed.data.urgency,
+        deadline: parsed.data.deadline ?? null,
+        currency: parsed.data.currency,
+        budget_range: parsed.data.budget_range ?? null,
+        exact_amount: parsed.data.exact_amount ?? null,
+        message: parsed.data.message,
+        preferred_contact_method: parsed.data.preferred_contact_method ?? null,
+        phone: parsed.data.phone ?? null,
+        country: parsed.data.country ?? null,
+        reference_links: refLinks,
+        attachments: files.map((f) => ({ url: f.url, name: f.name, size: f.size })),
+      },
+    }).catch(() => {
+      /* silent — submission is already stored */
+    });
     setDone(true);
     toast.success("Brief received. I'll be in touch within 48h.");
   };
@@ -398,37 +423,84 @@ function ContactPage() {
             ) : (
               <form onSubmit={onSubmit} noValidate>
                 {/* Stepper */}
-                <ol className="flex items-center justify-between mb-6 gap-2">
-                  {STEPS.map((s) => {
-                    const active = step === s.id;
-                    const done = step > s.id;
-                    return (
-                      <li key={s.id} className="flex-1 flex items-center gap-2 min-w-0">
-                        <button
-                          type="button"
-                          onClick={() => setStep(s.id)}
-                          className={`h-7 w-7 shrink-0 rounded-full grid place-items-center text-[11px] mono transition ${
-                            active
-                              ? "bg-sky-300 text-[#01040A]"
-                              : done
-                                ? "bg-sky-300/20 text-sky-200"
-                                : "bg-white/[0.04] text-slate-500 border border-white/10"
-                          }`}
-                        >
-                          {s.id}
-                        </button>
-                        <span
-                          className={`mono text-[10px] tracking-[0.18em] truncate ${active ? "text-sky-200" : "text-slate-500"}`}
-                        >
-                          {s.label}
-                        </span>
-                        {s.id < STEPS.length && (
-                          <span className="hidden sm:block flex-1 h-px bg-white/10" />
-                        )}
-                      </li>
-                    );
-                  })}
-                </ol>
+                <div className="mb-6">
+                  {/* Mobile header: step X of N + current label */}
+                  <div className="sm:hidden flex items-center justify-between mb-3">
+                    <span className="mono text-[10px] tracking-[0.22em] text-slate-500">
+                      Step {step} of {STEPS.length}
+                    </span>
+                    <span className="mono text-[10px] tracking-[0.22em] text-sky-200">
+                      {STEPS[step - 1].label}
+                    </span>
+                  </div>
+                  {/* Mobile progress bar */}
+                  <div className="sm:hidden h-[3px] rounded-full bg-white/[0.06] overflow-hidden">
+                    <motion.div
+                      initial={false}
+                      animate={{ width: `${(step / STEPS.length) * 100}%` }}
+                      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                      className="h-full bg-gradient-to-r from-sky-300 to-sky-500"
+                    />
+                  </div>
+                  {/* Mobile dots for direct nav */}
+                  <ol className="sm:hidden mt-3 flex items-center justify-center gap-2">
+                    {STEPS.map((s) => {
+                      const active = step === s.id;
+                      const done = step > s.id;
+                      const Icon = s.Icon;
+                      return (
+                        <li key={s.id}>
+                          <button
+                            type="button"
+                            onClick={() => setStep(s.id)}
+                            aria-label={`Go to step ${s.id}: ${s.label}`}
+                            className={`h-9 w-9 rounded-full grid place-items-center transition ${
+                              active
+                                ? "bg-sky-300 text-[#01040A]"
+                                : done
+                                  ? "bg-sky-300/20 text-sky-200 border border-sky-300/30"
+                                  : "bg-white/[0.04] text-slate-500 border border-white/10"
+                            }`}
+                          >
+                            <Icon size={14} strokeWidth={1.8} />
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ol>
+                  {/* Desktop stepper */}
+                  <ol className="hidden sm:flex items-center justify-between gap-2">
+                    {STEPS.map((s) => {
+                      const active = step === s.id;
+                      const done = step > s.id;
+                      return (
+                        <li key={s.id} className="flex-1 flex items-center gap-2 min-w-0">
+                          <button
+                            type="button"
+                            onClick={() => setStep(s.id)}
+                            className={`h-7 w-7 shrink-0 rounded-full grid place-items-center text-[11px] mono transition ${
+                              active
+                                ? "bg-sky-300 text-[#01040A]"
+                                : done
+                                  ? "bg-sky-300/20 text-sky-200"
+                                  : "bg-white/[0.04] text-slate-500 border border-white/10"
+                            }`}
+                          >
+                            {s.id}
+                          </button>
+                          <span
+                            className={`mono text-[10px] tracking-[0.18em] truncate ${active ? "text-sky-200" : "text-slate-500"}`}
+                          >
+                            {s.label}
+                          </span>
+                          {s.id < STEPS.length && (
+                            <span className="flex-1 h-px bg-white/10" />
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ol>
+                </div>
 
                 <AnimatePresence mode="wait">
                   <motion.div
