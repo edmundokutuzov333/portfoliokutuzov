@@ -1,0 +1,149 @@
+{
+  "version": 1,
+  "sdk_version": "0.20.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "none"
+  },
+  "mcp": {
+    "server": {
+      "name": "edmundo-kutuzov-mcp",
+      "version": "0.1.0",
+      "title": "Edmundo Kutuzov · Studio MCP"
+    },
+    "tools": [
+      {
+        "name": "list_projects",
+        "title": "List portfolio projects",
+        "description": "List published portfolio projects from Edmundo Kutuzov's site (title, slug, category, year, tags).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "limit": {
+              "description": "Maximum number of projects to return (default 20).",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            },
+            "category": {
+              "description": "Optional case-insensitive category filter.",
+              "type": "string"
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_project",
+        "title": "Get portfolio project",
+        "description": "Fetch a single portfolio project by its URL slug.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "slug": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Project slug, e.g. `brand-x-identity`."
+            }
+          },
+          "required": [
+            "slug"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "submit_brief",
+        "title": "Submit a project brief",
+        "description": "Submit a new project briefing to Edmundo Kutuzov. Creates a record in the briefing inbox and notifies the studio.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": true
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "full_name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "description": "Contact full name."
+            },
+            "email": {
+              "type": "string",
+              "maxLength": 200,
+              "format": "email",
+              "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+              "description": "Contact email."
+            },
+            "company_name": {
+              "description": "Company or brand name.",
+              "type": "string",
+              "maxLength": 200
+            },
+            "project_type": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120,
+              "description": "Type of project, e.g. `Brand Identity`, `Art Direction`."
+            },
+            "urgency": {
+              "type": "string",
+              "enum": [
+                "low",
+                "normal",
+                "high",
+                "urgent"
+              ],
+              "description": "How urgent the project is."
+            },
+            "budget_range": {
+              "description": "Budget bracket, e.g. `€15K - €40K`.",
+              "type": "string",
+              "maxLength": 80
+            },
+            "currency": {
+              "description": "Currency (default EUR).",
+              "type": "string",
+              "enum": [
+                "EUR",
+                "USD",
+                "MZN",
+                "GBP",
+                "BRL"
+              ]
+            },
+            "message": {
+              "type": "string",
+              "minLength": 10,
+              "maxLength": 4000,
+              "description": "Brief description of the project (10+ chars)."
+            }
+          },
+          "required": [
+            "full_name",
+            "email",
+            "project_type",
+            "urgency",
+            "message"
+          ]
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
