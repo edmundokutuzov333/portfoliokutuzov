@@ -22,6 +22,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { RequestsInbox } from "./RequestsInbox";
+import { InvoicePanel } from "./InvoicePanel";
 
 type BriefAttachment = { url: string; name: string; size: number };
 type BriefRefLink = { url: string; label?: string };
@@ -50,6 +51,13 @@ type Briefing = {
   admin_notes: string | null;
   source: string | null;
   created_at: string;
+  invoice_number: string | null;
+  invoice_amount: number | null;
+  invoice_currency: string | null;
+  invoice_due_date: string | null;
+  invoice_pdf_path: string | null;
+  invoice_status: string | null;
+  invoice_sent_at: string | null;
 };
 
 type Booking = {
@@ -501,6 +509,21 @@ function BriefingDetail({
           className="w-full bg-[#01040A] border border-white/10 rounded p-3 text-[13px] text-slate-200 focus:outline-none focus:border-sky-300/50"
         />
       </div>
+
+      <InvoicePanel
+        briefingId={req.id}
+        defaultCurrency={req.currency}
+        suggestedAmount={req.exact_amount}
+        existing={{
+          invoice_number: req.invoice_number,
+          invoice_amount: req.invoice_amount,
+          invoice_currency: req.invoice_currency,
+          invoice_due_date: req.invoice_due_date,
+          invoice_pdf_path: req.invoice_pdf_path,
+          invoice_status: req.invoice_status,
+          invoice_sent_at: req.invoice_sent_at,
+        }}
+      />
 
       <div className="mt-5 pt-4 border-t border-white/[0.06] flex flex-wrap items-center gap-2">
         <a

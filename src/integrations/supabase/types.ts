@@ -169,6 +169,14 @@ export type Database = {
           exact_amount: number | null
           full_name: string
           id: string
+          invoice_amount: number | null
+          invoice_currency: string | null
+          invoice_due_date: string | null
+          invoice_notes: string | null
+          invoice_number: string | null
+          invoice_pdf_path: string | null
+          invoice_sent_at: string | null
+          invoice_status: string | null
           is_starred: boolean
           message: string
           negotiable: boolean
@@ -197,6 +205,14 @@ export type Database = {
           exact_amount?: number | null
           full_name: string
           id?: string
+          invoice_amount?: number | null
+          invoice_currency?: string | null
+          invoice_due_date?: string | null
+          invoice_notes?: string | null
+          invoice_number?: string | null
+          invoice_pdf_path?: string | null
+          invoice_sent_at?: string | null
+          invoice_status?: string | null
           is_starred?: boolean
           message: string
           negotiable?: boolean
@@ -225,6 +241,14 @@ export type Database = {
           exact_amount?: number | null
           full_name?: string
           id?: string
+          invoice_amount?: number | null
+          invoice_currency?: string | null
+          invoice_due_date?: string | null
+          invoice_notes?: string | null
+          invoice_number?: string | null
+          invoice_pdf_path?: string | null
+          invoice_sent_at?: string | null
+          invoice_status?: string | null
           is_starred?: boolean
           message?: string
           negotiable?: boolean
