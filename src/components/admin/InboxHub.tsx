@@ -510,6 +510,21 @@ function BriefingDetail({
         />
       </div>
 
+      <InvoicePanel
+        briefingId={req.id}
+        defaultCurrency={req.currency}
+        suggestedAmount={req.exact_amount}
+        existing={{
+          invoice_number: req.invoice_number,
+          invoice_amount: req.invoice_amount,
+          invoice_currency: req.invoice_currency,
+          invoice_due_date: req.invoice_due_date,
+          invoice_pdf_path: req.invoice_pdf_path,
+          invoice_status: req.invoice_status,
+          invoice_sent_at: req.invoice_sent_at,
+        }}
+      />
+
       <div className="mt-5 pt-4 border-t border-white/[0.06] flex flex-wrap items-center gap-2">
         <a
           href={reply}
