@@ -22,6 +22,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { RequestsInbox } from "./RequestsInbox";
+import { InvoicePanel } from "./InvoicePanel";
 
 type BriefAttachment = { url: string; name: string; size: number };
 type BriefRefLink = { url: string; label?: string };
