@@ -51,6 +51,13 @@ type Briefing = {
   admin_notes: string | null;
   source: string | null;
   created_at: string;
+  invoice_number: string | null;
+  invoice_amount: number | null;
+  invoice_currency: string | null;
+  invoice_due_date: string | null;
+  invoice_pdf_path: string | null;
+  invoice_status: string | null;
+  invoice_sent_at: string | null;
 };
 
 type Booking = {
