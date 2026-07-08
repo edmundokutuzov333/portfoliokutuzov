@@ -56,6 +56,7 @@ type Section =
   | "about"
   | "contact"
   | "inbox"
+  | "invoice"
   | "history"
   | "advanced";
 
