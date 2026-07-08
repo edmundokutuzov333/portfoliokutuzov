@@ -522,6 +522,7 @@ function BriefingDetail({
           invoice_pdf_path: req.invoice_pdf_path,
           invoice_status: req.invoice_status,
           invoice_sent_at: req.invoice_sent_at,
+          invoice_public_token: (req as unknown as { invoice_public_token?: string | null }).invoice_public_token ?? null,
         }}
       />
 

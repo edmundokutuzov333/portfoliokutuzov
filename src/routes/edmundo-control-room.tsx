@@ -56,6 +56,7 @@ type Section =
   | "about"
   | "contact"
   | "inbox"
+  | "invoice"
   | "history"
   | "advanced";
 
@@ -80,6 +81,7 @@ function ControlRoom() {
     { id: "about" as const, label: "About", Icon: UserIcon },
     { id: "contact" as const, label: "Contact", Icon: Mail },
     { id: "inbox" as const, label: "Inbox", Icon: Inbox },
+    { id: "invoice" as const, label: "Invoicing", Icon: FileText },
     { id: "history" as const, label: "History", Icon: History },
     { id: "advanced" as const, label: "Advanced", Icon: Code2 },
   ];
@@ -121,6 +123,7 @@ function ControlRoom() {
         {section === "about" && <AboutManager />}
         {section === "contact" && <ContactManager />}
         {section === "inbox" && <InboxHub />}
+        {section === "invoice" && <InvoiceSettingsEditor />}
         {section === "history" && <HistoryManager />}
         {section === "advanced" && <AdvancedJSONManager />}
       </main>
@@ -2476,3 +2479,102 @@ function RawEditor({
     </div>
   );
 }
+
+// ============================================================================
+// INVOICE SETTINGS (branding + payment details for proforma invoices)
+// ============================================================================
+function InvoiceSettingsEditor() {
+  const s = useSectionDraft("invoice_settings");
+  const field = (key: string, label: string, placeholder = "", type: "text" | "color" | "textarea" = "text") => {
+    const value = get<string>(s.draft, key, "");
+    return (
+      <label className="block">
+        <span className="mono text-[10px] tracking-[0.2em] text-slate-500">{label}</span>
+        {type === "textarea" ? (
+          <textarea
+            value={value}
+            onChange={(e) => s.update(key, e.target.value)}
+            placeholder={placeholder}
+            rows={3}
+            className="w-full mt-1 bg-[#01040A] border border-white/10 rounded p-3 text-[13px] text-slate-100 focus:outline-none focus:border-sky-300/50"
+          />
+        ) : type === "color" ? (
+          <div className="mt-1 flex items-center gap-2">
+            <input
+              type="color"
+              value={value || "#48A0E0"}
+              onChange={(e) => s.update(key, e.target.value)}
+              className="h-9 w-14 rounded border border-white/10 bg-transparent cursor-pointer"
+            />
+            <input
+              value={value}
+              onChange={(e) => s.update(key, e.target.value)}
+              placeholder="#48A0E0"
+              className="flex-1 bg-[#01040A] border border-white/10 rounded px-3 py-2 text-[13px] text-slate-100 focus:outline-none focus:border-sky-300/50"
+            />
+          </div>
+        ) : (
+          <input
+            value={value}
+            onChange={(e) => s.update(key, e.target.value)}
+            placeholder={placeholder}
+            className="w-full mt-1 bg-[#01040A] border border-white/10 rounded px-3 py-2 text-[13px] text-slate-100 focus:outline-none focus:border-sky-300/50"
+          />
+        )}
+      </label>
+    );
+  };
+
+  return (
+    <div>
+      <header className="mb-6">
+        <h2 className="display text-2xl text-metal">Invoicing</h2>
+        <p className="text-sm text-slate-500 mt-1">
+          Branding, header/footer, legal text and payment details used in proforma invoices &amp; the client portal.
+        </p>
+      </header>
+
+      <section className="bg-white/[0.02] border border-white/10 rounded-lg p-5 mb-4">
+        <h3 className="text-sm font-semibold text-slate-100 mb-4">Identity</h3>
+        <div className="grid md:grid-cols-2 gap-4">
+          {field("studio_name", "STUDIO NAME", "Edmundo Kutuzov")}
+          {field("studio_email", "CONTACT EMAIL", "contact@…")}
+          {field("studio_address", "ADDRESS", "Rua …, Maputo")}
+          {field("studio_tax_id", "TAX ID (NUIT)", "")}
+          {field("logo_url", "LOGO URL (PNG/JPG)", "https://…")}
+          {field("brand_color", "BRAND COLOR", "#48A0E0", "color")}
+        </div>
+      </section>
+
+      <section className="bg-white/[0.02] border border-white/10 rounded-lg p-5 mb-4">
+        <h3 className="text-sm font-semibold text-slate-100 mb-4">Header &amp; footer</h3>
+        <div className="grid md:grid-cols-2 gap-4">
+          {field("header_label", "HEADER LABEL", "PROFORMA INVOICE")}
+          {field("footer_note", "FOOTER NOTE", "Art Director")}
+        </div>
+        <div className="mt-4">{field("legal_text", "LEGAL TEXT / TERMS", "This is a proforma invoice — …", "textarea")}</div>
+      </section>
+
+      <section className="bg-white/[0.02] border border-white/10 rounded-lg p-5 mb-4">
+        <h3 className="text-sm font-semibold text-slate-100 mb-4">Payment details</h3>
+        <div className="grid md:grid-cols-2 gap-4">
+          {field("bank_name", "BANK NAME")}
+          {field("bank_account_name", "ACCOUNT NAME")}
+          {field("bank_iban", "IBAN")}
+          {field("bank_swift", "SWIFT / BIC")}
+          {field("mpesa_number", "M-PESA NUMBER")}
+        </div>
+        <div className="mt-4">{field("payment_terms", "PAYMENT TERMS", "Payment within 14 days …", "textarea")}</div>
+      </section>
+
+      <div className="flex justify-end gap-2">
+        <button
+          onClick={s.restore}
+          className="text-[12px] text-slate-400 hover:text-slate-100 px-3 py-2"
+        >Restore defaults</button>
+        <SaveButton saving={s.saving} onClick={s.save} />
+      </div>
+    </div>
+  );
+}
+
