@@ -418,7 +418,7 @@ export const setInvoiceStatus = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const patch: Record<string, unknown> = { invoice_status: data.status };
+    const patch: { invoice_status: typeof data.status; invoice_paid_at?: string } = { invoice_status: data.status };
     if (data.status === "paid") patch.invoice_paid_at = new Date().toISOString();
     const { error } = await supabaseAdmin.from("briefing_submissions").update(patch).eq("id", data.briefing_id);
     if (error) throw new Error(error.message);
