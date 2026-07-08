@@ -81,6 +81,7 @@ function ControlRoom() {
     { id: "about" as const, label: "About", Icon: UserIcon },
     { id: "contact" as const, label: "Contact", Icon: Mail },
     { id: "inbox" as const, label: "Inbox", Icon: Inbox },
+    { id: "invoice" as const, label: "Invoicing", Icon: FileText },
     { id: "history" as const, label: "History", Icon: History },
     { id: "advanced" as const, label: "Advanced", Icon: Code2 },
   ];
