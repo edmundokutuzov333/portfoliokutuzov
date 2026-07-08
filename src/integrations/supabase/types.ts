@@ -174,9 +174,12 @@ export type Database = {
           invoice_due_date: string | null
           invoice_notes: string | null
           invoice_number: string | null
+          invoice_paid_at: string | null
           invoice_pdf_path: string | null
+          invoice_public_token: string | null
           invoice_sent_at: string | null
           invoice_status: string | null
+          invoice_viewed_at: string | null
           is_starred: boolean
           message: string
           negotiable: boolean
@@ -210,9 +213,12 @@ export type Database = {
           invoice_due_date?: string | null
           invoice_notes?: string | null
           invoice_number?: string | null
+          invoice_paid_at?: string | null
           invoice_pdf_path?: string | null
+          invoice_public_token?: string | null
           invoice_sent_at?: string | null
           invoice_status?: string | null
+          invoice_viewed_at?: string | null
           is_starred?: boolean
           message: string
           negotiable?: boolean
@@ -246,9 +252,12 @@ export type Database = {
           invoice_due_date?: string | null
           invoice_notes?: string | null
           invoice_number?: string | null
+          invoice_paid_at?: string | null
           invoice_pdf_path?: string | null
+          invoice_public_token?: string | null
           invoice_sent_at?: string | null
           invoice_status?: string | null
+          invoice_viewed_at?: string | null
           is_starred?: boolean
           message?: string
           negotiable?: boolean
@@ -403,6 +412,44 @@ export type Database = {
           snapshot?: Json
         }
         Relationships: []
+      }
+      invoice_events: {
+        Row: {
+          actor: string | null
+          briefing_id: string
+          created_at: string
+          detail: Json
+          event_type: string
+          id: string
+          recipients: string[] | null
+        }
+        Insert: {
+          actor?: string | null
+          briefing_id: string
+          created_at?: string
+          detail?: Json
+          event_type: string
+          id?: string
+          recipients?: string[] | null
+        }
+        Update: {
+          actor?: string | null
+          briefing_id?: string
+          created_at?: string
+          detail?: Json
+          event_type?: string
+          id?: string
+          recipients?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_events_briefing_id_fkey"
+            columns: ["briefing_id"]
+            isOneToOne: false
+            referencedRelation: "briefing_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       newsletter_subscribers: {
         Row: {
