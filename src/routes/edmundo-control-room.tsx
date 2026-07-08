@@ -123,6 +123,7 @@ function ControlRoom() {
         {section === "about" && <AboutManager />}
         {section === "contact" && <ContactManager />}
         {section === "inbox" && <InboxHub />}
+        {section === "invoice" && <InvoiceSettingsEditor />}
         {section === "history" && <HistoryManager />}
         {section === "advanced" && <AdvancedJSONManager />}
       </main>
