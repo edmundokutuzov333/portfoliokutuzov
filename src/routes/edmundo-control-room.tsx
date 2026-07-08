@@ -2572,7 +2572,7 @@ function InvoiceSettingsEditor() {
           onClick={s.restore}
           className="text-[12px] text-slate-400 hover:text-slate-100 px-3 py-2"
         >Restore defaults</button>
-        <SaveButton saving={s.saving} onClick={s.save} disabled={!s.dirty} />
+        <SaveButton saving={s.saving} onClick={s.save} />
       </div>
     </div>
   );
