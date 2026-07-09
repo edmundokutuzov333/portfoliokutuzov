@@ -318,13 +318,13 @@ export const generateBriefingInvoice = createServerFn({ method: "POST" })
       brief, settings,
     });
 
-    const pdfPath = `invoices/${brief.id}/${invoiceNumber}.pdf`;
+    const pdfPath = `${brief.id}/${invoiceNumber}.pdf`;
     const { error: upErr } = await supabaseAdmin.storage.from(BUCKET).upload(pdfPath, pdfBytes, {
       contentType: "application/pdf", upsert: true,
     });
     if (upErr) throw new Error(`Storage upload failed: ${upErr.message}`);
 
-    const invoiceUrl = supabaseAdmin.storage.from(BUCKET).getPublicUrl(pdfPath).data.publicUrl;
+    const invoiceUrl = await signedPdfUrl(supabaseAdmin, pdfPath);
     const clientPortalUrl = `${siteOrigin()}/i/${token}`;
 
     const { error: updErr } = await supabaseAdmin
