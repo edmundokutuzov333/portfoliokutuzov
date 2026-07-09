@@ -161,6 +161,7 @@ export type Database = {
           attachments: Json
           budget_range: string | null
           company_name: string | null
+          confirmation_sent_at: string | null
           country: string | null
           created_at: string
           currency: string
@@ -200,6 +201,7 @@ export type Database = {
           attachments?: Json
           budget_range?: string | null
           company_name?: string | null
+          confirmation_sent_at?: string | null
           country?: string | null
           created_at?: string
           currency?: string
@@ -239,6 +241,7 @@ export type Database = {
           attachments?: Json
           budget_range?: string | null
           company_name?: string | null
+          confirmation_sent_at?: string | null
           country?: string | null
           created_at?: string
           currency?: string

@@ -3,7 +3,15 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const RESEND_GATEWAY = "https://connector-gateway.lovable.dev/resend";
-const BUCKET = "site-assets";
+// Invoices live in a private bucket; PDFs are only served via short-lived signed URLs.
+const BUCKET = "invoices";
+const SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 7; // 7 days
+
+async function signedPdfUrl(admin: any, path: string): Promise<string> {
+  const { data, error } = await admin.storage.from(BUCKET).createSignedUrl(path, SIGNED_URL_TTL_SECONDS);
+  if (error || !data?.signedUrl) throw new Error(error?.message || "Failed to sign invoice URL");
+  return data.signedUrl;
+}
 
 const InvoiceInput = z.object({
   briefing_id: z.string().uuid(),
@@ -261,7 +269,7 @@ export const previewInvoiceEmail = createServerFn({ method: "POST" })
     const invoiceNumber = brief.invoice_number || `PREVIEW-${nextInvoiceNumber()}`;
     const token = brief.invoice_public_token || "preview-token";
     const invoiceUrl = brief.invoice_pdf_path
-      ? supabaseAdmin.storage.from(BUCKET).getPublicUrl(brief.invoice_pdf_path).data.publicUrl
+      ? await signedPdfUrl(supabaseAdmin, brief.invoice_pdf_path)
       : "#pdf-generated-on-send";
     const clientPortalUrl = `${siteOrigin()}/i/${token}`;
 
@@ -310,13 +318,13 @@ export const generateBriefingInvoice = createServerFn({ method: "POST" })
       brief, settings,
     });
 
-    const pdfPath = `invoices/${brief.id}/${invoiceNumber}.pdf`;
+    const pdfPath = `${brief.id}/${invoiceNumber}.pdf`;
     const { error: upErr } = await supabaseAdmin.storage.from(BUCKET).upload(pdfPath, pdfBytes, {
       contentType: "application/pdf", upsert: true,
     });
     if (upErr) throw new Error(`Storage upload failed: ${upErr.message}`);
 
-    const invoiceUrl = supabaseAdmin.storage.from(BUCKET).getPublicUrl(pdfPath).data.publicUrl;
+    const invoiceUrl = await signedPdfUrl(supabaseAdmin, pdfPath);
     const clientPortalUrl = `${siteOrigin()}/i/${token}`;
 
     const { error: updErr } = await supabaseAdmin
@@ -366,7 +374,7 @@ export const sendBriefingInvoice = createServerFn({ method: "POST" })
     if (!brief.invoice_number || !brief.invoice_pdf_path) throw new Error("Generate the invoice first");
 
     const settings = await loadInvoiceSettings(supabaseAdmin);
-    const invoiceUrl = supabaseAdmin.storage.from(BUCKET).getPublicUrl(brief.invoice_pdf_path).data.publicUrl;
+    const invoiceUrl = await signedPdfUrl(supabaseAdmin, brief.invoice_pdf_path);
     const clientPortalUrl = `${siteOrigin()}/i/${brief.invoice_public_token}`;
 
     const html = buildEmailHtml({
@@ -463,7 +471,7 @@ export const getPublicInvoice = createServerFn({ method: "POST" })
     if (!brief || !brief.invoice_pdf_path) throw new Error("Invoice not found");
 
     const settings = await loadInvoiceSettings(supabaseAdmin);
-    const pdfUrl = supabaseAdmin.storage.from(BUCKET).getPublicUrl(brief.invoice_pdf_path).data.publicUrl;
+    const pdfUrl = await signedPdfUrl(supabaseAdmin, brief.invoice_pdf_path);
 
     // Log the view (first time only updates viewed_at + bumps status if still 'sent')
     if (!brief.invoice_viewed_at) {

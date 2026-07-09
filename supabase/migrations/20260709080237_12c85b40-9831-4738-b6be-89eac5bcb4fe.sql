@@ -1,0 +1,1 @@
+ALTER TABLE public.briefing_submissions ADD COLUMN IF NOT EXISTS confirmation_sent_at timestamptz;
