@@ -3,7 +3,15 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const RESEND_GATEWAY = "https://connector-gateway.lovable.dev/resend";
-const BUCKET = "site-assets";
+// Invoices live in a private bucket; PDFs are only served via short-lived signed URLs.
+const BUCKET = "invoices";
+const SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 7; // 7 days
+
+async function signedPdfUrl(admin: any, path: string): Promise<string> {
+  const { data, error } = await admin.storage.from(BUCKET).createSignedUrl(path, SIGNED_URL_TTL_SECONDS);
+  if (error || !data?.signedUrl) throw new Error(error?.message || "Failed to sign invoice URL");
+  return data.signedUrl;
+}
 
 const InvoiceInput = z.object({
   briefing_id: z.string().uuid(),
