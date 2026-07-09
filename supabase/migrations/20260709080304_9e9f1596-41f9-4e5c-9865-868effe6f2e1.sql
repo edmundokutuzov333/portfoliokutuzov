@@ -1,0 +1,2 @@
+DROP POLICY IF EXISTS "service role manages invoices" ON storage.objects;
+CREATE POLICY "service role manages invoices" ON storage.objects FOR ALL TO service_role USING (bucket_id = 'invoices') WITH CHECK (bucket_id = 'invoices');
