@@ -269,7 +269,7 @@ export const previewInvoiceEmail = createServerFn({ method: "POST" })
     const invoiceNumber = brief.invoice_number || `PREVIEW-${nextInvoiceNumber()}`;
     const token = brief.invoice_public_token || "preview-token";
     const invoiceUrl = brief.invoice_pdf_path
-      ? supabaseAdmin.storage.from(BUCKET).getPublicUrl(brief.invoice_pdf_path).data.publicUrl
+      ? await signedPdfUrl(supabaseAdmin, brief.invoice_pdf_path)
       : "#pdf-generated-on-send";
     const clientPortalUrl = `${siteOrigin()}/i/${token}`;
 
