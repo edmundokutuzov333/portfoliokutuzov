@@ -374,7 +374,7 @@ export const sendBriefingInvoice = createServerFn({ method: "POST" })
     if (!brief.invoice_number || !brief.invoice_pdf_path) throw new Error("Generate the invoice first");
 
     const settings = await loadInvoiceSettings(supabaseAdmin);
-    const invoiceUrl = supabaseAdmin.storage.from(BUCKET).getPublicUrl(brief.invoice_pdf_path).data.publicUrl;
+    const invoiceUrl = await signedPdfUrl(supabaseAdmin, brief.invoice_pdf_path);
     const clientPortalUrl = `${siteOrigin()}/i/${brief.invoice_public_token}`;
 
     const html = buildEmailHtml({
