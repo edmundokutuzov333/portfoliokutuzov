@@ -471,7 +471,7 @@ export const getPublicInvoice = createServerFn({ method: "POST" })
     if (!brief || !brief.invoice_pdf_path) throw new Error("Invoice not found");
 
     const settings = await loadInvoiceSettings(supabaseAdmin);
-    const pdfUrl = supabaseAdmin.storage.from(BUCKET).getPublicUrl(brief.invoice_pdf_path).data.publicUrl;
+    const pdfUrl = await signedPdfUrl(supabaseAdmin, brief.invoice_pdf_path);
 
     // Log the view (first time only updates viewed_at + bumps status if still 'sent')
     if (!brief.invoice_viewed_at) {
