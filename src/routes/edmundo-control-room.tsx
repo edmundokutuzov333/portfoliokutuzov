@@ -61,6 +61,7 @@ type Section =
   | "advanced";
 
 function ControlRoom() {
+  useAdminInputStyle();
   const { session, isAdmin, loading } = useAdminAuth();
   const [section, setSection] = useState<Section>("site");
 
@@ -261,23 +262,26 @@ function SaveButton({
 
 // Local style helper: registers a single utility for inputs.
 const STYLE_TAG_ID = "adm-input-style";
-if (typeof document !== "undefined" && !document.getElementById(STYLE_TAG_ID)) {
-  const style = document.createElement("style");
-  style.id = STYLE_TAG_ID;
-  style.textContent = `
-    .adm-input {
-      width: 100%;
-      background: transparent;
-      border: 1px solid rgba(255,255,255,0.10);
-      border-radius: 6px;
-      padding: 0.5rem 0.75rem;
-      font-size: 13px;
-      color: #e2e8f0;
-      transition: border-color .15s;
-    }
-    .adm-input:focus { outline: none; border-color: rgba(125,211,252,0.55); }
-  `;
-  document.head.appendChild(style);
+function useAdminInputStyle() {
+  useEffect(() => {
+    if (typeof document === "undefined" || document.getElementById(STYLE_TAG_ID)) return;
+    const style = document.createElement("style");
+    style.id = STYLE_TAG_ID;
+    style.textContent = `
+      .adm-input {
+        width: 100%;
+        background: transparent;
+        border: 1px solid rgba(255,255,255,0.10);
+        border-radius: 6px;
+        padding: 0.5rem 0.75rem;
+        font-size: 13px;
+        color: #e2e8f0;
+        transition: border-color .15s;
+      }
+      .adm-input:focus { outline: none; border-color: rgba(125,211,252,0.55); }
+    `;
+    document.head.appendChild(style);
+  }, []);
 }
 
 // ============================================================================
