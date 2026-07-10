@@ -2,6 +2,7 @@
 // admin dashboard. Every site interaction can call trackEvent without slowing
 // the page - events are batched and flushed via fetch (or sendBeacon on unload).
 import { supabase } from "@/integrations/supabase/client";
+import { safeSessionStorageGet, safeSessionStorageSet } from "@/lib/browser-safe";
 
 export type AnalyticsAction = "click" | "view" | "submit" | "open" | "scroll";
 
@@ -21,10 +22,10 @@ const SESSION_KEY = "ek_session_id";
 
 function sessionId(): string {
   if (typeof window === "undefined") return "ssr";
-  let id = window.sessionStorage.getItem(SESSION_KEY);
+  let id = safeSessionStorageGet(SESSION_KEY);
   if (!id) {
     id = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
-    window.sessionStorage.setItem(SESSION_KEY, id);
+    safeSessionStorageSet(SESSION_KEY, id);
   }
   return id;
 }
@@ -37,6 +38,7 @@ function deviceFromWidth(w: number): "mobile" | "tablet" | "desktop" {
 
 const queue: Record<string, unknown>[] = [];
 let timer: ReturnType<typeof setTimeout> | null = null;
+let unloadHandlerRegistered = false;
 
 async function flush() {
   if (queue.length === 0) return;
@@ -58,6 +60,7 @@ function schedule() {
 
 export function trackEvent(event: AnalyticsEvent) {
   if (typeof window === "undefined") return;
+  registerUnloadHandler();
   const w = window.innerWidth;
   const h = window.innerHeight;
   const row = {
@@ -76,7 +79,9 @@ export function trackEvent(event: AnalyticsEvent) {
   schedule();
 }
 
-if (typeof window !== "undefined") {
+function registerUnloadHandler() {
+  if (unloadHandlerRegistered || typeof window === "undefined") return;
+  unloadHandlerRegistered = true;
   window.addEventListener("pagehide", () => {
     void flush();
   });

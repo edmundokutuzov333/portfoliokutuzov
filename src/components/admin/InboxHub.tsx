@@ -718,6 +718,7 @@ function SubscribersPanel() {
   });
 
   const exportCsv = () => {
+    if (typeof document === "undefined") return;
     const header = ["email", "name", "source", "is_active", "created_at"];
     const lines = [header.join(",")].concat(
       rows.map((r) =>

@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Download, Loader2, CheckCircle2, Clock } from "lucide-react";
 import { getPublicInvoice } from "@/lib/invoice.functions";
+import { safeClipboardWrite } from "@/lib/browser-safe";
 
 export const Route = createFileRoute("/i/$token")({
   ssr: false,
@@ -167,7 +168,7 @@ function Row({ label, value, copyable }: { label: string; value: string; copyabl
         <span className="tabular-nums">{value}</span>
         {copyable && (
           <button
-            onClick={() => { navigator.clipboard.writeText(value); }}
+            onClick={() => { void safeClipboardWrite(value); }}
             className="text-slate-500 hover:text-slate-200 text-[10px] mono tracking-widest"
           >COPY</button>
         )}

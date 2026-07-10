@@ -4,18 +4,16 @@ type Ripple = { id: number; x: number; y: number };
 
 export function InteractiveBackground() {
   const layerRef = useRef<HTMLDivElement | null>(null);
-  const aura = useRef({
-    x: typeof window !== "undefined" ? window.innerWidth / 2 : 0,
-    y: typeof window !== "undefined" ? window.innerHeight / 2 : 0,
-  });
-  const target = useRef({
-    x: typeof window !== "undefined" ? window.innerWidth / 2 : 0,
-    y: typeof window !== "undefined" ? window.innerHeight / 2 : 0,
-  });
+  const aura = useRef({ x: 0, y: 0 });
+  const target = useRef({ x: 0, y: 0 });
   const [ripples, setRipples] = useState<Ripple[]>([]);
 
   useEffect(() => {
+    if (typeof window === "undefined" || typeof document === "undefined") return;
     let raf = 0;
+    const start = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    aura.current = start;
+    target.current = start;
 
     const move = (event: PointerEvent) => {
       target.current = { x: event.clientX, y: event.clientY };

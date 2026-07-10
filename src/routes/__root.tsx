@@ -3,17 +3,21 @@ import {
   createRootRouteWithContext,
   HeadContent,
   Scripts,
+  useRouter,
   useRouterState,
 } from "@tanstack/react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
+import { useEffect } from "react";
 
 import appCss from "../styles.css?url";
+import { AppErrorBoundary, AppErrorFallback } from "@/components/AppErrorBoundary";
 import { InteractiveBackground } from "@/components/visual/InteractiveBackground";
 import { NoiseLayer } from "@/components/visual/NoiseLayer";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { installRuntimeDiagnostics, markRenderHealthy, recordRuntimeError } from "@/lib/runtime-diagnostics";
 
 interface RouterContext {
   queryClient: QueryClient;
@@ -38,6 +42,49 @@ function NotFoundComponent() {
     </div>
   );
 }
+
+function RootErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+  const router = useRouter();
+  useEffect(() => {
+    recordRuntimeError("react", error);
+  }, [error]);
+  return (
+    <AppErrorFallback
+      error={error}
+      onReset={() => {
+        router.invalidate();
+        reset();
+      }}
+    />
+  );
+}
+
+const earlyRecoveryScript = `
+(function(){
+  if (typeof window === 'undefined' || window.__EK_EARLY_RECOVERY__) return;
+  window.__EK_EARLY_RECOVERY__ = true;
+  window.__EK_EARLY_ERRORS__ = [];
+  function store(type, value){
+    try { window.__EK_EARLY_ERRORS__.push({ type: type, at: new Date().toISOString(), message: value && (value.message || String(value)) }); } catch (_) {}
+  }
+  window.addEventListener('error', function(event){ store('error', event.error || event.message); });
+  window.addEventListener('unhandledrejection', function(event){ store('unhandledrejection', event.reason); });
+  window.setTimeout(function(){
+    if (window.__EK_RENDER_HEALTHY__) return;
+    var body = document.body;
+    if (!body) return;
+    var text = (body.innerText || '').trim();
+    var appNode = body.querySelector('main,nav,section,article,header,footer,button,a,img,canvas,video');
+    if (!text && !appNode && !document.getElementById('ek-runtime-recovery')) {
+      var node = document.createElement('div');
+      node.id = 'ek-runtime-recovery';
+      node.style.cssText = 'position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;background:#01040a;color:#f5f8ff;font:14px Inter,system-ui,sans-serif;padding:24px;text-align:center;';
+      node.innerHTML = '<div style="max-width:520px"><div style="font:10px monospace;letter-spacing:.18em;color:#1d9bff;margin-bottom:12px">/// RECOVERY</div><h1 style="font-size:28px;margin:0 0 10px">Preview render failed.</h1><p style="color:#aab6c8;line-height:1.5;margin:0 0 18px">A fallback screen was shown instead of a blank page.</p><button type="button" style="border:0;border-radius:999px;background:#1d9bff;color:#01040a;padding:12px 18px;font-weight:700;cursor:pointer">Reload preview</button></div>';
+      node.querySelector('button').addEventListener('click', function(){ window.location.reload(); });
+      body.appendChild(node);
+    }
+  }, 3500);
+})();`;
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   head: () => ({
@@ -94,6 +141,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   }),
   shellComponent: RootShell,
   component: RootComponent,
+  errorComponent: RootErrorComponent,
   notFoundComponent: NotFoundComponent,
 });
 
@@ -104,6 +152,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
+        <script dangerouslySetInnerHTML={{ __html: earlyRecoveryScript }} />
         {children}
         <Scripts />
       </body>
@@ -116,29 +165,36 @@ function RootComponent() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isAdmin = pathname.startsWith("/edmundo-control-room");
 
+  useEffect(() => {
+    installRuntimeDiagnostics();
+    markRenderHealthy();
+  });
+
   return (
-    <QueryClientProvider client={queryClient}>
-      {!isAdmin && <InteractiveBackground />}
-      {!isAdmin && <NoiseLayer />}
-      <div className="relative z-10">
-        {!isAdmin && <Navbar />}
-        <main>
-          <Outlet />
-        </main>
-        {!isAdmin && <Footer />}
-      </div>
-      {!isAdmin && <ScrollToTop />}
-      <Toaster
-        theme="dark"
-        position="bottom-right"
-        toastOptions={{
-          style: {
-            background: "#06111f",
-            border: "1px solid rgba(148,163,184,0.14)",
-            color: "#f5f8ff",
-          },
-        }}
-      />
-    </QueryClientProvider>
+    <AppErrorBoundary onReset={() => queryClient.clear()}>
+      <QueryClientProvider client={queryClient}>
+        {!isAdmin && <InteractiveBackground />}
+        {!isAdmin && <NoiseLayer />}
+        <div className="relative z-10">
+          {!isAdmin && <Navbar />}
+          <main>
+            <Outlet />
+          </main>
+          {!isAdmin && <Footer />}
+        </div>
+        {!isAdmin && <ScrollToTop />}
+        <Toaster
+          theme="dark"
+          position="bottom-right"
+          toastOptions={{
+            style: {
+              background: "#06111f",
+              border: "1px solid rgba(148,163,184,0.14)",
+              color: "#f5f8ff",
+            },
+          }}
+        />
+      </QueryClientProvider>
+    </AppErrorBoundary>
   );
 }

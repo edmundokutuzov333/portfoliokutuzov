@@ -7,6 +7,7 @@ import {
   History, ExternalLink, X, Copy,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { currentOrigin, safeClipboardWrite } from "@/lib/browser-safe";
 import {
   generateBriefingInvoice, sendBriefingInvoice, previewInvoiceEmail,
   setInvoiceStatus, listInvoiceEvents,
@@ -72,7 +73,7 @@ export function InvoicePanel({ briefingId, defaultCurrency, suggestedAmount, exi
     ? supabase.storage.from("site-assets").getPublicUrl(existing.invoice_pdf_path).data.publicUrl
     : null;
   const portalUrl = existing?.invoice_public_token
-    ? `${window.location.origin}/i/${existing.invoice_public_token}`
+    ? `${currentOrigin()}/i/${existing.invoice_public_token}`
     : null;
 
   const validate = () => {
@@ -172,7 +173,7 @@ export function InvoicePanel({ briefingId, defaultCurrency, suggestedAmount, exi
                     <ExternalLink size={12} /> Client link
                   </a>
                   <button
-                    onClick={() => { navigator.clipboard.writeText(portalUrl); toast.success("Copied"); }}
+                    onClick={() => { safeClipboardWrite(portalUrl).then(() => toast.success("Copied")).catch(() => toast.error("Clipboard unavailable")); }}
                     className="text-slate-400 hover:text-slate-200"
                     title="Copy client link"
                   >

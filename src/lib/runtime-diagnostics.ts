@@ -1,0 +1,109 @@
+import { canUseDOM } from "@/lib/browser-safe";
+
+type RuntimeRecord = {
+  at: string;
+  type: "error" | "unhandledrejection" | "react" | "vite" | "blank-screen";
+  message: string;
+  stack?: string;
+};
+
+const KEY = "ek_runtime_diagnostics";
+const MAX_RECORDS = 20;
+
+declare global {
+  interface Window {
+    __EK_RUNTIME_DIAGNOSTICS__?: RuntimeRecord[];
+    __EK_RUNTIME_DIAGNOSTICS_INSTALLED__?: boolean;
+    __EK_RENDER_HEALTHY__?: boolean;
+  }
+}
+
+function serializeError(error: unknown): Pick<RuntimeRecord, "message" | "stack"> {
+  if (error instanceof Error) return { message: error.message, stack: error.stack };
+  if (typeof error === "string") return { message: error };
+  try {
+    return { message: JSON.stringify(error) };
+  } catch {
+    return { message: String(error) };
+  }
+}
+
+export function recordRuntimeError(type: RuntimeRecord["type"], error: unknown) {
+  if (!canUseDOM()) return;
+  const serialized = serializeError(error);
+  const record: RuntimeRecord = {
+    at: new Date().toISOString(),
+    type,
+    message: serialized.message || "Unknown runtime error",
+    stack: serialized.stack,
+  };
+  const records = [record, ...(window.__EK_RUNTIME_DIAGNOSTICS__ ?? [])].slice(0, MAX_RECORDS);
+  window.__EK_RUNTIME_DIAGNOSTICS__ = records;
+  try {
+    window.sessionStorage.setItem(KEY, JSON.stringify(records));
+  } catch {
+    try {
+      window.sessionStorage.removeItem(KEY);
+    } catch {
+      // Ignore storage failures; diagnostics must never become the crash source.
+    }
+  }
+  console.error(`[runtime:${type}]`, error);
+}
+
+function showRecoveryFallback(message: string) {
+  if (!canUseDOM()) return;
+  if (document.getElementById("ek-runtime-recovery")) return;
+  const node = document.createElement("div");
+  node.id = "ek-runtime-recovery";
+  node.setAttribute("role", "alert");
+  node.style.cssText =
+    "position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;background:#01040a;color:#f5f8ff;font:14px Inter,system-ui,sans-serif;padding:24px;text-align:center;";
+  node.innerHTML = `<div style="max-width:520px"><div style="font:10px monospace;letter-spacing:.18em;color:#1d9bff;margin-bottom:12px">/// RECOVERY</div><h1 style="font-size:28px;margin:0 0 10px">The preview recovered from a render failure.</h1><p style="color:#aab6c8;line-height:1.5;margin:0 0 18px">${message}</p><button type="button" style="border:0;border-radius:999px;background:#1d9bff;color:#01040a;padding:12px 18px;font-weight:700;cursor:pointer">Reload preview</button></div>`;
+  node.querySelector("button")?.addEventListener("click", () => window.location.reload());
+  document.body.appendChild(node);
+}
+
+function installBlankScreenWatchdog() {
+  if (!canUseDOM()) return;
+  window.setTimeout(() => {
+    if (window.__EK_RENDER_HEALTHY__) return;
+    const visibleText = document.body?.innerText?.trim() ?? "";
+    const hasAppNodes = document.body.querySelector("main,nav,section,article,header,footer,button,a,img,canvas,video");
+    if (!visibleText && !hasAppNodes) {
+      recordRuntimeError("blank-screen", new Error("No visible application nodes after boot"));
+      showRecoveryFallback("The app did not finish rendering. A visible recovery screen was shown instead of a blank page.");
+    }
+  }, 3500);
+}
+
+export function installRuntimeDiagnostics() {
+  if (!canUseDOM() || window.__EK_RUNTIME_DIAGNOSTICS_INSTALLED__) return;
+  window.__EK_RUNTIME_DIAGNOSTICS_INSTALLED__ = true;
+
+  window.addEventListener("error", (event) => {
+    recordRuntimeError("error", event.error ?? event.message);
+  });
+  window.addEventListener("unhandledrejection", (event) => {
+    recordRuntimeError("unhandledrejection", event.reason);
+  });
+  window.addEventListener("vite:error", (event) => {
+    recordRuntimeError("vite", event);
+  });
+  window.addEventListener("vite:beforeUpdate", () => {
+    window.__EK_RENDER_HEALTHY__ = false;
+    window.setTimeout(() => {
+      if (!window.__EK_RENDER_HEALTHY__) {
+        recordRuntimeError("vite", new Error("Hot reload did not complete a healthy render"));
+        showRecoveryFallback("Hot reload did not complete cleanly. Reload the preview to recover immediately.");
+      }
+    }, 5000);
+  });
+  installBlankScreenWatchdog();
+}
+
+export function markRenderHealthy() {
+  if (!canUseDOM()) return;
+  window.__EK_RENDER_HEALTHY__ = true;
+  document.getElementById("ek-runtime-recovery")?.remove();
+}

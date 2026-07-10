@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { CalendarDays, Loader2, X, Check } from "lucide-react";
 import { toast } from "sonner";
@@ -26,12 +26,16 @@ export function BookingModal({
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
 
+  useEffect(() => {
+    if (!open || !bookingUrl || typeof window === "undefined") return;
+    window.open(bookingUrl, "_blank", "noopener,noreferrer");
+    onClose();
+  }, [bookingUrl, onClose, open]);
+
   if (!open) return null;
 
   // If a booking URL is provided we redirect immediately rather than show the form.
   if (bookingUrl) {
-    window.open(bookingUrl, "_blank", "noopener,noreferrer");
-    onClose();
     return null;
   }
 
