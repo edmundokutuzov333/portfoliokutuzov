@@ -147,11 +147,11 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt">
-      <head>
+    <html lang="pt" suppressHydrationWarning>
+      <head suppressHydrationWarning>
         <HeadContent />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         <script dangerouslySetInnerHTML={{ __html: earlyRecoveryScript }} />
         {children}
         <Scripts />
