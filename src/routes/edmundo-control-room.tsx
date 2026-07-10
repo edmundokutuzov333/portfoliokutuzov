@@ -61,6 +61,7 @@ type Section =
   | "advanced";
 
 function ControlRoom() {
+  useAdminInputStyle();
   const { session, isAdmin, loading } = useAdminAuth();
   const [section, setSection] = useState<Section>("site");
 
