@@ -1,4 +1,12 @@
-import { canUseDOM } from "@/lib/browser-safe";
+import {
+  canUseDOM,
+  resetKnownCorruptedState,
+  safeJsonParse,
+  safeReload,
+  safeSessionStorageGet,
+  safeSessionStorageRemove,
+  safeSessionStorageSet,
+} from "@/lib/browser-safe";
 
 type RuntimeRecord = {
   at: string;
@@ -9,12 +17,14 @@ type RuntimeRecord = {
 
 const KEY = "ek_runtime_diagnostics";
 const MAX_RECORDS = 20;
+const HMR_STALE_MS = 5500;
 
 declare global {
   interface Window {
     __EK_RUNTIME_DIAGNOSTICS__?: RuntimeRecord[];
     __EK_RUNTIME_DIAGNOSTICS_INSTALLED__?: boolean;
     __EK_RENDER_HEALTHY__?: boolean;
+    __EK_HMR_TIMER__?: number;
   }
 }
 
@@ -37,16 +47,16 @@ export function recordRuntimeError(type: RuntimeRecord["type"], error: unknown) 
     message: serialized.message || "Unknown runtime error",
     stack: serialized.stack,
   };
-  const records = [record, ...(window.__EK_RUNTIME_DIAGNOSTICS__ ?? [])].slice(0, MAX_RECORDS);
+  const persisted = safeJsonParse<RuntimeRecord[]>(safeSessionStorageGet(KEY), [], () =>
+    safeSessionStorageRemove(KEY),
+  );
+  const existing = window.__EK_RUNTIME_DIAGNOSTICS__ ?? persisted;
+  const records = [record, ...existing].slice(0, MAX_RECORDS);
   window.__EK_RUNTIME_DIAGNOSTICS__ = records;
   try {
-    window.sessionStorage.setItem(KEY, JSON.stringify(records));
+    safeSessionStorageSet(KEY, JSON.stringify(records));
   } catch {
-    try {
-      window.sessionStorage.removeItem(KEY);
-    } catch {
-      // Ignore storage failures; diagnostics must never become the crash source.
-    }
+    resetKnownCorruptedState();
   }
   console.error(`[runtime:${type}]`, error);
 }
@@ -59,8 +69,12 @@ function showRecoveryFallback(message: string) {
   node.setAttribute("role", "alert");
   node.style.cssText =
     "position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;background:#01040a;color:#f5f8ff;font:14px Inter,system-ui,sans-serif;padding:24px;text-align:center;";
-  node.innerHTML = `<div style="max-width:520px"><div style="font:10px monospace;letter-spacing:.18em;color:#1d9bff;margin-bottom:12px">/// RECOVERY</div><h1 style="font-size:28px;margin:0 0 10px">The preview recovered from a render failure.</h1><p style="color:#aab6c8;line-height:1.5;margin:0 0 18px">${message}</p><button type="button" style="border:0;border-radius:999px;background:#1d9bff;color:#01040a;padding:12px 18px;font-weight:700;cursor:pointer">Reload preview</button></div>`;
-  node.querySelector("button")?.addEventListener("click", () => window.location.reload());
+  node.innerHTML = `<div style="max-width:520px"><div style="font:10px monospace;letter-spacing:.18em;color:#1d9bff;margin-bottom:12px">/// RECOVERY</div><h1 style="font-size:28px;margin:0 0 10px">The preview recovered from a render failure.</h1><p style="color:#aab6c8;line-height:1.5;margin:0 0 18px">${message}</p><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button type="button" data-action="reload" style="border:0;border-radius:999px;background:#1d9bff;color:#01040a;padding:12px 18px;font-weight:700;cursor:pointer">Reload preview</button><button type="button" data-action="reset" style="border:1px solid rgba(255,255,255,.16);border-radius:999px;background:transparent;color:#f5f8ff;padding:12px 18px;font-weight:700;cursor:pointer">Reset state</button></div></div>`;
+  node.querySelector('[data-action="reload"]')?.addEventListener("click", () => safeReload());
+  node.querySelector('[data-action="reset"]')?.addEventListener("click", () => {
+    resetKnownCorruptedState();
+    safeReload();
+  });
   document.body.appendChild(node);
 }
 
@@ -80,6 +94,11 @@ function installBlankScreenWatchdog() {
 export function installRuntimeDiagnostics() {
   if (!canUseDOM() || window.__EK_RUNTIME_DIAGNOSTICS_INSTALLED__) return;
   window.__EK_RUNTIME_DIAGNOSTICS_INSTALLED__ = true;
+  window.__EK_RUNTIME_DIAGNOSTICS__ = safeJsonParse<RuntimeRecord[]>(
+    safeSessionStorageGet(KEY),
+    [],
+    () => safeSessionStorageRemove(KEY),
+  );
 
   window.addEventListener("error", (event) => {
     recordRuntimeError("error", event.error ?? event.message);
@@ -92,12 +111,16 @@ export function installRuntimeDiagnostics() {
   });
   window.addEventListener("vite:beforeUpdate", () => {
     window.__EK_RENDER_HEALTHY__ = false;
-    window.setTimeout(() => {
+    if (window.__EK_HMR_TIMER__) window.clearTimeout(window.__EK_HMR_TIMER__);
+    window.__EK_HMR_TIMER__ = window.setTimeout(() => {
       if (!window.__EK_RENDER_HEALTHY__) {
         recordRuntimeError("vite", new Error("Hot reload did not complete a healthy render"));
         showRecoveryFallback("Hot reload did not complete cleanly. Reload the preview to recover immediately.");
       }
-    }, 5000);
+    }, HMR_STALE_MS);
+  });
+  window.addEventListener("vite:afterUpdate", () => {
+    if (window.__EK_HMR_TIMER__) window.clearTimeout(window.__EK_HMR_TIMER__);
   });
   installBlankScreenWatchdog();
 }
@@ -105,5 +128,11 @@ export function installRuntimeDiagnostics() {
 export function markRenderHealthy() {
   if (!canUseDOM()) return;
   window.__EK_RENDER_HEALTHY__ = true;
+  if (window.__EK_HMR_TIMER__) window.clearTimeout(window.__EK_HMR_TIMER__);
   document.getElementById("ek-runtime-recovery")?.remove();
+}
+
+export function recoverFromRenderFailure() {
+  resetKnownCorruptedState();
+  showRecoveryFallback("A rendering failure was isolated and corrupted runtime state was reset.");
 }

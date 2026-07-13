@@ -1,9 +1,15 @@
 import { createRouter, useRouter } from "@tanstack/react-router";
 import { QueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { routeTree } from "./routeTree.gen";
+import { resetKnownCorruptedState } from "@/lib/browser-safe";
+import { recordRuntimeError } from "@/lib/runtime-diagnostics";
 
 function DefaultErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
+  useEffect(() => {
+    recordRuntimeError("react", error);
+  }, [error]);
   return (
     <div className="flex min-h-screen items-center justify-center bg-[var(--color-bg)] px-4">
       <div className="max-w-md text-center">
@@ -17,6 +23,8 @@ function DefaultErrorComponent({ error, reset }: { error: Error; reset: () => vo
         <div className="mt-6 flex items-center justify-center gap-3">
           <button
             onClick={() => {
+              resetKnownCorruptedState();
+              router.options.context.queryClient.clear();
               router.invalidate();
               reset();
             }}
@@ -38,7 +46,18 @@ function DefaultErrorComponent({ error, reset }: { error: Error; reset: () => vo
 
 export const getRouter = () => {
   const queryClient = new QueryClient({
-    defaultOptions: { queries: { staleTime: 30_000, retry: 1 } },
+    defaultOptions: {
+      queries: {
+        staleTime: 30_000,
+        retry: 1,
+        refetchOnWindowFocus: false,
+        throwOnError: false,
+      },
+      mutations: {
+        retry: 0,
+        throwOnError: false,
+      },
+    },
   });
   const router = createRouter({
     routeTree,

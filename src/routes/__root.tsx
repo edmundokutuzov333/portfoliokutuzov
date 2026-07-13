@@ -8,7 +8,7 @@ import {
 } from "@tanstack/react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
-import { useEffect } from "react";
+import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { AppErrorBoundary, AppErrorFallback } from "@/components/AppErrorBoundary";
@@ -17,6 +17,7 @@ import { NoiseLayer } from "@/components/visual/NoiseLayer";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { resetKnownCorruptedState } from "@/lib/browser-safe";
 import { installRuntimeDiagnostics, markRenderHealthy, recordRuntimeError } from "@/lib/runtime-diagnostics";
 
 interface RouterContext {
@@ -45,6 +46,7 @@ function NotFoundComponent() {
 
 function RootErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
+  const { queryClient } = Route.useRouteContext();
   useEffect(() => {
     recordRuntimeError("react", error);
   }, [error]);
@@ -52,6 +54,8 @@ function RootErrorComponent({ error, reset }: { error: Error; reset: () => void 
     <AppErrorFallback
       error={error}
       onReset={() => {
+        resetKnownCorruptedState();
+        queryClient.clear();
         router.invalidate();
         reset();
       }}
@@ -67,6 +71,7 @@ const earlyRecoveryScript = `
   function store(type, value){
     try { window.__EK_EARLY_ERRORS__.push({ type: type, at: new Date().toISOString(), message: value && (value.message || String(value)) }); } catch (_) {}
   }
+  function resetState(){ try { sessionStorage.removeItem('ek_runtime_diagnostics'); } catch (_) {} }
   window.addEventListener('error', function(event){ store('error', event.error || event.message); });
   window.addEventListener('unhandledrejection', function(event){ store('unhandledrejection', event.reason); });
   window.setTimeout(function(){
@@ -79,8 +84,9 @@ const earlyRecoveryScript = `
       var node = document.createElement('div');
       node.id = 'ek-runtime-recovery';
       node.style.cssText = 'position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;background:#01040a;color:#f5f8ff;font:14px Inter,system-ui,sans-serif;padding:24px;text-align:center;';
-      node.innerHTML = '<div style="max-width:520px"><div style="font:10px monospace;letter-spacing:.18em;color:#1d9bff;margin-bottom:12px">/// RECOVERY</div><h1 style="font-size:28px;margin:0 0 10px">Preview render failed.</h1><p style="color:#aab6c8;line-height:1.5;margin:0 0 18px">A fallback screen was shown instead of a blank page.</p><button type="button" style="border:0;border-radius:999px;background:#1d9bff;color:#01040a;padding:12px 18px;font-weight:700;cursor:pointer">Reload preview</button></div>';
-      node.querySelector('button').addEventListener('click', function(){ window.location.reload(); });
+      node.innerHTML = '<div style="max-width:520px"><div style="font:10px monospace;letter-spacing:.18em;color:#1d9bff;margin-bottom:12px">/// RECOVERY</div><h1 style="font-size:28px;margin:0 0 10px">Preview render failed.</h1><p style="color:#aab6c8;line-height:1.5;margin:0 0 18px">A fallback screen was shown instead of a blank page.</p><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button type="button" data-action="reload" style="border:0;border-radius:999px;background:#1d9bff;color:#01040a;padding:12px 18px;font-weight:700;cursor:pointer">Reload preview</button><button type="button" data-action="reset" style="border:1px solid rgba(255,255,255,.16);border-radius:999px;background:transparent;color:#f5f8ff;padding:12px 18px;font-weight:700;cursor:pointer">Reset state</button></div></div>';
+      node.querySelector('[data-action="reload"]').addEventListener('click', function(){ window.location.reload(); });
+      node.querySelector('[data-action="reset"]').addEventListener('click', function(){ resetState(); window.location.reload(); });
       body.appendChild(node);
     }
   }, 3500);
@@ -145,7 +151,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   notFoundComponent: NotFoundComponent,
 });
 
-function RootShell({ children }: { children: React.ReactNode }) {
+function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="pt" suppressHydrationWarning>
       <head suppressHydrationWarning>
@@ -173,27 +179,47 @@ function RootComponent() {
   return (
     <AppErrorBoundary onReset={() => queryClient.clear()}>
       <QueryClientProvider client={queryClient}>
-        {!isAdmin && <InteractiveBackground />}
-        {!isAdmin && <NoiseLayer />}
+        {!isAdmin && (
+          <AppErrorBoundary label="interactive background" minimal>
+            <InteractiveBackground />
+            <NoiseLayer />
+          </AppErrorBoundary>
+        )}
         <div className="relative z-10">
-          {!isAdmin && <Navbar />}
-          <main>
-            <Outlet />
+          {!isAdmin && (
+            <AppErrorBoundary label="navigation" minimal>
+              <Navbar />
+            </AppErrorBoundary>
+          )}
+          <main data-ek-app-root="true">
+            <AppErrorBoundary label="route content" minimal onReset={() => queryClient.clear()}>
+              <Outlet />
+            </AppErrorBoundary>
           </main>
-          {!isAdmin && <Footer />}
+          {!isAdmin && (
+            <AppErrorBoundary label="footer" minimal>
+              <Footer />
+            </AppErrorBoundary>
+          )}
         </div>
-        {!isAdmin && <ScrollToTop />}
-        <Toaster
-          theme="dark"
-          position="bottom-right"
-          toastOptions={{
-            style: {
-              background: "#06111f",
-              border: "1px solid rgba(148,163,184,0.14)",
-              color: "#f5f8ff",
-            },
-          }}
-        />
+        {!isAdmin && (
+          <AppErrorBoundary label="scroll control" minimal>
+            <ScrollToTop />
+          </AppErrorBoundary>
+        )}
+        <AppErrorBoundary label="notifications" minimal>
+          <Toaster
+            theme="dark"
+            position="bottom-right"
+            toastOptions={{
+              style: {
+                background: "#06111f",
+                border: "1px solid rgba(148,163,184,0.14)",
+                color: "#f5f8ff",
+              },
+            }}
+          />
+        </AppErrorBoundary>
       </QueryClientProvider>
     </AppErrorBoundary>
   );

@@ -1,9 +1,12 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
+import { resetKnownCorruptedState, safeReload } from "@/lib/browser-safe";
 import { recordRuntimeError } from "@/lib/runtime-diagnostics";
 
 type Props = {
   children: ReactNode;
   onReset?: () => void;
+  label?: string;
+  minimal?: boolean;
 };
 
 type State = {
@@ -22,12 +25,16 @@ export class AppErrorBoundary extends Component<Props, State> {
   }
 
   reset = () => {
+    resetKnownCorruptedState();
     this.setState({ error: null });
     this.props.onReset?.();
   };
 
   render() {
     if (!this.state.error) return this.props.children;
+    if (this.props.minimal) {
+      return <ComponentErrorFallback label={this.props.label} error={this.state.error} onReset={this.reset} />;
+    }
     return <AppErrorFallback error={this.state.error} onReset={this.reset} />;
   }
 }
@@ -57,7 +64,7 @@ export function AppErrorFallback({ error, onReset }: { error?: Error; onReset?: 
           <button
             type="button"
             onClick={() => {
-              if (typeof window !== "undefined") window.location.reload();
+              safeReload();
             }}
             className="inline-flex items-center justify-center rounded-full border border-white/15 px-5 py-3 text-sm text-slate-200 hover:border-white/40"
           >
@@ -65,6 +72,35 @@ export function AppErrorFallback({ error, onReset }: { error?: Error; onReset?: 
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function ComponentErrorFallback({
+  label = "component",
+  error,
+  onReset,
+}: {
+  label?: string;
+  error?: Error;
+  onReset?: () => void;
+}) {
+  return (
+    <div className="relative z-10 rounded-md border border-red-300/20 bg-red-950/20 p-4 text-sm text-red-100">
+      <div className="mono text-[10px] text-red-300">/// ISOLATED ERROR</div>
+      <p className="mt-2 text-slate-200">{label} failed to render and was isolated.</p>
+      {import.meta.env.DEV && error?.message && (
+        <pre className="mt-3 max-h-28 overflow-auto rounded bg-black/20 p-2 font-mono text-xs text-red-200">
+          {error.message}
+        </pre>
+      )}
+      <button
+        type="button"
+        onClick={onReset}
+        className="mt-3 inline-flex rounded-full border border-red-200/25 px-3 py-1.5 text-xs text-red-100 hover:border-red-100/60"
+      >
+        Retry
+      </button>
     </div>
   );
 }
