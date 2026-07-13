@@ -1,4 +1,5 @@
 import * as React from "react";
+import { canUseDOM, safeMatchMedia } from "@/lib/browser-safe";
 
 const MOBILE_BREAKPOINT = 768;
 
@@ -6,8 +7,8 @@ export function useIsMobile() {
   const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined);
 
   React.useEffect(() => {
-    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
+    const mql = safeMatchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
+    if (!mql || !canUseDOM()) return;
     const onChange = () => {
       setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
     };

@@ -14,26 +14,39 @@ export function useAdminAuth(): AdminAuthState {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let alive = true;
+    const timers = new Set<ReturnType<typeof setTimeout>>();
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
+      if (!alive) return;
       setSession(s);
       if (s?.user) {
         // Defer the DB check so we don't block the listener.
-        setTimeout(() => verifyAdmin(s.user.id).then(setIsAdmin), 0);
+        const timer = setTimeout(() => {
+          timers.delete(timer);
+          if (alive) void verifyAdmin(s.user.id).then((ok) => alive && setIsAdmin(ok));
+        }, 0);
+        timers.add(timer);
       } else {
         setIsAdmin(false);
       }
     });
 
     supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!alive) return;
       setSession(session);
       if (session?.user) {
         const ok = await verifyAdmin(session.user.id);
-        setIsAdmin(ok);
+        if (alive) setIsAdmin(ok);
       }
-      setLoading(false);
+      if (alive) setLoading(false);
     });
 
-    return () => sub.subscription.unsubscribe();
+    return () => {
+      alive = false;
+      for (const timer of timers) clearTimeout(timer);
+      timers.clear();
+      sub.subscription.unsubscribe();
+    };
   }, []);
 
   return { session, isAdmin, loading };
