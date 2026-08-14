@@ -1,41 +1,64 @@
-## Plan
+# Plano em uma fase: estabilizar e acelerar o Preview Lovable
 
-1. **Confirm the failure signals**
-   - Inspect live runtime errors, console logs, recent Vite/dev-server logs, hydration/HMR messages, and current route state.
-   - Run a local browser verification pass after changes across refresh and hot reload, checking that the page never stays blank.
+## Objetivo
 
-2. **Fix SSR/browser API hazards**
-   - Audit all remaining `window`, `document`, `localStorage`, `sessionStorage`, `navigator`, `matchMedia`, `indexedDB`, `lazy()`, and dynamic `import()` usages.
-   - Move render-time browser reads into `useEffect`/event handlers or wrap them with safe utilities.
-   - Extend the existing safe browser utility with guarded localStorage/sessionStorage JSON parsing, safe setters/removers, safe `matchMedia`, safe reload/origin helpers, and corrupted-state reset.
+Eliminar a tela branca e tornar a primeira abertura, o refresh e o hot reload previsíveis no Preview Lovable, sem alterar o comportamento do site publicado.
 
-3. **Harden error boundaries and provider isolation**
-   - Keep the root global `<AppErrorBoundary>` but ensure it isolates providers and route content reliably.
-   - Add smaller isolation boundaries around risky visual/background/layout areas so one component cannot blank the entire app.
-   - Add a robust route-level error UI with retry that invalidates router and query state.
+## Diagnóstico confirmado
 
-4. **Improve runtime diagnostics and preview auto-recovery**
-   - Expand diagnostics to capture `window.onerror`, `unhandledrejection`, Vite HMR failures, early boot failures, and stored diagnostics safely.
-   - Show a visible fallback overlay for blank DOM, failed hot reload, or uncaught boot errors.
-   - Add automatic recovery actions: clear corrupted runtime diagnostics/storage entries, clear query caches on retry, and provide reload/home controls.
+- Os logs recentes registram várias requisições SSR abortadas por `ECONNRESET`, convertidas em respostas 500 pelo wrapper atual (`src/server.ts`), durante reinício/reconexão do preview.
+- O Vite reiniciou e reotimizou dependências porque o lockfile mudou; durante essa janela, o cliente foi recarregado e o preview ficou sujeito a interrupções.
+- As versões declaradas com `^` não são as mesmas resolvidas localmente: por exemplo, `@tanstack/react-start` declara `1.168.27`, mas o ambiente resolveu `1.168.44`; isso reduz a reprodutibilidade do preview.
+- Na medição atual, a página terminou de carregar em cerca de 4,65 s; a resposta inicial levou cerca de 1,19 s, o cliente cerca de 1,8 s e as leituras públicas aproximadamente 1,1–1,3 s.
+- A abertura da home carregou também módulos grandes de outras rotas, incluindo o painel administrativo e contacto; o painel administrativo tem mais de 2.500 linhas e não deve fazer parte do caminho inicial da home.
+- A home abre múltiplas consultas e várias assinaturas realtime duplicadas para os mesmos dados. O conteúdo possui fallbacks, portanto essas operações não precisam bloquear nem pesar tanto no arranque.
+- Já existem error boundaries, diagnóstico e fallback; porém, o fallback é marcado como saudável cedo demais e o wrapper trata cancelamentos normais do preview como erros SSR catastróficos.
 
-5. **Stabilize React Query and loading/error states**
-   - Ensure query defaults avoid infinite retries and failed API calls render error/fallback UI rather than blank content.
-   - Verify route/query provider mount order and clear caches during recovery.
-   - Check public/admin data hooks for permanent loading or crash-on-error states and add safe fallbacks where needed.
+## Execução única
 
-6. **Resolve lockfile/version inconsistency risk**
-   - Align lockfiles with `package.json` so the preview/build cannot randomly use stale TanStack versions.
-   - Remove or update stale lockfile data that still references older TanStack Start/Router versions, then regenerate the active text lockfile.
+1. **Fixar uma árvore de dependências reproduzível**
+   - Escolher um único lockfile compatível com o ambiente Lovable e remover a inconsistência restante.
+   - Fixar versões compatíveis de TanStack/Vite sem ranges flutuantes nos pacotes críticos e alinhar Start, Router e plugins.
+   - Remover dependências TanStack legadas ou duplicadas que não sejam usadas.
+   - Corrigir a API depreciada `inputValidator()` indicada pelo compilador.
 
-7. **Clean caches and verify**
-   - Clear Vite/build caches as requested (`node_modules/.vite`, `dist`, relevant cache folders).
-   - Rebuild/typecheck through the normal project tooling.
-   - Flush HMR and verify the preview survives initial load, refresh, route navigation, failed route/API conditions, and hot reload without a white screen.
+2. **Reduzir drasticamente o caminho inicial da home**
+   - Confirmar e ajustar o code splitting por rota para que `/edmundo-control-room`, `/contact`, MCP e páginas de detalhe não sejam baixadas ao abrir `/`.
+   - Dividir o painel administrativo em módulos menores somente se isso for necessário para impedir sua entrada no bundle inicial.
+   - Manter no primeiro render apenas shell, navegação, hero e conteúdo essencial; carregar secções abaixo da dobra e recursos pesados progressivamente.
+   - Evitar que fontes remotas atrasem a pintura inicial, mantendo fallbacks locais e carregamento não bloqueante.
 
-## Likely causes already found
+3. **Consolidar dados públicos e realtime**
+   - Deduplicar consultas repetidas de `site_settings` e canais realtime por tabela, com uma única assinatura partilhada por página.
+   - Definir timeout e fallback explícitos para leituras públicas; falha ou lentidão do backend não poderá apagar nem bloquear a home.
+   - Preservar conteúdo estático de fallback enquanto os dados chegam e renderizar estados de erro localizados nas secções dependentes.
+   - Não alterar banco de dados, políticas ou regras de negócio.
 
-- Browser API usage had previously existed in render/module paths; current code still needs a full audit to ensure no SSR/hydration edge remains.
-- The app has recovery code, but it can be strengthened so failed boot/HMR and corrupted persisted state always produce a visible fallback.
-- There is a stale `package-lock.json` with older TanStack dependency ranges while `bun.lock` and `package.json` point to newer versions; that mismatch can cause inconsistent installs/build behavior and should be corrected.
-- Current logs show dependency optimization reloads and no captured browser error, which is consistent with an intermittent HMR/runtime boot failure that needs defensive recovery plus cache/lockfile cleanup.
+4. **Tratar corretamente o ciclo de vida exclusivo do Preview Lovable**
+   - No servidor de desenvolvimento, reconhecer `AbortError`, `ECONNRESET` e pedidos desconectados como cancelamentos esperados, sem convertê-los em 500 catastrófico ou poluir o diagnóstico.
+   - Manter o tratamento rigoroso para erros SSR reais e conservar o fallback HTML para falhas verdadeiras.
+   - Tornar o boot/HMR idempotente: listeners, timers, canais e animações devem ser removidos e reinstalados corretamente após hot reload.
+   - Marcar a aplicação como saudável somente depois do primeiro commit visível da rota; se isso não acontecer, mostrar imediatamente uma recuperação funcional em vez de tela branca.
+   - Limitar a recuperação automática a uma tentativa por ciclo para evitar loops de reload.
+
+5. **Eliminar trabalho visual contínuo desnecessário no arranque**
+   - Suspender o loop do fundo interativo quando a aba estiver oculta, quando houver preferência por movimento reduzido ou antes da hidratação terminar.
+   - Garantir cleanup de `requestAnimationFrame`, timers e eventos em refresh/HMR.
+   - Manter o visual atual, mas impedir que efeitos decorativos concorram com a renderização inicial.
+
+6. **Validar o resultado no preview real**
+   - Executar as verificações normais do projeto e corrigir qualquer erro de tipos/build sem mascarar warnings relevantes.
+   - Testar abertura fria, 10 refreshes consecutivos, navegação entre todas as rotas, retorno à home e pelo menos 5 ciclos de hot reload.
+   - Simular backend lento/offline e uma falha real de componente para confirmar conteúdo fallback e recuperação visível.
+   - Medir novamente recursos e tempos no Preview Lovable e confirmar que rotas administrativas/contato não entram na abertura da home.
+   - Inspecionar logs após os testes e confirmar ausência de telas brancas, loops de reload e 500 causados por cancelamento de conexão.
+
+## Critérios de aceite
+
+- Nenhuma tela branca em abertura fria, refresh, navegação ou hot reload durante a bateria de testes.
+- Hero/shell visível rapidamente, mesmo com backend lento ou indisponível.
+- Nenhum 500 gerado apenas por `ECONNRESET`/requisição abortada do preview.
+- Home não baixa o módulo administrativo nem módulos de rotas não visitadas.
+- Um único fluxo de consulta/cache e no máximo uma assinatura realtime ativa por tabela no uso público.
+- Fallback de recuperação aparece para erro real e consegue tentar novamente sem loop.
+- Build e testes passam; site publicado mantém o comportamento existente.
