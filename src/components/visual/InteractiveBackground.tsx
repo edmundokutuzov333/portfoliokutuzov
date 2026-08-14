@@ -10,7 +10,9 @@ export function InteractiveBackground() {
 
   useEffect(() => {
     if (typeof window === "undefined" || typeof document === "undefined") return;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     let raf = 0;
+    let running = false;
     const start = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
     aura.current = start;
     target.current = start;
@@ -39,14 +41,39 @@ export function InteractiveBackground() {
       raf = requestAnimationFrame(tick);
     };
 
+    const stop = () => {
+      running = false;
+      cancelAnimationFrame(raf);
+    };
+
+    const startLoop = () => {
+      if (running || document.hidden || reducedMotion.matches) return;
+      running = true;
+      raf = requestAnimationFrame(tick);
+    };
+
+    const onVisibilityChange = () => {
+      if (document.hidden) stop();
+      else startLoop();
+    };
+
+    const onMotionChange = () => {
+      if (reducedMotion.matches) stop();
+      else startLoop();
+    };
+
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerdown", click);
-    raf = requestAnimationFrame(tick);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    reducedMotion.addEventListener("change", onMotionChange);
+    startLoop();
 
     return () => {
       window.removeEventListener("pointermove", move);
       window.removeEventListener("pointerdown", click);
-      cancelAnimationFrame(raf);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      reducedMotion.removeEventListener("change", onMotionChange);
+      stop();
     };
   }, []);
 

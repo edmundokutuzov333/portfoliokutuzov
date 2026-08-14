@@ -25,6 +25,8 @@ declare global {
     __EK_RUNTIME_DIAGNOSTICS_INSTALLED__?: boolean;
     __EK_RENDER_HEALTHY__?: boolean;
     __EK_HMR_TIMER__?: number;
+    __EK_DIAGNOSTICS_CONTROLLER__?: AbortController;
+    __EK_BLANK_SCREEN_TIMER__?: number;
   }
 }
 
@@ -78,9 +80,11 @@ function showRecoveryFallback(message: string) {
   document.body.appendChild(node);
 }
 
-function installBlankScreenWatchdog() {
+function installBlankScreenWatchdog(signal: AbortSignal) {
   if (!canUseDOM()) return;
-  window.setTimeout(() => {
+  if (window.__EK_BLANK_SCREEN_TIMER__) window.clearTimeout(window.__EK_BLANK_SCREEN_TIMER__);
+  window.__EK_BLANK_SCREEN_TIMER__ = window.setTimeout(() => {
+    if (signal.aborted) return;
     if (window.__EK_RENDER_HEALTHY__) return;
     const visibleText = document.body?.innerText?.trim() ?? "";
     const hasAppNodes = document.body.querySelector("main,nav,section,article,header,footer,button,a,img,canvas,video");
@@ -92,7 +96,10 @@ function installBlankScreenWatchdog() {
 }
 
 export function installRuntimeDiagnostics() {
-  if (!canUseDOM() || window.__EK_RUNTIME_DIAGNOSTICS_INSTALLED__) return;
+  if (!canUseDOM()) return;
+  window.__EK_DIAGNOSTICS_CONTROLLER__?.abort();
+  const controller = new AbortController();
+  window.__EK_DIAGNOSTICS_CONTROLLER__ = controller;
   window.__EK_RUNTIME_DIAGNOSTICS_INSTALLED__ = true;
   window.__EK_RUNTIME_DIAGNOSTICS__ = safeJsonParse<RuntimeRecord[]>(
     safeSessionStorageGet(KEY),
@@ -102,13 +109,13 @@ export function installRuntimeDiagnostics() {
 
   window.addEventListener("error", (event) => {
     recordRuntimeError("error", event.error ?? event.message);
-  });
+  }, { signal: controller.signal });
   window.addEventListener("unhandledrejection", (event) => {
     recordRuntimeError("unhandledrejection", event.reason);
-  });
+  }, { signal: controller.signal });
   window.addEventListener("vite:error", (event) => {
     recordRuntimeError("vite", event);
-  });
+  }, { signal: controller.signal });
   window.addEventListener("vite:beforeUpdate", () => {
     window.__EK_RENDER_HEALTHY__ = false;
     if (window.__EK_HMR_TIMER__) window.clearTimeout(window.__EK_HMR_TIMER__);
@@ -118,17 +125,18 @@ export function installRuntimeDiagnostics() {
         showRecoveryFallback("Hot reload did not complete cleanly. Reload the preview to recover immediately.");
       }
     }, HMR_STALE_MS);
-  });
+  }, { signal: controller.signal });
   window.addEventListener("vite:afterUpdate", () => {
     if (window.__EK_HMR_TIMER__) window.clearTimeout(window.__EK_HMR_TIMER__);
-  });
-  installBlankScreenWatchdog();
+  }, { signal: controller.signal });
+  installBlankScreenWatchdog(controller.signal);
 }
 
 export function markRenderHealthy() {
   if (!canUseDOM()) return;
   window.__EK_RENDER_HEALTHY__ = true;
   if (window.__EK_HMR_TIMER__) window.clearTimeout(window.__EK_HMR_TIMER__);
+  if (window.__EK_BLANK_SCREEN_TIMER__) window.clearTimeout(window.__EK_BLANK_SCREEN_TIMER__);
   document.getElementById("ek-runtime-recovery")?.remove();
 }
 

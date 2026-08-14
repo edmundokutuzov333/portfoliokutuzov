@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -11,23 +12,53 @@ import {
   type SiteSettings,
 } from "@/lib/cms";
 
-// Unique channel name per subscriber to avoid Supabase singleton-channel
-// "cannot add postgres_changes callbacks ... after subscribe()" errors when
-// the same hook mounts in multiple components simultaneously.
-const uid = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
+type RealtimeEntry = {
+  channel: RealtimeChannel;
+  listeners: Set<() => void>;
+  references: number;
+  removalTimer?: ReturnType<typeof setTimeout>;
+};
+
+const realtimeEntries = new Map<string, RealtimeEntry>();
+
+function subscribeToTable(table: string, listener: () => void) {
+  let entry = realtimeEntries.get(table);
+  if (!entry) {
+    const listeners = new Set<() => void>();
+    const channel = supabase
+      .channel(`public-${table}`)
+      .on("postgres_changes", { event: "*", schema: "public", table }, () => {
+        listeners.forEach((notify) => notify());
+      })
+      .subscribe();
+    entry = { channel, listeners, references: 0 };
+    realtimeEntries.set(table, entry);
+  }
+  if (entry.removalTimer) clearTimeout(entry.removalTimer);
+  entry.references += 1;
+  entry.listeners.add(listener);
+
+  return () => {
+    const current = realtimeEntries.get(table);
+    if (!current) return;
+    current.listeners.delete(listener);
+    current.references = Math.max(0, current.references - 1);
+    if (current.references > 0) return;
+    current.removalTimer = setTimeout(() => {
+      const latest = realtimeEntries.get(table);
+      if (!latest || latest.references > 0) return;
+      realtimeEntries.delete(table);
+      void supabase.removeChannel(latest.channel);
+    }, 1_000);
+  };
+}
 
 function useRealtimeInvalidate(table: string, queryKey: unknown[]) {
   const qc = useQueryClient();
   useEffect(() => {
-    const ch = supabase
-      .channel(`rt-${table}-${uid()}`)
-      .on("postgres_changes", { event: "*", schema: "public", table }, () => {
-        qc.invalidateQueries({ queryKey });
-      })
-      .subscribe();
-    return () => {
-      supabase.removeChannel(ch);
-    };
+    return subscribeToTable(table, () => {
+      void qc.invalidateQueries({ queryKey });
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [qc, table]);
 }
@@ -37,8 +68,8 @@ export function useSiteSettings() {
   useRealtimeInvalidate("site_settings", ["site_settings"]);
   return useQuery({
     queryKey: ["site_settings"],
-    queryFn: async (): Promise<SiteSettings> => {
-      const { data, error } = await supabase.from("site_settings").select("key,value");
+    queryFn: async ({ signal }): Promise<SiteSettings> => {
+      const { data, error } = await supabase.from("site_settings").select("key,value").abortSignal(signal);
       if (error) throw error;
       const out: SiteSettings = {};
       for (const row of data ?? []) out[row.key] = (row.value as Record<string, unknown>) ?? {};
@@ -53,10 +84,10 @@ export function useClients(includeInactive = false, kind: string = "client") {
   useRealtimeInvalidate("clients", ["clients"]);
   return useQuery({
     queryKey: ["clients", includeInactive, kind],
-    queryFn: async (): Promise<DbClient[]> => {
+    queryFn: async ({ signal }): Promise<DbClient[]> => {
       let q = supabase.from("clients").select("*").eq("kind", kind).order("sort_order");
       if (!includeInactive) q = q.eq("is_active", true);
-      const { data, error } = await q;
+      const { data, error } = await q.abortSignal(signal);
       if (error) throw error;
       return (data ?? []) as DbClient[];
     },
@@ -73,10 +104,10 @@ export function useProjects(includeUnpublished = false) {
   useRealtimeInvalidate("projects", ["projects"]);
   return useQuery({
     queryKey: ["projects", includeUnpublished],
-    queryFn: async (): Promise<DbProject[]> => {
+    queryFn: async ({ signal }): Promise<DbProject[]> => {
       let q = supabase.from("projects").select("*").order("sort_order");
       if (!includeUnpublished) q = q.eq("is_published", true);
-      const { data, error } = await q;
+      const { data, error } = await q.abortSignal(signal);
       if (error) throw error;
       return (data ?? []).map((p) => ({
         ...p,

@@ -173,8 +173,11 @@ function RootComponent() {
 
   useEffect(() => {
     installRuntimeDiagnostics();
-    markRenderHealthy();
-  });
+    const frame = window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(markRenderHealthy);
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
 
   return (
     <AppErrorBoundary onReset={() => queryClient.clear()}>

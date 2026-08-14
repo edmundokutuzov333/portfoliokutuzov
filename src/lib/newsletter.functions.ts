@@ -75,7 +75,7 @@ async function addToResendAudience(email: string, name?: string) {
 }
 
 export const subscribeNewsletter = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => SubscribeInput.parse(input))
+  .validator((input: unknown) => SubscribeInput.parse(input))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/server/index.server");
     // Upsert subscriber - if email already exists, just bump source / re-activate.
