@@ -8,11 +8,11 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { createFileRoute } from '@tanstack/react-router'
-
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as EdmundoControlRoomRouteImport } from './routes/edmundo-control-room'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
@@ -21,11 +21,6 @@ import { Route as ITokenRouteImport } from './routes/i.$token'
 import { Route as PortfolioIndexRouteImport } from './routes/portfolio.index'
 import { Route as PortfolioSlugRouteImport } from './routes/portfolio.$slug'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
-
-const ContactLazyRouteImport = createFileRoute('/contact')()
-const EdmundoControlRoomLazyRouteImport = createFileRoute(
-  '/edmundo-control-room',
-)()
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -37,12 +32,12 @@ const AboutRoute = AboutRouteImport.update({
   path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ContactLazyRoute = ContactLazyRouteImport.update({
+const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/contact.lazy').then((d) => d.Route))
-const EdmundoControlRoomLazyRoute = EdmundoControlRoomLazyRouteImport.update({
+const EdmundoControlRoomRoute = EdmundoControlRoomRouteImport.update({
   id: '/edmundo-control-room',
   path: '/edmundo-control-room',
   getParentRoute: () => rootRouteImport,
@@ -96,10 +91,10 @@ const Char91DotmcpChar93InvokeToolToolRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/contact': typeof ContactRoute
+  '/edmundo-control-room': typeof EdmundoControlRoomRoute
   '/mcp': typeof McpRoute
   '/services': typeof ServicesRoute
-  '/contact': typeof ContactLazyRoute
-  '/edmundo-control-room': typeof EdmundoControlRoomLazyRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/i/$token': typeof ITokenRoute
@@ -110,10 +105,10 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/contact': typeof ContactRoute
+  '/edmundo-control-room': typeof EdmundoControlRoomRoute
   '/mcp': typeof McpRoute
   '/services': typeof ServicesRoute
-  '/contact': typeof ContactLazyRoute
-  '/edmundo-control-room': typeof EdmundoControlRoomLazyRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/i/$token': typeof ITokenRoute
@@ -125,10 +120,10 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/contact': typeof ContactRoute
+  '/edmundo-control-room': typeof EdmundoControlRoomRoute
   '/mcp': typeof McpRoute
   '/services': typeof ServicesRoute
-  '/contact': typeof ContactLazyRoute
-  '/edmundo-control-room': typeof EdmundoControlRoomLazyRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/i/$token': typeof ITokenRoute
@@ -141,10 +136,10 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
-    | '/mcp'
-    | '/services'
     | '/contact'
     | '/edmundo-control-room'
+    | '/mcp'
+    | '/services'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/i/$token'
@@ -155,10 +150,10 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/about'
-    | '/mcp'
-    | '/services'
     | '/contact'
     | '/edmundo-control-room'
+    | '/mcp'
+    | '/services'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/i/$token'
@@ -169,10 +164,10 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/about'
-    | '/mcp'
-    | '/services'
     | '/contact'
     | '/edmundo-control-room'
+    | '/mcp'
+    | '/services'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/i/$token'
@@ -184,10 +179,10 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  ContactRoute: typeof ContactRoute
+  EdmundoControlRoomRoute: typeof EdmundoControlRoomRoute
   McpRoute: typeof McpRoute
   ServicesRoute: typeof ServicesRoute
-  ContactLazyRoute: typeof ContactLazyRoute
-  EdmundoControlRoomLazyRoute: typeof EdmundoControlRoomLazyRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   ITokenRoute: typeof ITokenRoute
@@ -216,14 +211,14 @@ declare module '@tanstack/react-router' {
       id: '/contact'
       path: '/contact'
       fullPath: '/contact'
-      preLoaderRoute: typeof ContactLazyRouteImport
+      preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/edmundo-control-room': {
       id: '/edmundo-control-room'
       path: '/edmundo-control-room'
       fullPath: '/edmundo-control-room'
-      preLoaderRoute: typeof EdmundoControlRoomLazyRouteImport
+      preLoaderRoute: typeof EdmundoControlRoomRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mcp': {
@@ -288,10 +283,10 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  ContactRoute: ContactRoute,
+  EdmundoControlRoomRoute: EdmundoControlRoomRoute,
   McpRoute: McpRoute,
   ServicesRoute: ServicesRoute,
-  ContactLazyRoute: ContactLazyRoute,
-  EdmundoControlRoomLazyRoute: EdmundoControlRoomLazyRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,

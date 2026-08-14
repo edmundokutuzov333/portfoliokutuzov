@@ -49,18 +49,6 @@ import { trackEvent } from "@/lib/analytics";
 import { LINKEDIN_URL } from "@/lib/cms";
 
 export const Route = createLazyFileRoute("/contact")({
-  head: () => ({
-    meta: [
-      { title: "Contact - Edmundo Kutuzov" },
-      {
-        name: "description",
-        content:
-          "Smart project briefing for new collaborations with Edmundo Kutuzov, art director in Maputo.",
-      },
-      { property: "og:title", content: "Contact - Edmundo Kutuzov" },
-      { property: "og:description", content: "Smart project briefing for new collaborations." },
-    ],
-  }),
   component: ContactPage,
 });
 
