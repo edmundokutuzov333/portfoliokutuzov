@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createLazyFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -48,7 +48,7 @@ import { BookingModal } from "@/components/contact/BookingModal";
 import { trackEvent } from "@/lib/analytics";
 import { LINKEDIN_URL } from "@/lib/cms";
 
-export const Route = createFileRoute("/contact")({
+export const Route = createLazyFileRoute("/contact")({
   head: () => ({
     meta: [
       { title: "Contact - Edmundo Kutuzov" },

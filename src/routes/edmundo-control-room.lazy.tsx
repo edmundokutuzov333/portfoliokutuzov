@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createLazyFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminAuth } from "@/hooks/useAdmin";
@@ -44,7 +44,7 @@ import {
   ArrowDown,
 } from "lucide-react";
 
-export const Route = createFileRoute("/edmundo-control-room")({
+export const Route = createLazyFileRoute("/edmundo-control-room")({
   component: ControlRoom,
 });
 
