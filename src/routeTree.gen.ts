@@ -36,12 +36,14 @@ const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() => import('./routes/contact.lazy').then((d) => d.Route))
 const EdmundoControlRoomRoute = EdmundoControlRoomRouteImport.update({
   id: '/edmundo-control-room',
   path: '/edmundo-control-room',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() =>
+  import('./routes/edmundo-control-room.lazy').then((d) => d.Route),
+)
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
