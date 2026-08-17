@@ -172,14 +172,31 @@ export type Database = {
           id: string
           invoice_amount: number | null
           invoice_currency: string | null
+          invoice_deposit_amount: number | null
+          invoice_deposit_pct: number
+          invoice_discount_amount: number | null
+          invoice_discount_pct: number
           invoice_due_date: string | null
+          invoice_issue_date: string | null
+          invoice_last_reminder_at: string | null
           invoice_notes: string | null
           invoice_number: string | null
           invoice_paid_at: string | null
+          invoice_paid_reported_at: string | null
+          invoice_payment_method: string | null
+          invoice_payment_proof_path: string | null
+          invoice_payment_ref: string | null
           invoice_pdf_path: string | null
           invoice_public_token: string | null
+          invoice_reminder_count: number
           invoice_sent_at: string | null
           invoice_status: string | null
+          invoice_subtotal: number | null
+          invoice_tax_amount: number | null
+          invoice_tax_label: string | null
+          invoice_tax_pct: number
+          invoice_terms: string | null
+          invoice_total: number | null
           invoice_viewed_at: string | null
           is_starred: boolean
           message: string
@@ -212,14 +229,31 @@ export type Database = {
           id?: string
           invoice_amount?: number | null
           invoice_currency?: string | null
+          invoice_deposit_amount?: number | null
+          invoice_deposit_pct?: number
+          invoice_discount_amount?: number | null
+          invoice_discount_pct?: number
           invoice_due_date?: string | null
+          invoice_issue_date?: string | null
+          invoice_last_reminder_at?: string | null
           invoice_notes?: string | null
           invoice_number?: string | null
           invoice_paid_at?: string | null
+          invoice_paid_reported_at?: string | null
+          invoice_payment_method?: string | null
+          invoice_payment_proof_path?: string | null
+          invoice_payment_ref?: string | null
           invoice_pdf_path?: string | null
           invoice_public_token?: string | null
+          invoice_reminder_count?: number
           invoice_sent_at?: string | null
           invoice_status?: string | null
+          invoice_subtotal?: number | null
+          invoice_tax_amount?: number | null
+          invoice_tax_label?: string | null
+          invoice_tax_pct?: number
+          invoice_terms?: string | null
+          invoice_total?: number | null
           invoice_viewed_at?: string | null
           is_starred?: boolean
           message: string
@@ -252,14 +286,31 @@ export type Database = {
           id?: string
           invoice_amount?: number | null
           invoice_currency?: string | null
+          invoice_deposit_amount?: number | null
+          invoice_deposit_pct?: number
+          invoice_discount_amount?: number | null
+          invoice_discount_pct?: number
           invoice_due_date?: string | null
+          invoice_issue_date?: string | null
+          invoice_last_reminder_at?: string | null
           invoice_notes?: string | null
           invoice_number?: string | null
           invoice_paid_at?: string | null
+          invoice_paid_reported_at?: string | null
+          invoice_payment_method?: string | null
+          invoice_payment_proof_path?: string | null
+          invoice_payment_ref?: string | null
           invoice_pdf_path?: string | null
           invoice_public_token?: string | null
+          invoice_reminder_count?: number
           invoice_sent_at?: string | null
           invoice_status?: string | null
+          invoice_subtotal?: number | null
+          invoice_tax_amount?: number | null
+          invoice_tax_label?: string | null
+          invoice_tax_pct?: number
+          invoice_terms?: string | null
+          invoice_total?: number | null
           invoice_viewed_at?: string | null
           is_starred?: boolean
           message?: string
@@ -416,6 +467,24 @@ export type Database = {
         }
         Relationships: []
       }
+      invoice_counters: {
+        Row: {
+          last_number: number
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          last_number?: number
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          last_number?: number
+          updated_at?: string
+          year?: number
+        }
+        Relationships: []
+      }
       invoice_events: {
         Row: {
           actor: string | null
@@ -447,6 +516,56 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "invoice_events_briefing_id_fkey"
+            columns: ["briefing_id"]
+            isOneToOne: false
+            referencedRelation: "briefing_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoice_line_items: {
+        Row: {
+          briefing_id: string
+          created_at: string
+          description: string
+          detail: string | null
+          discount_pct: number
+          id: string
+          qty: number
+          sort_order: number
+          unit: string
+          unit_price: number
+          updated_at: string
+        }
+        Insert: {
+          briefing_id: string
+          created_at?: string
+          description: string
+          detail?: string | null
+          discount_pct?: number
+          id?: string
+          qty?: number
+          sort_order?: number
+          unit?: string
+          unit_price?: number
+          updated_at?: string
+        }
+        Update: {
+          briefing_id?: string
+          created_at?: string
+          description?: string
+          detail?: string | null
+          discount_pct?: number
+          id?: string
+          qty?: number
+          sort_order?: number
+          unit?: string
+          unit_price?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_line_items_briefing_id_fkey"
             columns: ["briefing_id"]
             isOneToOne: false
             referencedRelation: "briefing_submissions"
@@ -682,6 +801,7 @@ export type Database = {
     }
     Functions: {
       is_admin: { Args: never; Returns: boolean }
+      next_invoice_number: { Args: { prefix?: string }; Returns: string }
       slugify: { Args: { input: string }; Returns: string }
     }
     Enums: {
