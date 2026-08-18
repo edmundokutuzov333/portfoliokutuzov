@@ -2,368 +2,95 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const RESEND_GATEWAY = "https://connector-gateway.lovable.dev/resend";
-// Invoices live in a private bucket; PDFs are only served via short-lived signed URLs.
-const BUCKET = "invoices";
-const SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 7; // 7 days
-
-async function signedPdfUrl(admin: any, path: string): Promise<string> {
-  const { data, error } = await admin.storage.from(BUCKET).createSignedUrl(path, SIGNED_URL_TTL_SECONDS);
-  if (error || !data?.signedUrl) throw new Error(error?.message || "Failed to sign invoice URL");
-  return data.signedUrl;
-}
-
-const InvoiceInput = z.object({
-  briefing_id: z.string().uuid(),
-  amount: z.number().positive().max(100000000),
-  currency: z.enum(["EUR", "USD", "MZN", "GBP", "BRL"]),
-  due_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
-  notes: z.string().trim().max(2000).nullable().optional(),
+/* ------------------------------------------------------------------ schemas */
+const LineItemSchema = z.object({
+  id: z.string().uuid().optional(),
+  description: z.string().trim().min(1).max(300),
+  detail: z.string().trim().max(600).nullable().optional(),
+  qty: z.number().min(0).max(100000),
+  unit: z.string().trim().min(1).max(24).default("un"),
+  unit_price: z.number().min(0).max(100000000),
+  discount_pct: z.number().min(0).max(100).default(0),
 });
 
-const esc = (s: unknown) =>
-  String(s ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+const DraftSchema = z.object({
+  briefing_id: z.string().uuid(),
+  currency: z.enum(["EUR", "USD", "MZN", "GBP", "BRL", "ZAR"]),
+  issue_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+  due_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+  discount_pct: z.number().min(0).max(100).default(0),
+  tax_pct: z.number().min(0).max(100).default(0),
+  tax_label: z.string().trim().max(60).nullable().optional(),
+  deposit_pct: z.number().min(0).max(100).default(0),
+  notes: z.string().trim().max(2000).nullable().optional(),
+  terms: z.string().trim().max(2000).nullable().optional(),
+  items: z.array(LineItemSchema).min(1).max(60),
+});
 
-const CURRENCY_SYMBOL: Record<string, string> = {
-  EUR: "€", USD: "$", MZN: "MT ", GBP: "£", BRL: "R$",
-};
+const IdSchema = z.object({ briefing_id: z.string().uuid() });
+const TokenSchema = z.object({ token: z.string().min(16).max(128) });
 
-const money = (amount: number, currency: string) =>
-  `${CURRENCY_SYMBOL[currency] ?? ""}${amount.toLocaleString("en-US", {
-    minimumFractionDigits: 2, maximumFractionDigits: 2,
-  })}`;
-
-function hexToRgb01(hex: string, fallback: [number, number, number]): [number, number, number] {
-  const m = /^#?([0-9a-f]{6})$/i.exec(hex ?? "");
-  if (!m) return fallback;
-  const n = parseInt(m[1], 16);
-  return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
-}
-
-function siteOrigin(): string {
-  return (
-    process.env.PUBLIC_SITE_URL ||
-    process.env.SITE_URL ||
-    "https://portfoliokutuzov.lovable.app"
-  ).replace(/\/$/, "");
-}
-
-async function sendMail(from: string, to: string[], subject: string, html: string, cc?: string[]) {
-  const lovableKey = process.env.LOVABLE_API_KEY;
-  const resendKey = process.env.RESEND_API_KEY;
-  if (!lovableKey || !resendKey) return { skipped: true as const };
-  const res = await fetch(`${RESEND_GATEWAY}/emails`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${lovableKey}`,
-      "X-Connection-Api-Key": resendKey,
-    },
-    body: JSON.stringify({ from, to, cc, subject, html }),
-  });
-  return { skipped: false as const, ok: res.ok, status: res.status };
-}
-
-function nextInvoiceNumber() {
-  const d = new Date();
-  const ymd = `${d.getUTCFullYear()}${String(d.getUTCMonth() + 1).padStart(2, "0")}${String(d.getUTCDate()).padStart(2, "0")}`;
-  const rand = Math.random().toString(36).slice(2, 6).toUpperCase();
-  return `EK-${ymd}-${rand}`;
-}
-
-function randomToken() {
-  const bytes = crypto.getRandomValues(new Uint8Array(24));
-  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
-}
-
-type InvoiceContext = {
-  invoiceNumber: string;
-  issueDate: string;
-  dueDate: string | null;
-  amount: number;
-  currency: string;
-  notes: string | null;
-  brief: {
-    id: string;
-    full_name: string;
-    email: string;
-    company_name: string | null;
-    country: string | null;
-    project_type: string;
-  };
-  settings: Record<string, string>;
-};
-
-async function buildInvoicePdf(ctx: InvoiceContext): Promise<Uint8Array> {
-  const { PDFDocument, StandardFonts, rgb } = await import("pdf-lib");
-  const pdf = await PDFDocument.create();
-  const page = pdf.addPage([595, 842]);
-  const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
-  const reg = await pdf.embedFont(StandardFonts.Helvetica);
-
-  const [ar, ag, ab] = hexToRgb01(ctx.settings.brand_color || "#48A0E0", [0.28, 0.62, 0.88]);
-  const accent = rgb(ar, ag, ab);
-  const ink = rgb(0.06, 0.09, 0.15);
-  const muted = rgb(0.4, 0.45, 0.55);
-  const rule = rgb(0.85, 0.88, 0.93);
-
-  const draw = (t: string, x: number, y: number, o: { size?: number; font?: typeof reg; color?: typeof ink } = {}) =>
-    page.drawText(t, { x, y, size: o.size ?? 10, font: o.font ?? reg, color: o.color ?? ink });
-
-  // Optional logo
-  if (ctx.settings.logo_url) {
-    try {
-      const res = await fetch(ctx.settings.logo_url);
-      if (res.ok) {
-        const bytes = new Uint8Array(await res.arrayBuffer());
-        const ct = res.headers.get("content-type") || "";
-        const img = ct.includes("png") ? await pdf.embedPng(bytes) : await pdf.embedJpg(bytes);
-        const scale = Math.min(120 / img.width, 40 / img.height);
-        page.drawImage(img, { x: 40, y: 790, width: img.width * scale, height: img.height * scale });
-      }
-    } catch { /* ignore */ }
-  }
-
-  draw(ctx.settings.header_label || "PROFORMA INVOICE", 40, 762, { size: 10, font: bold, color: accent });
-  draw(ctx.settings.studio_name || "Edmundo Kutuzov", 40, 744, { size: 18, font: bold });
-  if (ctx.settings.studio_address) draw(ctx.settings.studio_address, 40, 728, { color: muted });
-  if (ctx.settings.studio_email) draw(ctx.settings.studio_email, 40, 714, { color: muted });
-  if (ctx.settings.studio_tax_id) draw(`Tax ID: ${ctx.settings.studio_tax_id}`, 40, 700, { color: muted });
-
-  draw("Invoice N°", 400, 762, { size: 9, color: muted });
-  draw(ctx.invoiceNumber, 400, 748, { size: 12, font: bold });
-  draw("Issued", 400, 730, { size: 9, color: muted });
-  draw(ctx.issueDate, 400, 716);
-  if (ctx.dueDate) {
-    draw("Due", 400, 700, { size: 9, color: muted });
-    draw(ctx.dueDate, 400, 686);
-  }
-
-  page.drawRectangle({ x: 40, y: 660, width: 515, height: 1, color: rule });
-  draw("BILL TO", 40, 640, { size: 9, font: bold, color: muted });
-  draw(ctx.brief.full_name, 40, 624, { size: 12, font: bold });
-  if (ctx.brief.company_name) draw(ctx.brief.company_name, 40, 610, { color: muted });
-  draw(ctx.brief.email, 300, 624, { color: muted });
-  if (ctx.brief.country) draw(ctx.brief.country, 300, 610, { color: muted });
-
-  draw("DESCRIPTION", 40, 578, { size: 9, font: bold, color: muted });
-  draw("AMOUNT", 480, 578, { size: 9, font: bold, color: muted });
-  page.drawRectangle({ x: 40, y: 573, width: 515, height: 1, color: rule });
-
-  draw(ctx.brief.project_type, 40, 553, { font: bold });
-  const notesLines = (ctx.notes || "Creative direction & production per approved briefing.")
-    .split("\n").slice(0, 6);
-  let y = 537;
-  for (const line of notesLines) { draw(line.slice(0, 90), 40, y, { color: muted, size: 9 }); y -= 12; }
-
-  draw(money(ctx.amount, ctx.currency), 480, 553, { font: bold });
-  draw(ctx.currency, 480, 537, { color: muted, size: 9 });
-
-  page.drawRectangle({ x: 40, y: 452, width: 515, height: 1, color: rule });
-  draw("TOTAL DUE", 380, 432, { size: 10, color: muted });
-  draw(money(ctx.amount, ctx.currency), 480, 417, { size: 16, font: bold, color: accent });
-  draw(ctx.currency, 480, 402, { color: muted, size: 9 });
-
-  draw("PAYMENT DETAILS", 40, 372, { size: 9, font: bold, color: muted });
-  let py = 354;
-  const detail = (label: string, val?: string) => {
-    if (!val) return;
-    draw(label, 40, py, { size: 9, color: muted });
-    draw(val, 150, py);
-    py -= 14;
-  };
-  detail("Bank", ctx.settings.bank_name);
-  detail("Account name", ctx.settings.bank_account_name);
-  detail("IBAN", ctx.settings.bank_iban);
-  detail("SWIFT / BIC", ctx.settings.bank_swift);
-  detail("M-Pesa", ctx.settings.mpesa_number);
-  detail("Reference", ctx.invoiceNumber);
-
-  if (ctx.settings.payment_terms) {
-    draw("TERMS", 40, py - 10, { size: 9, font: bold, color: muted });
-    const terms = ctx.settings.payment_terms.match(/.{1,90}(\s|$)/g) ?? [];
-    let ty = py - 26;
-    for (const t of terms.slice(0, 4)) { draw(t.trim(), 40, ty, { color: muted, size: 9 }); ty -= 12; }
-  }
-
-  if (ctx.settings.legal_text) {
-    const legal = ctx.settings.legal_text.match(/.{1,110}(\s|$)/g) ?? [];
-    let ly = 90;
-    for (const l of legal.slice(0, 4)) { draw(l.trim(), 40, ly, { color: muted, size: 8 }); ly -= 10; }
-  }
-  if (ctx.settings.footer_note) draw(ctx.settings.footer_note, 40, 46, { color: muted, size: 9 });
-  draw("This is a proforma invoice — not a fiscal receipt.", 40, 34, { color: muted, size: 8 });
-
-  return await pdf.save();
-}
-
-function buildEmailHtml(args: {
-  brief: InvoiceContext["brief"];
-  invoiceNumber: string;
-  issueDate: string;
-  dueDate: string | null;
-  amount: number;
-  currency: string;
-  notes: string | null;
-  invoiceUrl: string;
-  clientPortalUrl: string;
-  settings: Record<string, string>;
-}) {
-  const s = args.settings;
-  const accent = s.brand_color || "#7dd3fc";
-  const firstName = args.brief.full_name.split(" ")[0];
-  const inner = `
-    <p style="font-family:monospace;letter-spacing:.18em;color:${accent};font-size:11px;margin:0 0 16px">${esc(s.header_label || "PROFORMA INVOICE")} · ${esc(args.invoiceNumber)}</p>
-    <h1 style="font-size:26px;line-height:1.15;margin:0 0 18px;color:#f5f8ff">Hi ${esc(firstName)}, your invoice is ready.</h1>
-    <p style="font-size:15px;line-height:1.7;color:#cbd5e1;margin:0 0 22px">
-      Please find the invoice for <b>${esc(args.brief.project_type)}</b>. Once payment is confirmed, we'll kick off production.
-    </p>
-    <div style="border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:18px 20px;margin:20px 0">
-      <p style="margin:0 0 6px;font-size:11px;font-family:monospace;letter-spacing:.18em;color:${accent}">AMOUNT DUE</p>
-      <p style="margin:0 0 14px;font-size:26px;font-weight:700;color:#f5f8ff">${esc(money(args.amount, args.currency))} <span style="font-size:13px;color:#94a3b8">${esc(args.currency)}</span></p>
-      <p style="margin:6px 0;font-size:13px;color:#cbd5e1"><b>Invoice N°:</b> ${esc(args.invoiceNumber)}</p>
-      <p style="margin:6px 0;font-size:13px;color:#cbd5e1"><b>Issued:</b> ${esc(args.issueDate)}</p>
-      ${args.dueDate ? `<p style="margin:6px 0;font-size:13px;color:#cbd5e1"><b>Due:</b> ${esc(args.dueDate)}</p>` : ""}
-    </div>
-    <p style="margin:24px 0">
-      <a href="${esc(args.clientPortalUrl)}" style="display:inline-block;background:${accent};color:#01040A;padding:12px 22px;border-radius:8px;font-weight:700;text-decoration:none;margin-right:8px">View invoice & payment details</a>
-      <a href="${esc(args.invoiceUrl)}" style="display:inline-block;border:1px solid ${accent};color:${accent};padding:12px 22px;border-radius:8px;font-weight:700;text-decoration:none">Download PDF</a>
-    </p>
-    ${args.notes ? `<div style="margin:20px 0"><p style="font-family:monospace;letter-spacing:.18em;color:${accent};font-size:11px;margin:0 0 8px">NOTES</p><p style="font-size:13px;line-height:1.7;color:#e2e8f0;white-space:pre-wrap;margin:0">${esc(args.notes)}</p></div>` : ""}
-    ${s.legal_text ? `<p style="font-size:11px;line-height:1.6;color:#64748b;margin:24px 0 0">${esc(s.legal_text)}</p>` : ""}
-    <p style="font-size:13px;line-height:1.7;color:#94a3b8;margin:20px 0 0">Reply to this email if anything needs adjusting.</p>
-  `;
-  return `<div style="font-family:-apple-system,Segoe UI,Inter,sans-serif;background:#01040A;color:#e2e8f0;padding:32px">${inner}<p style="font-size:12px;color:#64748b;margin:32px 0 0">— ${esc(s.studio_name || "Edmundo Kutuzov")} — ${esc(s.footer_note || "Art Director")}</p></div>`;
-}
-
-async function assertAdmin(context: { supabase: any; userId: string }) {
-  const { data, error } = await context.supabase.rpc("is_admin");
-  if (error) throw new Error(error.message);
-  if (!data) throw new Error("Forbidden: admin only");
-}
-
-async function loadInvoiceSettings(admin: any): Promise<Record<string, string>> {
-  const { data } = await admin.from("site_settings").select("value").eq("key", "invoice_settings").maybeSingle();
-  return (data?.value ?? {}) as Record<string, string>;
-}
-
-// --------- Server functions ---------
-
-export const previewInvoiceEmail = createServerFn({ method: "POST" })
+/* ------------------------------------------------------- admin: draft + read */
+export const saveInvoiceDraft = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) => InvoiceInput.parse(i))
+  .inputValidator((i: unknown) => DraftSchema.parse(i))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context);
+    const S = await import("@/lib/invoice.server");
+    await S.assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: brief, error } = await supabaseAdmin
-      .from("briefing_submissions")
-      .select("id, full_name, email, company_name, country, project_type, invoice_number, invoice_public_token, invoice_pdf_path")
-      .eq("id", data.briefing_id)
-      .single();
-    if (error || !brief) throw new Error(error?.message || "Briefing not found");
-
-    const settings = await loadInvoiceSettings(supabaseAdmin);
-    const invoiceNumber = brief.invoice_number || `PREVIEW-${nextInvoiceNumber()}`;
-    const token = brief.invoice_public_token || "preview-token";
-    const invoiceUrl = brief.invoice_pdf_path
-      ? await signedPdfUrl(supabaseAdmin, brief.invoice_pdf_path)
-      : "#pdf-generated-on-send";
-    const clientPortalUrl = `${siteOrigin()}/i/${token}`;
-
-    const html = buildEmailHtml({
-      brief,
-      invoiceNumber,
-      issueDate: new Date().toISOString().slice(0, 10),
-      dueDate: data.due_date ?? null,
-      amount: data.amount,
-      currency: data.currency,
-      notes: data.notes ?? null,
-      invoiceUrl,
-      clientPortalUrl,
-      settings,
-    });
-
-    const subject = `Invoice ${invoiceNumber} — ${settings.studio_name || "Edmundo Kutuzov"}`;
-    const ADMIN = process.env.BRIEFING_ADMIN_EMAIL ?? process.env.ADMIN_EMAIL ?? "contact@edmundokutuzov.art";
-    return { html, subject, to: [brief.email], cc: [ADMIN], invoiceNumber, clientPortalUrl };
-  });
-
-export const generateBriefingInvoice = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) => InvoiceInput.parse(i))
-  .handler(async ({ data, context }) => {
-    await assertAdmin(context);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-    const { data: brief, error: briefErr } = await supabaseAdmin
-      .from("briefing_submissions")
-      .select("id, full_name, email, company_name, country, project_type, invoice_public_token")
-      .eq("id", data.briefing_id)
-      .single();
-    if (briefErr || !brief) throw new Error(briefErr?.message || "Briefing not found");
-
-    const settings = await loadInvoiceSettings(supabaseAdmin);
-    const invoiceNumber = nextInvoiceNumber();
-    const issueDate = new Date().toISOString().slice(0, 10);
-    const token = brief.invoice_public_token || randomToken();
-
-    const pdfBytes = await buildInvoicePdf({
-      invoiceNumber, issueDate,
-      dueDate: data.due_date ?? null,
-      amount: data.amount, currency: data.currency,
-      notes: data.notes ?? null,
-      brief, settings,
-    });
-
-    const pdfPath = `${brief.id}/${invoiceNumber}.pdf`;
-    const { error: upErr } = await supabaseAdmin.storage.from(BUCKET).upload(pdfPath, pdfBytes, {
-      contentType: "application/pdf", upsert: true,
-    });
-    if (upErr) throw new Error(`Storage upload failed: ${upErr.message}`);
-
-    const invoiceUrl = await signedPdfUrl(supabaseAdmin, pdfPath);
-    const clientPortalUrl = `${siteOrigin()}/i/${token}`;
 
     const { error: updErr } = await supabaseAdmin
       .from("briefing_submissions")
       .update({
-        invoice_number: invoiceNumber,
-        invoice_amount: data.amount,
         invoice_currency: data.currency,
+        invoice_issue_date: data.issue_date ?? new Date().toISOString().slice(0, 10),
         invoice_due_date: data.due_date ?? null,
+        invoice_discount_pct: data.discount_pct,
+        invoice_tax_pct: data.tax_pct,
+        invoice_tax_label: data.tax_label ?? null,
+        invoice_deposit_pct: data.deposit_pct,
         invoice_notes: data.notes ?? null,
-        invoice_pdf_path: pdfPath,
-        invoice_status: "generated",
-        invoice_public_token: token,
-        status: "accepted",
+        invoice_terms: data.terms ?? null,
       })
-      .eq("id", brief.id);
+      .eq("id", data.briefing_id);
     if (updErr) throw new Error(updErr.message);
 
-    await supabaseAdmin.from("invoice_events").insert({
-      briefing_id: brief.id,
-      event_type: "generated",
-      actor: context.userId,
-      detail: { invoice_number: invoiceNumber, amount: data.amount, currency: data.currency },
-    });
+    // Replace the item set atomically enough for a single-editor admin tool.
+    const { error: delErr } = await supabaseAdmin
+      .from("invoice_line_items")
+      .delete()
+      .eq("briefing_id", data.briefing_id);
+    if (delErr) throw new Error(delErr.message);
 
-    return { ok: true, invoiceNumber, invoiceUrl, pdfPath, clientPortalUrl, token };
+    const { error: insErr } = await supabaseAdmin.from("invoice_line_items").insert(
+      data.items.map((it, idx) => ({
+        briefing_id: data.briefing_id,
+        description: it.description,
+        detail: it.detail ?? null,
+        qty: it.qty,
+        unit: it.unit,
+        unit_price: it.unit_price,
+        discount_pct: it.discount_pct,
+        sort_order: idx,
+      })),
+    );
+    if (insErr) throw new Error(insErr.message);
+
+    const items = await S.loadItems(supabaseAdmin, data.briefing_id);
+    const { data: brief } = await supabaseAdmin
+      .from("briefing_submissions")
+      .select("*")
+      .eq("id", data.briefing_id)
+      .single();
+    return { ok: true, items, totals: S.totalsFor(brief, items) };
   });
 
-export const sendBriefingInvoice = createServerFn({ method: "POST" })
+export const getInvoiceDraft = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) =>
-    z.object({
-      briefing_id: z.string().uuid(),
-      to_override: z.array(z.string().email()).optional(),
-      cc_override: z.array(z.string().email()).optional(),
-    }).parse(i),
-  )
+  .inputValidator((i: unknown) => IdSchema.parse(i))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context);
+    const S = await import("@/lib/invoice.server");
+    await S.assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: brief, error } = await supabaseAdmin
       .from("briefing_submissions")
@@ -371,80 +98,350 @@ export const sendBriefingInvoice = createServerFn({ method: "POST" })
       .eq("id", data.briefing_id)
       .single();
     if (error || !brief) throw new Error(error?.message || "Briefing not found");
-    if (!brief.invoice_number || !brief.invoice_pdf_path) throw new Error("Generate the invoice first");
+    const items = await S.loadItems(supabaseAdmin, data.briefing_id);
+    return {
+      items,
+      totals: S.totalsFor(brief, items),
+      header: {
+        currency: (brief.invoice_currency || "EUR").toUpperCase(),
+        issue_date: brief.invoice_issue_date,
+        due_date: brief.invoice_due_date,
+        discount_pct: Number(brief.invoice_discount_pct ?? 0),
+        tax_pct: Number(brief.invoice_tax_pct ?? 0),
+        tax_label: brief.invoice_tax_label,
+        deposit_pct: Number(brief.invoice_deposit_pct ?? 0),
+        notes: brief.invoice_notes,
+        terms: brief.invoice_terms,
+        number: brief.invoice_number,
+        status: brief.invoice_status ?? "draft",
+        pdf_path: brief.invoice_pdf_path,
+        token: brief.invoice_public_token,
+        sent_at: brief.invoice_sent_at,
+        viewed_at: brief.invoice_viewed_at,
+        paid_at: brief.invoice_paid_at,
+        reminder_count: brief.invoice_reminder_count ?? 0,
+        payment_ref: brief.invoice_payment_ref,
+        payment_method: brief.invoice_payment_method,
+        payment_proof_path: brief.invoice_payment_proof_path,
+        paid_reported_at: brief.invoice_paid_reported_at,
+        suggested_amount: brief.exact_amount,
+      },
+    };
+  });
 
-    const settings = await loadInvoiceSettings(supabaseAdmin);
-    const invoiceUrl = await signedPdfUrl(supabaseAdmin, brief.invoice_pdf_path);
-    const clientPortalUrl = `${siteOrigin()}/i/${brief.invoice_public_token}`;
+/* ---------------------------------------------- admin: instant PDF (no save) */
+export const renderInvoicePdfNow = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => DraftSchema.parse(i))
+  .handler(async ({ data, context }) => {
+    const S = await import("@/lib/invoice.server");
+    await S.assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: brief, error } = await supabaseAdmin
+      .from("briefing_submissions")
+      .select("*")
+      .eq("id", data.briefing_id)
+      .single();
+    if (error || !brief) throw new Error(error?.message || "Briefing not found");
 
-    const html = buildEmailHtml({
-      brief,
-      invoiceNumber: brief.invoice_number,
-      issueDate: (brief.invoice_sent_at || new Date().toISOString()).slice(0, 10),
-      dueDate: brief.invoice_due_date,
-      amount: Number(brief.invoice_amount ?? 0),
-      currency: brief.invoice_currency || "EUR",
-      notes: brief.invoice_notes,
-      invoiceUrl, clientPortalUrl, settings,
+    const branding = await S.loadBranding(supabaseAdmin);
+    const draftBrief = {
+      ...brief,
+      invoice_currency: data.currency,
+      invoice_issue_date: data.issue_date ?? new Date().toISOString().slice(0, 10),
+      invoice_due_date: data.due_date ?? null,
+      invoice_discount_pct: data.discount_pct,
+      invoice_tax_pct: data.tax_pct,
+      invoice_tax_label: data.tax_label ?? null,
+      invoice_deposit_pct: data.deposit_pct,
+      invoice_notes: data.notes ?? null,
+      invoice_terms: data.terms ?? null,
+    };
+    const invoiceNumber = brief.invoice_number || "DRAFT";
+    const bytes = await S.renderPdf({
+      brief: draftBrief,
+      items: data.items.map((it, idx) => ({ ...it, detail: it.detail ?? null, sort_order: idx })),
+      branding,
+      invoiceNumber,
+      token: brief.invoice_public_token ?? null,
+      status: brief.invoice_status ?? "draft",
+    });
+    return {
+      filename: `${invoiceNumber}.pdf`,
+      base64: S.toBase64(bytes),
+      totals: S.totalsFor(draftBrief, data.items.map((it) => ({ ...it, detail: it.detail ?? null }))),
+    };
+  });
+
+/* -------------------------------------------- admin: issue (number + upload) */
+export const generateBriefingInvoice = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => DraftSchema.parse(i))
+  .handler(async ({ data, context }) => {
+    const S = await import("@/lib/invoice.server");
+    await S.assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Persist the draft first so PDF, DB and UI can never disagree.
+    const { error: delErr } = await supabaseAdmin
+      .from("invoice_line_items")
+      .delete()
+      .eq("briefing_id", data.briefing_id);
+    if (delErr) throw new Error(delErr.message);
+    const { error: insErr } = await supabaseAdmin.from("invoice_line_items").insert(
+      data.items.map((it, idx) => ({
+        briefing_id: data.briefing_id,
+        description: it.description,
+        detail: it.detail ?? null,
+        qty: it.qty,
+        unit: it.unit,
+        unit_price: it.unit_price,
+        discount_pct: it.discount_pct,
+        sort_order: idx,
+      })),
+    );
+    if (insErr) throw new Error(insErr.message);
+
+    const { data: brief, error } = await supabaseAdmin
+      .from("briefing_submissions")
+      .select("*")
+      .eq("id", data.briefing_id)
+      .single();
+    if (error || !brief) throw new Error(error?.message || "Briefing not found");
+
+    const items = await S.loadItems(supabaseAdmin, data.briefing_id);
+    const branding = await S.loadBranding(supabaseAdmin);
+
+    // Sequential, gap-free numbering (atomic counter in Postgres).
+    let invoiceNumber = brief.invoice_number as string | null;
+    if (!invoiceNumber) {
+      const { data: num, error: numErr } = await supabaseAdmin.rpc("next_invoice_number", { prefix: "EK" });
+      if (numErr || !num) throw new Error(numErr?.message || "Could not allocate invoice number");
+      invoiceNumber = num as string;
+    }
+    const token = brief.invoice_public_token || S.randomToken();
+    const issueDate = data.issue_date ?? brief.invoice_issue_date ?? new Date().toISOString().slice(0, 10);
+
+    const nextBrief = {
+      ...brief,
+      invoice_currency: data.currency,
+      invoice_issue_date: issueDate,
+      invoice_due_date: data.due_date ?? null,
+      invoice_discount_pct: data.discount_pct,
+      invoice_tax_pct: data.tax_pct,
+      invoice_tax_label: data.tax_label ?? null,
+      invoice_deposit_pct: data.deposit_pct,
+      invoice_notes: data.notes ?? null,
+      invoice_terms: data.terms ?? null,
+    };
+    const totals = S.totalsFor(nextBrief, items);
+
+    const bytes = await S.renderPdf({
+      brief: nextBrief,
+      items,
+      branding,
+      invoiceNumber,
+      token,
+      status: brief.invoice_status === "paid" ? "paid" : "generated",
     });
 
-    const FROM = process.env.BRIEFING_FROM ?? "Edmundo Kutuzov <onboarding@resend.dev>";
-    const ADMIN = process.env.BRIEFING_ADMIN_EMAIL ?? process.env.ADMIN_EMAIL ?? "contact@edmundokutuzov.art";
+    const pdfPath = `${brief.id}/${invoiceNumber}.pdf`;
+    const { error: upErr } = await supabaseAdmin.storage
+      .from(S.PDF_BUCKET)
+      .upload(pdfPath, bytes, { contentType: "application/pdf", upsert: true });
+    if (upErr) throw new Error(`Storage upload failed: ${upErr.message}`);
+
+    const { error: updErr } = await supabaseAdmin
+      .from("briefing_submissions")
+      .update({
+        invoice_number: invoiceNumber,
+        invoice_currency: data.currency,
+        invoice_issue_date: issueDate,
+        invoice_due_date: data.due_date ?? null,
+        invoice_discount_pct: data.discount_pct,
+        invoice_tax_pct: data.tax_pct,
+        invoice_tax_label: data.tax_label ?? null,
+        invoice_deposit_pct: data.deposit_pct,
+        invoice_notes: data.notes ?? null,
+        invoice_terms: data.terms ?? null,
+        invoice_subtotal: totals.subtotal,
+        invoice_discount_amount: totals.discount_amount,
+        invoice_tax_amount: totals.tax_amount,
+        invoice_total: totals.total,
+        invoice_deposit_amount: totals.deposit_amount,
+        invoice_amount: totals.total,
+        invoice_pdf_path: pdfPath,
+        invoice_status: brief.invoice_status === "paid" ? "paid" : "generated",
+        invoice_public_token: token,
+        status: "accepted",
+      })
+      .eq("id", brief.id);
+    if (updErr) throw new Error(updErr.message);
+
+    await S.logEvent(supabaseAdmin, brief.id, "generated", context.userId, {
+      invoice_number: invoiceNumber,
+      total: totals.total,
+      currency: data.currency,
+    });
+
+    return {
+      ok: true,
+      invoiceNumber,
+      pdfPath,
+      token,
+      totals,
+      base64: S.toBase64(bytes),
+      filename: `${invoiceNumber}.pdf`,
+      clientPortalUrl: `${S.siteOrigin()}/i/${token}`,
+      pdfUrl: await S.signedUrl(supabaseAdmin, S.PDF_BUCKET, pdfPath),
+    };
+  });
+
+/* --------------------------------------------------- admin: email preview */
+export const previewInvoiceEmail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) =>
+    IdSchema.extend({ variant: z.enum(["invoice", "reminder", "receipt"]).default("invoice") }).parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    const S = await import("@/lib/invoice.server");
+    await S.assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: brief, error } = await supabaseAdmin
+      .from("briefing_submissions")
+      .select("*")
+      .eq("id", data.briefing_id)
+      .single();
+    if (error || !brief) throw new Error(error?.message || "Briefing not found");
+
+    const branding = await S.loadBranding(supabaseAdmin);
+    const items = await S.loadItems(supabaseAdmin, brief.id);
+    const token = brief.invoice_public_token ?? "preview-token";
+    const pdfUrl = brief.invoice_pdf_path
+      ? await S.signedUrl(supabaseAdmin, S.PDF_BUCKET, brief.invoice_pdf_path)
+      : "#generate-the-invoice-first";
+    const portalUrl = `${S.siteOrigin()}/i/${token}`;
+    const { subject, html } = S.buildInvoiceEmail({
+      brief,
+      branding,
+      items,
+      invoiceNumber: brief.invoice_number ?? "DRAFT",
+      portalUrl,
+      pdfUrl,
+      variant: data.variant,
+    });
+    return { html, subject, to: [brief.email], cc: [S.adminEmail()], clientPortalUrl: portalUrl };
+  });
+
+/* ------------------------------------------------------- admin: send / remind */
+const SendSchema = IdSchema.extend({
+  to_override: z.array(z.string().email()).max(5).optional(),
+  cc_override: z.array(z.string().email()).max(5).optional(),
+  attach_pdf: z.boolean().default(true),
+  variant: z.enum(["invoice", "reminder", "receipt"]).default("invoice"),
+});
+
+export const sendBriefingInvoice = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => SendSchema.parse(i))
+  .handler(async ({ data, context }) => {
+    const S = await import("@/lib/invoice.server");
+    await S.assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: brief, error } = await supabaseAdmin
+      .from("briefing_submissions")
+      .select("*")
+      .eq("id", data.briefing_id)
+      .single();
+    if (error || !brief) throw new Error(error?.message || "Briefing not found");
+    if (!brief.invoice_number || !brief.invoice_pdf_path) throw new Error("Issue the invoice first");
+
+    const branding = await S.loadBranding(supabaseAdmin);
+    const items = await S.loadItems(supabaseAdmin, brief.id);
+    const pdfUrl = await S.signedUrl(supabaseAdmin, S.PDF_BUCKET, brief.invoice_pdf_path);
+    const portalUrl = `${S.siteOrigin()}/i/${brief.invoice_public_token}`;
+    const { subject, html } = S.buildInvoiceEmail({
+      brief,
+      branding,
+      items,
+      invoiceNumber: brief.invoice_number,
+      portalUrl,
+      pdfUrl,
+      variant: data.variant,
+    });
+
+    let attachment: { filename: string; content: string } | undefined;
+    if (data.attach_pdf) {
+      const { data: file } = await supabaseAdmin.storage.from(S.PDF_BUCKET).download(brief.invoice_pdf_path);
+      if (file) {
+        attachment = {
+          filename: `${brief.invoice_number}.pdf`,
+          content: S.toBase64(new Uint8Array(await file.arrayBuffer())),
+        };
+      }
+    }
+
     const to = data.to_override?.length ? data.to_override : [brief.email];
-    const cc = data.cc_override?.length ? data.cc_override : [ADMIN];
-    const subject = `Invoice ${brief.invoice_number} — ${settings.studio_name || "Edmundo Kutuzov"}`;
-    const result = await sendMail(FROM, to, subject, html, cc);
+    const cc = data.cc_override?.length ? data.cc_override : [S.adminEmail()];
+    const result = await S.sendMail({ to, cc, subject, html, attachment });
 
-    await supabaseAdmin.from("briefing_submissions").update({
-      invoice_status: "sent",
-      invoice_sent_at: new Date().toISOString(),
-    }).eq("id", brief.id);
+    const patch: Record<string, unknown> = {};
+    if (data.variant === "reminder") {
+      patch.invoice_reminder_count = Number(brief.invoice_reminder_count ?? 0) + 1;
+      patch.invoice_last_reminder_at = new Date().toISOString();
+    } else if (data.variant === "invoice") {
+      patch.invoice_status = brief.invoice_status === "paid" ? "paid" : "sent";
+      patch.invoice_sent_at = new Date().toISOString();
+    }
+    if (Object.keys(patch).length) {
+      await supabaseAdmin.from("briefing_submissions").update(patch).eq("id", brief.id);
+    }
 
-    await supabaseAdmin.from("invoice_events").insert({
-      briefing_id: brief.id,
-      event_type: "sent",
-      actor: context.userId,
-      recipients: [...to, ...cc],
-      detail: {
-        invoice_number: brief.invoice_number,
+    await S.logEvent(
+      supabaseAdmin,
+      brief.id,
+      data.variant === "reminder" ? "reminder" : data.variant === "receipt" ? "receipt" : "sent",
+      context.userId,
+      {
         subject,
+        attached: Boolean(attachment),
         delivery: result.skipped ? "no-provider-configured" : result.ok ? "delivered" : `error-${result.status}`,
       },
-    });
+      [...to, ...cc],
+    );
 
     return { ok: true, delivery: result };
   });
 
+/* ------------------------------------------------------------ admin: status */
 export const setInvoiceStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) =>
-    z.object({
-      briefing_id: z.string().uuid(),
+    IdSchema.extend({
       status: z.enum(["draft", "generated", "sent", "viewed", "paid", "void"]),
     }).parse(i),
   )
   .handler(async ({ data, context }) => {
-    await assertAdmin(context);
+    const S = await import("@/lib/invoice.server");
+    await S.assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const patch: { invoice_status: typeof data.status; invoice_paid_at?: string } = { invoice_status: data.status };
+    const patch: Record<string, unknown> = { invoice_status: data.status };
     if (data.status === "paid") patch.invoice_paid_at = new Date().toISOString();
-    const { error } = await supabaseAdmin.from("briefing_submissions").update(patch).eq("id", data.briefing_id);
+    const { error } = await supabaseAdmin
+      .from("briefing_submissions")
+      .update(patch)
+      .eq("id", data.briefing_id);
     if (error) throw new Error(error.message);
-
-    await supabaseAdmin.from("invoice_events").insert({
-      briefing_id: data.briefing_id,
-      event_type: `status:${data.status}`,
-      actor: context.userId,
-      detail: {},
-    });
+    await S.logEvent(supabaseAdmin, data.briefing_id, `status:${data.status}`, context.userId);
     return { ok: true };
   });
 
-export const listInvoiceEvents = createServerFn({ method: "GET" })
+export const listInvoiceEvents = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) => z.object({ briefing_id: z.string().uuid() }).parse(i))
+  .inputValidator((i: unknown) => IdSchema.parse(i))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context);
+    const S = await import("@/lib/invoice.server");
+    await S.assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: rows, error } = await supabaseAdmin
       .from("invoice_events")
@@ -456,69 +453,213 @@ export const listInvoiceEvents = createServerFn({ method: "GET" })
     return rows ?? [];
   });
 
-// --------- Public: fetch invoice by token, log view ---------
+/* --------------------------------------------------- admin: workspace / KPIs */
+export const getInvoiceWorkspace = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const S = await import("@/lib/invoice.server");
+    await S.assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: rows, error } = await supabaseAdmin
+      .from("briefing_submissions")
+      .select(
+        "id, full_name, company_name, email, project_type, invoice_number, invoice_status, invoice_total, invoice_amount, invoice_currency, invoice_due_date, invoice_issue_date, invoice_sent_at, invoice_paid_at, invoice_viewed_at, invoice_deposit_amount, invoice_reminder_count, invoice_paid_reported_at, invoice_public_token",
+      )
+      .not("invoice_number", "is", null)
+      .order("invoice_issue_date", { ascending: false, nullsFirst: false })
+      .limit(300);
+    if (error) throw new Error(error.message);
 
+    const today = new Date().toISOString().slice(0, 10);
+    const list = (rows ?? []).map((r) => {
+      const total = Number(r.invoice_total ?? r.invoice_amount ?? 0);
+      const overdue =
+        r.invoice_status !== "paid" &&
+        r.invoice_status !== "void" &&
+        Boolean(r.invoice_due_date) &&
+        String(r.invoice_due_date) < today;
+      return { ...r, total, overdue };
+    });
+
+    const sum = (f: (r: (typeof list)[number]) => boolean) =>
+      list.filter(f).reduce((a, r) => a + r.total, 0);
+
+    return {
+      invoices: list,
+      kpis: {
+        count: list.length,
+        outstanding: sum((r) => r.invoice_status !== "paid" && r.invoice_status !== "void"),
+        overdue: sum((r) => r.overdue),
+        paid: sum((r) => r.invoice_status === "paid"),
+        awaitingConfirmation: list.filter((r) => r.invoice_paid_reported_at && r.invoice_status !== "paid").length,
+      },
+    };
+  });
+
+/* ------------------------------------------------------------ public portal */
 export const getPublicInvoice = createServerFn({ method: "POST" })
-  .inputValidator((i: unknown) => z.object({ token: z.string().min(16).max(128) }).parse(i))
+  .inputValidator((i: unknown) => TokenSchema.parse(i))
   .handler(async ({ data }) => {
+    const S = await import("@/lib/invoice.server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: brief, error } = await supabaseAdmin
       .from("briefing_submissions")
-      .select("id, full_name, company_name, project_type, invoice_number, invoice_amount, invoice_currency, invoice_due_date, invoice_pdf_path, invoice_status, invoice_sent_at, invoice_paid_at, invoice_viewed_at, invoice_notes")
+      .select("*")
       .eq("invoice_public_token", data.token)
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!brief || !brief.invoice_pdf_path) throw new Error("Invoice not found");
 
-    const settings = await loadInvoiceSettings(supabaseAdmin);
-    const pdfUrl = await signedPdfUrl(supabaseAdmin, brief.invoice_pdf_path);
+    const branding = await S.loadBranding(supabaseAdmin);
+    const items = await S.loadItems(supabaseAdmin, brief.id);
+    const totals = S.totalsFor(brief, items);
+    const pdfUrl = await S.signedUrl(supabaseAdmin, S.PDF_BUCKET, brief.invoice_pdf_path);
 
-    // Log the view (first time only updates viewed_at + bumps status if still 'sent')
     if (!brief.invoice_viewed_at) {
-      await supabaseAdmin.from("briefing_submissions").update({
-        invoice_viewed_at: new Date().toISOString(),
-        invoice_status: brief.invoice_status === "sent" ? "viewed" : brief.invoice_status,
-      }).eq("id", brief.id);
+      await supabaseAdmin
+        .from("briefing_submissions")
+        .update({
+          invoice_viewed_at: new Date().toISOString(),
+          invoice_status: brief.invoice_status === "sent" ? "viewed" : brief.invoice_status,
+        })
+        .eq("id", brief.id);
+      await S.logEvent(supabaseAdmin, brief.id, "viewed", "public");
     }
-    await supabaseAdmin.from("invoice_events").insert({
-      briefing_id: brief.id,
-      event_type: "viewed",
-      actor: "public",
-      detail: {},
-    });
 
     return {
-      client: {
-        name: brief.full_name,
-        company: brief.company_name,
-      },
+      client: { name: brief.full_name, company: brief.company_name },
       invoice: {
         number: brief.invoice_number,
-        amount: brief.invoice_amount,
-        currency: brief.invoice_currency,
+        currency: (brief.invoice_currency || "EUR").toUpperCase(),
+        issue_date: brief.invoice_issue_date,
         due_date: brief.invoice_due_date,
         status: brief.invoice_status,
         sent_at: brief.invoice_sent_at,
         paid_at: brief.invoice_paid_at,
+        paid_reported_at: brief.invoice_paid_reported_at,
         project_type: brief.project_type,
         notes: brief.invoice_notes,
+        terms: brief.invoice_terms ?? branding.payment_terms ?? null,
+        tax_label: brief.invoice_tax_label,
+        tax_pct: Number(brief.invoice_tax_pct ?? 0),
+        discount_pct: Number(brief.invoice_discount_pct ?? 0),
+        deposit_pct: Number(brief.invoice_deposit_pct ?? 0),
         pdf_url: pdfUrl,
       },
+      items: totals.lines.map((l) => ({
+        description: l.description,
+        detail: l.detail ?? null,
+        qty: l.qty,
+        unit: l.unit,
+        unit_price: l.unit_price,
+        discount_pct: l.discount_pct,
+        net: l.net,
+      })),
+      totals: {
+        subtotal: totals.subtotal,
+        discount_amount: totals.discount_amount,
+        tax_amount: totals.tax_amount,
+        total: totals.total,
+        deposit_amount: totals.deposit_amount,
+        balance: totals.balance,
+      },
       branding: {
-        studio_name: settings.studio_name || "Edmundo Kutuzov",
-        brand_color: settings.brand_color || "#7dd3fc",
-        logo_url: settings.logo_url || null,
-        header_label: settings.header_label || "PROFORMA INVOICE",
-        footer_note: settings.footer_note || null,
-        legal_text: settings.legal_text || null,
+        studio_name: branding.studio_name || "Edmundo Kutuzov",
+        brand_color: branding.brand_color || "#7dd3fc",
+        logo_url: branding.logo_url || null,
+        header_label: branding.header_label || "PROFORMA INVOICE",
+        footer_note: branding.footer_note || null,
+        legal_text: branding.legal_text || null,
+        studio_email: branding.studio_email || null,
       },
       payment: {
-        bank_name: settings.bank_name || null,
-        bank_account_name: settings.bank_account_name || null,
-        bank_iban: settings.bank_iban || null,
-        bank_swift: settings.bank_swift || null,
-        mpesa_number: settings.mpesa_number || null,
-        payment_terms: settings.payment_terms || null,
+        bank_name: branding.bank_name || null,
+        bank_account_name: branding.bank_account_name || null,
+        bank_iban: branding.bank_iban || null,
+        bank_swift: branding.bank_swift || null,
+        mpesa_number: branding.mpesa_number || null,
+        payment_terms: branding.payment_terms || null,
       },
     };
+  });
+
+/** Client-side proof upload: short-lived signed upload URL into a private bucket. */
+export const createProofUploadUrl = createServerFn({ method: "POST" })
+  .inputValidator((i: unknown) =>
+    TokenSchema.extend({
+      filename: z.string().trim().min(1).max(120),
+      content_type: z.enum(["image/png", "image/jpeg", "image/webp", "application/pdf"]),
+    }).parse(i),
+  )
+  .handler(async ({ data }) => {
+    const S = await import("@/lib/invoice.server");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: brief, error } = await supabaseAdmin
+      .from("briefing_submissions")
+      .select("id, invoice_number")
+      .eq("invoice_public_token", data.token)
+      .maybeSingle();
+    if (error || !brief) throw new Error("Invoice not found");
+
+    const ext = data.content_type === "application/pdf" ? "pdf" : data.content_type.split("/")[1];
+    const path = `${brief.id}/${Date.now()}-proof.${ext}`;
+    const { data: signed, error: sErr } = await supabaseAdmin.storage
+      .from(S.PROOF_BUCKET)
+      .createSignedUploadUrl(path);
+    if (sErr || !signed) throw new Error(sErr?.message || "Could not prepare upload");
+    return { path, token: signed.token, signedUrl: signed.signedUrl, bucket: S.PROOF_BUCKET };
+  });
+
+/** Client confirms they have paid; admin still verifies before marking paid. */
+export const reportInvoicePayment = createServerFn({ method: "POST" })
+  .inputValidator((i: unknown) =>
+    TokenSchema.extend({
+      method: z.enum(["bank_transfer", "mpesa", "card", "other"]),
+      reference: z.string().trim().max(120).nullable().optional(),
+      proof_path: z.string().trim().max(300).nullable().optional(),
+    }).parse(i),
+  )
+  .handler(async ({ data }) => {
+    const S = await import("@/lib/invoice.server");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: brief, error } = await supabaseAdmin
+      .from("briefing_submissions")
+      .select("id, full_name, email, invoice_number, invoice_currency, invoice_total, invoice_public_token")
+      .eq("invoice_public_token", data.token)
+      .maybeSingle();
+    if (error || !brief) throw new Error("Invoice not found");
+
+    const { error: updErr } = await supabaseAdmin
+      .from("briefing_submissions")
+      .update({
+        invoice_payment_method: data.method,
+        invoice_payment_ref: data.reference ?? null,
+        invoice_payment_proof_path: data.proof_path ?? null,
+        invoice_paid_reported_at: new Date().toISOString(),
+      })
+      .eq("id", brief.id);
+    if (updErr) throw new Error(updErr.message);
+
+    await S.logEvent(supabaseAdmin, brief.id, "payment-reported", "public", {
+      method: data.method,
+      reference: data.reference ?? null,
+      proof: Boolean(data.proof_path),
+    });
+
+    const branding = await S.loadBranding(supabaseAdmin);
+    await S.sendMail({
+      to: [S.adminEmail()],
+      subject: `Payment reported — ${brief.invoice_number}`,
+      html: `<div style="font-family:Inter,sans-serif">
+        <h2>Payment reported</h2>
+        <p><b>${S.esc(brief.full_name)}</b> reported payment for invoice <b>${S.esc(brief.invoice_number)}</b>
+        (${S.esc(brief.invoice_currency)} ${S.esc(brief.invoice_total)}).</p>
+        <p>Method: <b>${S.esc(data.method)}</b><br/>Reference: <b>${S.esc(data.reference ?? "—")}</b><br/>
+        Proof attached in storage: <b>${S.esc(data.proof_path ?? "none")}</b></p>
+        <p>Verify the funds, then mark the invoice as paid in the control room.</p>
+        <p style="color:#64748b;font-size:12px">${S.esc(branding.studio_name ?? "")}</p>
+      </div>`,
+    });
+
+    return { ok: true };
   });
