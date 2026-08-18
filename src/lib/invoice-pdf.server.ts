@@ -347,7 +347,7 @@ export async function buildInvoicePdf(ctx: InvoicePdfContext): Promise<Uint8Arra
     }
 
     if (zebraFlag) {
-      page.drawRectangle({ x: M, y: y - rowH + 8, width: CONTENT_W, height: rowH, color: zebra });
+      page.drawRectangle({ x: M, y: y - rowH + 9, width: CONTENT_W, height: rowH, color: zebra });
     }
     zebraFlag = !zebraFlag;
 
@@ -481,7 +481,7 @@ export async function buildInvoicePdf(ctx: InvoicePdfContext): Promise<Uint8Arra
   /* ============================== FOOTERS ============================== */
   const total = pages.length;
   pages.forEach((p, i) => {
-    let fy = 74;
+    let fy = 96;
     if (i === total - 1) {
       const terms = ctx.terms || s.payment_terms;
       if (terms) {
@@ -494,7 +494,7 @@ export async function buildInvoicePdf(ctx: InvoicePdfContext): Promise<Uint8Arra
         fy -= 4;
       }
       if (s.legal_text) {
-        for (const l of wrap(s.legal_text, reg, 7.4, CONTENT_W).slice(0, 3)) {
+        for (const l of wrap(s.legal_text, reg, 7.4, CONTENT_W).slice(0, 4)) {
           text(p, l, M, fy, { size: 7.4, color: rgb(0.55, 0.6, 0.68) });
           fy -= 9;
         }
