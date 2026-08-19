@@ -385,16 +385,22 @@ export const sendBriefingInvoice = createServerFn({ method: "POST" })
     const cc = data.cc_override?.length ? data.cc_override : [S.adminEmail()];
     const result = await S.sendMail({ to, cc, subject, html, attachment });
 
-    const patch: Record<string, unknown> = {};
     if (data.variant === "reminder") {
-      patch.invoice_reminder_count = Number(brief.invoice_reminder_count ?? 0) + 1;
-      patch.invoice_last_reminder_at = new Date().toISOString();
+      await supabaseAdmin
+        .from("briefing_submissions")
+        .update({
+          invoice_reminder_count: Number(brief.invoice_reminder_count ?? 0) + 1,
+          invoice_last_reminder_at: new Date().toISOString(),
+        })
+        .eq("id", brief.id);
     } else if (data.variant === "invoice") {
-      patch.invoice_status = brief.invoice_status === "paid" ? "paid" : "sent";
-      patch.invoice_sent_at = new Date().toISOString();
-    }
-    if (Object.keys(patch).length) {
-      await supabaseAdmin.from("briefing_submissions").update(patch).eq("id", brief.id);
+      await supabaseAdmin
+        .from("briefing_submissions")
+        .update({
+          invoice_status: brief.invoice_status === "paid" ? "paid" : "sent",
+          invoice_sent_at: new Date().toISOString(),
+        })
+        .eq("id", brief.id);
     }
 
     await S.logEvent(
@@ -425,7 +431,9 @@ export const setInvoiceStatus = createServerFn({ method: "POST" })
     const S = await import("@/lib/invoice.server");
     await S.assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const patch: Record<string, unknown> = { invoice_status: data.status };
+    const patch: { invoice_status: typeof data.status; invoice_paid_at?: string } = {
+      invoice_status: data.status,
+    };
     if (data.status === "paid") patch.invoice_paid_at = new Date().toISOString();
     const { error } = await supabaseAdmin
       .from("briefing_submissions")
