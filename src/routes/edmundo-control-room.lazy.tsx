@@ -16,6 +16,7 @@ import { readImageDimensions, aspectFromDims } from "@/lib/image-utils";
 import { snapshotBefore } from "@/lib/history";
 import { InboxHub } from "@/components/admin/InboxHub";
 import { HistoryManager } from "@/components/admin/HistoryManager";
+import { InvoiceWorkspace } from "@/components/admin/InvoiceWorkspace";
 import { toast } from "sonner";
 import {
   LogOut,
@@ -124,7 +125,12 @@ function ControlRoom() {
         {section === "about" && <AboutManager />}
         {section === "contact" && <ContactManager />}
         {section === "inbox" && <InboxHub />}
-        {section === "invoice" && <InvoiceSettingsEditor />}
+        {section === "invoice" && (
+          <div className="space-y-12">
+            <InvoiceWorkspace />
+            <InvoiceSettingsEditor />
+          </div>
+        )}
         {section === "history" && <HistoryManager />}
         {section === "advanced" && <AdvancedJSONManager />}
       </main>
