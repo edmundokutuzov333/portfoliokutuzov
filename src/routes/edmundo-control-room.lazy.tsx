@@ -124,7 +124,12 @@ function ControlRoom() {
         {section === "about" && <AboutManager />}
         {section === "contact" && <ContactManager />}
         {section === "inbox" && <InboxHub />}
-        {section === "invoice" && <InvoiceSettingsEditor />}
+        {section === "invoice" && (
+          <div className="space-y-12">
+            <InvoiceWorkspace />
+            <InvoiceSettingsEditor />
+          </div>
+        )}
         {section === "history" && <HistoryManager />}
         {section === "advanced" && <AdvancedJSONManager />}
       </main>
