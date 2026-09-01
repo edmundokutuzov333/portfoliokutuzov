@@ -17,6 +17,20 @@ export const Route = createFileRoute("/about")({
         content:
           "Experience, skills and selected brands worked with as art director and graphic designer.",
       },
+      { property: "og:url", content: "https://portfoliokutuzov.lovable.app/about" },
+    ],
+    links: [{ rel: "canonical", href: "https://portfoliokutuzov.lovable.app/about" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "AboutPage",
+          name: "The Credentials - Edmundo Kutuzov",
+          url: "https://portfoliokutuzov.lovable.app/about",
+          mainEntity: { "@id": "https://portfoliokutuzov.lovable.app/#person" },
+        }),
+      },
     ],
   }),
   component: AboutPage,
