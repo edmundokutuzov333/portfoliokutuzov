@@ -15,6 +15,20 @@ export const Route = createFileRoute("/portfolio/")({
         property: "og:description",
         content: "A curated selection of campaigns, identities and visual systems.",
       },
+      { property: "og:url", content: "https://portfoliokutuzov.lovable.app/portfolio" },
+    ],
+    links: [{ rel: "canonical", href: "https://portfoliokutuzov.lovable.app/portfolio" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          name: "Portfolio - Edmundo Kutuzov",
+          url: "https://portfoliokutuzov.lovable.app/portfolio",
+          about: { "@id": "https://portfoliokutuzov.lovable.app/#person" },
+        }),
+      },
     ],
   }),
   component: PortfolioPage,

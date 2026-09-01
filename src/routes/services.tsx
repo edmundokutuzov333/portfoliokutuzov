@@ -18,6 +18,38 @@ export const Route = createFileRoute("/services")({
         content:
           "Visual disciplines for brands that move with precision: strategy, identity, campaigns and digital systems.",
       },
+      { property: "og:url", content: "https://portfoliokutuzov.lovable.app/services" },
+    ],
+    links: [{ rel: "canonical", href: "https://portfoliokutuzov.lovable.app/services" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Service",
+              name: "Art Direction",
+              serviceType: "Art Direction",
+              provider: { "@id": "https://portfoliokutuzov.lovable.app/#person" },
+              areaServed: "Worldwide",
+              description:
+                "Creative direction for campaigns, music videos and content, from concept to final visual output.",
+              url: "https://portfoliokutuzov.lovable.app/services",
+            },
+            {
+              "@type": "Service",
+              name: "Brand Identity",
+              serviceType: "Brand Identity",
+              provider: { "@id": "https://portfoliokutuzov.lovable.app/#person" },
+              areaServed: "Worldwide",
+              description:
+                "Visual identity systems: logotype, typography, colour, grid and guidelines built to scale.",
+              url: "https://portfoliokutuzov.lovable.app/services",
+            },
+          ],
+        }),
+      },
     ],
   }),
   component: ServicesPage,

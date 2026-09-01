@@ -118,9 +118,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:type", content: "website" },
-      { name: "description", content: "KUTUZOV SITE" },
-      { property: "og:description", content: "KUTUZOV SITE" },
-      { name: "twitter:description", content: "KUTUZOV SITE" },
+      { property: "og:site_name", content: "Edmundo Kutuzov" },
       {
         property: "og:image",
         content:

@@ -7,16 +7,35 @@ import { aspectFromDims } from "@/lib/image-utils";
 import { SITE_EMAIL, type DbProject } from "@/lib/cms";
 
 export const Route = createFileRoute("/portfolio/$slug")({
-  head: ({ params }) => ({
-    meta: [
-      { title: `${humanize(params.slug)} — Portfolio · Edmundo Kutuzov` },
-      {
-        name: "description",
-        content: `Case study: ${humanize(params.slug)} — art direction and visual systems by Edmundo Kutuzov.`,
-      },
-      { property: "og:title", content: `${humanize(params.slug)} — Edmundo Kutuzov` },
-    ],
-  }),
+  head: ({ params }) => {
+    const url = `https://portfoliokutuzov.lovable.app/portfolio/${encodeURIComponent(params.slug)}`;
+    const title = `${humanize(params.slug)} — Portfolio · Edmundo Kutuzov`;
+    const description = `Case study: ${humanize(params.slug)} — art direction and visual systems by Edmundo Kutuzov.`;
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: `${humanize(params.slug)} — Edmundo Kutuzov` },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "article" },
+        { property: "og:url", content: url },
+      ],
+      links: [{ rel: "canonical", href: url }],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "CreativeWork",
+            name: humanize(params.slug),
+            url,
+            description,
+            creator: { "@id": "https://portfoliokutuzov.lovable.app/#person" },
+          }),
+        },
+      ],
+    };
+  },
   component: ProjectDetailPage,
   notFoundComponent: () => (
     <section className="px-5 md:px-8 pt-36 pb-24">
