@@ -15,6 +15,7 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as EdmundoControlRoomRouteImport } from './routes/edmundo-control-room'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as ServicesRouteImport } from './routes/services'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as ITokenRouteImport } from './routes/i.$token'
@@ -52,6 +53,11 @@ const McpRoute = McpRouteImport.update({
 const ServicesRoute = ServicesRouteImport.update({
   id: '/services',
   path: '/services',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const Char91DotmcpChar93ListToolsRoute =
@@ -95,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/edmundo-control-room': typeof EdmundoControlRoomRoute
   '/mcp': typeof McpRoute
   '/services': typeof ServicesRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/i/$token': typeof ITokenRoute
@@ -109,6 +116,7 @@ export interface FileRoutesByTo {
   '/edmundo-control-room': typeof EdmundoControlRoomRoute
   '/mcp': typeof McpRoute
   '/services': typeof ServicesRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/i/$token': typeof ITokenRoute
@@ -124,6 +132,7 @@ export interface FileRoutesById {
   '/edmundo-control-room': typeof EdmundoControlRoomRoute
   '/mcp': typeof McpRoute
   '/services': typeof ServicesRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/i/$token': typeof ITokenRoute
@@ -140,6 +149,7 @@ export interface FileRouteTypes {
     | '/edmundo-control-room'
     | '/mcp'
     | '/services'
+    | '/sitemap.xml'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/i/$token'
@@ -154,6 +164,7 @@ export interface FileRouteTypes {
     | '/edmundo-control-room'
     | '/mcp'
     | '/services'
+    | '/sitemap.xml'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/i/$token'
@@ -168,6 +179,7 @@ export interface FileRouteTypes {
     | '/edmundo-control-room'
     | '/mcp'
     | '/services'
+    | '/sitemap.xml'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/i/$token'
@@ -183,6 +195,7 @@ export interface RootRouteChildren {
   EdmundoControlRoomRoute: typeof EdmundoControlRoomRoute
   McpRoute: typeof McpRoute
   ServicesRoute: typeof ServicesRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   ITokenRoute: typeof ITokenRoute
@@ -233,6 +246,13 @@ declare module '@tanstack/react-router' {
       path: '/services'
       fullPath: '/services'
       preLoaderRoute: typeof ServicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/.mcp/list-tools': {
@@ -287,6 +307,7 @@ const rootRouteChildren: RootRouteChildren = {
   EdmundoControlRoomRoute: EdmundoControlRoomRoute,
   McpRoute: McpRoute,
   ServicesRoute: ServicesRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
