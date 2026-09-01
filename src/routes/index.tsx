@@ -21,6 +21,57 @@ export const Route = createFileRoute("/")({
         content:
           "Visual identities, art direction and campaign design built with strategic clarity and typographic craft.",
       },
+      { property: "og:url", content: "https://portfoliokutuzov.lovable.app/" },
+    ],
+    links: [{ rel: "canonical", href: "https://portfoliokutuzov.lovable.app/" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Person",
+              "@id": "https://portfoliokutuzov.lovable.app/#person",
+              name: "Edmundo Kutuzov",
+              jobTitle: "Art Director",
+              url: "https://portfoliokutuzov.lovable.app/",
+              email: "contact@edmundokutuzov.art",
+              telephone: "+258 87 601 312 1",
+              address: {
+                "@type": "PostalAddress",
+                addressLocality: "Maputo",
+                addressCountry: "MZ",
+              },
+              knowsAbout: [
+                "Art Direction",
+                "Brand Identity",
+                "Campaign Design",
+                "Digital Design",
+                "Creative Strategy",
+              ],
+              sameAs: [
+                "https://www.linkedin.com/in/edmundo-kutuzov-3457351b4",
+                "https://www.instagram.com/edmundo.kutuzov/",
+                "https://www.facebook.com/edmundoku/",
+              ],
+            },
+            {
+              "@type": "Organization",
+              "@id": "https://portfoliokutuzov.lovable.app/#studio",
+              name: "Edmundo Kutuzov",
+              url: "https://portfoliokutuzov.lovable.app/",
+              founder: { "@id": "https://portfoliokutuzov.lovable.app/#person" },
+              areaServed: "Worldwide",
+              address: {
+                "@type": "PostalAddress",
+                addressLocality: "Maputo",
+                addressCountry: "MZ",
+              },
+            },
+          ],
+        }),
+      },
     ],
   }),
   component: HomePage,
