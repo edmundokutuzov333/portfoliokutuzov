@@ -17,6 +17,7 @@ import { Route as McpRouteImport } from './routes/mcp'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as ApiChatRouteImport } from './routes/api.chat'
 import { Route as ITokenRouteImport } from './routes/i.$token'
 import { Route as PortfolioIndexRouteImport } from './routes/portfolio.index'
 import { Route as PortfolioSlugRouteImport } from './routes/portfolio.$slug'
@@ -64,6 +65,11 @@ const Char91DotwellKnownChar93OauthProtectedResourceRoute =
     path: '/.well-known/oauth-protected-resource',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ITokenRoute = ITokenRouteImport.update({
   id: '/i/$token',
   path: '/i/$token',
@@ -95,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/services': typeof ServicesRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/api/chat': typeof ApiChatRoute
   '/i/$token': typeof ITokenRoute
   '/portfolio/$slug': typeof PortfolioSlugRoute
   '/portfolio/': typeof PortfolioIndexRoute
@@ -109,6 +116,7 @@ export interface FileRoutesByTo {
   '/services': typeof ServicesRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/api/chat': typeof ApiChatRoute
   '/i/$token': typeof ITokenRoute
   '/portfolio/$slug': typeof PortfolioSlugRoute
   '/portfolio': typeof PortfolioIndexRoute
@@ -124,6 +132,7 @@ export interface FileRoutesById {
   '/services': typeof ServicesRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/api/chat': typeof ApiChatRoute
   '/i/$token': typeof ITokenRoute
   '/portfolio/$slug': typeof PortfolioSlugRoute
   '/portfolio/': typeof PortfolioIndexRoute
@@ -140,6 +149,7 @@ export interface FileRouteTypes {
     | '/services'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/api/chat'
     | '/i/$token'
     | '/portfolio/$slug'
     | '/portfolio/'
@@ -154,6 +164,7 @@ export interface FileRouteTypes {
     | '/services'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/api/chat'
     | '/i/$token'
     | '/portfolio/$slug'
     | '/portfolio'
@@ -168,6 +179,7 @@ export interface FileRouteTypes {
     | '/services'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/api/chat'
     | '/i/$token'
     | '/portfolio/$slug'
     | '/portfolio/'
@@ -183,6 +195,7 @@ export interface RootRouteChildren {
   ServicesRoute: typeof ServicesRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  ApiChatRoute: typeof ApiChatRoute
   ITokenRoute: typeof ITokenRoute
   PortfolioSlugRoute: typeof PortfolioSlugRoute
   PortfolioIndexRoute: typeof PortfolioIndexRoute
@@ -247,6 +260,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/i/$token': {
       id: '/i/$token'
       path: '/i/$token'
@@ -288,6 +308,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  ApiChatRoute: ApiChatRoute,
   ITokenRoute: ITokenRoute,
   PortfolioSlugRoute: PortfolioSlugRoute,
   PortfolioIndexRoute: PortfolioIndexRoute,

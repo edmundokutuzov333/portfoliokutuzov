@@ -58,7 +58,9 @@
               "description": "Project slug, e.g. `brand-x-identity`."
             }
           },
-          "required": ["slug"]
+          "required": [
+            "slug"
+          ]
         },
         "outputSchema": null
       },
@@ -101,7 +103,12 @@
             },
             "urgency": {
               "type": "string",
-              "enum": ["low", "normal", "high", "urgent"],
+              "enum": [
+                "low",
+                "normal",
+                "high",
+                "urgent"
+              ],
               "description": "How urgent the project is."
             },
             "budget_range": {
@@ -112,7 +119,13 @@
             "currency": {
               "description": "Currency (default EUR).",
               "type": "string",
-              "enum": ["EUR", "USD", "MZN", "GBP", "BRL"]
+              "enum": [
+                "EUR",
+                "USD",
+                "MZN",
+                "GBP",
+                "BRL"
+              ]
             },
             "message": {
               "type": "string",
@@ -121,7 +134,13 @@
               "description": "Brief description of the project (10+ chars)."
             }
           },
-          "required": ["full_name", "email", "project_type", "urgency", "message"]
+          "required": [
+            "full_name",
+            "email",
+            "project_type",
+            "urgency",
+            "message"
+          ]
         },
         "outputSchema": null
       }
