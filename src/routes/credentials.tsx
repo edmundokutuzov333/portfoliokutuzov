@@ -7,7 +7,9 @@ import { readSetting } from "@/lib/cms";
 
 export const Route = createFileRoute("/credentials")({
   head: () => ({
+    links: [{ rel: "canonical", href: "https://portfoliokutuzov.lovable.app/credentials" }],
     meta: [
+      { property: "og:url", content: "https://portfoliokutuzov.lovable.app/credentials" },
       { title: "The Credentials - Edmundo Kutuzov" },
       {
         name: "description",

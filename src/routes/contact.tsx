@@ -2,7 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
+    links: [{ rel: "canonical", href: "https://portfoliokutuzov.lovable.app/contact" }],
     meta: [
+      { property: "og:url", content: "https://portfoliokutuzov.lovable.app/contact" },
       { title: "Contact - Edmundo Kutuzov" },
       {
         name: "description",
