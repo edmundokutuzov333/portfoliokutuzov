@@ -12,11 +12,12 @@ const STATIC_PATHS: { path: string; priority: string; changefreq: string }[] = [
 
 async function fetchProjectSlugs(): Promise<{ slug: string; updated: string | null }[]> {
   try {
-    const url = process.env["VITE_SUPABASE_URL"];
-    const key = process.env["VITE_SUPABASE_PUBLISHABLE_KEY"];
+    const url = process.env["VITE_SUPABASE_URL"] ?? import.meta.env.VITE_SUPABASE_URL;
+    const key =
+      process.env["VITE_SUPABASE_PUBLISHABLE_KEY"] ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
     if (!url || !key) return [];
     const res = await fetch(
-      `${url}/rest/v1/projects?select=slug,updated_at&published=eq.true&order=updated_at.desc`,
+      `${url}/rest/v1/projects?select=slug,updated_at&is_published=eq.true&order=updated_at.desc`,
       { headers: { apikey: key } },
     );
     if (!res.ok) return [];
