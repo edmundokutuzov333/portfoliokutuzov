@@ -5,7 +5,9 @@ import { motion } from "framer-motion";
 
 export const Route = createFileRoute("/services")({
   head: () => ({
+    links: [{ rel: "canonical", href: "https://portfoliokutuzov.lovable.app/services" }],
     meta: [
+      { property: "og:url", content: "https://portfoliokutuzov.lovable.app/services" },
       { title: "Capabilities - Edmundo Kutuzov" },
       {
         name: "description",
