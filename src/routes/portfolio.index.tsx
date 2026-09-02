@@ -13,9 +13,7 @@ export const Route = createFileRoute("/portfolio/")({
     q: typeof search.q === "string" && search.q ? search.q : undefined,
   }),
   head: () => ({
-    links: [{ rel: "canonical", href: "https://portfoliokutuzov.lovable.app/portfolio" }],
     meta: [
-      { property: "og:url", content: "https://portfoliokutuzov.lovable.app/portfolio" },
       { title: "Portfolio - Edmundo Kutuzov" },
       {
         name: "description",

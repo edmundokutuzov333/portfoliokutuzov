@@ -104,7 +104,7 @@ const CarouselStacked = ({ slides }: { slides: DbProject[] }) => {
   const prefersReducedMotion = useReducedMotion();
 
   // Continuous Autoplay
-  const animationRef = React.useRef<number | undefined>(undefined);
+  const animationRef = React.useRef<number>();
   const isDragging = React.useRef(false);
 
   React.useEffect(() => {

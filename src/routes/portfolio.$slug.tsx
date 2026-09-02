@@ -427,15 +427,29 @@ function ProjectDetailPage() {
         {/* Gallery / Visual System */}
         {allGallery.length > 0 && (
           <section className="mt-32 border-t border-[var(--color-border-subtle)] pt-16">
-            <div className="mono text-[10px] tracking-[0.2em] uppercase text-[var(--color-text-muted)] mb-12">
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ duration: 0.6 }}
+              className="mono text-[10px] tracking-[0.2em] uppercase text-[var(--color-text-muted)] mb-12"
+            >
               Visual System & Assets
-            </div>
+            </motion.div>
             <div className="grid gap-6 md:gap-8 grid-cols-1 md:grid-cols-12">
               {allGallery.map((g, i) => {
                 const isFull = i % 3 === 0;
                 return (
-                  <div
+                  <motion.div
                     key={g.url + i}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-60px" }}
+                    transition={{
+                      duration: 0.7,
+                      delay: (i % 3) * 0.08,
+                      ease: [0.16, 1, 0.3, 1],
+                    }}
                     data-cursor="OPEN"
                     className={clsx(
                       "grid place-items-center bg-[var(--color-surface)] border border-[var(--color-border-subtle)] overflow-hidden",
@@ -450,7 +464,7 @@ function ProjectDetailPage() {
                       style={{ display: "block", width: "100%", height: "auto" }}
                       className="transition-transform duration-700 hover:scale-[1.01]"
                     />
-                  </div>
+                  </motion.div>
                 );
               })}
             </div>
@@ -458,7 +472,13 @@ function ProjectDetailPage() {
         )}
 
         {/* Previous & Next Project Navigation Controls */}
-        <section className="mt-32 border-t border-[var(--color-border-subtle)] pt-16">
+        <motion.section
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          className="mt-32 border-t border-[var(--color-border-subtle)] pt-16"
+        >
           <div className="mono text-[10px] tracking-[0.2em] uppercase text-[var(--color-text-muted)] mb-8">
             Project Index Navigation
           </div>
@@ -546,7 +566,7 @@ function ProjectDetailPage() {
               </Link>
             )}
           </div>
-        </section>
+        </motion.section>
       </div>
     </article>
   );

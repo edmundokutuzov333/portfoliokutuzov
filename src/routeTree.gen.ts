@@ -15,10 +15,8 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CredentialsRouteImport } from './routes/credentials'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as ServicesRouteImport } from './routes/services'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
-import { Route as ApiChatRouteImport } from './routes/api.chat'
 import { Route as ITokenRouteImport } from './routes/i.$token'
 import { Route as PortfolioIndexRouteImport } from './routes/portfolio.index'
 import { Route as PortfolioSlugRouteImport } from './routes/portfolio.$slug'
@@ -54,11 +52,6 @@ const ServicesRoute = ServicesRouteImport.update({
   path: '/services',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const Char91DotmcpChar93ListToolsRoute =
   Char91DotmcpChar93ListToolsRouteImport.update({
     id: '/.mcp/list-tools',
@@ -71,11 +64,6 @@ const Char91DotwellKnownChar93OauthProtectedResourceRoute =
     path: '/.well-known/oauth-protected-resource',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiChatRoute = ApiChatRouteImport.update({
-  id: '/api/chat',
-  path: '/api/chat',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ITokenRoute = ITokenRouteImport.update({
   id: '/i/$token',
   path: '/i/$token',
@@ -105,10 +93,8 @@ export interface FileRoutesByFullPath {
   '/credentials': typeof CredentialsRoute
   '/mcp': typeof McpRoute
   '/services': typeof ServicesRoute
-  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
-  '/api/chat': typeof ApiChatRoute
   '/i/$token': typeof ITokenRoute
   '/portfolio/$slug': typeof PortfolioSlugRoute
   '/portfolio/': typeof PortfolioIndexRoute
@@ -121,10 +107,8 @@ export interface FileRoutesByTo {
   '/credentials': typeof CredentialsRoute
   '/mcp': typeof McpRoute
   '/services': typeof ServicesRoute
-  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
-  '/api/chat': typeof ApiChatRoute
   '/i/$token': typeof ITokenRoute
   '/portfolio/$slug': typeof PortfolioSlugRoute
   '/portfolio': typeof PortfolioIndexRoute
@@ -138,10 +122,8 @@ export interface FileRoutesById {
   '/credentials': typeof CredentialsRoute
   '/mcp': typeof McpRoute
   '/services': typeof ServicesRoute
-  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
-  '/api/chat': typeof ApiChatRoute
   '/i/$token': typeof ITokenRoute
   '/portfolio/$slug': typeof PortfolioSlugRoute
   '/portfolio/': typeof PortfolioIndexRoute
@@ -156,10 +138,8 @@ export interface FileRouteTypes {
     | '/credentials'
     | '/mcp'
     | '/services'
-    | '/sitemap.xml'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
-    | '/api/chat'
     | '/i/$token'
     | '/portfolio/$slug'
     | '/portfolio/'
@@ -172,10 +152,8 @@ export interface FileRouteTypes {
     | '/credentials'
     | '/mcp'
     | '/services'
-    | '/sitemap.xml'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
-    | '/api/chat'
     | '/i/$token'
     | '/portfolio/$slug'
     | '/portfolio'
@@ -188,10 +166,8 @@ export interface FileRouteTypes {
     | '/credentials'
     | '/mcp'
     | '/services'
-    | '/sitemap.xml'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
-    | '/api/chat'
     | '/i/$token'
     | '/portfolio/$slug'
     | '/portfolio/'
@@ -205,10 +181,8 @@ export interface RootRouteChildren {
   CredentialsRoute: typeof CredentialsRoute
   McpRoute: typeof McpRoute
   ServicesRoute: typeof ServicesRoute
-  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
-  ApiChatRoute: typeof ApiChatRoute
   ITokenRoute: typeof ITokenRoute
   PortfolioSlugRoute: typeof PortfolioSlugRoute
   PortfolioIndexRoute: typeof PortfolioIndexRoute
@@ -259,13 +233,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ServicesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/.mcp/list-tools': {
       id: '/.mcp/list-tools'
       path: '/.mcp/list-tools'
@@ -278,13 +245,6 @@ declare module '@tanstack/react-router' {
       path: '/.well-known/oauth-protected-resource'
       fullPath: '/.well-known/oauth-protected-resource'
       preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/chat': {
-      id: '/api/chat'
-      path: '/api/chat'
-      fullPath: '/api/chat'
-      preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/i/$token': {
@@ -325,11 +285,9 @@ const rootRouteChildren: RootRouteChildren = {
   CredentialsRoute: CredentialsRoute,
   McpRoute: McpRoute,
   ServicesRoute: ServicesRoute,
-  SitemapDotxmlRoute: SitemapDotxmlRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
-  ApiChatRoute: ApiChatRoute,
   ITokenRoute: ITokenRoute,
   PortfolioSlugRoute: PortfolioSlugRoute,
   PortfolioIndexRoute: PortfolioIndexRoute,

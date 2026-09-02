@@ -30,7 +30,13 @@ export function FeaturedWork() {
   return (
     <section className="relative px-4 md:px-8 py-32 bg-[var(--color-bg)]">
       <div className="max-w-[var(--width-wide)] mx-auto">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16 md:mb-24">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16 md:mb-24"
+        >
           <div>
             <h2 className="display text-4xl sm:text-5xl lg:text-6xl leading-[1] tracking-[-0.03em] text-[var(--color-text-primary)] max-w-xl">
               {r("title", "Selected work")}
@@ -46,7 +52,7 @@ export function FeaturedWork() {
               className="opacity-60 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
             />
           </Link>
-        </div>
+        </motion.div>
 
         <div className="flex flex-col gap-24 md:gap-40">
           {featured.map((p, index) => (
@@ -54,14 +60,20 @@ export function FeaturedWork() {
           ))}
         </div>
 
-        <div className="mt-32 flex justify-center border-t border-[var(--color-border-subtle)] pt-16">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          className="mt-32 flex justify-center border-t border-[var(--color-border-subtle)] pt-16"
+        >
           <Link
             to="/portfolio"
             className="group flex h-14 items-center justify-center gap-3 rounded-full bg-[var(--color-text-primary)] px-8 text-[13px] font-semibold text-[var(--color-bg)] transition-all hover:bg-[var(--color-text-secondary)]"
           >
             View all projects
           </Link>
-        </div>
+        </motion.div>
       </div>
     </section>
   );
@@ -77,12 +89,12 @@ function FeaturedCard({ project, index }: { project: DbProject; index: number })
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         className="group relative"
       >
         <Link
           to="/portfolio/$slug"
-          params={{ slug: project.slug ?? "" }}
+          params={{ slug: project.slug }}
           className="block focus:outline-none"
         >
           <div className="relative w-full overflow-hidden bg-[var(--color-surface)]">
@@ -125,7 +137,7 @@ function FeaturedCard({ project, index }: { project: DbProject; index: number })
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-100px" }}
-      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
       className={clsx("group grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16 items-center")}
     >
       <div
@@ -136,7 +148,7 @@ function FeaturedCard({ project, index }: { project: DbProject; index: number })
       >
         <Link
           to="/portfolio/$slug"
-          params={{ slug: project.slug ?? "" }}
+          params={{ slug: project.slug }}
           className="block focus:outline-none"
         >
           {project.cover_url && (
@@ -154,7 +166,7 @@ function FeaturedCard({ project, index }: { project: DbProject; index: number })
       <div className={clsx("md:col-span-5 flex flex-col", isEven ? "md:order-2" : "md:order-1")}>
         <Link
           to="/portfolio/$slug"
-          params={{ slug: project.slug ?? "" }}
+          params={{ slug: project.slug }}
           className="block focus:outline-none"
         >
           <div className="mono text-[10px] tracking-[0.2em] uppercase text-[var(--color-text-muted)] mb-4">

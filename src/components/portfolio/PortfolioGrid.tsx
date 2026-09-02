@@ -14,7 +14,7 @@ function attachmentCount(p: DbProject) {
   return (p.cover_url ? 1 : 0) + (p.gallery?.length ?? 0);
 }
 
-function ProjectCard({ project }: { project: DbProject }) {
+function ProjectCard({ project, index = 0 }: { project: DbProject; index?: number }) {
   const count = attachmentCount(project);
   const showCount = count > 2;
   const slug = project.slug || project.id;
@@ -22,10 +22,15 @@ function ProjectCard({ project }: { project: DbProject }) {
   return (
     <motion.article
       layout="position"
-      initial={{ opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y: 32 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
       exit={{ opacity: 0, scale: 0.96 }}
-      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      transition={{
+        duration: 0.65,
+        delay: Math.min((index % 2) * 0.08, 0.16),
+        ease: [0.16, 1, 0.3, 1],
+      }}
       className="group flex flex-col w-full col-span-1"
     >
       <Link
@@ -122,7 +127,7 @@ function ProjectCard({ project }: { project: DbProject }) {
 
 export function PortfolioGrid() {
   const { data: projects = [], isLoading } = useProjects();
-  const searchParams = useSearch({ strict: false }) as unknown as
+  const searchParams = useSearch({ from: "/portfolio/", strict: false }) as
     PortfolioSearch | undefined;
   const navigate = useNavigate();
 
@@ -218,7 +223,13 @@ export function PortfolioGrid() {
       <ContextualCursor />
 
       {/* Control Bar: Categories & Search */}
-      <div className="mb-12 md:mb-16 flex flex-col gap-6 md:flex-row md:items-center md:justify-between border-b border-[var(--color-border-subtle)] pb-8">
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-40px" }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="mb-12 md:mb-16 flex flex-col gap-6 md:flex-row md:items-center md:justify-between border-b border-[var(--color-border-subtle)] pb-8"
+      >
         <LayoutGroup id="portfolio-categories">
           <div className="-mx-1 flex flex-nowrap items-center gap-2 overflow-x-auto px-1 pb-2 md:pb-0 md:flex-wrap md:overflow-visible no-scrollbar">
             {ALL_CATEGORIES.map((category) => {
@@ -282,7 +293,7 @@ export function PortfolioGrid() {
             )}
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Grid States */}
       {isLoading ? (
@@ -325,8 +336,8 @@ export function PortfolioGrid() {
           className="grid grid-cols-1 sm:grid-cols-2 gap-10 md:gap-x-12 md:gap-y-16 lg:gap-x-14 lg:gap-y-20"
         >
           <AnimatePresence mode="popLayout">
-            {filtered.map((project) => (
-              <ProjectCard key={project.id} project={project} />
+            {filtered.map((project, index) => (
+              <ProjectCard key={project.id} project={project} index={index} />
             ))}
           </AnimatePresence>
         </motion.div>

@@ -5,9 +5,7 @@ import { motion } from "framer-motion";
 
 export const Route = createFileRoute("/services")({
   head: () => ({
-    links: [{ rel: "canonical", href: "https://portfoliokutuzov.lovable.app/services" }],
     meta: [
-      { property: "og:url", content: "https://portfoliokutuzov.lovable.app/services" },
       { title: "Capabilities - Edmundo Kutuzov" },
       {
         name: "description",
@@ -62,7 +60,13 @@ function ServicesPage() {
 
       <section className="relative px-4 md:px-8 py-32 border-t border-[var(--color-border-subtle)]">
         <div className="max-w-[var(--width-standard)] mx-auto">
-          <div className="text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="text-center"
+          >
             <h2 className="display text-4xl md:text-6xl mt-8 max-w-3xl mx-auto leading-[1.05] tracking-[-0.02em]">
               <span className="text-[var(--color-text-primary)]">
                 Tell me about your brand and{" "}
@@ -81,7 +85,7 @@ function ServicesPage() {
                 />
               </Link>
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
     </div>

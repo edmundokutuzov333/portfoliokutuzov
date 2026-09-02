@@ -8,9 +8,7 @@ import { HomeCTA } from "@/components/home/HomeCTA";
 
 export const Route = createFileRoute("/")({
   head: () => ({
-    links: [{ rel: "canonical", href: "https://portfoliokutuzov.lovable.app/" }],
     meta: [
-      { property: "og:url", content: "https://portfoliokutuzov.lovable.app/" },
       { title: "Edmundo Kutuzov - Art Director" },
       {
         name: "description",

@@ -7,9 +7,7 @@ import { readSetting } from "@/lib/cms";
 
 export const Route = createFileRoute("/credentials")({
   head: () => ({
-    links: [{ rel: "canonical", href: "https://portfoliokutuzov.lovable.app/credentials" }],
     meta: [
-      { property: "og:url", content: "https://portfoliokutuzov.lovable.app/credentials" },
       { title: "The Credentials - Edmundo Kutuzov" },
       {
         name: "description",
@@ -292,7 +290,13 @@ function CredentialsPage() {
       {/* 3. EXPERIENCE TIMELINE */}
       <section className="relative px-4 md:px-8 py-24 md:py-32">
         <div className="max-w-[var(--width-wide)] mx-auto">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 pb-6 border-b border-white/[0.08] gap-4">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.7, ease: EASE_EDITORIAL }}
+            className="flex flex-col md:flex-row md:items-end justify-between mb-12 pb-6 border-b border-white/[0.08] gap-4"
+          >
             <div>
               <p className="mono text-[10px] tracking-[0.28em] text-sky-300/80 uppercase">
                 Career History
@@ -304,7 +308,7 @@ function CredentialsPage() {
             <p className="text-sm text-slate-400 max-w-sm">
               Chronological track record of agency and studio leadership across Mozambique.
             </p>
-          </div>
+          </motion.div>
 
           <div className="flex flex-col">
             {experience.map((item, i) => {
@@ -349,14 +353,20 @@ function CredentialsPage() {
       {/* 4. CAPABILITIES HIERARCHY */}
       <section className="relative px-4 md:px-8 py-20 border-t border-white/[0.08] bg-[#02050c]">
         <div className="max-w-[var(--width-wide)] mx-auto">
-          <div className="mb-12 pb-6 border-b border-white/[0.08]">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.7, ease: EASE_EDITORIAL }}
+            className="mb-12 pb-6 border-b border-white/[0.08]"
+          >
             <p className="mono text-[10px] tracking-[0.28em] text-sky-300/80 uppercase">
               Skill Taxonomy
             </p>
             <h2 className="display text-3xl md:text-5xl text-white mt-2 tracking-tight">
               Scope of Competencies
             </h2>
-          </div>
+          </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {CAPABILITY_GROUPS.map((group, gIdx) => (
@@ -394,7 +404,13 @@ function CredentialsPage() {
       {/* 5. SELECTED BRANDS & COLLABORATIONS */}
       <section className="relative px-4 md:px-8 py-24 md:py-32 border-t border-white/[0.08]">
         <div className="max-w-[var(--width-wide)] mx-auto">
-          <div className="flex items-center justify-between mb-12 pb-6 border-b border-white/[0.08]">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.7, ease: EASE_EDITORIAL }}
+            className="flex items-center justify-between mb-12 pb-6 border-b border-white/[0.08]"
+          >
             <div>
               <p className="mono text-[10px] tracking-[0.28em] text-sky-300/80 uppercase">
                 Proven Track Record
@@ -406,7 +422,7 @@ function CredentialsPage() {
             <span className="mono text-[11px] tracking-[0.2em] text-slate-500 uppercase hidden sm:block">
               {brands.length || clients.length}+ Brands
             </span>
-          </div>
+          </motion.div>
 
           <div className="flex flex-wrap gap-2.5 md:gap-3">
             {brands.map((brandName, bIdx) => (

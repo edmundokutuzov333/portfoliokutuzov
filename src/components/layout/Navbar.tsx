@@ -23,7 +23,12 @@ export function Navbar() {
   }, [pathname]);
 
   return (
-    <header className="fixed inset-x-0 top-4 z-50 px-4">
+    <motion.header
+      initial={{ y: -16, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+      className="fixed inset-x-0 top-4 z-50 px-4"
+    >
       <div className="mx-auto max-w-[var(--width-wide)]">
         <nav
           className="flex items-center justify-between rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-surface)]/70 py-2 pl-4 pr-2 shadow-[0_8px_32px_rgba(0,0,0,0.24)] backdrop-blur-xl transition duration-500 hover:bg-[var(--color-surface)]/90"
@@ -136,6 +141,6 @@ export function Navbar() {
           </div>
         )}
       </div>
-    </header>
+    </motion.header>
   );
 }
