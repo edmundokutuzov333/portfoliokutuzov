@@ -122,7 +122,7 @@ function ProjectCard({ project }: { project: DbProject }) {
 
 export function PortfolioGrid() {
   const { data: projects = [], isLoading } = useProjects();
-  const searchParams = useSearch({ from: "/portfolio/", strict: false }) as unknown as
+  const searchParams = useSearch({ strict: false }) as unknown as
     PortfolioSearch | undefined;
   const navigate = useNavigate();
 
