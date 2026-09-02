@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { isUuid } from "@/lib/utils";
 import { toast } from "sonner";
 import {
   Inbox,
@@ -109,6 +110,7 @@ export function RequestsInbox() {
   const current = filtered.find((r) => r.id === selected) ?? null;
 
   const update = async (id: string, patch: Partial<ContactRequest>) => {
+    if (!isUuid(id)) return;
     const { error } = await supabase
       .from("contact_requests")
       .update(patch as never)
@@ -118,12 +120,15 @@ export function RequestsInbox() {
 
   const remove = async (id: string) => {
     if (!confirm("Delete this request? This cannot be undone.")) return;
-    const { error } = await supabase.from("contact_requests").delete().eq("id", id);
-    if (error) toast.error(error.message);
-    else {
-      toast.success("Deleted");
-      setSelected(null);
+    if (isUuid(id)) {
+      const { error } = await supabase.from("contact_requests").delete().eq("id", id);
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
     }
+    toast.success("Deleted");
+    setSelected(null);
   };
 
   const onOpen = (r: ContactRequest) => {

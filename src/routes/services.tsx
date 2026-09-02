@@ -1,55 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowUpRight } from "lucide-react";
-import { Manifesto } from "@/components/home/Manifesto";
-import { ServicesDetailed } from "@/components/home/ServicesDetailed";
+import { ServicesInteractive } from "@/components/services/ServicesInteractive";
+import { motion } from "framer-motion";
 
 export const Route = createFileRoute("/services")({
   head: () => ({
     meta: [
-      { title: "Services - Edmundo Kutuzov" },
+      { title: "Capabilities - Edmundo Kutuzov" },
       {
         name: "description",
         content:
-          "Art direction, brand identity, campaign design and digital design services by Edmundo Kutuzov, art director based in Maputo, Mozambique.",
+          "Capabilities and visual disciplines: art direction, brand identity, campaign design, and digital systems by Edmundo Kutuzov.",
       },
-      { property: "og:title", content: "Services - Edmundo Kutuzov" },
-      {
-        property: "og:description",
-        content:
-          "Visual disciplines for brands that move with precision: strategy, identity, campaigns and digital systems.",
-      },
-      { property: "og:url", content: "https://portfoliokutuzov.lovable.app/services" },
-    ],
-    links: [{ rel: "canonical", href: "https://portfoliokutuzov.lovable.app/services" }],
-    scripts: [
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@graph": [
-            {
-              "@type": "Service",
-              name: "Art Direction",
-              serviceType: "Art Direction",
-              provider: { "@id": "https://portfoliokutuzov.lovable.app/#person" },
-              areaServed: "Worldwide",
-              description:
-                "Creative direction for campaigns, music videos and content, from concept to final visual output.",
-              url: "https://portfoliokutuzov.lovable.app/services",
-            },
-            {
-              "@type": "Service",
-              name: "Brand Identity",
-              serviceType: "Brand Identity",
-              provider: { "@id": "https://portfoliokutuzov.lovable.app/#person" },
-              areaServed: "Worldwide",
-              description:
-                "Visual identity systems: logotype, typography, colour, grid and guidelines built to scale.",
-              url: "https://portfoliokutuzov.lovable.app/services",
-            },
-          ],
-        }),
-      },
+      { property: "og:title", content: "Capabilities - Edmundo Kutuzov" },
     ],
   }),
   component: ServicesPage,
@@ -57,46 +20,68 @@ export const Route = createFileRoute("/services")({
 
 function ServicesPage() {
   return (
-    <>
-      <section className="relative px-5 md:px-8 pt-36 pb-10">
-        <div className="max-w-[1240px] mx-auto">
-          <div className="flex items-start justify-between mono text-[10px] tracking-[0.22em] text-slate-500">
-            <div>Services</div>
-            <div>What I do, end to end</div>
-          </div>
-          <h1 className="display text-5xl md:text-7xl mt-6 leading-[0.98] tracking-[-0.02em] text-metal max-w-4xl">
-            Visual disciplines for brands that move with precision.
-          </h1>
-          <p className="mt-6 max-w-2xl text-[15px] text-slate-400 leading-relaxed">
-            From the first strategic decision to the last visual asset, every project is built with
-            intent. Below, the principles that guide the work and the services I offer.
-          </p>
+    <div className="bg-[var(--color-bg)] min-h-screen">
+      <section className="relative px-4 md:px-8 pt-44 md:pt-48 pb-12 md:pb-16 overflow-hidden">
+        <div className="max-w-[var(--width-wide)] mx-auto relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="flex items-start justify-between mono text-[10px] tracking-[0.28em] text-sky-300/75 uppercase mb-12"
+          >
+            <div>Methodology · Practice</div>
+            <div>Capabilities</div>
+          </motion.div>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+            className="display text-[clamp(2.75rem,7vw+1rem,7.5rem)] leading-[0.96] tracking-[-0.025em] text-[var(--color-text-primary)] max-w-5xl"
+          >
+            Visual capabilities &amp;{" "}
+            <span className="italic text-sky-300 font-normal">disciplines.</span>
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.25 }}
+            className="mt-8 max-w-2xl text-[16px] md:text-lg text-[var(--color-text-secondary)] leading-relaxed"
+          >
+            The core disciplines used to construct enduring brand identities, direct high-impact
+            campaigns, and engineer modular digital systems. Hover each discipline to inspect
+            relevant case studies.
+          </motion.p>
         </div>
       </section>
 
-      <Manifesto />
-      <ServicesDetailed />
+      <ServicesInteractive />
 
-      <section className="relative px-5 md:px-8 py-24">
-        <div className="max-w-[1240px] mx-auto">
-          <div className="rounded-2xl border border-white/[0.08] bg-[var(--color-surface)] p-8 md:p-14 text-center">
-            <p className="mono text-[10px] tracking-[0.28em] text-sky-300/80">Ready when you are</p>
-            <h2 className="display text-3xl md:text-5xl mt-5 max-w-3xl mx-auto leading-[1.02] tracking-[-0.025em]">
-              <span className="text-metal">Tell me about your brand and</span>{" "}
-              <span className="italic text-accent">let's get to work.</span>
+      <section className="relative px-4 md:px-8 py-32 border-t border-[var(--color-border-subtle)]">
+        <div className="max-w-[var(--width-standard)] mx-auto">
+          <div className="text-center">
+            <h2 className="display text-4xl md:text-6xl mt-8 max-w-3xl mx-auto leading-[1.05] tracking-[-0.02em]">
+              <span className="text-[var(--color-text-primary)]">
+                Tell me about your brand and{" "}
+              </span>
+              <span className="italic text-[var(--color-accent-hover)]">let's get to work.</span>
             </h2>
-            <div className="mt-8 inline-flex">
+            <div className="mt-16 flex justify-center">
               <Link
                 to="/contact"
-                className="inline-flex items-center gap-2 rounded-full bg-slate-100 text-[#01040A] px-6 py-3.5 text-sm font-semibold hover:bg-sky-200 transition"
+                className="group flex h-14 items-center gap-3 rounded-full bg-[var(--color-text-primary)] px-8 text-[15px] font-semibold text-[var(--color-bg)] transition-all hover:bg-sky-300 hover:text-black focus:outline-none"
               >
-                Start a project
-                <ArrowUpRight size={16} />
+                Send a project brief
+                <ArrowUpRight
+                  size={18}
+                  className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                />
               </Link>
             </div>
           </div>
         </div>
       </section>
-    </>
+    </div>
   );
 }

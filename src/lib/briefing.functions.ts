@@ -68,12 +68,12 @@ export const sendBriefingEmails = createServerFn({ method: "POST" })
 
     const FROM = process.env.BRIEFING_FROM ?? "Edmundo Kutuzov <onboarding@resend.dev>";
     const ADMIN =
-      process.env.BRIEFING_ADMIN_EMAIL ??
-      process.env.ADMIN_EMAIL ??
-      "contact@edmundokutuzov.art";
+      process.env.BRIEFING_ADMIN_EMAIL ?? process.env.ADMIN_EMAIL ?? "contact@edmundokutuzov.art";
 
     const firstName = (brief.full_name ?? "").split(" ")[0] || "there";
-    const refLinks = (Array.isArray(brief.reference_links) ? brief.reference_links : []) as RefLink[];
+    const refLinks = (
+      Array.isArray(brief.reference_links) ? brief.reference_links : []
+    ) as RefLink[];
     const attachments = (Array.isArray(brief.attachments) ? brief.attachments : []) as Attachment[];
 
     // Client confirmation

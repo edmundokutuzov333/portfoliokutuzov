@@ -3,7 +3,15 @@
  * Pure: takes a context object, returns PDF bytes. No Supabase, no fs, no network
  * except an optional logo fetch. Safe to unit-test/QA offline.
  */
-import { PDFDocument, StandardFonts, rgb, degrees, type PDFFont, type PDFPage, type RGB } from "pdf-lib";
+import {
+  PDFDocument,
+  StandardFonts,
+  rgb,
+  degrees,
+  type PDFFont,
+  type PDFPage,
+  type RGB,
+} from "pdf-lib";
 import qrcode from "qrcode-generator";
 import { computeTotals, money, type LineItem } from "./invoice-core";
 
@@ -80,14 +88,17 @@ function luminance(c: RGB): number {
 
 /** Latin-1 safe: StandardFonts cannot encode arbitrary unicode. */
 function sanitize(input: string): string {
-  return (input ?? "")
-    .replace(/\u2019|\u2018/g, "'")
-    .replace(/\u201c|\u201d/g, '"')
-    .replace(/\u2013|\u2014/g, "-")
-    .replace(/\u2026/g, "...")
-    .replace(/\u00a0/g, " ")
-    // drop anything outside WinAnsi range to avoid encode crashes
-    .replace(/[^\x09\x0a\x20-\x7e\u00a1-\u00ff\u20ac]/g, "");
+  return (
+    (input ?? "")
+      .replace(/\u2019|\u2018/g, "'")
+      .replace(/\u201c|\u201d/g, '"')
+      .replace(/\u2013|\u2014/g, "-")
+      .replace(/\u2026/g, "...")
+      .replace(/\u00a0/g, " ")
+      // drop anything outside WinAnsi range to avoid encode crashes
+      // eslint-disable-next-line no-control-regex
+      .replace(/[^\x09\x0a\x20-\x7e\u00a1-\u00ff\u20ac]/g, "")
+  );
 }
 
 function wrap(text: string, font: PDFFont, size: number, maxWidth: number): string[] {
@@ -134,7 +145,13 @@ function drawQr(page: PDFPage, text: string, x: number, y: number, size: number,
   const matrix = qrMatrix(text);
   const n = matrix.length;
   const cell = size / n;
-  page.drawRectangle({ x: x - 3, y: y - 3, width: size + 6, height: size + 6, color: rgb(1, 1, 1) });
+  page.drawRectangle({
+    x: x - 3,
+    y: y - 3,
+    width: size + 6,
+    height: size + 6,
+    color: rgb(1, 1, 1),
+  });
   for (let r = 0; r < n; r++) {
     for (let c = 0; c < n; c++) {
       if (!matrix[r]![c]) continue;
@@ -186,9 +203,10 @@ export async function buildInvoicePdf(ctx: InvoicePdfContext): Promise<Uint8Arra
       if (res.ok) {
         const bytes = new Uint8Array(await res.arrayBuffer());
         const ct = res.headers.get("content-type") ?? "";
-        const img = ct.includes("png") || s.logo_url.toLowerCase().endsWith(".png")
-          ? await pdf.embedPng(bytes)
-          : await pdf.embedJpg(bytes);
+        const img =
+          ct.includes("png") || s.logo_url.toLowerCase().endsWith(".png")
+            ? await pdf.embedPng(bytes)
+            : await pdf.embedJpg(bytes);
         const scale = Math.min(118 / img.width, 34 / img.height);
         logo = { img, w: img.width * scale, h: img.height * scale };
       }
@@ -215,8 +233,14 @@ export async function buildInvoicePdf(ctx: InvoicePdfContext): Promise<Uint8Arra
     page.drawText(str, { x: px, y, size, font, color: o.color ?? ink });
   };
 
-  const label = (page: PDFPage, t: string, x: number, y: number, color = soft, align?: "left" | "right") =>
-    text(page, t.toUpperCase(), x, y, { size: 7.2, font: bold, color, align });
+  const label = (
+    page: PDFPage,
+    t: string,
+    x: number,
+    y: number,
+    color = soft,
+    align?: "left" | "right",
+  ) => text(page, t.toUpperCase(), x, y, { size: 7.2, font: bold, color, align });
 
   /** New page + chrome. Returns the cursor y where content may start. */
   const newPage = (first: boolean): { page: PDFPage; y: number } => {
@@ -244,16 +268,32 @@ export async function buildInvoicePdf(ctx: InvoicePdfContext): Promise<Uint8Arra
   // Masthead block: dark plate with studio identity + invoice number
   const plateH = 118;
   const plateY = PAGE_H - 6 - plateH;
-  page.drawRectangle({ x: 0, y: plateY, width: PAGE_W, height: plateH, color: rgb(0.016, 0.031, 0.055) });
+  page.drawRectangle({
+    x: 0,
+    y: plateY,
+    width: PAGE_W,
+    height: plateH,
+    color: rgb(0.016, 0.031, 0.055),
+  });
   page.drawRectangle({ x: 0, y: plateY, width: 4, height: plateH, color: accent });
 
   if (logo) {
-    page.drawImage(logo.img, { x: M, y: plateY + plateH - 26 - logo.h, width: logo.w, height: logo.h });
+    page.drawImage(logo.img, {
+      x: M,
+      y: plateY + plateH - 26 - logo.h,
+      width: logo.w,
+      height: logo.h,
+    });
   }
   const identY = logo ? plateY + plateH - 34 - logo.h - 18 : plateY + plateH - 46;
   text(page, s.studio_name ?? "Studio", M, identY, { size: 20, font: bold, color: rgb(1, 1, 1) });
   let metaY = identY - 15;
-  for (const line of [s.studio_address, s.studio_email, s.studio_phone, s.studio_tax_id && `Tax ID: ${s.studio_tax_id}`]) {
+  for (const line of [
+    s.studio_address,
+    s.studio_email,
+    s.studio_phone,
+    s.studio_tax_id && `Tax ID: ${s.studio_tax_id}`,
+  ]) {
     if (!line) continue;
     text(page, line, M, metaY, { size: 8.4, color: rgb(0.62, 0.68, 0.76) });
     metaY -= 11;
@@ -274,8 +314,14 @@ export async function buildInvoicePdf(ctx: InvoicePdfContext): Promise<Uint8Arra
     color: accent,
     align: "right",
   });
-  const statusText = ctx.status === "paid" ? "PAID IN FULL" : ctx.status === "void" ? "VOID" : "AMOUNT DUE";
-  text(page, statusText, rightX, plateY + plateH - 95, { size: 7.5, font: bold, color: rgb(0.62, 0.68, 0.76), align: "right" });
+  const statusText =
+    ctx.status === "paid" ? "PAID IN FULL" : ctx.status === "void" ? "VOID" : "AMOUNT DUE";
+  text(page, statusText, rightX, plateY + plateH - 95, {
+    size: 7.5,
+    font: bold,
+    color: rgb(0.62, 0.68, 0.76),
+    align: "right",
+  });
 
   y = plateY - 30;
 
@@ -301,11 +347,17 @@ export async function buildInvoicePdf(ctx: InvoicePdfContext): Promise<Uint8Arra
   label(page, "Engagement", M + CONTENT_W / 2, y);
   y -= 15;
   text(page, ctx.client.full_name, M, y, { size: 12, font: bold });
-  text(page, ctx.client.project_type ?? "Creative direction", M + CONTENT_W / 2, y, { size: 12, font: bold });
+  text(page, ctx.client.project_type ?? "Creative direction", M + CONTENT_W / 2, y, {
+    size: 12,
+    font: bold,
+  });
   y -= 13;
-  const leftLines = [ctx.client.company_name, ctx.client.email, ctx.client.phone, ctx.client.country].filter(
-    Boolean,
-  ) as string[];
+  const leftLines = [
+    ctx.client.company_name,
+    ctx.client.email,
+    ctx.client.phone,
+    ctx.client.country,
+  ].filter(Boolean) as string[];
   const rightLines = [
     ctx.dueDate ? `Payment due ${ctx.dueDate}` : null,
     ctx.depositPct > 0 ? `${ctx.depositPct}% deposit to start` : null,
@@ -320,7 +372,13 @@ export async function buildInvoicePdf(ctx: InvoicePdfContext): Promise<Uint8Arra
 
   /* ============================== ITEMS TABLE ============================== */
   const tableHeader = (p: PDFPage, top: number): number => {
-    p.drawRectangle({ x: M, y: top - 16, width: CONTENT_W, height: 20, color: rgb(0.055, 0.09, 0.14) });
+    p.drawRectangle({
+      x: M,
+      y: top - 16,
+      width: CONTENT_W,
+      height: 20,
+      color: rgb(0.055, 0.09, 0.14),
+    });
     label(p, "Description", COL.desc + 8, top - 10, rgb(0.72, 0.78, 0.86));
     label(p, "Qty", COL.qty + 34, top - 10, rgb(0.72, 0.78, 0.86), "right");
     label(p, "Unit", COL.unit, top - 10, rgb(0.72, 0.78, 0.86));
@@ -337,7 +395,11 @@ export async function buildInvoicePdf(ctx: InvoicePdfContext): Promise<Uint8Arra
   for (const line of totals.lines) {
     const titleLines = wrap(line.description || "Item", bold, 9.8, descW);
     const detailLines = line.detail ? wrap(line.detail, reg, 8.4, descW) : [];
-    const rowH = 12 + titleLines.length * 12.5 + detailLines.length * 10.5 + (line.discount_pct > 0 ? 10.5 : 0);
+    const rowH =
+      12 +
+      titleLines.length * 12.5 +
+      detailLines.length * 10.5 +
+      (line.discount_pct > 0 ? 10.5 : 0);
 
     if (y - rowH < 190) {
       // continue on a fresh page
@@ -361,14 +423,25 @@ export async function buildInvoicePdf(ctx: InvoicePdfContext): Promise<Uint8Arra
       ty -= 10.5;
     }
     if (line.discount_pct > 0) {
-      text(page, `line discount -${line.discount_pct}%`, COL.desc + 8, ty, { size: 8, font: obl, color: accent });
+      text(page, `line discount -${line.discount_pct}%`, COL.desc + 8, ty, {
+        size: 8,
+        font: obl,
+        color: accent,
+      });
       ty -= 10.5;
     }
 
     text(page, String(line.qty), COL.qty + 34, y, { size: 9.6, align: "right" });
     text(page, line.unit ?? "un", COL.unit, y, { size: 9, color: soft });
-    text(page, money(line.unit_price, ctx.currency), COL.price + 44, y, { size: 9.6, align: "right" });
-    text(page, money(line.net, ctx.currency), COL.total - 8, y, { size: 9.8, font: bold, align: "right" });
+    text(page, money(line.unit_price, ctx.currency), COL.price + 44, y, {
+      size: 9.6,
+      align: "right",
+    });
+    text(page, money(line.net, ctx.currency), COL.total - 8, y, {
+      size: 9.8,
+      font: bold,
+      align: "right",
+    });
 
     y = y - rowH;
     page.drawRectangle({ x: M, y: y + 6, width: CONTENT_W, height: 0.6, color: hair });
@@ -379,9 +452,17 @@ export async function buildInvoicePdf(ctx: InvoicePdfContext): Promise<Uint8Arra
     ["Subtotal", money(totals.subtotal, ctx.currency), false],
   ];
   if (totals.discount_amount > 0)
-    totalsRows.push([`Discount (${ctx.discountPct}%)`, `-${money(totals.discount_amount, ctx.currency)}`, false]);
+    totalsRows.push([
+      `Discount (${ctx.discountPct}%)`,
+      `-${money(totals.discount_amount, ctx.currency)}`,
+      false,
+    ]);
   if (ctx.taxPct > 0)
-    totalsRows.push([ctx.taxLabel || `Tax (${ctx.taxPct}%)`, money(totals.tax_amount, ctx.currency), false]);
+    totalsRows.push([
+      ctx.taxLabel || `Tax (${ctx.taxPct}%)`,
+      money(totals.tax_amount, ctx.currency),
+      false,
+    ]);
 
   const totalsH = 30 + totalsRows.length * 16 + 46 + (totals.deposit_amount > 0 ? 34 : 0);
   if (y - totalsH < 170) {
@@ -400,7 +481,14 @@ export async function buildInvoicePdf(ctx: InvoicePdfContext): Promise<Uint8Arra
   y -= 4;
   page.drawRectangle({ x: tx - 220, y, width: 220, height: 0.8, color: hair });
   y -= 24;
-  page.drawRectangle({ x: tx - 220, y: y - 8, width: 220, height: 30, color: accent, opacity: 0.1 });
+  page.drawRectangle({
+    x: tx - 220,
+    y: y - 8,
+    width: 220,
+    height: 30,
+    color: accent,
+    opacity: 0.1,
+  });
   text(page, "TOTAL", tx - 210, y, { size: 9.5, font: bold, color: soft });
   text(page, `${money(totals.total, ctx.currency)} ${ctx.currency}`, tx - 8, y, {
     size: 14,
@@ -419,7 +507,11 @@ export async function buildInvoicePdf(ctx: InvoicePdfContext): Promise<Uint8Arra
     });
     y -= 14;
     text(page, "Balance on delivery", tx - 210, y, { size: 8.6, color: soft });
-    text(page, money(totals.balance, ctx.currency), tx - 8, y, { size: 8.8, color: soft, align: "right" });
+    text(page, money(totals.balance, ctx.currency), tx - 8, y, {
+      size: 8.8,
+      color: soft,
+      align: "right",
+    });
     y -= 20;
   }
 
@@ -501,7 +593,10 @@ export async function buildInvoicePdf(ctx: InvoicePdfContext): Promise<Uint8Arra
       }
     }
     p.drawRectangle({ x: M, y: 40, width: CONTENT_W, height: 0.7, color: hair });
-    text(p, `${s.studio_name ?? ""}${s.footer_note ? ` — ${s.footer_note}` : ""}`, M, 28, { size: 7.6, color: soft });
+    text(p, `${s.studio_name ?? ""}${s.footer_note ? ` — ${s.footer_note}` : ""}`, M, 28, {
+      size: 7.6,
+      color: soft,
+    });
     text(p, `${ctx.invoiceNumber} · page ${i + 1} of ${total}`, PAGE_W - M, 28, {
       size: 7.6,
       color: soft,

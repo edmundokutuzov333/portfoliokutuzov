@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Server-only invoicing helpers. Never reachable from the client bundle
  * (blocked by the *.server.ts filename convention).
@@ -33,7 +34,10 @@ export function fromEmail(): string {
 }
 
 export const esc = (s: unknown) =>
-  String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 
 export function randomToken(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(24));
@@ -239,7 +243,9 @@ export function buildInvoiceEmail(a: EmailArgs): { subject: string; html: string
     .join("");
 
   const payLine = (k: string, v?: string | null) =>
-    v ? `<p style="margin:4px 0;font-size:13px;color:#cbd5e1"><span style="color:#94a3b8">${esc(k)}:</span> <b>${esc(v)}</b></p>` : "";
+    v
+      ? `<p style="margin:4px 0;font-size:13px;color:#cbd5e1"><span style="color:#94a3b8">${esc(k)}:</span> <b>${esc(v)}</b></p>`
+      : "";
 
   const html = `<div style="font-family:-apple-system,Segoe UI,Inter,Helvetica,sans-serif;background:#01040A;color:#e2e8f0;padding:32px">
     <div style="max-width:600px;margin:0 auto">
@@ -287,7 +293,11 @@ export function buildInvoiceEmail(a: EmailArgs): { subject: string; html: string
   </div>`;
 
   const subjectPrefix =
-    a.variant === "receipt" ? "Payment received" : a.variant === "reminder" ? "Reminder: invoice" : "Invoice";
+    a.variant === "receipt"
+      ? "Payment received"
+      : a.variant === "reminder"
+        ? "Reminder: invoice"
+        : "Invoice";
   return { subject: `${subjectPrefix} ${a.invoiceNumber} — ${studio}`, html };
 }
 

@@ -53,9 +53,15 @@ export function installRouteTiming(router: MinimalRouter): () => void {
 
   // Initial page load: navigation start → hydration complete.
   try {
-    const nav = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
+    const nav = performance.getEntriesByType("navigation")[0] as
+      PerformanceNavigationTiming | undefined;
     const ms = Math.round(nav?.domContentLoadedEventEnd ?? performance.now());
-    push({ route: router.state.location.pathname, ms, kind: "initial", at: new Date().toISOString() });
+    push({
+      route: router.state.location.pathname,
+      ms,
+      kind: "initial",
+      at: new Date().toISOString(),
+    });
   } catch {
     /* timing API unavailable — non-fatal */
   }

@@ -105,8 +105,18 @@ export function InvoiceWorkspace() {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-6">
         <Kpi label="Outstanding" value={money(kpis?.outstanding ?? 0, currency)} tone="sky" />
-        <Kpi label="Overdue" value={money(kpis?.overdue ?? 0, currency)} tone="rose" Icon={AlertTriangle} />
-        <Kpi label="Paid" value={money(kpis?.paid ?? 0, currency)} tone="emerald" Icon={CheckCircle2} />
+        <Kpi
+          label="Overdue"
+          value={money(kpis?.overdue ?? 0, currency)}
+          tone="rose"
+          Icon={AlertTriangle}
+        />
+        <Kpi
+          label="Paid"
+          value={money(kpis?.paid ?? 0, currency)}
+          tone="emerald"
+          Icon={CheckCircle2}
+        />
         <Kpi
           label="Awaiting confirmation"
           value={String(kpis?.awaitingConfirmation ?? 0)}
@@ -218,13 +228,14 @@ function Kpi({
 
 function StatusPill({ row }: { row: Row }) {
   const verifying = Boolean(row.invoice_paid_reported_at) && row.invoice_status !== "paid";
-  const label = row.invoice_status === "paid"
-    ? "paid"
-    : verifying
-      ? "verifying"
-      : row.overdue
-        ? "overdue"
-        : (row.invoice_status ?? "draft");
+  const label =
+    row.invoice_status === "paid"
+      ? "paid"
+      : verifying
+        ? "verifying"
+        : row.overdue
+          ? "overdue"
+          : (row.invoice_status ?? "draft");
   const cls =
     label === "paid"
       ? "bg-emerald-400/10 text-emerald-200 border-emerald-400/30"
@@ -233,5 +244,9 @@ function StatusPill({ row }: { row: Row }) {
         : label === "verifying"
           ? "bg-amber-400/10 text-amber-200 border-amber-400/30"
           : "bg-white/[0.04] text-slate-300 border-white/10";
-  return <span className={`mono text-[10px] px-2 py-1 rounded-full border ${cls}`}>{label.toUpperCase()}</span>;
+  return (
+    <span className={`mono text-[10px] px-2 py-1 rounded-full border ${cls}`}>
+      {label.toUpperCase()}
+    </span>
+  );
 }

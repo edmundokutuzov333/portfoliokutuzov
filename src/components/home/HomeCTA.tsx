@@ -1,8 +1,8 @@
-import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useSiteData";
 import { readSetting, SITE_EMAIL } from "@/lib/cms";
+import { ShinyButton } from "@/components/ui/shiny-button";
 
 export function HomeCTA() {
   const { data: settings } = useSiteSettings();
@@ -28,7 +28,7 @@ export function HomeCTA() {
             }}
           />
           <div className="relative">
-            <p className="mono text-[10px] tracking-[0.28em] text-sky-300/80">
+            <p className="mono text-[10px] tracking-[0.28em] text-sky-300/80 uppercase">
               {r("eyebrow", "Let's collaborate")}
             </p>
             <h2 className="display text-3xl sm:text-5xl md:text-6xl mt-6 max-w-4xl leading-[1.02] tracking-[-0.025em]">
@@ -37,17 +37,14 @@ export function HomeCTA() {
                 {r("title_accent", "impossible to ignore.")}
               </span>
             </h2>
-            <div className="mt-10 flex flex-wrap items-center gap-3">
-              <Link
-                to="/contact"
-                className="inline-flex items-center gap-2 rounded-full bg-slate-100 text-[#01040A] px-6 py-3.5 text-sm font-semibold hover:bg-sky-200 transition"
-              >
+            <div className="mt-10 flex flex-wrap items-center gap-4">
+              <ShinyButton to="/contact">
                 {r("cta_primary", "Start a project")}
                 <ArrowUpRight size={16} />
-              </Link>
+              </ShinyButton>
               <a
                 href={`mailto:${email}`}
-                className="inline-flex items-center gap-2 text-sm text-slate-300 hover:text-white border-b border-white/15 pb-1"
+                className="inline-flex items-center gap-2 text-sm text-slate-300 hover:text-white border-b border-white/15 pb-1 ml-2"
               >
                 {email}
               </a>

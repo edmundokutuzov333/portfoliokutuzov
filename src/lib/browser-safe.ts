@@ -58,7 +58,11 @@ export function safeSessionStorageRemove(key: string) {
   }
 }
 
-export function safeJsonParse<T>(value: string | null | undefined, fallback: T, onReset?: () => void): T {
+export function safeJsonParse<T>(
+  value: string | null | undefined,
+  fallback: T,
+  onReset?: () => void,
+): T {
   if (!value) return fallback;
   try {
     const parsed = JSON.parse(value) as T;

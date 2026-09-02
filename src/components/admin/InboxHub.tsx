@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { isUuid } from "@/lib/utils";
 import { toast } from "sonner";
 import {
   Inbox,
@@ -243,6 +244,7 @@ function BriefingsPanel() {
   const current = filtered.find((r) => r.id === selected) ?? null;
 
   const update = async (id: string, patch: Partial<Briefing>) => {
+    if (!isUuid(id)) return;
     const { error } = await supabase
       .from("briefing_submissions")
       .update(patch as never)
@@ -252,12 +254,15 @@ function BriefingsPanel() {
 
   const remove = async (id: string) => {
     if (!confirm("Delete this briefing? This cannot be undone.")) return;
-    const { error } = await supabase.from("briefing_submissions").delete().eq("id", id);
-    if (error) toast.error(error.message);
-    else {
-      toast.success("Deleted");
-      setSelected(null);
+    if (isUuid(id)) {
+      const { error } = await supabase.from("briefing_submissions").delete().eq("id", id);
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
     }
+    toast.success("Deleted");
+    setSelected(null);
   };
 
   const onOpen = (r: Briefing) => {
@@ -561,6 +566,7 @@ function BookingsPanel() {
   const current = rows.find((r) => r.id === selected) ?? null;
 
   const update = async (id: string, patch: Partial<Booking>) => {
+    if (!isUuid(id)) return;
     const { error } = await supabase
       .from("booking_requests")
       .update(patch as never)
@@ -569,12 +575,15 @@ function BookingsPanel() {
   };
   const remove = async (id: string) => {
     if (!confirm("Delete this booking?")) return;
-    const { error } = await supabase.from("booking_requests").delete().eq("id", id);
-    if (error) toast.error(error.message);
-    else {
-      toast.success("Deleted");
-      setSelected(null);
+    if (isUuid(id)) {
+      const { error } = await supabase.from("booking_requests").delete().eq("id", id);
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
     }
+    toast.success("Deleted");
+    setSelected(null);
   };
 
   return (

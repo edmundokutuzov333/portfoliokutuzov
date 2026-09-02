@@ -11,9 +11,7 @@ import { describe, it, expect, beforeAll } from "vitest";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 const URL = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL!;
-const ANON =
-  process.env.SUPABASE_PUBLISHABLE_KEY ??
-  process.env.VITE_SUPABASE_PUBLISHABLE_KEY!;
+const ANON = process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.VITE_SUPABASE_PUBLISHABLE_KEY!;
 
 if (!URL || !ANON) {
   throw new Error("Missing SUPABASE_URL / SUPABASE_PUBLISHABLE_KEY env vars");
@@ -33,9 +31,7 @@ function isDenied(error: { code?: string; message?: string } | null) {
   return (
     error.code === "42501" ||
     error.code === "PGRST301" ||
-    /row-level security|permission denied|violates row-level/i.test(
-      error.message ?? ""
-    )
+    /row-level security|permission denied|violates row-level/i.test(error.message ?? "")
   );
 }
 

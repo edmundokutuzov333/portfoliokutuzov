@@ -17,10 +17,13 @@ export default defineTool({
       .min(1)
       .max(120)
       .describe("Type of project, e.g. `Brand Identity`, `Art Direction`."),
-    urgency: z
-      .enum(["low", "normal", "high", "urgent"])
-      .describe("How urgent the project is."),
-    budget_range: z.string().trim().max(80).optional().describe("Budget bracket, e.g. `€15K - €40K`."),
+    urgency: z.enum(["low", "normal", "high", "urgent"]).describe("How urgent the project is."),
+    budget_range: z
+      .string()
+      .trim()
+      .max(80)
+      .optional()
+      .describe("Budget bracket, e.g. `€15K - €40K`."),
     currency: z
       .enum(["EUR", "USD", "MZN", "GBP", "BRL"])
       .optional()

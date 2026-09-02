@@ -87,10 +87,14 @@ function installBlankScreenWatchdog(signal: AbortSignal) {
     if (signal.aborted) return;
     if (window.__EK_RENDER_HEALTHY__) return;
     const visibleText = document.body?.innerText?.trim() ?? "";
-    const hasAppNodes = document.body.querySelector("main,nav,section,article,header,footer,button,a,img,canvas,video");
+    const hasAppNodes = document.body.querySelector(
+      "main,nav,section,article,header,footer,button,a,img,canvas,video",
+    );
     if (!visibleText && !hasAppNodes) {
       recordRuntimeError("blank-screen", new Error("No visible application nodes after boot"));
-      showRecoveryFallback("The app did not finish rendering. A visible recovery screen was shown instead of a blank page.");
+      showRecoveryFallback(
+        "The app did not finish rendering. A visible recovery screen was shown instead of a blank page.",
+      );
     }
   }, 3500);
 }
@@ -107,28 +111,50 @@ export function installRuntimeDiagnostics() {
     () => safeSessionStorageRemove(KEY),
   );
 
-  window.addEventListener("error", (event) => {
-    recordRuntimeError("error", event.error ?? event.message);
-  }, { signal: controller.signal });
-  window.addEventListener("unhandledrejection", (event) => {
-    recordRuntimeError("unhandledrejection", event.reason);
-  }, { signal: controller.signal });
-  window.addEventListener("vite:error", (event) => {
-    recordRuntimeError("vite", event);
-  }, { signal: controller.signal });
-  window.addEventListener("vite:beforeUpdate", () => {
-    window.__EK_RENDER_HEALTHY__ = false;
-    if (window.__EK_HMR_TIMER__) window.clearTimeout(window.__EK_HMR_TIMER__);
-    window.__EK_HMR_TIMER__ = window.setTimeout(() => {
-      if (!window.__EK_RENDER_HEALTHY__) {
-        recordRuntimeError("vite", new Error("Hot reload did not complete a healthy render"));
-        showRecoveryFallback("Hot reload did not complete cleanly. Reload the preview to recover immediately.");
-      }
-    }, HMR_STALE_MS);
-  }, { signal: controller.signal });
-  window.addEventListener("vite:afterUpdate", () => {
-    if (window.__EK_HMR_TIMER__) window.clearTimeout(window.__EK_HMR_TIMER__);
-  }, { signal: controller.signal });
+  window.addEventListener(
+    "error",
+    (event) => {
+      recordRuntimeError("error", event.error ?? event.message);
+    },
+    { signal: controller.signal },
+  );
+  window.addEventListener(
+    "unhandledrejection",
+    (event) => {
+      recordRuntimeError("unhandledrejection", event.reason);
+    },
+    { signal: controller.signal },
+  );
+  window.addEventListener(
+    "vite:error",
+    (event) => {
+      recordRuntimeError("vite", event);
+    },
+    { signal: controller.signal },
+  );
+  window.addEventListener(
+    "vite:beforeUpdate",
+    () => {
+      window.__EK_RENDER_HEALTHY__ = false;
+      if (window.__EK_HMR_TIMER__) window.clearTimeout(window.__EK_HMR_TIMER__);
+      window.__EK_HMR_TIMER__ = window.setTimeout(() => {
+        if (!window.__EK_RENDER_HEALTHY__) {
+          recordRuntimeError("vite", new Error("Hot reload did not complete a healthy render"));
+          showRecoveryFallback(
+            "Hot reload did not complete cleanly. Reload the preview to recover immediately.",
+          );
+        }
+      }, HMR_STALE_MS);
+    },
+    { signal: controller.signal },
+  );
+  window.addEventListener(
+    "vite:afterUpdate",
+    () => {
+      if (window.__EK_HMR_TIMER__) window.clearTimeout(window.__EK_HMR_TIMER__);
+    },
+    { signal: controller.signal },
+  );
   installBlankScreenWatchdog(controller.signal);
 }
 

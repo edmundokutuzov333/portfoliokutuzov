@@ -1,7 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PortfolioGrid } from "@/components/portfolio/PortfolioGrid";
+import { motion } from "framer-motion";
+
+export type PortfolioSearch = {
+  category?: string;
+  q?: string;
+};
 
 export const Route = createFileRoute("/portfolio/")({
+  validateSearch: (search: Record<string, unknown>): PortfolioSearch => ({
+    category: typeof search.category === "string" && search.category ? search.category : undefined,
+    q: typeof search.q === "string" && search.q ? search.q : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Portfolio - Edmundo Kutuzov" },
@@ -15,20 +25,6 @@ export const Route = createFileRoute("/portfolio/")({
         property: "og:description",
         content: "A curated selection of campaigns, identities and visual systems.",
       },
-      { property: "og:url", content: "https://portfoliokutuzov.lovable.app/portfolio" },
-    ],
-    links: [{ rel: "canonical", href: "https://portfoliokutuzov.lovable.app/portfolio" }],
-    scripts: [
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "CollectionPage",
-          name: "Portfolio - Edmundo Kutuzov",
-          url: "https://portfoliokutuzov.lovable.app/portfolio",
-          about: { "@id": "https://portfoliokutuzov.lovable.app/#person" },
-        }),
-      },
     ],
   }),
   component: PortfolioPage,
@@ -36,22 +32,35 @@ export const Route = createFileRoute("/portfolio/")({
 
 function PortfolioPage() {
   return (
-    <section className="relative px-5 md:px-8 pt-36 pb-24">
-      <div className="max-w-[1240px] mx-auto">
-        <div className="flex items-start justify-between mono text-[10px] tracking-[0.22em] text-slate-500">
-          <div>Portfolio</div>
-          <div>Selected work</div>
-        </div>
-        <h1 className="display text-5xl md:text-7xl mt-6 leading-[0.98] tracking-[-0.02em] text-metal">
-          Selected work.
-        </h1>
-        <p className="mt-5 max-w-xl text-[15px] text-slate-400 leading-relaxed">
-          A curated selection of campaigns, brand identity work and visual systems developed for
-          local and international clients across Mozambique and beyond.
-        </p>
-        <div className="mt-12 border-t border-white/[0.08] pt-10">
+    <section className="relative px-4 md:px-8 pt-48 pb-32 bg-[var(--color-bg)]">
+      <div className="max-w-[var(--width-wide)] mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="flex items-start justify-between mono text-[10px] tracking-[0.2em] text-[var(--color-text-muted)] uppercase mb-16"
+        >
+          <div>Archive</div>
+          <div>2018—2026</div>
+        </motion.div>
+
+        <motion.h1
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+          className="display text-[clamp(3rem,8vw+1rem,9rem)] leading-[0.95] tracking-[-0.03em] text-[var(--color-text-primary)]"
+        >
+          Selected Work.
+        </motion.h1>
+
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          className="mt-20 md:mt-32"
+        >
           <PortfolioGrid />
-        </div>
+        </motion.div>
       </div>
     </section>
   );

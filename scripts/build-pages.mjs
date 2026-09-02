@@ -20,18 +20,43 @@ import {
 import { join } from "node:path";
 
 const root = process.cwd();
-const serverDir = join(root, "dist", "server");
-const clientDir = join(root, "dist", "client");
-const workerDir = join(clientDir, "_worker.js");
+const possibleServerDirs = [join(root, "dist", "server"), join(root, ".output", "server")];
+const possibleClientDirs = [
+  join(root, "dist", "client"),
+  join(root, ".output", "public"),
+  join(root, ".output", "client"),
+];
 
-if (!existsSync(serverDir)) {
-  console.error("[build-pages] dist/server missing — run `vite build` first.");
+let sourceServerDir = possibleServerDirs.find((d) => existsSync(d));
+let sourceClientDir = possibleClientDirs.find((d) => existsSync(d));
+
+const distServerDir = join(root, "dist", "server");
+const distClientDir = join(root, "dist", "client");
+
+if (!sourceServerDir) {
+  console.error("[build-pages] server build directory missing — run `vite build` first.");
   process.exit(1);
 }
-if (!existsSync(clientDir)) {
-  console.error("[build-pages] dist/client missing — run `vite build` first.");
+if (!sourceClientDir) {
+  console.error("[build-pages] client build directory missing — run `vite build` first.");
   process.exit(1);
 }
+
+// Ensure dist/server exists
+if (!existsSync(distServerDir)) {
+  mkdirSync(distServerDir, { recursive: true });
+  cpSync(sourceServerDir, distServerDir, { recursive: true });
+}
+
+// Ensure dist/client exists
+if (!existsSync(distClientDir)) {
+  mkdirSync(distClientDir, { recursive: true });
+  cpSync(sourceClientDir, distClientDir, { recursive: true });
+}
+
+const serverDir = distServerDir;
+const clientDir = distClientDir;
+const workerDir = join(clientDir, "_worker.js");
 
 // Reset the worker directory so re-runs are deterministic.
 rmSync(workerDir, { recursive: true, force: true });
@@ -78,10 +103,7 @@ const routes = {
   include: ["/*"],
   exclude,
 };
-writeFileSync(
-  join(clientDir, "_routes.json"),
-  JSON.stringify(routes, null, 2),
-);
+writeFileSync(join(clientDir, "_routes.json"), JSON.stringify(routes, null, 2));
 
 console.log(
   `[build-pages] dist/client ready for Cloudflare Pages (_worker.js + ${exclude.length} static excludes).`,

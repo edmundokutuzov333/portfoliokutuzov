@@ -5,6 +5,7 @@ This document describes the mobile/tablet optimizations applied to the site with
 ## Overview
 
 The mobile/tablet optimization uses a **progressive enhancement** approach:
+
 - Desktop CSS and JS remain **completely unchanged**
 - Mobile/tablet styles are loaded **conditionally** via media queries
 - Mobile-specific components mount **only when viewport matches**
@@ -12,14 +13,14 @@ The mobile/tablet optimization uses a **progressive enhancement** approach:
 
 ## Files Added
 
-| File | Purpose |
-|------|---------|
-| `public/styles/mobile.css` | Mobile-only CSS overrides (≤480px) |
-| `public/styles/tablet.css` | Tablet-only CSS overrides (≤1024px) |
-| `src/hooks/useResponsiveLoad.tsx` | Viewport detection and conditional loading |
-| `src/components/MobileNav.tsx` | Mobile navigation drawer |
-| `src/components/TabletNav.tsx` | Tablet navigation bar |
-| `public/manifest/mobile-images.json` | Mobile-optimized image manifest |
+| File                                 | Purpose                                    |
+| ------------------------------------ | ------------------------------------------ |
+| `public/styles/mobile.css`           | Mobile-only CSS overrides (≤480px)         |
+| `public/styles/tablet.css`           | Tablet-only CSS overrides (≤1024px)        |
+| `src/hooks/useResponsiveLoad.tsx`    | Viewport detection and conditional loading |
+| `src/components/MobileNav.tsx`       | Mobile navigation drawer                   |
+| `src/components/TabletNav.tsx`       | Tablet navigation bar                      |
+| `public/manifest/mobile-images.json` | Mobile-optimized image manifest            |
 
 ## How It Works
 
@@ -28,8 +29,20 @@ The mobile/tablet optimization uses a **progressive enhancement** approach:
 Mobile/tablet CSS files are loaded via `<link rel="preload">` with media queries:
 
 ```html
-<link rel="preload" href="/styles/tablet.css" as="style" media="(max-width:1024px)" onload="this.rel='stylesheet'">
-<link rel="preload" href="/styles/mobile.css" as="style" media="(max-width:480px)" onload="this.rel='stylesheet'">
+<link
+  rel="preload"
+  href="/styles/tablet.css"
+  as="style"
+  media="(max-width:1024px)"
+  onload="this.rel='stylesheet'"
+/>
+<link
+  rel="preload"
+  href="/styles/mobile.css"
+  as="style"
+  media="(max-width:480px)"
+  onload="this.rel='stylesheet'"
+/>
 ```
 
 - Desktop browsers ignore these stylesheets entirely
@@ -39,6 +52,7 @@ Mobile/tablet CSS files are loaded via `<link rel="preload">` with media queries
 ### 2. Viewport Detection
 
 The `useResponsiveLoad` hook detects viewport size and:
+
 - Adds viewport classes to `<html>` (e.g., `viewport-mobile`)
 - Runs callbacks only when viewport matches
 - Adds `reduced-motion-*` classes for performance
@@ -54,6 +68,7 @@ The `useResponsiveLoad` hook detects viewport size and:
 ### 4. Performance Optimizations
 
 On mobile devices:
+
 - Animations reduced to 150ms (vs default)
 - Heavy effects (shaders, parallax) disabled via CSS
 - Smaller image variants served from manifest
@@ -83,6 +98,7 @@ npm run dev
 ### 3. Check Mobile Features
 
 On mobile viewport (≤480px):
+
 - [ ] Mobile nav toggle appears
 - [ ] Desktop nav hidden
 - [ ] Drawer opens/closes smoothly
@@ -91,6 +107,7 @@ On mobile viewport (≤480px):
 - [ ] No horizontal scroll
 
 On tablet viewport (≤1024px):
+
 - [ ] Tablet nav appears (compact)
 - [ ] Desktop nav may be hidden or condensed
 - [ ] 2-column grid layouts
@@ -126,12 +143,12 @@ npx lighthouse http://localhost:8080 --preset=mobile --output=html --output-path
 
 ### Target Metrics
 
-| Metric | Target | Reason |
-|--------|--------|--------|
-| FCP | <1.8s | Fast first paint on 3G |
-| LCP | <2.5s | Main content visible quickly |
-| CLS | <0.1 | No layout shifts |
-| TBT | <200ms | Responsive interactions |
+| Metric | Target | Reason                       |
+| ------ | ------ | ---------------------------- |
+| FCP    | <1.8s  | Fast first paint on 3G       |
+| LCP    | <2.5s  | Main content visible quickly |
+| CLS    | <0.1   | No layout shifts             |
+| TBT    | <200ms | Responsive interactions      |
 
 ## Rollback Instructions
 
@@ -140,8 +157,8 @@ npx lighthouse http://localhost:8080 --preset=mobile --output=html --output-path
 Remove these lines from `index.html`:
 
 ```html
-<link rel="preload" href="/styles/tablet.css" ...>
-<link rel="preload" href="/styles/mobile.css" ...>
+<link rel="preload" href="/styles/tablet.css" ... />
+<link rel="preload" href="/styles/mobile.css" ... />
 <noscript>...</noscript>
 ```
 
@@ -162,7 +179,11 @@ Add to any CSS file:
 ```css
 @media (max-width: 1024px) {
   /* Disable all mobile/tablet overrides */
-  .mobile-nav, .tablet-nav, .mobile-nav-toggle { display: none !important; }
+  .mobile-nav,
+  .tablet-nav,
+  .mobile-nav-toggle {
+    display: none !important;
+  }
 }
 ```
 
@@ -174,16 +195,20 @@ Edit `src/hooks/useResponsiveLoad.tsx`:
 
 ```typescript
 const BREAKPOINTS = {
-  mobile: 480,   // Change mobile breakpoint
-  tablet: 1024,  // Change tablet breakpoint
+  mobile: 480, // Change mobile breakpoint
+  tablet: 1024, // Change tablet breakpoint
 } as const;
 ```
 
 Update CSS files to match:
 
 ```css
-@media screen and (max-width: 480px) { /* mobile */ }
-@media screen and (max-width: 1024px) { /* tablet */ }
+@media screen and (max-width: 480px) {
+  /* mobile */
+}
+@media screen and (max-width: 1024px) {
+  /* tablet */
+}
 ```
 
 ### Add Navigation Items
@@ -192,9 +217,9 @@ Edit `src/components/MobileNav.tsx` and `TabletNav.tsx`:
 
 ```typescript
 const NAV_ITEMS: NavItem[] = [
-  { label: 'Home', href: '/' },
-  { label: 'Portfolio', href: '/portfolio' },
-  { label: 'Contact', href: '/contact' },  // Add new item
+  { label: "Home", href: "/" },
+  { label: "Portfolio", href: "/portfolio" },
+  { label: "Contact", href: "/contact" }, // Add new item
 ];
 ```
 
@@ -204,8 +229,8 @@ Edit CSS variables in mobile.css/tablet.css:
 
 ```css
 :root {
-  --mobile-touch-target: 56px;  /* iOS guidelines: 44px min */
-  --tablet-touch-target: 48px;  /* Android guidelines: 48dp */
+  --mobile-touch-target: 56px; /* iOS guidelines: 44px min */
+  --tablet-touch-target: 48px; /* Android guidelines: 48dp */
 }
 ```
 

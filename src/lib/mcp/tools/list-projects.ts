@@ -15,10 +15,7 @@ export default defineTool({
       .max(50)
       .optional()
       .describe("Maximum number of projects to return (default 20)."),
-    category: z
-      .string()
-      .optional()
-      .describe("Optional case-insensitive category filter."),
+    category: z.string().optional().describe("Optional case-insensitive category filter."),
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async ({ limit, category }) => {

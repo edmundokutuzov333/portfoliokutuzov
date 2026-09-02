@@ -16,8 +16,16 @@ const LineItemSchema = z.object({
 const DraftSchema = z.object({
   briefing_id: z.string().uuid(),
   currency: z.enum(["EUR", "USD", "MZN", "GBP", "BRL", "ZAR"]),
-  issue_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
-  due_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+  issue_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable()
+    .optional(),
+  due_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable()
+    .optional(),
   discount_pct: z.number().min(0).max(100).default(0),
   tax_pct: z.number().min(0).max(100).default(0),
   tax_label: z.string().trim().max(60).nullable().optional(),
@@ -169,7 +177,10 @@ export const renderInvoicePdfNow = createServerFn({ method: "POST" })
     return {
       filename: `${invoiceNumber}.pdf`,
       base64: S.toBase64(bytes),
-      totals: S.totalsFor(draftBrief, data.items.map((it) => ({ ...it, detail: it.detail ?? null }))),
+      totals: S.totalsFor(
+        draftBrief,
+        data.items.map((it) => ({ ...it, detail: it.detail ?? null })),
+      ),
     };
   });
 
@@ -215,12 +226,15 @@ export const generateBriefingInvoice = createServerFn({ method: "POST" })
     // Sequential, gap-free numbering (atomic counter in Postgres).
     let invoiceNumber = brief.invoice_number as string | null;
     if (!invoiceNumber) {
-      const { data: num, error: numErr } = await supabaseAdmin.rpc("next_invoice_number", { prefix: "EK" });
+      const { data: num, error: numErr } = await supabaseAdmin.rpc("next_invoice_number", {
+        prefix: "EK",
+      });
       if (numErr || !num) throw new Error(numErr?.message || "Could not allocate invoice number");
       invoiceNumber = num as string;
     }
     const token = brief.invoice_public_token || S.randomToken();
-    const issueDate = data.issue_date ?? brief.invoice_issue_date ?? new Date().toISOString().slice(0, 10);
+    const issueDate =
+      data.issue_date ?? brief.invoice_issue_date ?? new Date().toISOString().slice(0, 10);
 
     const nextBrief = {
       ...brief,
@@ -301,7 +315,9 @@ export const generateBriefingInvoice = createServerFn({ method: "POST" })
 export const previewInvoiceEmail = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) =>
-    IdSchema.extend({ variant: z.enum(["invoice", "reminder", "receipt"]).default("invoice") }).parse(i),
+    IdSchema.extend({
+      variant: z.enum(["invoice", "reminder", "receipt"]).default("invoice"),
+    }).parse(i),
   )
   .handler(async ({ data, context }) => {
     const S = await import("@/lib/invoice.server");
@@ -354,7 +370,8 @@ export const sendBriefingInvoice = createServerFn({ method: "POST" })
       .eq("id", data.briefing_id)
       .single();
     if (error || !brief) throw new Error(error?.message || "Briefing not found");
-    if (!brief.invoice_number || !brief.invoice_pdf_path) throw new Error("Issue the invoice first");
+    if (!brief.invoice_number || !brief.invoice_pdf_path)
+      throw new Error("Issue the invoice first");
 
     const branding = await S.loadBranding(supabaseAdmin);
     const items = await S.loadItems(supabaseAdmin, brief.id);
@@ -372,7 +389,9 @@ export const sendBriefingInvoice = createServerFn({ method: "POST" })
 
     let attachment: { filename: string; content: string } | undefined;
     if (data.attach_pdf) {
-      const { data: file } = await supabaseAdmin.storage.from(S.PDF_BUCKET).download(brief.invoice_pdf_path);
+      const { data: file } = await supabaseAdmin.storage
+        .from(S.PDF_BUCKET)
+        .download(brief.invoice_pdf_path);
       if (file) {
         attachment = {
           filename: `${brief.invoice_number}.pdf`,
@@ -411,7 +430,11 @@ export const sendBriefingInvoice = createServerFn({ method: "POST" })
       {
         subject,
         attached: Boolean(attachment),
-        delivery: result.skipped ? "no-provider-configured" : result.ok ? "delivered" : `error-${result.status}`,
+        delivery: result.skipped
+          ? "no-provider-configured"
+          : result.ok
+            ? "delivered"
+            : `error-${result.status}`,
       },
       [...to, ...cc],
     );
@@ -499,7 +522,9 @@ export const getInvoiceWorkspace = createServerFn({ method: "POST" })
         outstanding: sum((r) => r.invoice_status !== "paid" && r.invoice_status !== "void"),
         overdue: sum((r) => r.overdue),
         paid: sum((r) => r.invoice_status === "paid"),
-        awaitingConfirmation: list.filter((r) => r.invoice_paid_reported_at && r.invoice_status !== "paid").length,
+        awaitingConfirmation: list.filter(
+          (r) => r.invoice_paid_reported_at && r.invoice_status !== "paid",
+        ).length,
       },
     };
   });
@@ -632,7 +657,9 @@ export const reportInvoicePayment = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: brief, error } = await supabaseAdmin
       .from("briefing_submissions")
-      .select("id, full_name, email, invoice_number, invoice_currency, invoice_total, invoice_public_token")
+      .select(
+        "id, full_name, email, invoice_number, invoice_currency, invoice_total, invoice_public_token",
+      )
       .eq("invoice_public_token", data.token)
       .maybeSingle();
     if (error || !brief) throw new Error("Invoice not found");

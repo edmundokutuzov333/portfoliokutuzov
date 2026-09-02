@@ -5,12 +5,14 @@ Crie do zero um site portfolio premium para EDMUNDO, designer gráfico / art dir
 Quero um site autoral, animado, escuro, futurista, editorial e experimental, mas profissional. Não quero aparência genérica de Lovable: nada de hero comum com card à direita, nada de gradientes roxos genéricos, nada de “featured projects” na home, nada de blocos SaaS. O site deve parecer feito sob medida para um designer visual.
 
 Páginas obrigatórias:
+
 1. Home: apresentação, logos de clientes, manifesto visual, serviços, CTA.
 2. Portfolio: grid completo de trabalhos, filtros por categoria, página visualmente rica.
 3. Sobre: biografia, método, estatísticas, valores.
 4. Contato: formulário visual, email, redes sociais.
 
 Instale/Use:
+
 - react-router-dom
 - framer-motion
 - lucide-react
@@ -18,28 +20,29 @@ Instale/Use:
 
 Arquitetura:
 src/
-  main.tsx
-  App.tsx
-  index.css
-  data/clients.ts
-  data/projects.ts
-  components/layout/Navbar.tsx
-  components/layout/Footer.tsx
-  components/visual/InteractiveBackground.tsx
-  components/visual/ClickRipples.tsx
-  components/visual/NoiseLayer.tsx
-  components/home/Hero.tsx
-  components/home/ClientLogos.tsx
-  components/home/Manifesto.tsx
-  components/home/Services.tsx
-  components/home/HomeCTA.tsx
-  components/portfolio/PortfolioGrid.tsx
-  pages/Home.tsx
-  pages/Portfolio.tsx
-  pages/About.tsx
-  pages/Contact.tsx
+main.tsx
+App.tsx
+index.css
+data/clients.ts
+data/projects.ts
+components/layout/Navbar.tsx
+components/layout/Footer.tsx
+components/visual/InteractiveBackground.tsx
+components/visual/ClickRipples.tsx
+components/visual/NoiseLayer.tsx
+components/home/Hero.tsx
+components/home/ClientLogos.tsx
+components/home/Manifesto.tsx
+components/home/Services.tsx
+components/home/HomeCTA.tsx
+components/portfolio/PortfolioGrid.tsx
+pages/Home.tsx
+pages/Portfolio.tsx
+pages/About.tsx
+pages/Contact.tsx
 
 Identidade visual:
+
 - Fundo base: #030308
 - Superfícies: #080812, #0D0D18
 - Texto principal: #F4F1FF
@@ -52,6 +55,7 @@ Identidade visual:
 
 Fundo interativo obrigatório:
 Crie um componente InteractiveBackground que:
+
 - Fique fixed, inset-0, pointer-events-none, atrás de todo o conteúdo.
 - Escute mousemove e atualize CSS variables --mouse-x e --mouse-y.
 - Renderize uma luz radial que acompanha o mouse.
@@ -67,13 +71,13 @@ import { useEffect, useRef, useState } from "react";
 type Ripple = { id: number; x: number; y: number };
 
 export function InteractiveBackground() {
-  const layerRef = useRef(null);
-  const aura = useRef({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
-  const target = useRef({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
-  const [ripples, setRipples] = useState([]);
+const layerRef = useRef(null);
+const aura = useRef({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
+const target = useRef({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
+const [ripples, setRipples] = useState([]);
 
-  useEffect(() => {
-    let raf = 0;
+useEffect(() => {
+let raf = 0;
 
     const move = (event: PointerEvent) => {
       target.current = { x: event.clientX, y: event.clientY };
@@ -108,19 +112,16 @@ export function InteractiveBackground() {
       window.removeEventListener("pointerdown", click);
       cancelAnimationFrame(raf);
     };
-  }, []);
 
-  return (
-    
+}, []);
 
+return (
 
       {ripples.map((ripple) => (
-        
+
       ))}
-    
 
-
-  );
+);
 }
 
 CSS obrigatório no index.css:
@@ -128,96 +129,97 @@ CSS obrigatório no index.css:
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap");
 
 :root {
-  --mouse-x: 50vw;
-  --mouse-y: 50vh;
-  --aura-x: 50vw;
-  --aura-y: 50vh;
+--mouse-x: 50vw;
+--mouse-y: 50vh;
+--aura-x: 50vw;
+--aura-y: 50vh;
 }
 
 html {
-  scroll-behavior: smooth;
-  background: #030308;
+scroll-behavior: smooth;
+background: #030308;
 }
 
 body {
-  margin: 0;
-  min-height: 100vh;
-  background: #030308;
-  color: #f4f1ff;
-  font-family: Inter, system-ui, sans-serif;
+margin: 0;
+min-height: 100vh;
+background: #030308;
+color: #f4f1ff;
+font-family: Inter, system-ui, sans-serif;
 }
 
 h1, h2, h3, .display {
-  font-family: "Space Grotesk", Inter, sans-serif;
-  letter-spacing: 0;
+font-family: "Space Grotesk", Inter, sans-serif;
+letter-spacing: 0;
 }
 
 .interactive-bg {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  overflow: hidden;
-  background:
-    radial-gradient(680px circle at var(--mouse-x) var(--mouse-y), rgba(34,211,238,0.13), transparent 42%),
-    radial-gradient(760px circle at var(--aura-x) var(--aura-y), rgba(255,61,242,0.10), transparent 48%),
-    radial-gradient(900px circle at 78% 12%, rgba(139,92,246,0.16), transparent 50%),
-    linear-gradient(180deg, #030308 0%, #050510 48%, #030308 100%);
+position: fixed;
+inset: 0;
+z-index: 0;
+pointer-events: none;
+overflow: hidden;
+background:
+radial-gradient(680px circle at var(--mouse-x) var(--mouse-y), rgba(34,211,238,0.13), transparent 42%),
+radial-gradient(760px circle at var(--aura-x) var(--aura-y), rgba(255,61,242,0.10), transparent 48%),
+radial-gradient(900px circle at 78% 12%, rgba(139,92,246,0.16), transparent 50%),
+linear-gradient(180deg, #030308 0%, #050510 48%, #030308 100%);
 }
 
 .interactive-bg::before {
-  content: "";
-  position: absolute;
-  inset: -20%;
-  opacity: 0.12;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
-  background-size: 72px 72px;
-  mask-image: radial-gradient(circle at center, black, transparent 72%);
+content: "";
+position: absolute;
+inset: -20%;
+opacity: 0.12;
+background-image:
+linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+background-size: 72px 72px;
+mask-image: radial-gradient(circle at center, black, transparent 72%);
 }
 
 .interactive-bg::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  opacity: 0.045;
-  background-image: radial-gradient(circle, rgba(255,255,255,0.8) 0 1px, transparent 1px);
-  background-size: 4px 4px;
-  mix-blend-mode: screen;
+content: "";
+position: absolute;
+inset: 0;
+opacity: 0.045;
+background-image: radial-gradient(circle, rgba(255,255,255,0.8) 0 1px, transparent 1px);
+background-size: 4px 4px;
+mix-blend-mode: screen;
 }
 
 .click-ripple {
-  position: fixed;
-  width: 18px;
-  height: 18px;
-  transform: translate(-50%, -50%);
-  border-radius: 999px;
-  border: 1px solid rgba(198,255,0,0.65);
-  box-shadow: 0 0 40px rgba(34,211,238,0.35);
-  animation: ripple-expand 900ms ease-out forwards;
+position: fixed;
+width: 18px;
+height: 18px;
+transform: translate(-50%, -50%);
+border-radius: 999px;
+border: 1px solid rgba(198,255,0,0.65);
+box-shadow: 0 0 40px rgba(34,211,238,0.35);
+animation: ripple-expand 900ms ease-out forwards;
 }
 
 @keyframes ripple-expand {
-  0% { opacity: 0.9; width: 18px; height: 18px; }
-  100% { opacity: 0; width: 420px; height: 420px; }
+0% { opacity: 0.9; width: 18px; height: 18px; }
+100% { opacity: 0; width: 420px; height: 420px; }
 }
 
 .text-metal {
-  background: linear-gradient(180deg, #ffffff 0%, #d8d2ef 42%, #6f687f 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+background: linear-gradient(180deg, #ffffff 0%, #d8d2ef 42%, #6f687f 100%);
+-webkit-background-clip: text;
+background-clip: text;
+color: transparent;
 }
 
 .text-acid {
-  background: linear-gradient(90deg, #c6ff00, #22d3ee, #ff3df2);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+background: linear-gradient(90deg, #c6ff00, #22d3ee, #ff3df2);
+-webkit-background-clip: text;
+background-clip: text;
+color: transparent;
 }
 
 Layout global:
+
 - Todo conteúdo deve ficar acima do fundo com relative z-10.
 - Usar container max-w-[1240px] mx-auto px-5 md:px-8.
 - Navbar fixa no topo, centralizada, glassmorphism escuro, sem parecer template:
@@ -228,6 +230,7 @@ Layout global:
 
 Home:
 Hero:
+
 - Não copiar a referência literalmente. Criar algo mais autoral.
 - Fullscreen com composição assimétrica.
 - H1 enorme:
@@ -246,6 +249,7 @@ Hero:
 - O hero deve ter linhas finas, números pequenos, coordenadas falsas e elementos editoriais, não cards genéricos.
 
 Seção Clientes na Home:
+
 - Esta seção deve aparecer logo depois do hero.
 - Título pequeno: “CLIENTES & COLABORAÇÕES”
 - Texto: “Algumas marcas, equipas e projetos que já passaram pelo meu processo visual.”
@@ -258,12 +262,14 @@ Seção Clientes na Home:
 - Não usar quadrados genéricos. Cada item deve parecer uma placa de identidade visual.
 
 Manifesto:
+
 - Título grande:
   “A marca não precisa gritar. Ela precisa ficar na memória.”
 - Texto em duas colunas sobre estratégia, forma, contraste, ritmo, tipografia e sistemas visuais.
 - Incluir uma linha horizontal animada que cresce ao entrar na viewport.
 
 Serviços:
+
 - Criar 4 blocos horizontais, não cards comuns:
   01 Identidade Visual
   02 Direção de Arte
@@ -273,11 +279,13 @@ Serviços:
 - Hover muda o fundo com radial gradient próximo ao mouse.
 
 CTA Home:
+
 - Bloco grande, escuro, com borda fina:
   “Vamos desenhar uma presença visual impossível de ignorar.”
 - Botão: “Começar conversa”
 
 Portfolio:
+
 - Página própria em /portfolio.
 - Header da página:
   “Portfolio”
@@ -298,6 +306,7 @@ Portfolio:
 - Não precisa página individual para cada projeto, modal basta.
 
 Sobre:
+
 - Layout editorial.
 - Título: “Entre precisão estratégica e acidente visual controlado.”
 - Texto sobre Edmundo como designer gráfico/art director.
@@ -313,6 +322,7 @@ Sobre:
   04 Entrega
 
 Contato:
+
 - Formulário com campos:
   Nome, Email, Tipo de projeto, Orçamento estimado, Mensagem.
 - Não precisa backend; ao enviar, mostrar estado visual “Mensagem preparada”.
@@ -321,6 +331,7 @@ Contato:
 - Redes: Instagram, Behance, Dribbble, LinkedIn.
 
 Regras de qualidade:
+
 - Componentes pequenos e reutilizáveis.
 - Dados de clientes e projetos devem ficar em arquivos separados.
 - Usar TypeScript com types explícitos.
@@ -338,8 +349,8 @@ Regras de qualidade:
 Exemplo de dados para clients.ts:
 
 export const clients = [
-  "NOVA", "KORA", "ALMA", "VOLT", "NEXUS", "AURORA",
-  "MINT", "ORBIT", "LUME", "ATLAS", "NOIR", "BRAVA"
+"NOVA", "KORA", "ALMA", "VOLT", "NEXUS", "AURORA",
+"MINT", "ORBIT", "LUME", "ATLAS", "NOIR", "BRAVA"
 ];
 
 Exemplo de type para projects.ts:
@@ -347,43 +358,43 @@ Exemplo de type para projects.ts:
 export type ProjectCategory = "Branding" | "Editorial" | "Digital" | "Campaign" | "Experimental";
 
 export type Project = {
-  id: number;
-  title: string;
-  subtitle: string;
-  category: ProjectCategory;
-  year: string;
-  description: string;
-  palette: string;
+id: number;
+title: string;
+subtitle: string;
+category: ProjectCategory;
+year: string;
+description: string;
+palette: string;
 };
 
 export const projects: Project[] = [
-  {
-    id: 1,
-    title: "NEXUS",
-    subtitle: "Identity System",
-    category: "Branding",
-    year: "2026",
-    palette: "from-fuchsia-500 via-violet-700 to-cyan-900",
-    description: "Sistema de identidade visual para uma marca tecnológica com linguagem modular, tipografia proprietária e aplicações digitais."
-  },
-  {
-    id: 2,
-    title: "AURORA",
-    subtitle: "Editorial Series",
-    category: "Editorial",
-    year: "2025",
-    palette: "from-blue-400 via-slate-800 to-emerald-950",
-    description: "Série editorial com grelhas rígidas, fotografia tratada e ritmo tipográfico de alto contraste."
-  },
-  {
-    id: 3,
-    title: "VOLT",
-    subtitle: "Campaign Language",
-    category: "Campaign",
-    year: "2025",
-    palette: "from-lime-300 via-cyan-700 to-purple-950",
-    description: "Direção visual para campanha com energia cromática, motion language e peças para social-first rollout."
-  }
+{
+id: 1,
+title: "NEXUS",
+subtitle: "Identity System",
+category: "Branding",
+year: "2026",
+palette: "from-fuchsia-500 via-violet-700 to-cyan-900",
+description: "Sistema de identidade visual para uma marca tecnológica com linguagem modular, tipografia proprietária e aplicações digitais."
+},
+{
+id: 2,
+title: "AURORA",
+subtitle: "Editorial Series",
+category: "Editorial",
+year: "2025",
+palette: "from-blue-400 via-slate-800 to-emerald-950",
+description: "Série editorial com grelhas rígidas, fotografia tratada e ritmo tipográfico de alto contraste."
+},
+{
+id: 3,
+title: "VOLT",
+subtitle: "Campaign Language",
+category: "Campaign",
+year: "2025",
+palette: "from-lime-300 via-cyan-700 to-purple-950",
+description: "Direção visual para campanha com energia cromática, motion language e peças para social-first rollout."
+}
 ];
 
 Entregue o site completo, funcional e bonito. Priorize acabamento visual, interações suaves, código limpo e uma estética memorável.

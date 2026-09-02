@@ -49,7 +49,9 @@ async function normalizeSsrResponse(request: Request, response: Response): Promi
   if (!contentType.includes("application/json")) return response;
   const body = await response.clone().text();
   if (!isH3SwallowedErrorBody(body)) return response;
-  console.error(consumeLastCapturedError() ?? new Error(`SSR error swallowed by renderer: ${body}`));
+  console.error(
+    consumeLastCapturedError() ?? new Error(`SSR error swallowed by renderer: ${body}`),
+  );
   return new Response(renderErrorPage(), {
     status: 500,
     headers: { "content-type": "text/html; charset=utf-8" },

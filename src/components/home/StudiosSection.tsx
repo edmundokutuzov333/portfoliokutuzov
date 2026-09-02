@@ -20,12 +20,7 @@ export function StudiosSection() {
   const visible = studios.slice(0, 3);
   if (visible.length === 0) return null;
 
-  const sizeKey = readSetting<StudioLogoSize>(
-    settings,
-    "studios_section",
-    "logo_size",
-    "md",
-  );
+  const sizeKey = readSetting<StudioLogoSize>(settings, "studios_section", "logo_size", "md");
   const size = STUDIO_LOGO_SIZES[sizeKey] ?? STUDIO_LOGO_SIZES.md;
 
   return (

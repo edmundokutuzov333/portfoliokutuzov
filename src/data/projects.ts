@@ -1,9 +1,5 @@
 export type ProjectCategory =
-  | "Social Media"
-  | "Ad Campaigns"
-  | "Videos"
-  | "Image Manipulation"
-  | "Web Design";
+  "Social Media" | "Ad Campaigns" | "Videos" | "Image Manipulation" | "Web Design";
 
 export type Project = {
   id: number;

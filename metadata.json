@@ -1,0 +1,6 @@
+{
+  "name": "Imersão Criativa",
+  "description": "Edmundo Kutuzov's creative portfolio and client hub, featuring showcases, service details, and project inquiries.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

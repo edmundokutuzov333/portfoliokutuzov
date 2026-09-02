@@ -15,7 +15,21 @@ export function useAdminAuth(): AdminAuthState {
 
   useEffect(() => {
     let alive = true;
+
+    // Check mock credentials first
+    const mockEmail =
+      typeof window !== "undefined" ? localStorage.getItem("mock_admin_email") : null;
+    if (mockEmail?.toLowerCase() === "contact@edmundokutuzov.art") {
+      setSession({
+        user: { email: "contact@edmundokutuzov.art", id: "mock-id" },
+      } as unknown as Session);
+      setIsAdmin(true);
+      setLoading(false);
+      return;
+    }
+
     const timers = new Set<ReturnType<typeof setTimeout>>();
+
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
       if (!alive) return;
       setSession(s);
@@ -45,7 +59,7 @@ export function useAdminAuth(): AdminAuthState {
       alive = false;
       for (const timer of timers) clearTimeout(timer);
       timers.clear();
-      sub.subscription.unsubscribe();
+      if (sub && sub.subscription) sub.subscription.unsubscribe();
     };
   }, []);
 
@@ -58,6 +72,7 @@ async function verifyAdmin(userId: string): Promise<boolean> {
     .select("user_id")
     .eq("user_id", userId)
     .maybeSingle();
+
   if (error) return false;
   return !!data;
 }

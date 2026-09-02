@@ -1,107 +1,130 @@
 import { motion } from "framer-motion";
 import { Link } from "@tanstack/react-router";
-import { ArrowUpRight, Send } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useSiteData";
 import { readSetting } from "@/lib/cms";
+import { ShinyButton } from "@/components/ui/shiny-button";
+
+const EASE_EDITORIAL = [0.16, 1, 0.3, 1];
 
 export function Hero() {
   const { data: settings } = useSiteSettings();
   const r = <T,>(f: string, fb: T) => readSetting<T>(settings, "hero", f, fb);
-  const disciplines = r<string[]>("disciplines", [
-    "Art Direction",
-    "Communication Design",
-    "Campaign Design",
-    "Audiovisual Direction",
-  ]);
-
   return (
-    <section className="relative min-h-[100svh] pt-32 pb-20 px-5 md:px-8">
-      <div className="max-w-[1240px] mx-auto relative">
-        <div className="flex items-start justify-between mono text-[10px] tracking-[0.22em] text-slate-500">
-          <div>{r("top_left", "Edmundo Kutuzov - Art Director")}</div>
-          <div className="text-right">{r("top_right", "Maputo · Mozambique, Africa")}</div>
+    <section className="relative pt-12 pb-20 px-4 md:px-8 flex flex-col justify-center bg-[var(--color-bg)]">
+      <div className="max-w-[var(--width-wide)] mx-auto w-full relative z-10">
+        {/* Stage 1: Identity metadata */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: EASE_EDITORIAL }}
+          className="mono text-[10px] tracking-[0.2em] uppercase text-[var(--color-text-muted)] mb-12 md:mb-16"
+        >
+          {r("top_left", "Edmundo Kutuzov · Art Director")}
+        </motion.div>
+
+        {/* Core Statement */}
+        <div className="max-w-[1200px]">
+          <h1 className="display text-[clamp(2.5rem,6vw+1rem,8rem)] leading-[0.95] font-medium tracking-[-0.03em]">
+            {/* Stage 2: Main headline line by line */}
+            <span className="block overflow-hidden pb-1">
+              <motion.span
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                transition={{ duration: 0.8, delay: 0.1, ease: EASE_EDITORIAL }}
+                className="block text-[var(--color-text-muted)] text-[clamp(1.5rem,4vw+1rem,4.5rem)] mb-2"
+              >
+                {r("title_1", "I shape ideas that")}
+              </motion.span>
+            </span>
+            <span className="block overflow-hidden pb-2">
+              <motion.span
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                transition={{ duration: 0.8, delay: 0.15, ease: EASE_EDITORIAL }}
+                className="block text-[var(--color-text-primary)]"
+              >
+                {r("title_2", "cut through noise,")}
+              </motion.span>
+            </span>
+            <span className="block overflow-hidden pb-2">
+              <motion.span
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                transition={{ duration: 0.8, delay: 0.2, ease: EASE_EDITORIAL }}
+                className="block text-[var(--color-text-primary)]"
+              >
+                {r("title_3", "stay in memory,")}
+              </motion.span>
+            </span>
+
+            {/* Stage 3: Accent phrase */}
+            <span className="block overflow-hidden pb-2">
+              <motion.span
+                initial={{ opacity: 0, x: -15 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 0.35, ease: EASE_EDITORIAL }}
+                className="block text-[var(--color-accent-base)] italic pr-4"
+              >
+                {r("title_accent", "and move people.")}
+              </motion.span>
+            </span>
+          </h1>
         </div>
 
-        <div className="mt-14" />
+        {/* Lower section */}
+        <div className="mt-16 md:mt-24 grid grid-cols-1 md:grid-cols-12 gap-8 items-end">
+          {/* Stage 4: Body copy */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.45, ease: EASE_EDITORIAL }}
+            className="md:col-span-5 lg:col-span-4"
+          >
+            <p className="text-[16px] md:text-[18px] text-[var(--color-text-secondary)] leading-relaxed">
+              {r(
+                "subtitle",
+                "Building visual systems, digital products, and campaigns that establish authority on an international scale.",
+              )}
+            </p>
+          </motion.div>
 
-        <div className="mt-8 grid grid-cols-12 gap-6">
-          <div className="col-span-12 lg:col-span-9">
-            <motion.h1
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: [0.2, 0.8, 0.2, 1] }}
-              className="display text-[44px] sm:text-[64px] md:text-[88px] lg:text-[108px] leading-[0.94] font-semibold tracking-[-0.025em]"
-            >
-              <span className="text-metal">{r("title_1", "I make ideas")}</span>
-              <br />
-              <span className="text-metal">{r("title_2", "stop, take notice,")}</span>
-              <br />
-              <span className="italic font-medium text-accent">
-                {r("title_accent", "and act.")}
-              </span>
-            </motion.h1>
-
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4, duration: 0.8 }}
-              className="mt-10 max-w-xl text-[15px] md:text-base text-slate-400 leading-relaxed"
-            >
-              {r("subtitle", "")}
-            </motion.p>
-
+          {/* Stage 5 & 6: CTAs & Status */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.55, ease: EASE_EDITORIAL }}
+            className="md:col-span-7 lg:col-span-8 flex flex-col sm:flex-row items-start sm:items-center justify-end gap-6 sm:gap-8"
+          >
+            {/* Availability */}
             <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.55, duration: 0.6 }}
-              className="mt-9 flex flex-wrap items-center gap-3"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.65, ease: EASE_EDITORIAL }}
+              className="flex items-center gap-3"
             >
-              <Link
-                to="/portfolio"
-                className="group inline-flex items-center gap-2 rounded-full bg-slate-100 text-[#01040A] px-5 py-3 text-sm font-semibold hover:bg-sky-200 transition"
-              >
-                {r("cta_primary", "View Portfolio")}
-                <ArrowUpRight size={16} className="group-hover:rotate-45 transition-transform" />
-              </Link>
+              <span className="relative flex h-2 w-2">
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-400" />
+              </span>
+              <span className="mono text-[10px] tracking-[0.2em] uppercase text-[var(--color-text-secondary)]">
+                {r("status", "Available for projects")}
+              </span>
+            </motion.div>
+
+            <div className="flex items-center gap-4">
+              <ShinyButton to="/portfolio">{r("cta_primary", "Explore work")}</ShinyButton>
               <Link
                 to="/contact"
-                className="inline-flex items-center gap-2 rounded-full border border-white/15 px-5 py-3 text-sm font-medium text-slate-200 hover:border-sky-300/50 hover:text-sky-200 transition"
+                className="group flex h-12 w-12 items-center justify-center rounded-full border border-[var(--color-border-base)] bg-[var(--color-surface)] text-[var(--color-text-primary)] transition-colors hover:border-[var(--color-accent-hover)] hover:bg-[var(--color-accent-subtle)]"
+                aria-label="Start a project"
               >
-                {r("cta_secondary", "Contact Me")} <Send size={14} />
+                <ArrowUpRight
+                  size={16}
+                  className="transition-transform group-hover:translate-x-[2px] group-hover:-translate-y-[2px]"
+                />
               </Link>
-            </motion.div>
-          </div>
-
-          <motion.aside
-            initial={{ opacity: 0, x: 14 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.5, duration: 0.7 }}
-            className="col-span-12 lg:col-span-3 lg:pl-6 lg:border-l border-white/[0.08]"
-          >
-            <div className="mono text-[10px] tracking-[0.24em] text-slate-500">
-              {r("status_label", "Current Status")}
             </div>
-            <div className="mt-4 flex items-center gap-2 text-sm text-slate-200">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full rounded-full bg-sky-300 opacity-60 animate-ping" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-300" />
-              </span>
-              {r("status", "Available for projects")}
-            </div>
-            <div className="mt-6 space-y-2 text-sm text-slate-400">
-              <div>{r("location", "Maputo · Remote")}</div>
-              <div className="display text-2xl text-white mt-3">{r("year", "2026")}</div>
-            </div>
-
-            <div className="mt-10 space-y-3">
-              <div className="mono text-[10px] tracking-[0.22em] text-slate-500">Disciplines</div>
-              <ul className="space-y-2 text-[13px] text-slate-300">
-                {disciplines.map((d) => (
-                  <li key={d}>{d}</li>
-                ))}
-              </ul>
-            </div>
-          </motion.aside>
+          </motion.div>
         </div>
       </div>
     </section>

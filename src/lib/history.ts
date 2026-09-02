@@ -2,6 +2,7 @@
 // We capture the CURRENT row before an admin write, so the history reflects
 // "what it was before this change". The trigger keeps the last 5 versions.
 import { supabase } from "@/integrations/supabase/client";
+import { isUuid } from "@/lib/utils";
 
 export type EntityType = "site_settings" | "projects" | "clients";
 
@@ -23,6 +24,7 @@ export async function snapshotBefore(
       // Only snapshot if a row already existed.
       if (data) snapshot = (data.value as Record<string, unknown>) ?? {};
     } else {
+      if (!isUuid(entityId)) return;
       const { data } = await supabase.from(entity).select("*").eq("id", entityId).maybeSingle();
       if (data) snapshot = data as Record<string, unknown>;
     }
@@ -54,6 +56,10 @@ export async function restoreSnapshot(
         onConflict: "key",
       });
     return { error: error?.message ?? null };
+  }
+
+  if (!isUuid(entityId)) {
+    return { error: "Cannot restore item: invalid identifier." };
   }
 
   // For projects/clients, drop server-managed fields before restore.

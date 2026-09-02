@@ -8,17 +8,20 @@ import {
 } from "@tanstack/react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
+import { AiAssistant } from "@/components/AiAssistant";
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { AppErrorBoundary, AppErrorFallback } from "@/components/AppErrorBoundary";
-import { InteractiveBackground } from "@/components/visual/InteractiveBackground";
-import { NoiseLayer } from "@/components/visual/NoiseLayer";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { resetKnownCorruptedState } from "@/lib/browser-safe";
-import { installRuntimeDiagnostics, markRenderHealthy, recordRuntimeError } from "@/lib/runtime-diagnostics";
+import {
+  installRuntimeDiagnostics,
+  markRenderHealthy,
+  recordRuntimeError,
+} from "@/lib/runtime-diagnostics";
 
 interface RouterContext {
   queryClient: QueryClient;
@@ -26,18 +29,24 @@ interface RouterContext {
 
 function NotFoundComponent() {
   return (
-    <div className="relative z-10 min-h-screen grid place-items-center px-4">
-      <div className="text-center">
-        <p className="mono text-[10px] text-[var(--color-acc-blue)]">/// 404</p>
-        <h1 className="display text-7xl mt-4 text-metal">Lost in the grid.</h1>
-        <p className="mt-3 text-sm text-[var(--color-text-muted)]">
-          A página que procuras saiu do sistema.
+    <div className="relative z-10 min-h-screen grid place-items-center px-4 bg-[var(--color-bg)]">
+      <div className="text-center max-w-lg mx-auto">
+        <p className="mono text-[10px] tracking-[0.3em] uppercase text-[var(--color-text-muted)] mb-8">
+          Error 404
+        </p>
+        <h1 className="display text-6xl sm:text-8xl leading-[0.95] tracking-[-0.03em] text-[var(--color-text-primary)]">
+          Lost in <br className="hidden sm:block" />
+          <span className="italic text-[var(--color-text-muted)]">the grid.</span>
+        </h1>
+        <p className="mt-8 text-[15px] text-[var(--color-text-secondary)] leading-relaxed max-w-sm mx-auto">
+          The page you are looking for has left the system. It might have been moved, renamed, or
+          never existed in the first place.
         </p>
         <a
           href="/"
-          className="mt-8 inline-flex items-center rounded-full bg-[#1d9bff] text-black px-5 py-3 text-sm font-semibold"
+          className="mt-12 inline-flex items-center rounded-full bg-[var(--color-text-primary)] text-[var(--color-bg)] px-8 py-3.5 text-[14px] font-semibold transition-colors hover:bg-[var(--color-text-secondary)]"
         >
-          Voltar ao início
+          Return to surface
         </a>
       </div>
     </div>
@@ -118,7 +127,6 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:type", content: "website" },
-      { property: "og:site_name", content: "Edmundo Kutuzov" },
       {
         property: "og:image",
         content:
@@ -182,8 +190,7 @@ function RootComponent() {
       <QueryClientProvider client={queryClient}>
         {!isAdmin && (
           <AppErrorBoundary label="interactive background" minimal>
-            <InteractiveBackground />
-            <NoiseLayer />
+            <div className="fixed inset-0 z-0 bg-[var(--color-bg)]" />
           </AppErrorBoundary>
         )}
         <div className="relative z-10">
@@ -221,6 +228,7 @@ function RootComponent() {
             }}
           />
         </AppErrorBoundary>
+        {!isAdmin && <AiAssistant />}
       </QueryClientProvider>
     </AppErrorBoundary>
   );

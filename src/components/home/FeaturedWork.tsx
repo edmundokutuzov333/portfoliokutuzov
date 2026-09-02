@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import { useProjects, useSiteSettings } from "@/hooks/useSiteData";
 import { MAX_FEATURED, readSetting, type DbProject } from "@/lib/cms";
+import clsx from "clsx";
 
 function pickFeatured(projects: DbProject[] | undefined): DbProject[] {
   if (!projects?.length) return [];
@@ -23,101 +24,158 @@ export function FeaturedWork() {
   const r = <T,>(f: string, fb: T) => readSetting<T>(settings, "featured_section", f, fb);
 
   const featured = pickFeatured(projects);
+
   if (featured.length === 0) return null;
 
-  const [primary, ...rest] = featured;
-
   return (
-    <section className="relative px-5 md:px-8 py-24">
-      <div className="max-w-[1240px] mx-auto">
-        <div className="flex items-end justify-between gap-6">
+    <section className="relative px-4 md:px-8 py-32 bg-[var(--color-bg)]">
+      <div className="max-w-[var(--width-wide)] mx-auto">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16 md:mb-24">
           <div>
-            <p className="mono text-[10px] tracking-[0.28em] text-sky-300/80">
-              {r("eyebrow", "Featured work")}
-            </p>
-            <h2 className="display text-3xl sm:text-5xl mt-4 leading-[1.02] tracking-[-0.025em] text-metal">
-              {r("title", "Selected projects.")}
+            <h2 className="display text-4xl sm:text-5xl lg:text-6xl leading-[1] tracking-[-0.03em] text-[var(--color-text-primary)] max-w-xl">
+              {r("title", "Selected work")}
             </h2>
-            <p className="mt-3 max-w-md text-[14px] text-slate-400">
-              {r("subtitle", "A handful of recent pieces currently defining the direction.")}
-            </p>
           </div>
           <Link
             to="/portfolio"
-            className="hidden sm:inline-flex items-center gap-2 text-[12px] mono tracking-[0.18em] text-slate-400 hover:text-sky-200 transition"
+            className="group flex items-center gap-2 text-[12px] mono tracking-[0.15em] uppercase text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition"
           >
-            View all <ArrowUpRight size={14} />
+            Full Archive{" "}
+            <ArrowUpRight
+              size={14}
+              className="opacity-60 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
+            />
           </Link>
         </div>
 
-        <div className="mt-10 grid gap-4 md:grid-cols-3">
-          <FeaturedCard project={primary} primary />
-          <div className="grid gap-4 md:col-span-1 md:contents">
-            {rest.map((p) => (
-              <FeaturedCard key={p.id} project={p} />
-            ))}
-          </div>
+        <div className="flex flex-col gap-24 md:gap-40">
+          {featured.map((p, index) => (
+            <FeaturedCard key={p.id} project={p} index={index} />
+          ))}
+        </div>
+
+        <div className="mt-32 flex justify-center border-t border-[var(--color-border-subtle)] pt-16">
+          <Link
+            to="/portfolio"
+            className="group flex h-14 items-center justify-center gap-3 rounded-full bg-[var(--color-text-primary)] px-8 text-[13px] font-semibold text-[var(--color-bg)] transition-all hover:bg-[var(--color-text-secondary)]"
+          >
+            View all projects
+          </Link>
         </div>
       </div>
     </section>
   );
 }
 
-function FeaturedCard({ project, primary = false }: { project: DbProject; primary?: boolean }) {
+function FeaturedCard({ project, index }: { project: DbProject; index: number }) {
+  const isEven = index % 2 === 0;
+
+  // First item gets a massive hero treatment
+  if (index === 0) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="group relative"
+      >
+        <Link
+          to="/portfolio/$slug"
+          params={{ slug: project.slug }}
+          className="block focus:outline-none"
+        >
+          <div className="relative w-full overflow-hidden bg-[var(--color-surface)]">
+            {project.cover_url && (
+              <img
+                src={project.cover_url}
+                alt={project.title}
+                loading="lazy"
+                decoding="async"
+                style={{ display: "block", width: "100%", height: "auto" }}
+                className="transition-transform duration-[1.5s] ease-[0.16,1,0.3,1] group-hover:scale-[1.02]"
+              />
+            )}
+          </div>
+          <div className="mt-6 md:mt-8 grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
+            <div className="md:col-span-8">
+              <h3 className="display text-4xl md:text-5xl lg:text-6xl text-[var(--color-text-primary)] tracking-[-0.02em] group-hover:text-[var(--color-accent-hover)] transition-colors">
+                {project.title}
+              </h3>
+            </div>
+            <div className="md:col-span-4 md:text-right flex flex-col md:items-end justify-start pt-2">
+              <div className="mono text-[10px] uppercase tracking-[0.2em] text-[var(--color-text-muted)] mb-2">
+                {project.category} {project.year ? `· ${project.year}` : ""}
+              </div>
+              {project.client_name && (
+                <div className="text-[14px] font-medium text-[var(--color-text-secondary)]">
+                  Client: {project.client_name}
+                </div>
+              )}
+            </div>
+          </div>
+        </Link>
+      </motion.div>
+    );
+  }
+
+  // Subsequent items alternate left/right with different aspect ratios
   return (
     <motion.div
-      initial={{ opacity: 0, y: 18 }}
+      initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.2 }}
-      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-      className={primary ? "md:col-span-2 md:row-span-1" : ""}
+      viewport={{ once: true, margin: "-100px" }}
+      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+      className={clsx("group grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16 items-center")}
     >
-      <Link
-        to="/portfolio"
-        className="group relative block overflow-hidden rounded-2xl border border-white/[0.08] bg-[#030814] shadow-[0_24px_90px_rgba(0,0,0,0.32)]"
+      <div
+        className={clsx(
+          "md:col-span-7 relative overflow-hidden bg-[var(--color-surface)]",
+          isEven ? "md:order-1" : "md:order-2",
+        )}
       >
-        <div
-          className="relative w-full overflow-hidden bg-[#01040A]"
-          style={{ aspectRatio: primary ? "16 / 11" : "4 / 5" }}
+        <Link
+          to="/portfolio/$slug"
+          params={{ slug: project.slug }}
+          className="block focus:outline-none"
         >
-          {project.cover_url ? (
+          {project.cover_url && (
             <img
               src={project.cover_url}
               alt={project.title}
               loading="lazy"
-              className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-[1.02]"
+              decoding="async"
+              style={{ display: "block", width: "100%", height: "auto" }}
+              className="transition-transform duration-[1.5s] ease-[0.16,1,0.3,1] group-hover:scale-[1.02]"
             />
-          ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-[#01040A] via-[#071A33] to-[#0B3B73]" />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#01040A]/85 via-[#01040A]/20 to-transparent" />
-          <div className="absolute left-5 right-5 bottom-5 flex items-end justify-between gap-3">
-            <div className="min-w-0">
-              <div className="mono text-[10px] tracking-[0.22em] text-sky-300/80">
-                {project.category}
-                {project.year ? ` · ${project.year}` : ""}
-              </div>
-              <div
-                className={
-                  primary
-                    ? "display text-2xl sm:text-3xl mt-2 text-white truncate"
-                    : "display text-lg mt-2 text-white truncate"
-                }
-              >
-                {project.title}
-              </div>
-              {project.client_name && (
-                <div className="text-[12px] text-slate-300 mt-0.5 truncate">
-                  {project.client_name}
-                </div>
-              )}
+        </Link>
+      </div>
+      <div className={clsx("md:col-span-5 flex flex-col", isEven ? "md:order-2" : "md:order-1")}>
+        <Link
+          to="/portfolio/$slug"
+          params={{ slug: project.slug }}
+          className="block focus:outline-none"
+        >
+          <div className="mono text-[10px] tracking-[0.2em] uppercase text-[var(--color-text-muted)] mb-4">
+            {project.category} {project.year ? `· ${project.year}` : ""}
+          </div>
+          <h3 className="display text-3xl md:text-4xl lg:text-5xl text-[var(--color-text-primary)] tracking-[-0.02em] group-hover:text-[var(--color-accent-hover)] transition-colors">
+            {project.title}
+          </h3>
+          {project.client_name && (
+            <div className="mt-4 text-[15px] font-medium text-[var(--color-text-secondary)]">
+              {project.client_name}
             </div>
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/15 bg-white/[0.06] text-white transition group-hover:border-sky-300/55 group-hover:bg-sky-300/[0.12]">
-              <ArrowUpRight size={14} />
+          )}
+          <div className="mt-8 flex items-center gap-3 text-[13px] font-medium text-[var(--color-text-primary)]">
+            <span className="h-[1px] w-8 bg-[var(--color-text-primary)] transition-all duration-300 group-hover:w-12 group-hover:bg-[var(--color-accent-hover)]" />
+            <span className="group-hover:text-[var(--color-accent-hover)] transition-colors">
+              Explore project
             </span>
           </div>
-        </div>
-      </Link>
+        </Link>
+      </div>
     </motion.div>
   );
 }

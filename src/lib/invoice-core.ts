@@ -133,7 +133,13 @@ export const STATUS_LABEL: Record<string, string> = {
   void: "Void",
 };
 
-export const PRESET_TERMS: Array<{ id: string; label: string; days: number | null; deposit: number; text: string }> = [
+export const PRESET_TERMS: Array<{
+  id: string;
+  label: string;
+  days: number | null;
+  deposit: number;
+  text: string;
+}> = [
   {
     id: "deposit50",
     label: "50% upfront",

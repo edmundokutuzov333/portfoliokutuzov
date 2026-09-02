@@ -33,7 +33,13 @@ export class AppErrorBoundary extends Component<Props, State> {
   render() {
     if (!this.state.error) return this.props.children;
     if (this.props.minimal) {
-      return <ComponentErrorFallback label={this.props.label} error={this.state.error} onReset={this.reset} />;
+      return (
+        <ComponentErrorFallback
+          label={this.props.label}
+          error={this.state.error}
+          onReset={this.reset}
+        />
+      );
     }
     return <AppErrorFallback error={this.state.error} onReset={this.reset} />;
   }
@@ -46,7 +52,8 @@ export function AppErrorFallback({ error, onReset }: { error?: Error; onReset?: 
         <p className="mono text-[10px] text-[var(--color-acc-blue)]">/// RUNTIME RECOVERY</p>
         <h1 className="display mt-4 text-4xl text-metal">The interface recovered.</h1>
         <p className="mt-3 text-sm leading-6 text-[var(--color-text-muted)]">
-          A rendering error was isolated so the preview does not go blank. You can retry the render or reload the page.
+          A rendering error was isolated so the preview does not go blank. You can retry the render
+          or reload the page.
         </p>
         {import.meta.env.DEV && error?.message && (
           <pre className="mt-5 max-h-44 overflow-auto rounded-md border border-white/10 bg-white/[0.04] p-3 text-left font-mono text-xs text-red-300">

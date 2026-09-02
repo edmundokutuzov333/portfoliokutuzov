@@ -28,7 +28,10 @@ export default defineTool({
       return { content: [{ type: "text", text: error.message }], isError: true };
     }
     if (!data) {
-      return { content: [{ type: "text", text: `No project found for slug: ${slug}` }], isError: true };
+      return {
+        content: [{ type: "text", text: `No project found for slug: ${slug}` }],
+        isError: true,
+      };
     }
     return {
       content: [{ type: "text", text: JSON.stringify(data) }],

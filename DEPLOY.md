@@ -3,10 +3,10 @@
 The build targets Cloudflare and produces both deployment shapes from a single
 `npm run build`:
 
-| Output | Path | Used by |
-|--------|------|---------|
-| Workers Static Assets bundle | `dist/server/` + `dist/client/` | `wrangler deploy` (modern, recommended) |
-| Pages advanced `_worker.js` | `dist/client/_worker.js/` + `_routes.json` | Cloudflare **Pages** (dashboard / `wrangler pages deploy`) |
+| Output                       | Path                                       | Used by                                                    |
+| ---------------------------- | ------------------------------------------ | ---------------------------------------------------------- |
+| Workers Static Assets bundle | `dist/server/` + `dist/client/`            | `wrangler deploy` (modern, recommended)                    |
+| Pages advanced `_worker.js`  | `dist/client/_worker.js/` + `_routes.json` | Cloudflare **Pages** (dashboard / `wrangler pages deploy`) |
 
 ## Option A — Cloudflare Pages (dashboard)
 
