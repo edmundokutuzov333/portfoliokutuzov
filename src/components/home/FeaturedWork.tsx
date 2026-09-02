@@ -77,12 +77,12 @@ function FeaturedCard({ project, index }: { project: DbProject; index: number })
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
         className="group relative"
       >
         <Link
           to="/portfolio/$slug"
-          params={{ slug: project.slug }}
+          params={{ slug: project.slug ?? "" }}
           className="block focus:outline-none"
         >
           <div className="relative w-full overflow-hidden bg-[var(--color-surface)]">
@@ -125,7 +125,7 @@ function FeaturedCard({ project, index }: { project: DbProject; index: number })
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-100px" }}
-      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
       className={clsx("group grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16 items-center")}
     >
       <div
@@ -136,7 +136,7 @@ function FeaturedCard({ project, index }: { project: DbProject; index: number })
       >
         <Link
           to="/portfolio/$slug"
-          params={{ slug: project.slug }}
+          params={{ slug: project.slug ?? "" }}
           className="block focus:outline-none"
         >
           {project.cover_url && (
@@ -154,7 +154,7 @@ function FeaturedCard({ project, index }: { project: DbProject; index: number })
       <div className={clsx("md:col-span-5 flex flex-col", isEven ? "md:order-2" : "md:order-1")}>
         <Link
           to="/portfolio/$slug"
-          params={{ slug: project.slug }}
+          params={{ slug: project.slug ?? "" }}
           className="block focus:outline-none"
         >
           <div className="mono text-[10px] tracking-[0.2em] uppercase text-[var(--color-text-muted)] mb-4">

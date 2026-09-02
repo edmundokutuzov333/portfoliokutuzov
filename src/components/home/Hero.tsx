@@ -5,7 +5,7 @@ import { useSiteSettings } from "@/hooks/useSiteData";
 import { readSetting } from "@/lib/cms";
 import { ShinyButton } from "@/components/ui/shiny-button";
 
-const EASE_EDITORIAL = [0.16, 1, 0.3, 1];
+const EASE_EDITORIAL: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 export function Hero() {
   const { data: settings } = useSiteSettings();

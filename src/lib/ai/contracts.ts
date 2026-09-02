@@ -39,7 +39,7 @@ export interface NormalizedProjectSummary {
 export interface ActionEvent {
   action: string;
   projectSlug?: string | null;
-  payload?: Record<string, unknown>;
+  payload?: Record<string, string | number | boolean | null>;
 }
 
 export interface StreamError {
@@ -59,7 +59,7 @@ export type StreamEvent =
       type: "action";
       action: string;
       projectSlug?: string | null;
-      payload?: Record<string, unknown>;
+      payload?: Record<string, string | number | boolean | null>;
     }
   | { type: "status"; message: string }
   | { type: "session_update"; sessionId: string; contextSummary?: Record<string, unknown> }
