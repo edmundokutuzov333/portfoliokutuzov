@@ -2,31 +2,5 @@
   "buildCommand": "npm run build",
   "devCommand": "npm run dev",
   "outputDirectory": ".output/public",
-  "installCommand": "npm install",
-  "env": {
-    "GEMINI_API_KEY": {
-      "description": "Google Gemini API key for AI features",
-      "required": false
-    },
-    "AI_MODEL_PRIMARY": {
-      "description": "Primary AI model (defaults to gemini-2.0-flash)",
-      "default": "gemini-2.0-flash"
-    },
-    "AI_MODEL_FALLBACK": {
-      "description": "Fallback AI model (defaults to gemini-2.0-flash)",
-      "default": "gemini-2.0-flash"
-    },
-    "GEMINI_LIVE_MODEL": {
-      "description": "Model for live voice (defaults to gemini-3.1-flash-live-preview)",
-      "default": "gemini-3.1-flash-live-preview"
-    },
-    "GEMINI_TTS_MODEL": {
-      "description": "Model for text-to-speech (defaults to gemini-3.1-flash-tts-preview)",
-      "default": "gemini-3.1-flash-tts-preview"
-    },
-    "PUBLIC_SITE_URL": {
-      "description": "Public site URL for links and redirects",
-      "default": "https://portfoliokutuzov-omega.vercel.app"
-    }
-  }
+  "installCommand": "npm install"
 }
