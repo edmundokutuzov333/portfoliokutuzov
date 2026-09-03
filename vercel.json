@@ -28,6 +28,5 @@
       "description": "Public site URL for links and redirects",
       "default": "https://portfoliokutuzov-omega.vercel.app"
     }
-  },
-  "nodeVersion": "22"
+  }
 }
