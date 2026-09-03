@@ -94,7 +94,7 @@ function FeaturedCard({ project, index }: { project: DbProject; index: number })
       >
         <Link
           to="/portfolio/$slug"
-          params={{ slug: project.slug }}
+          params={{ slug: project.slug || project.id }}
           className="block focus:outline-none"
         >
           <div className="relative w-full overflow-hidden bg-[var(--color-surface)]">
@@ -148,7 +148,7 @@ function FeaturedCard({ project, index }: { project: DbProject; index: number })
       >
         <Link
           to="/portfolio/$slug"
-          params={{ slug: project.slug }}
+          params={{ slug: project.slug || project.id }}
           className="block focus:outline-none"
         >
           {project.cover_url && (
@@ -166,7 +166,7 @@ function FeaturedCard({ project, index }: { project: DbProject; index: number })
       <div className={clsx("md:col-span-5 flex flex-col", isEven ? "md:order-2" : "md:order-1")}>
         <Link
           to="/portfolio/$slug"
-          params={{ slug: project.slug }}
+          params={{ slug: project.slug || project.id }}
           className="block focus:outline-none"
         >
           <div className="mono text-[10px] tracking-[0.2em] uppercase text-[var(--color-text-muted)] mb-4">

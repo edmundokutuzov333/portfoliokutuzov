@@ -59,7 +59,9 @@ const getCarouselConfig = (width: number): CarouselConfig => {
 
 export function CinematicPortfolioReel() {
   const { data: projectsData } = useProjects();
-  const baseProjects = (projectsData || []).filter((p) => p.cover_url);
+  const baseProjects = React.useMemo(() => {
+    return (projectsData || []).filter((p) => p.cover_url);
+  }, [projectsData]);
 
   const [slides, setSlides] = React.useState<DbProject[]>([]);
 
@@ -73,7 +75,7 @@ export function CinematicPortfolioReel() {
       }
       setSlides(newSlides);
     }
-  }, [baseProjects.length]); // using length as a stable dependency
+  }, [baseProjects]);
 
   if (slides.length === 0) {
     return null;
@@ -104,7 +106,7 @@ const CarouselStacked = ({ slides }: { slides: DbProject[] }) => {
   const prefersReducedMotion = useReducedMotion();
 
   // Continuous Autoplay
-  const animationRef = React.useRef<number>();
+  const animationRef = React.useRef<number | undefined>(undefined);
   const isDragging = React.useRef(false);
 
   React.useEffect(() => {

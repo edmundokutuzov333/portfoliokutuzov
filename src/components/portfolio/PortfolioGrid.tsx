@@ -127,8 +127,7 @@ function ProjectCard({ project, index = 0 }: { project: DbProject; index?: numbe
 
 export function PortfolioGrid() {
   const { data: projects = [], isLoading } = useProjects();
-  const searchParams = useSearch({ from: "/portfolio/", strict: false }) as
-    PortfolioSearch | undefined;
+  const searchParams = useSearch({ strict: false }) as PortfolioSearch | undefined;
   const navigate = useNavigate();
 
   // Initialize state from URL search params if present

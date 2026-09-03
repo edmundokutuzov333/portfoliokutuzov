@@ -7,19 +7,19 @@
   --color-surface: #070d1a;
   --color-surface-elevated: #0b1526;
   --color-surface-highlight: #13223b;
-  
+
   --color-text-primary: #f8fafc;
   --color-text-secondary: #94a3b8;
   --color-text-muted: #475569;
-  
+
   --color-accent-base: #0284c7;
   --color-accent-hover: #38bdf8;
   --color-accent-subtle: rgba(56, 189, 248, 0.12);
-  
+
   --color-border-subtle: rgba(255, 255, 255, 0.06);
   --color-border-base: rgba(255, 255, 255, 0.12);
   --color-border-hover: rgba(255, 255, 255, 0.22);
-  
+
   --font-display: "Space Grotesk", Inter, sans-serif;
   --font-sans: Inter, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
@@ -31,7 +31,7 @@
   --motion-medium: 0.6s;
   --motion-slow: 0.8s;
   --motion-cinematic: 1.2s;
-  
+
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
   --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in: cubic-bezier(0.3, 0, 1, 1);

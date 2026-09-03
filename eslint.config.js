@@ -10,6 +10,7 @@ export default tseslint.config(
     ignores: [
       "dist",
       ".output",
+      ".vercel",
       ".vinxi",
       "src/routes/*mcp*/**",
       "src/routes/*well-known*/**",
