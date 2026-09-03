@@ -3,16 +3,18 @@ var hasRequiredJsonSchemaTraverse$1;
 function requireJsonSchemaTraverse$1() {
   if (hasRequiredJsonSchemaTraverse$1) return jsonSchemaTraverse$1.exports;
   hasRequiredJsonSchemaTraverse$1 = 1;
-  var traverse = (jsonSchemaTraverse$1.exports = function (schema, opts, cb) {
+  var traverse = jsonSchemaTraverse$1.exports = function(schema, opts, cb) {
     if (typeof opts == "function") {
       cb = opts;
       opts = {};
     }
     cb = opts.cb || cb;
-    var pre = typeof cb == "function" ? cb : cb.pre || function () {};
-    var post = cb.post || function () {};
+    var pre = typeof cb == "function" ? cb : cb.pre || function() {
+    };
+    var post = cb.post || function() {
+    };
     _traverse(opts, pre, post, schema, "", schema);
-  });
+  };
   traverse.keywords = {
     additionalItems: true,
     items: true,
@@ -22,20 +24,20 @@ function requireJsonSchemaTraverse$1() {
     not: true,
     if: true,
     then: true,
-    else: true,
+    else: true
   };
   traverse.arrayKeywords = {
     items: true,
     allOf: true,
     anyOf: true,
-    oneOf: true,
+    oneOf: true
   };
   traverse.propsKeywords = {
     $defs: true,
     definitions: true,
     properties: true,
     patternProperties: true,
-    dependencies: true,
+    dependencies: true
   };
   traverse.skipKeywords = {
     default: true,
@@ -55,20 +57,9 @@ function requireJsonSchemaTraverse$1() {
     minItems: true,
     uniqueItems: true,
     maxProperties: true,
-    minProperties: true,
+    minProperties: true
   };
-  function _traverse(
-    opts,
-    pre,
-    post,
-    schema,
-    jsonPtr,
-    rootSchema,
-    parentJsonPtr,
-    parentKeyword,
-    parentSchema,
-    keyIndex,
-  ) {
+  function _traverse(opts, pre, post, schema, jsonPtr, rootSchema, parentJsonPtr, parentKeyword, parentSchema, keyIndex) {
     if (schema && typeof schema == "object" && !Array.isArray(schema)) {
       pre(schema, jsonPtr, rootSchema, parentJsonPtr, parentKeyword, parentSchema, keyIndex);
       for (var key in schema) {
@@ -76,36 +67,14 @@ function requireJsonSchemaTraverse$1() {
         if (Array.isArray(sch)) {
           if (key in traverse.arrayKeywords) {
             for (var i = 0; i < sch.length; i++)
-              _traverse(
-                opts,
-                pre,
-                post,
-                sch[i],
-                jsonPtr + "/" + key + "/" + i,
-                rootSchema,
-                jsonPtr,
-                key,
-                schema,
-                i,
-              );
+              _traverse(opts, pre, post, sch[i], jsonPtr + "/" + key + "/" + i, rootSchema, jsonPtr, key, schema, i);
           }
         } else if (key in traverse.propsKeywords) {
           if (sch && typeof sch == "object") {
             for (var prop in sch)
-              _traverse(
-                opts,
-                pre,
-                post,
-                sch[prop],
-                jsonPtr + "/" + key + "/" + escapeJsonPtr(prop),
-                rootSchema,
-                jsonPtr,
-                key,
-                schema,
-                prop,
-              );
+              _traverse(opts, pre, post, sch[prop], jsonPtr + "/" + key + "/" + escapeJsonPtr(prop), rootSchema, jsonPtr, key, schema, prop);
           }
-        } else if (key in traverse.keywords || (opts.allKeys && !(key in traverse.skipKeywords))) {
+        } else if (key in traverse.keywords || opts.allKeys && !(key in traverse.skipKeywords)) {
           _traverse(opts, pre, post, sch, jsonPtr + "/" + key, rootSchema, jsonPtr, key, schema);
         }
       }
@@ -122,16 +91,18 @@ var hasRequiredJsonSchemaTraverse;
 function requireJsonSchemaTraverse() {
   if (hasRequiredJsonSchemaTraverse) return jsonSchemaTraverse.exports;
   hasRequiredJsonSchemaTraverse = 1;
-  var traverse = (jsonSchemaTraverse.exports = function (schema, opts, cb) {
+  var traverse = jsonSchemaTraverse.exports = function(schema, opts, cb) {
     if (typeof opts == "function") {
       cb = opts;
       opts = {};
     }
     cb = opts.cb || cb;
-    var pre = typeof cb == "function" ? cb : cb.pre || function () {};
-    var post = cb.post || function () {};
+    var pre = typeof cb == "function" ? cb : cb.pre || function() {
+    };
+    var post = cb.post || function() {
+    };
     _traverse(opts, pre, post, schema, "", schema);
-  });
+  };
   traverse.keywords = {
     additionalItems: true,
     items: true,
@@ -141,20 +112,20 @@ function requireJsonSchemaTraverse() {
     not: true,
     if: true,
     then: true,
-    else: true,
+    else: true
   };
   traverse.arrayKeywords = {
     items: true,
     allOf: true,
     anyOf: true,
-    oneOf: true,
+    oneOf: true
   };
   traverse.propsKeywords = {
     $defs: true,
     definitions: true,
     properties: true,
     patternProperties: true,
-    dependencies: true,
+    dependencies: true
   };
   traverse.skipKeywords = {
     default: true,
@@ -174,20 +145,9 @@ function requireJsonSchemaTraverse() {
     minItems: true,
     uniqueItems: true,
     maxProperties: true,
-    minProperties: true,
+    minProperties: true
   };
-  function _traverse(
-    opts,
-    pre,
-    post,
-    schema,
-    jsonPtr,
-    rootSchema,
-    parentJsonPtr,
-    parentKeyword,
-    parentSchema,
-    keyIndex,
-  ) {
+  function _traverse(opts, pre, post, schema, jsonPtr, rootSchema, parentJsonPtr, parentKeyword, parentSchema, keyIndex) {
     if (schema && typeof schema == "object" && !Array.isArray(schema)) {
       pre(schema, jsonPtr, rootSchema, parentJsonPtr, parentKeyword, parentSchema, keyIndex);
       for (var key in schema) {
@@ -195,36 +155,14 @@ function requireJsonSchemaTraverse() {
         if (Array.isArray(sch)) {
           if (key in traverse.arrayKeywords) {
             for (var i = 0; i < sch.length; i++)
-              _traverse(
-                opts,
-                pre,
-                post,
-                sch[i],
-                jsonPtr + "/" + key + "/" + i,
-                rootSchema,
-                jsonPtr,
-                key,
-                schema,
-                i,
-              );
+              _traverse(opts, pre, post, sch[i], jsonPtr + "/" + key + "/" + i, rootSchema, jsonPtr, key, schema, i);
           }
         } else if (key in traverse.propsKeywords) {
           if (sch && typeof sch == "object") {
             for (var prop in sch)
-              _traverse(
-                opts,
-                pre,
-                post,
-                sch[prop],
-                jsonPtr + "/" + key + "/" + escapeJsonPtr(prop),
-                rootSchema,
-                jsonPtr,
-                key,
-                schema,
-                prop,
-              );
+              _traverse(opts, pre, post, sch[prop], jsonPtr + "/" + key + "/" + escapeJsonPtr(prop), rootSchema, jsonPtr, key, schema, prop);
           }
-        } else if (key in traverse.keywords || (opts.allKeys && !(key in traverse.skipKeywords))) {
+        } else if (key in traverse.keywords || opts.allKeys && !(key in traverse.skipKeywords)) {
           _traverse(opts, pre, post, sch, jsonPtr + "/" + key, rootSchema, jsonPtr, key, schema);
         }
       }
@@ -236,4 +174,7 @@ function requireJsonSchemaTraverse() {
   }
   return jsonSchemaTraverse.exports;
 }
-export { requireJsonSchemaTraverse as a, requireJsonSchemaTraverse$1 as r };
+export {
+  requireJsonSchemaTraverse as a,
+  requireJsonSchemaTraverse$1 as r
+};

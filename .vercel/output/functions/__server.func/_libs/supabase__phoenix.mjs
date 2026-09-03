@@ -5,7 +5,7 @@ var closure = (value) => {
       value
     );
   } else {
-    let closure2 = function () {
+    let closure2 = function() {
       return value;
     };
     return closure2;
@@ -18,38 +18,43 @@ var DEFAULT_VSN = "2.0.0";
 var DEFAULT_TIMEOUT = 1e4;
 var WS_CLOSE_NORMAL = 1e3;
 var MAX_LONGPOLL_BATCH_SIZE = 100;
-var SOCKET_STATES =
+var SOCKET_STATES = (
   /** @type {const} */
-  { connecting: 0, open: 1, closing: 2, closed: 3 };
-var CHANNEL_STATES =
+  { connecting: 0, open: 1, closing: 2, closed: 3 }
+);
+var CHANNEL_STATES = (
   /** @type {const} */
   {
     closed: "closed",
     errored: "errored",
     joined: "joined",
     joining: "joining",
-    leaving: "leaving",
-  };
-var CHANNEL_EVENTS =
+    leaving: "leaving"
+  }
+);
+var CHANNEL_EVENTS = (
   /** @type {const} */
   {
     close: "phx_close",
     error: "phx_error",
     join: "phx_join",
     reply: "phx_reply",
-    leave: "phx_leave",
-  };
-var TRANSPORTS =
+    leave: "phx_leave"
+  }
+);
+var TRANSPORTS = (
   /** @type {const} */
   {
     longpoll: "longpoll",
-    websocket: "websocket",
-  };
-var XHR_STATES =
+    websocket: "websocket"
+  }
+);
+var XHR_STATES = (
   /** @type {const} */
   {
-    complete: 4,
-  };
+    complete: 4
+  }
+);
 var AUTH_TOKEN_PREFIX = "base64url.bearer.phx.";
 var Push = class {
   /**
@@ -62,11 +67,9 @@ var Push = class {
   constructor(channel, event, payload, timeout) {
     this.channel = channel;
     this.event = event;
-    this.payload =
-      payload ||
-      function () {
-        return {};
-      };
+    this.payload = payload || function() {
+      return {};
+    };
     this.receivedResp = null;
     this.timeout = timeout;
     this.timeoutTimer = null;
@@ -97,7 +100,7 @@ var Push = class {
       event: this.event,
       payload: this.payload(),
       ref: this.ref,
-      join_ref: this.channel.joinRef(),
+      join_ref: this.channel.joinRef()
     });
   }
   /**
@@ -170,9 +173,9 @@ var Push = class {
 };
 var Timer = class {
   /**
-   * @param {() => void} callback
-   * @param {(tries: number) => number} timerCalc
-   */
+  * @param {() => void} callback
+  * @param {(tries: number) => number} timerCalc
+  */
   constructor(callback, timerCalc) {
     this.callback = callback;
     this.timerCalc = timerCalc;
@@ -188,13 +191,10 @@ var Timer = class {
    */
   scheduleTimeout() {
     clearTimeout(this.timer);
-    this.timer = setTimeout(
-      () => {
-        this.tries = this.tries + 1;
-        this.callback();
-      },
-      this.timerCalc(this.tries + 1),
-    );
+    this.timer = setTimeout(() => {
+      this.tries = this.tries + 1;
+      this.callback();
+    }, this.timerCalc(this.tries + 1));
   }
 };
 var Channel = class {
@@ -227,7 +227,7 @@ var Channel = class {
         if (this.isErrored()) {
           this.rejoin();
         }
-      }),
+      })
     );
     this.joinPush.receive("ok", () => {
       this.state = CHANNEL_STATES.joined;
@@ -259,8 +259,7 @@ var Channel = class {
       }
     });
     this.joinPush.receive("timeout", () => {
-      if (this.socket.hasLogger())
-        this.socket.log("channel", `timeout ${this.topic}`, this.joinPush.timeout);
+      if (this.socket.hasLogger()) this.socket.log("channel", `timeout ${this.topic}`, this.joinPush.timeout);
       let leavePush = new Push(this, CHANNEL_EVENTS.leave, closure({}), this.timeout);
       leavePush.send();
       this.state = CHANNEL_STATES.errored;
@@ -280,9 +279,7 @@ var Channel = class {
    */
   join(timeout = this.timeout) {
     if (this.joinedOnce) {
-      throw new Error(
-        "tried to join multiple times. 'join' can only be called a single time per channel instance",
-      );
+      throw new Error("tried to join multiple times. 'join' can only be called a single time per channel instance");
     } else {
       this.timeout = timeout;
       this.joinedOnce = true;
@@ -388,18 +385,11 @@ var Channel = class {
   push(event, payload, timeout = this.timeout) {
     payload = payload || {};
     if (!this.joinedOnce) {
-      throw new Error(
-        `tried to push '${event}' to '${this.topic}' before joining. Use channel.join() before pushing events`,
-      );
+      throw new Error(`tried to push '${event}' to '${this.topic}' before joining. Use channel.join() before pushing events`);
     }
-    let pushEvent = new Push(
-      this,
-      event,
-      function () {
-        return payload;
-      },
-      timeout,
-    );
+    let pushEvent = new Push(this, event, function() {
+      return payload;
+    }, timeout);
     if (this.canPush()) {
       pushEvent.send();
     } else {
@@ -467,8 +457,7 @@ var Channel = class {
       return false;
     }
     if (joinRef && joinRef !== this.joinRef()) {
-      if (this.socket.hasLogger())
-        this.socket.log("channel", "dropping outdated message", { topic, event, payload, joinRef });
+      if (this.socket.hasLogger()) this.socket.log("channel", "dropping outdated message", { topic, event, payload, joinRef });
       return false;
     } else {
       return true;
@@ -497,21 +486,17 @@ var Channel = class {
   trigger(event, payload, ref, joinRef) {
     let handledPayload = this.onMessage(event, payload, ref, joinRef);
     if (payload && !handledPayload) {
-      throw new Error(
-        "channel onMessage callbacks must return the payload, modified or unmodified",
-      );
+      throw new Error("channel onMessage callbacks must return the payload, modified or unmodified");
     }
-    let eventBindings = this.bindings.filter(
-      (bind) => bind.event === event && this.filterBindings(bind, payload, ref),
-    );
+    let eventBindings = this.bindings.filter((bind) => bind.event === event && this.filterBindings(bind, payload, ref));
     for (let i = 0; i < eventBindings.length; i++) {
       let bind = eventBindings[i];
       bind.callback(handledPayload, ref, joinRef || this.joinRef());
     }
   }
   /**
-   * @param {string} ref
-   */
+  * @param {string} ref
+  */
   replyEventName(ref) {
     return `chan_reply_${ref}`;
   }
@@ -549,7 +534,7 @@ var Ajax = class {
     let options = {
       method,
       headers,
-      body,
+      body
     };
     let controller = null;
     if (timeout) {
@@ -557,18 +542,13 @@ var Ajax = class {
       setTimeout(() => controller.abort(), timeout);
       options.signal = controller.signal;
     }
-    global
-      .fetch(endPoint, options)
-      .then((response) => response.text())
-      .then((data) => this.parseJSON(data))
-      .then((data) => callback && callback(data))
-      .catch((err) => {
-        if (err.name === "AbortError" && ontimeout) {
-          ontimeout();
-        } else {
-          callback && callback(null);
-        }
-      });
+    global.fetch(endPoint, options).then((response) => response.text()).then((data) => this.parseJSON(data)).then((data) => callback && callback(data)).catch((err) => {
+      if (err.name === "AbortError" && ontimeout) {
+        ontimeout();
+      } else {
+        callback && callback(null);
+      }
+    });
     return controller;
   }
   static xdomainRequest(req, method, endPoint, body, timeout, ontimeout, callback) {
@@ -581,7 +561,8 @@ var Ajax = class {
     if (ontimeout) {
       req.ontimeout = ontimeout;
     }
-    req.onprogress = () => {};
+    req.onprogress = () => {
+    };
     req.send(body);
     return req;
   }
@@ -661,19 +642,20 @@ var LongPoll = class {
     this.currentBatch = null;
     this.currentBatchTimer = null;
     this.batchBuffer = [];
-    this.onopen = function () {};
-    this.onerror = function () {};
-    this.onmessage = function () {};
-    this.onclose = function () {};
+    this.onopen = function() {
+    };
+    this.onerror = function() {
+    };
+    this.onmessage = function() {
+    };
+    this.onclose = function() {
+    };
     this.pollEndpoint = this.normalizeEndpoint(endPoint);
     this.readyState = SOCKET_STATES.connecting;
     setTimeout(() => this.poll(), 0);
   }
   normalizeEndpoint(endPoint) {
-    return endPoint
-      .replace("ws://", "http://")
-      .replace("wss://", "https://")
-      .replace(new RegExp("(.*)/" + TRANSPORTS.websocket), "$1/" + TRANSPORTS.longpoll);
+    return endPoint.replace("ws://", "http://").replace("wss://", "https://").replace(new RegExp("(.*)/" + TRANSPORTS.websocket), "$1/" + TRANSPORTS.longpoll);
   }
   endpointURL() {
     return Ajax.appendParams(this.pollEndpoint, { token: this.token });
@@ -690,56 +672,50 @@ var LongPoll = class {
     return this.readyState === SOCKET_STATES.open || this.readyState === SOCKET_STATES.connecting;
   }
   poll() {
-    const headers = { Accept: "application/json" };
+    const headers = { "Accept": "application/json" };
     if (this.authToken) {
       headers["X-Phoenix-AuthToken"] = this.authToken;
     }
-    this.ajax(
-      "GET",
-      headers,
-      null,
-      () => this.ontimeout(),
-      (resp) => {
-        if (resp) {
-          var { status, token, messages } = resp;
-          if (status === 410 && this.token !== null) {
-            this.onerror(410);
-            this.closeAndRetry(3410, "session_gone", false);
-            return;
-          }
-          this.token = token;
-        } else {
-          status = 0;
+    this.ajax("GET", headers, null, () => this.ontimeout(), (resp) => {
+      if (resp) {
+        var { status, token, messages } = resp;
+        if (status === 410 && this.token !== null) {
+          this.onerror(410);
+          this.closeAndRetry(3410, "session_gone", false);
+          return;
         }
-        switch (status) {
-          case 200:
-            messages.forEach((msg) => {
-              setTimeout(() => this.onmessage({ data: msg }), 0);
-            });
-            this.poll();
-            break;
-          case 204:
-            this.poll();
-            break;
-          case 410:
-            this.readyState = SOCKET_STATES.open;
-            this.onopen({});
-            this.poll();
-            break;
-          case 403:
-            this.onerror(403);
-            this.close(1008, "forbidden", false);
-            break;
-          case 0:
-          case 500:
-            this.onerror(500);
-            this.closeAndRetry(1011, "internal server error", 500);
-            break;
-          default:
-            throw new Error(`unhandled poll status ${status}`);
-        }
-      },
-    );
+        this.token = token;
+      } else {
+        status = 0;
+      }
+      switch (status) {
+        case 200:
+          messages.forEach((msg) => {
+            setTimeout(() => this.onmessage({ data: msg }), 0);
+          });
+          this.poll();
+          break;
+        case 204:
+          this.poll();
+          break;
+        case 410:
+          this.readyState = SOCKET_STATES.open;
+          this.onopen({});
+          this.poll();
+          break;
+        case 403:
+          this.onerror(403);
+          this.close(1008, "forbidden", false);
+          break;
+        case 0:
+        case 500:
+          this.onerror(500);
+          this.closeAndRetry(1011, "internal server error", 500);
+          break;
+        default:
+          throw new Error(`unhandled poll status ${status}`);
+      }
+    });
   }
   // we collect all pushes within the current event loop by
   // setTimeout 0, which optimizes back-to-back procedural
@@ -764,36 +740,27 @@ var LongPoll = class {
     this.awaitingBatchAck = true;
     const next = offset + MAX_LONGPOLL_BATCH_SIZE;
     const batch = messages.slice(offset, next);
-    this.ajax(
-      "POST",
-      { "Content-Type": "application/x-ndjson" },
-      batch.join("\n"),
-      () => this.onerror("timeout"),
-      (resp) => {
-        if (!resp || resp.status !== 200) {
-          this.awaitingBatchAck = false;
-          this.onerror(resp && resp.status);
-          this.closeAndRetry(1011, "internal server error", false);
-        } else if (next < messages.length) {
-          this.batchSend(messages, next);
-        } else if (this.batchBuffer.length > 0) {
-          this.batchSend(this.batchBuffer);
-          this.batchBuffer = [];
-        } else {
-          this.awaitingBatchAck = false;
-        }
-      },
-    );
+    this.ajax("POST", { "Content-Type": "application/x-ndjson" }, batch.join("\n"), () => this.onerror("timeout"), (resp) => {
+      if (!resp || resp.status !== 200) {
+        this.awaitingBatchAck = false;
+        this.onerror(resp && resp.status);
+        this.closeAndRetry(1011, "internal server error", false);
+      } else if (next < messages.length) {
+        this.batchSend(messages, next);
+      } else if (this.batchBuffer.length > 0) {
+        this.batchSend(this.batchBuffer);
+        this.batchBuffer = [];
+      } else {
+        this.awaitingBatchAck = false;
+      }
+    });
   }
   close(code, reason, wasClean) {
     for (let req of this.reqs) {
       req.abort();
     }
     this.readyState = SOCKET_STATES.closed;
-    let opts = Object.assign(
-      { code: 1e3, reason: void 0, wasClean: true },
-      { code, reason, wasClean },
-    );
+    let opts = Object.assign({ code: 1e3, reason: void 0, wasClean: true }, { code, reason, wasClean });
     this.batchBuffer = [];
     clearTimeout(this.currentBatchTimer);
     this.currentBatchTimer = null;
@@ -809,20 +776,12 @@ var LongPoll = class {
       this.reqs.delete(req);
       onCallerTimeout();
     };
-    req = Ajax.request(
-      method,
-      this.endpointURL(),
-      headers,
-      body,
-      this.timeout,
-      ontimeout,
-      (resp) => {
-        this.reqs.delete(req);
-        if (this.isActive()) {
-          callback(resp);
-        }
-      },
-    );
+    req = Ajax.request(method, this.endpointURL(), headers, body, this.timeout, ontimeout, (resp) => {
+      this.reqs.delete(req);
+      if (this.isActive()) {
+        callback(resp);
+      }
+    });
     this.reqs.add(req);
   }
 };
@@ -833,17 +792,19 @@ var Presence = class _Presence {
    * @param {PresenceOptions} [opts] - The options, for example `{events: {state: "state", diff: "diff"}}`
    */
   constructor(channel, opts = {}) {
-    let events = opts.events ||
-      /** @type {PresenceEvents} */
-      { state: "presence_state", diff: "presence_diff" };
+    let events = opts.events || /** @type {PresenceEvents} */
+    { state: "presence_state", diff: "presence_diff" };
     this.state = /* @__PURE__ */ Object.create(null);
     this.pendingDiffs = [];
     this.channel = channel;
     this.joinRef = null;
     this.caller = {
-      onJoin: function () {},
-      onLeave: function () {},
-      onSync: function () {},
+      onJoin: function() {
+      },
+      onLeave: function() {
+      },
+      onSync: function() {
+      }
     };
     this.channel.on(events.state, (newState) => {
       let { onJoin, onLeave, onSync } = this.caller;
@@ -960,10 +921,12 @@ var Presence = class _Presence {
     state = this.toNullProtoObj(state);
     let { joins, leaves } = this.clone(diff);
     if (!onJoin) {
-      onJoin = function () {};
+      onJoin = function() {
+      };
     }
     if (!onLeave) {
-      onLeave = function () {};
+      onLeave = function() {
+      };
     }
     this.map(joins, (key, newPresence) => {
       let currentPresence = state[key];
@@ -1002,7 +965,7 @@ var Presence = class _Presence {
    */
   static list(presences, chooser) {
     if (!chooser) {
-      chooser = function (key, pres) {
+      chooser = function(key, pres) {
         return pres;
       };
     }
@@ -1012,10 +975,10 @@ var Presence = class _Presence {
   }
   // private
   /**
-   * @template T
-   * @param {Record<string, PresenceState>} obj
-   * @param {(key: string, obj: PresenceState) => T} func
-   */
+  * @template T
+  * @param {Record<string, PresenceState>} obj
+  * @param {(key: string, obj: PresenceState) => T} func
+  */
   static map(obj, func) {
     return Object.getOwnPropertyNames(obj).map((key) => func(key, obj[key]));
   }
@@ -1036,10 +999,10 @@ var Presence = class _Presence {
     return cleaned;
   }
   /**
-   * @template T
-   * @param {T} obj
-   * @returns {T}
-   */
+  * @template T
+  * @param {T} obj
+  * @returns {T}
+  */
   static clone(obj) {
     return JSON.parse(JSON.stringify(obj));
   }
@@ -1049,11 +1012,11 @@ var serializer_default = {
   META_LENGTH: 4,
   KINDS: { push: 0, reply: 1, broadcast: 2 },
   /**
-   * @template T
-   * @param {Message<Record<string, any>>} msg
-   * @param {(msg: ArrayBuffer | string) => T} callback
-   * @returns {T}
-   */
+  * @template T
+  * @param {Message<Record<string, any>>} msg
+  * @param {(msg: ArrayBuffer | string) => T} callback
+  * @returns {T}
+  */
   encode(msg, callback) {
     if (msg.payload.constructor === ArrayBuffer) {
       return callback(this.binaryEncode(msg));
@@ -1063,11 +1026,11 @@ var serializer_default = {
     }
   },
   /**
-   * @template T
-   * @param {ArrayBuffer | string} rawPayload
-   * @param {(msg: Message<unknown>) => T} callback
-   * @returns {T}
-   */
+  * @template T
+  * @param {ArrayBuffer | string} rawPayload
+  * @param {(msg: Message<unknown>) => T} callback
+  * @returns {T}
+  */
   decode(rawPayload, callback) {
     if (rawPayload.constructor === ArrayBuffer) {
       return callback(this.binaryDecode(rawPayload));
@@ -1088,12 +1051,7 @@ var serializer_default = {
     this.assertFieldSize(refBytes.byteLength, "ref");
     this.assertFieldSize(topicBytes.byteLength, "topic");
     this.assertFieldSize(eventBytes.byteLength, "event");
-    let metaLength =
-      this.META_LENGTH +
-      joinRefBytes.byteLength +
-      refBytes.byteLength +
-      topicBytes.byteLength +
-      eventBytes.byteLength;
+    let metaLength = this.META_LENGTH + joinRefBytes.byteLength + refBytes.byteLength + topicBytes.byteLength + eventBytes.byteLength;
     let header = new ArrayBuffer(this.HEADER_LENGTH + metaLength);
     let headerBytes = new Uint8Array(header);
     let view = new DataView(header);
@@ -1118,14 +1076,12 @@ var serializer_default = {
   },
   assertFieldSize(size, name) {
     if (size > 255) {
-      throw new Error(
-        `unable to convert ${name} to binary: must be less than or equal to 255 bytes, but is ${size} bytes`,
-      );
+      throw new Error(`unable to convert ${name} to binary: must be less than or equal to 255 bytes, but is ${size} bytes`);
     }
   },
   /**
-   * @private
-   */
+  * @private
+  */
   binaryDecode(buffer) {
     let view = new DataView(buffer);
     let kind = view.getUint8(0);
@@ -1184,7 +1140,7 @@ var serializer_default = {
     offset = offset + eventSize;
     let data = buffer.slice(offset, buffer.byteLength);
     return { join_ref: null, ref: null, topic, event, payload: data };
-  },
+  }
 };
 var Socket = class {
   /** Initializes the Socket *
@@ -1212,7 +1168,8 @@ var Socket = class {
     let envSessionStorage = null;
     try {
       envSessionStorage = global && global.sessionStorage;
-    } catch {}
+    } catch {
+    }
     this.sessionStore = opts.sessionStorage || envSessionStorage;
     this.establishedConnections = 0;
     this.defaultEncoder = serializer_default.encode.bind(serializer_default);
@@ -1258,7 +1215,8 @@ var Socket = class {
     }
     this.heartbeatIntervalMs = opts.heartbeatIntervalMs || 3e4;
     this.autoSendHeartbeat = opts.autoSendHeartbeat ?? true;
-    this.heartbeatCallback = opts.heartbeatCallback ?? (() => {});
+    this.heartbeatCallback = opts.heartbeatCallback ?? (() => {
+    });
     this.rejoinAfterMs = (tries) => {
       if (opts.rejoinAfterMs) {
         return opts.rejoinAfterMs(tries);
@@ -1337,7 +1295,10 @@ var Socket = class {
    * @returns {string}
    */
   endPointURL() {
-    let uri = Ajax.appendParams(Ajax.appendParams(this.endPoint, this.params()), { vsn: this.vsn });
+    let uri = Ajax.appendParams(
+      Ajax.appendParams(this.endPoint, this.params()),
+      { vsn: this.vsn }
+    );
     if (uri.charAt(0) !== "/") {
       return uri;
     }
@@ -1361,14 +1322,10 @@ var Socket = class {
     this.closeWasClean = true;
     clearTimeout(this.fallbackTimer);
     this.reconnectTimer.reset();
-    this.teardown(
-      () => {
-        this.disconnecting = false;
-        callback && callback();
-      },
-      code,
-      reason,
-    );
+    this.teardown(() => {
+      this.disconnecting = false;
+      callback && callback();
+    }, code, reason);
   }
   /**
    * @param {Params} [params] - [DEPRECATED] The params to send when connecting, for example `{user_id: userToken}`
@@ -1378,10 +1335,7 @@ var Socket = class {
    */
   connect(params) {
     if (params) {
-      console &&
-        console.log(
-          "passing params to connect is deprecated. Instead pass :params to the Socket constructor",
-        );
+      console && console.log("passing params to connect is deprecated. Instead pass :params to the Socket constructor");
       this.params = closure(params);
     }
     if (this.conn && !this.disconnecting) {
@@ -1598,11 +1552,7 @@ var Socket = class {
       }
       this.triggerChanError(new Error("heartbeat timeout"));
       this.closeWasClean = false;
-      this.teardown(
-        () => this.reconnectTimer.scheduleTimeout(),
-        WS_CLOSE_NORMAL,
-        "heartbeat timeout",
-      );
+      this.teardown(() => this.reconnectTimer.scheduleTimeout(), WS_CLOSE_NORMAL, "heartbeat timeout");
     }
   }
   resetHeartbeat() {
@@ -1626,10 +1576,14 @@ var Socket = class {
       }
       this.waitForSocketClosed(connToClose, () => {
         if (this.conn === connToClose) {
-          this.conn.onopen = function () {};
-          this.conn.onerror = function () {};
-          this.conn.onmessage = function () {};
-          this.conn.onclose = function () {};
+          this.conn.onopen = function() {
+          };
+          this.conn.onerror = function() {
+          };
+          this.conn.onmessage = function() {
+          };
+          this.conn.onclose = function() {
+          };
           this.conn = null;
         }
         callback && callback();
@@ -1655,10 +1609,11 @@ var Socket = class {
     }, 150 * tries);
   }
   /**
-   * @param {CloseEvent} event
-   */
+  * @param {CloseEvent} event
+  */
   onConnClose(event) {
-    if (this.conn) this.conn.onclose = () => {};
+    if (this.conn) this.conn.onclose = () => {
+    };
     if (this.hasLogger()) this.log("transport", "close", event);
     this.triggerChanError(event);
     this.clearHeartbeats();
@@ -1793,10 +1748,7 @@ var Socket = class {
     } catch (e) {
       this.log("error", "error in heartbeat callback", e);
     }
-    this.heartbeatTimeoutTimer = setTimeout(
-      () => this.heartbeatTimeout(),
-      this.heartbeatIntervalMs,
-    );
+    this.heartbeatTimeoutTimer = setTimeout(() => this.heartbeatTimeout(), this.heartbeatIntervalMs);
   }
   flushSendBuffer() {
     if (this.isConnected() && this.sendBuffer.length > 0) {
@@ -1805,8 +1757,8 @@ var Socket = class {
     }
   }
   /**
-   * @param {MessageEvent<any>} rawMessage
-   */
+  * @param {MessageEvent<any>} rawMessage
+  */
   onConnMessage(rawMessage) {
     this.decode(rawMessage.data, (msg) => {
       let { topic, event, payload, ref, join_ref } = msg;
@@ -1824,12 +1776,7 @@ var Socket = class {
           this.heartbeatTimer = setTimeout(() => this.sendHeartbeat(), this.heartbeatIntervalMs);
         }
       }
-      if (this.hasLogger())
-        this.log(
-          "receive",
-          `${payload.status || ""} ${topic} ${event} ${(ref && "(" + ref + ")") || ""}`.trim(),
-          payload,
-        );
+      if (this.hasLogger()) this.log("receive", `${payload.status || ""} ${topic} ${event} ${ref && "(" + ref + ")" || ""}`.trim(), payload);
       for (let i = 0; i < this.channels.length; i++) {
         const channel = this.channels[i];
         if (!channel.isMember(topic, event, payload, join_ref)) {
@@ -1861,13 +1808,14 @@ var Socket = class {
     }
   }
   leaveOpenTopic(topic) {
-    let dupChannel = this.channels.find(
-      (c) => c.topic === topic && (c.isJoined() || c.isJoining()),
-    );
+    let dupChannel = this.channels.find((c) => c.topic === topic && (c.isJoined() || c.isJoining()));
     if (dupChannel) {
       if (this.hasLogger()) this.log("transport", `leaving duplicate topic "${topic}"`);
       dupChannel.leave();
     }
   }
 };
-export { Presence as P, Socket as S };
+export {
+  Presence as P,
+  Socket as S
+};

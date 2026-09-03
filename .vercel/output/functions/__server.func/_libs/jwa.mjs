@@ -12,8 +12,7 @@ function requireJwa() {
   var crypto = require$$1;
   var formatEcdsa = requireEcdsaSigFormatter();
   var util = require$$2;
-  var MSG_INVALID_ALGORITHM =
-    '"%s" is not a valid algorithm.\n  Supported algorithms are:\n  "HS256", "HS384", "HS512", "RS256", "RS384", "RS512", "PS256", "PS384", "PS512", "ES256", "ES384", "ES512" and "none".';
+  var MSG_INVALID_ALGORITHM = '"%s" is not a valid algorithm.\n  Supported algorithms are:\n  "HS256", "HS384", "HS512", "RS256", "RS384", "RS512", "PS256", "PS384", "PS512", "ES256", "ES384", "ES512" and "none".';
   var MSG_INVALID_SECRET = "secret must be a string or buffer";
   var MSG_INVALID_VERIFIER_KEY = "key must be a string or a buffer";
   var MSG_INVALID_SIGNER_KEY = "key must be a string, a buffer or an object";
@@ -82,7 +81,7 @@ function requireJwa() {
   }
   function toBase64(base64url) {
     base64url = base64url.toString();
-    var padding = 4 - (base64url.length % 4);
+    var padding = 4 - base64url.length % 4;
     if (padding !== 4) {
       for (var i = 0; i < padding; ++i) {
         base64url += "=";
@@ -99,7 +98,8 @@ function requireJwa() {
     return Buffer.isBuffer(obj) || typeof obj === "string";
   }
   function normalizeInput(thing) {
-    if (!bufferOrString(thing)) thing = JSON.stringify(thing);
+    if (!bufferOrString(thing))
+      thing = JSON.stringify(thing);
     return thing;
   }
   function createHmacSigner(bits) {
@@ -112,20 +112,17 @@ function requireJwa() {
     };
   }
   var bufferEqual;
-  var timingSafeEqual =
-    "timingSafeEqual" in crypto
-      ? function timingSafeEqual2(a, b) {
-          if (a.byteLength !== b.byteLength) {
-            return false;
-          }
-          return crypto.timingSafeEqual(a, b);
-        }
-      : function timingSafeEqual2(a, b) {
-          if (!bufferEqual) {
-            bufferEqual = requireBufferEqualConstantTime();
-          }
-          return bufferEqual(a, b);
-        };
+  var timingSafeEqual = "timingSafeEqual" in crypto ? function timingSafeEqual2(a, b) {
+    if (a.byteLength !== b.byteLength) {
+      return false;
+    }
+    return crypto.timingSafeEqual(a, b);
+  } : function timingSafeEqual2(a, b) {
+    if (!bufferEqual) {
+      bufferEqual = requireBufferEqualConstantTime();
+    }
+    return bufferEqual(a, b);
+  };
   function createHmacVerifier(bits) {
     return function verify(thing, signature, secret) {
       var computedSig = createHmacSigner(bits)(thing, secret);
@@ -156,16 +153,11 @@ function requireJwa() {
       checkIsPrivateKey(privateKey);
       thing = normalizeInput(thing);
       var signer = crypto.createSign("RSA-SHA" + bits);
-      var sig =
-        (signer.update(thing),
-        signer.sign(
-          {
-            key: privateKey,
-            padding: crypto.constants.RSA_PKCS1_PSS_PADDING,
-            saltLength: crypto.constants.RSA_PSS_SALTLEN_DIGEST,
-          },
-          "base64",
-        ));
+      var sig = (signer.update(thing), signer.sign({
+        key: privateKey,
+        padding: crypto.constants.RSA_PKCS1_PSS_PADDING,
+        saltLength: crypto.constants.RSA_PSS_SALTLEN_DIGEST
+      }, "base64"));
       return fromBase64(sig);
     };
   }
@@ -176,15 +168,11 @@ function requireJwa() {
       signature = toBase64(signature);
       var verifier = crypto.createVerify("RSA-SHA" + bits);
       verifier.update(thing);
-      return verifier.verify(
-        {
-          key: publicKey,
-          padding: crypto.constants.RSA_PKCS1_PSS_PADDING,
-          saltLength: crypto.constants.RSA_PSS_SALTLEN_DIGEST,
-        },
-        signature,
-        "base64",
-      );
+      return verifier.verify({
+        key: publicKey,
+        padding: crypto.constants.RSA_PKCS1_PSS_PADDING,
+        saltLength: crypto.constants.RSA_PSS_SALTLEN_DIGEST
+      }, signature, "base64");
     };
   }
   function createECDSASigner(bits) {
@@ -219,24 +207,27 @@ function requireJwa() {
       rs: createKeySigner,
       ps: createPSSKeySigner,
       es: createECDSASigner,
-      none: createNoneSigner,
+      none: createNoneSigner
     };
     var verifierFactories = {
       hs: createHmacVerifier,
       rs: createKeyVerifier,
       ps: createPSSKeyVerifier,
       es: createECDSAVerifer,
-      none: createNoneVerifier,
+      none: createNoneVerifier
     };
     var match = algorithm.match(/^(RS|PS|ES|HS)(256|384|512)$|^(none)$/);
-    if (!match) throw typeError(MSG_INVALID_ALGORITHM, algorithm);
+    if (!match)
+      throw typeError(MSG_INVALID_ALGORITHM, algorithm);
     var algo = (match[1] || match[3]).toLowerCase();
     var bits = match[2];
     return {
       sign: signerFactories[algo](bits),
-      verify: verifierFactories[algo](bits),
+      verify: verifierFactories[algo](bits)
     };
   };
   return jwa;
 }
-export { requireJwa as r };
+export {
+  requireJwa as r
+};

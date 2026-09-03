@@ -15,7 +15,7 @@ class FunctionsError extends Error {
     return {
       name: this.name,
       message: this.message,
-      context: this.context,
+      context: this.context
     };
   }
 }
@@ -35,7 +35,7 @@ class FunctionsHttpError extends FunctionsError {
   }
 }
 var FunctionRegion;
-(function (FunctionRegion2) {
+(function(FunctionRegion2) {
   FunctionRegion2["Any"] = "any";
   FunctionRegion2["ApNortheast1"] = "ap-northeast-1";
   FunctionRegion2["ApNortheast2"] = "ap-northeast-2";
@@ -242,13 +242,9 @@ class FunctionsClient {
           url.searchParams.set("forceFunctionRegion", region);
         }
         let body;
-        const hasContentTypeHeader =
-          !!headers && Object.keys(headers).some((key) => key.toLowerCase() === "content-type");
+        const hasContentTypeHeader = !!headers && Object.keys(headers).some((key) => key.toLowerCase() === "content-type");
         if (functionArgs && !hasContentTypeHeader) {
-          if (
-            (typeof Blob !== "undefined" && functionArgs instanceof Blob) ||
-            functionArgs instanceof ArrayBuffer
-          ) {
+          if (typeof Blob !== "undefined" && functionArgs instanceof Blob || functionArgs instanceof ArrayBuffer) {
             _headers["Content-Type"] = "application/octet-stream";
             body = functionArgs;
           } else if (typeof functionArgs === "string") {
@@ -261,13 +257,7 @@ class FunctionsClient {
             body = JSON.stringify(functionArgs);
           }
         } else {
-          if (
-            functionArgs &&
-            typeof functionArgs !== "string" &&
-            !(typeof Blob !== "undefined" && functionArgs instanceof Blob) &&
-            !(functionArgs instanceof ArrayBuffer) &&
-            !(typeof FormData !== "undefined" && functionArgs instanceof FormData)
-          ) {
+          if (functionArgs && typeof functionArgs !== "string" && !(typeof Blob !== "undefined" && functionArgs instanceof Blob) && !(functionArgs instanceof ArrayBuffer) && !(typeof FormData !== "undefined" && functionArgs instanceof FormData)) {
             body = JSON.stringify(functionArgs);
           } else {
             body = functionArgs;
@@ -293,7 +283,7 @@ class FunctionsClient {
           // 3. default Content-Type header
           headers: Object.assign(Object.assign(Object.assign({}, _headers), this.headers), headers),
           body,
-          signal: effectiveSignal,
+          signal: effectiveSignal
         }).catch((fetchError) => {
           throw new FunctionsFetchError(fetchError);
         });
@@ -304,19 +294,11 @@ class FunctionsClient {
         if (!response.ok) {
           throw new FunctionsHttpError(response);
         }
-        let responseType = (
-          (_a = response.headers.get("Content-Type")) !== null && _a !== void 0 ? _a : "text/plain"
-        )
-          .split(";")[0]
-          .trim()
-          .toLowerCase();
+        let responseType = ((_a = response.headers.get("Content-Type")) !== null && _a !== void 0 ? _a : "text/plain").split(";")[0].trim().toLowerCase();
         let data;
         if (responseType === "application/json") {
           data = yield response.json();
-        } else if (
-          responseType === "application/octet-stream" ||
-          responseType === "application/pdf"
-        ) {
+        } else if (responseType === "application/octet-stream" || responseType === "application/pdf") {
           data = yield response.blob();
         } else if (responseType === "text/event-stream") {
           data = response;
@@ -330,22 +312,19 @@ class FunctionsClient {
         return {
           data: null,
           error,
-          response:
-            error instanceof FunctionsHttpError || error instanceof FunctionsRelayError
-              ? error.context
-              : void 0,
+          response: error instanceof FunctionsHttpError || error instanceof FunctionsRelayError ? error.context : void 0
         };
       } finally {
         if (timeoutId) {
           clearTimeout(timeoutId);
         }
         if (onAbort) {
-          (_b = options.signal) === null || _b === void 0
-            ? void 0
-            : _b.removeEventListener("abort", onAbort);
+          (_b = options.signal) === null || _b === void 0 ? void 0 : _b.removeEventListener("abort", onAbort);
         }
       }
     });
   }
 }
-export { FunctionsClient as F };
+export {
+  FunctionsClient as F
+};

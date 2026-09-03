@@ -9,24 +9,24 @@ for (var i = 0; i < chars.length; i++) {
 }
 var encodeToBase64 = function(bytes) {
   var base64 = "";
-  var len = bytes.length;
-  for (var i = 0; i < len; i += 3) {
-    base64 += chars[bytes[i] >> 2];
-    base64 += chars[(bytes[i] & 3) << 4 | bytes[i + 1] >> 4];
-    base64 += chars[(bytes[i + 1] & 15) << 2 | bytes[i + 2] >> 6];
-    base64 += chars[bytes[i + 2] & 63];
+  var len2 = bytes.length;
+  for (var i2 = 0; i2 < len2; i2 += 3) {
+    base64 += chars[bytes[i2] >> 2];
+    base64 += chars[(bytes[i2] & 3) << 4 | bytes[i2 + 1] >> 4];
+    base64 += chars[(bytes[i2 + 1] & 15) << 2 | bytes[i2 + 2] >> 6];
+    base64 += chars[bytes[i2 + 2] & 63];
   }
-  if (len % 3 === 2) {
+  if (len2 % 3 === 2) {
     base64 = base64.substring(0, base64.length - 1) + "=";
-  } else if (len % 3 === 1) {
+  } else if (len2 % 3 === 1) {
     base64 = base64.substring(0, base64.length - 2) + "==";
   }
   return base64;
 };
 var decodeFromBase64 = function(base64) {
   var bufferLength = base64.length * 0.75;
-  var len = base64.length;
-  var i;
+  var len2 = base64.length;
+  var i2;
   var p = 0;
   var encoded1;
   var encoded2;
@@ -39,11 +39,11 @@ var decodeFromBase64 = function(base64) {
     }
   }
   var bytes = new Uint8Array(bufferLength);
-  for (i = 0; i < len; i += 4) {
-    encoded1 = lookup[base64.charCodeAt(i)];
-    encoded2 = lookup[base64.charCodeAt(i + 1)];
-    encoded3 = lookup[base64.charCodeAt(i + 2)];
-    encoded4 = lookup[base64.charCodeAt(i + 3)];
+  for (i2 = 0; i2 < len2; i2 += 4) {
+    encoded1 = lookup[base64.charCodeAt(i2)];
+    encoded2 = lookup[base64.charCodeAt(i2 + 1)];
+    encoded3 = lookup[base64.charCodeAt(i2 + 2)];
+    encoded4 = lookup[base64.charCodeAt(i2 + 3)];
     bytes[p++] = encoded1 << 2 | encoded2 >> 4;
     bytes[p++] = (encoded2 & 15) << 4 | encoded3 >> 2;
     bytes[p++] = (encoded3 & 3) << 6 | encoded4 & 63;
@@ -81,15 +81,15 @@ var charFromHexCode = function(hex) {
 };
 var padStart = function(value, length, padChar) {
   var padding = "";
-  for (var idx = 0, len = length - value.length; idx < len; idx++) {
+  for (var idx2 = 0, len2 = length - value.length; idx2 < len2; idx2++) {
     padding += padChar;
   }
   return padding + value;
 };
 var copyStringIntoBuffer = function(str, buffer, offset) {
   var length = str.length;
-  for (var idx = 0; idx < length; idx++) {
-    buffer[offset++] = str.charCodeAt(idx);
+  for (var idx2 = 0; idx2 < length; idx2++) {
+    buffer[offset++] = str.charCodeAt(idx2);
   }
   return length;
 };
@@ -127,18 +127,18 @@ var charAtIndex = function(text, index) {
 };
 var charSplit = function(text) {
   var chars2 = [];
-  for (var idx = 0, len = text.length; idx < len; ) {
-    var _a = charAtIndex(text, idx), c = _a[0], cLen = _a[1];
+  for (var idx2 = 0, len2 = text.length; idx2 < len2; ) {
+    var _a = charAtIndex(text, idx2), c = _a[0], cLen = _a[1];
     chars2.push(c);
-    idx += cLen;
+    idx2 += cLen;
   }
   return chars2;
 };
 var buildWordBreakRegex = function(wordBreaks) {
   var newlineCharUnion = escapedNewlineChars.join("|");
   var escapedRules = ["$"];
-  for (var idx = 0, len = wordBreaks.length; idx < len; idx++) {
-    var wordBreak = wordBreaks[idx];
+  for (var idx2 = 0, len2 = wordBreaks.length; idx2 < len2; idx2++) {
+    var wordBreak = wordBreaks[idx2];
     if (isNewlineChar(wordBreak)) {
       throw new TypeError("`wordBreak` must not include " + newlineCharUnion);
     }
@@ -159,8 +159,8 @@ var breakTextIntoLines = function(text, wordBreaks, maxWidth, computeWidthOfText
     currLine = "";
     currWidth = 0;
   };
-  for (var idx = 0, len = words.length; idx < len; idx++) {
-    var word = words[idx];
+  for (var idx2 = 0, len2 = words.length; idx2 < len2; idx2++) {
+    var word = words[idx2];
     if (isNewlineChar(word)) {
       pushCurrLine();
     } else {
@@ -205,8 +205,8 @@ var typedArrayFor = function(value) {
     return value;
   var length = value.length;
   var typedArray = new Uint8Array(length);
-  for (var idx = 0; idx < length; idx++) {
-    typedArray[idx] = value.charCodeAt(idx);
+  for (var idx2 = 0; idx2 < length; idx2++) {
+    typedArray[idx2] = value.charCodeAt(idx2);
   }
   return typedArray;
 };
@@ -217,13 +217,13 @@ var mergeIntoTypedArray = function() {
   }
   var arrayCount = arrays.length;
   var typedArrays = [];
-  for (var idx = 0; idx < arrayCount; idx++) {
-    var element = arrays[idx];
-    typedArrays[idx] = element instanceof Uint8Array ? element : typedArrayFor(element);
+  for (var idx2 = 0; idx2 < arrayCount; idx2++) {
+    var element = arrays[idx2];
+    typedArrays[idx2] = element instanceof Uint8Array ? element : typedArrayFor(element);
   }
   var totalSize = 0;
-  for (var idx = 0; idx < arrayCount; idx++) {
-    totalSize += arrays[idx].length;
+  for (var idx2 = 0; idx2 < arrayCount; idx2++) {
+    totalSize += arrays[idx2].length;
   }
   var merged = new Uint8Array(totalSize);
   var offset = 0;
@@ -237,13 +237,13 @@ var mergeIntoTypedArray = function() {
 };
 var mergeUint8Arrays = function(arrays) {
   var totalSize = 0;
-  for (var idx = 0, len = arrays.length; idx < len; idx++) {
-    totalSize += arrays[idx].length;
+  for (var idx2 = 0, len2 = arrays.length; idx2 < len2; idx2++) {
+    totalSize += arrays[idx2].length;
   }
   var mergedBuffer = new Uint8Array(totalSize);
   var offset = 0;
-  for (var idx = 0, len = arrays.length; idx < len; idx++) {
-    var array = arrays[idx];
+  for (var idx2 = 0, len2 = arrays.length; idx2 < len2; idx2++) {
+    var array = arrays[idx2];
     mergedBuffer.set(array, offset);
     offset += array.length;
   }
@@ -251,8 +251,8 @@ var mergeUint8Arrays = function(arrays) {
 };
 var arrayAsString = function(array) {
   var str = "";
-  for (var idx = 0, len = array.length; idx < len; idx++) {
-    str += charFromCode(array[idx]);
+  for (var idx2 = 0, len2 = array.length; idx2 < len2; idx2++) {
+    str += charFromCode(array[idx2]);
   }
   return str;
 };
@@ -261,10 +261,10 @@ var byAscendingId = function(a, b) {
 };
 var sortedUniq = function(array, indexer) {
   var uniq = [];
-  for (var idx = 0, len = array.length; idx < len; idx++) {
-    var curr = array[idx];
-    var prev = array[idx - 1];
-    if (idx === 0 || indexer(curr) !== indexer(prev)) {
+  for (var idx2 = 0, len2 = array.length; idx2 < len2; idx2++) {
+    var curr = array[idx2];
+    var prev = array[idx2 - 1];
+    if (idx2 === 0 || indexer(curr) !== indexer(prev)) {
       uniq.push(curr);
     }
   }
@@ -272,10 +272,10 @@ var sortedUniq = function(array, indexer) {
 };
 var reverseArray = function(array) {
   var arrayLen = array.length;
-  for (var idx = 0, len = Math.floor(arrayLen / 2); idx < len; idx++) {
-    var leftIdx = idx;
-    var rightIdx = arrayLen - idx - 1;
-    var temp = array[idx];
+  for (var idx2 = 0, len2 = Math.floor(arrayLen / 2); idx2 < len2; idx2++) {
+    var leftIdx = idx2;
+    var rightIdx = arrayLen - idx2 - 1;
+    var temp = array[idx2];
     array[leftIdx] = array[rightIdx];
     array[rightIdx] = temp;
   }
@@ -283,22 +283,22 @@ var reverseArray = function(array) {
 };
 var sum = function(array) {
   var total = 0;
-  for (var idx = 0, len = array.length; idx < len; idx++) {
-    total += array[idx];
+  for (var idx2 = 0, len2 = array.length; idx2 < len2; idx2++) {
+    total += array[idx2];
   }
   return total;
 };
 var range = function(start, end) {
   var arr = new Array(end - start);
-  for (var idx = 0, len = arr.length; idx < len; idx++) {
-    arr[idx] = start + idx;
+  for (var idx2 = 0, len2 = arr.length; idx2 < len2; idx2++) {
+    arr[idx2] = start + idx2;
   }
   return arr;
 };
 var pluckIndices = function(arr, indices) {
   var plucked = new Array(indices.length);
-  for (var idx = 0, len = indices.length; idx < len; idx++) {
-    plucked[idx] = arr[indices[idx]];
+  for (var idx2 = 0, len2 = indices.length; idx2 < len2; idx2++) {
+    plucked[idx2] = arr[indices[idx2]];
   }
   return plucked;
 };
@@ -330,14 +330,14 @@ var utf16Encode = function(input, byteOrderMark) {
   var encoded = [];
   if (byteOrderMark)
     encoded.push(65279);
-  for (var idx = 0, len = input.length; idx < len; ) {
-    var codePoint = input.codePointAt(idx);
+  for (var idx2 = 0, len2 = input.length; idx2 < len2; ) {
+    var codePoint = input.codePointAt(idx2);
     if (codePoint < 65536) {
       encoded.push(codePoint);
-      idx += 1;
+      idx2 += 1;
     } else if (codePoint < 1114112) {
       encoded.push(highSurrogate(codePoint), lowSurrogate(codePoint));
-      idx += 2;
+      idx2 += 2;
     } else
       throw new Error("Invalid code point: 0x" + toHexString(codePoint));
   }
@@ -368,15 +368,15 @@ var utf16Decode = function(input, byteOrderMark) {
   if (input.length <= 1)
     return String.fromCodePoint(REPLACEMENT);
   var byteOrder = byteOrderMark ? readBOM(input) : ByteOrder.BigEndian;
-  var idx = byteOrderMark ? 2 : 0;
+  var idx2 = byteOrderMark ? 2 : 0;
   var codePoints = [];
-  while (input.length - idx >= 2) {
-    var first = decodeValues(input[idx++], input[idx++], byteOrder);
+  while (input.length - idx2 >= 2) {
+    var first = decodeValues(input[idx2++], input[idx2++], byteOrder);
     if (isHighSurrogate(first)) {
-      if (input.length - idx < 2) {
+      if (input.length - idx2 < 2) {
         codePoints.push(REPLACEMENT);
       } else {
-        var second = decodeValues(input[idx++], input[idx++], byteOrder);
+        var second = decodeValues(input[idx2++], input[idx2++], byteOrder);
         if (isLowSurrogate(second)) {
           codePoints.push(first, second);
         } else {
@@ -384,13 +384,13 @@ var utf16Decode = function(input, byteOrderMark) {
         }
       }
     } else if (isLowSurrogate(first)) {
-      idx += 2;
+      idx2 += 2;
       codePoints.push(REPLACEMENT);
     } else {
       codePoints.push(first);
     }
   }
-  if (idx < input.length)
+  if (idx2 < input.length)
     codePoints.push(REPLACEMENT);
   return String.fromCodePoint.apply(String, codePoints);
 };
@@ -447,8 +447,8 @@ var sizeInBytes = function(n) {
 };
 var bytesFor = function(n) {
   var bytes = new Uint8Array(sizeInBytes(n));
-  for (var i = 1; i <= bytes.length; i++) {
-    bytes[i - 1] = n >> (bytes.length - i) * 8;
+  for (var i2 = 1; i2 <= bytes.length; i2++) {
+    bytes[i2 - 1] = n >> (bytes.length - i2) * 8;
   }
   return bytes;
 };
@@ -484,9 +484,9 @@ var formatValue = function(value) {
 };
 var createValueErrorMsg = function(value, valueName, values2) {
   var allowedValues = new Array(values2.length);
-  for (var idx = 0, len = values2.length; idx < len; idx++) {
-    var v = values2[idx];
-    allowedValues[idx] = formatValue(v);
+  for (var idx2 = 0, len2 = values2.length; idx2 < len2; idx2++) {
+    var v = values2[idx2];
+    allowedValues[idx2] = formatValue(v);
   }
   var joinedValues = allowedValues.join(" or ");
   return backtick(valueName) + " must be one of " + joinedValues + ", but was actually " + formatValue(value);
@@ -495,8 +495,8 @@ var assertIsOneOf = function(value, valueName, allowedValues) {
   if (!Array.isArray(allowedValues)) {
     allowedValues = values(allowedValues);
   }
-  for (var idx = 0, len = allowedValues.length; idx < len; idx++) {
-    if (value === allowedValues[idx])
+  for (var idx2 = 0, len2 = allowedValues.length; idx2 < len2; idx2++) {
+    if (value === allowedValues[idx2])
       return;
   }
   throw new TypeError(createValueErrorMsg(value, valueName, allowedValues));
@@ -511,8 +511,8 @@ var assertIsSubset = function(values$1, valueName, allowedValues) {
   if (!Array.isArray(allowedValues)) {
     allowedValues = values(allowedValues);
   }
-  for (var idx = 0, len = values$1.length; idx < len; idx++) {
-    assertIsOneOf(values$1[idx], valueName, allowedValues);
+  for (var idx2 = 0, len2 = values$1.length; idx2 < len2; idx2++) {
+    assertIsOneOf(values$1[idx2], valueName, allowedValues);
   }
 };
 var getType = function(val) {
@@ -569,37 +569,37 @@ var isType = function(value, type) {
 };
 var createTypeErrorMsg = function(value, valueName, types) {
   var allowedTypes = new Array(types.length);
-  for (var idx = 0, len = types.length; idx < len; idx++) {
-    var type = types[idx];
+  for (var idx2 = 0, len2 = types.length; idx2 < len2; idx2++) {
+    var type = types[idx2];
     if (type === "null")
-      allowedTypes[idx] = backtick("null");
+      allowedTypes[idx2] = backtick("null");
     if (type === "undefined")
-      allowedTypes[idx] = backtick("undefined");
+      allowedTypes[idx2] = backtick("undefined");
     if (type === "string")
-      allowedTypes[idx] = backtick("string");
+      allowedTypes[idx2] = backtick("string");
     else if (type === "number")
-      allowedTypes[idx] = backtick("number");
+      allowedTypes[idx2] = backtick("number");
     else if (type === "boolean")
-      allowedTypes[idx] = backtick("boolean");
+      allowedTypes[idx2] = backtick("boolean");
     else if (type === "symbol")
-      allowedTypes[idx] = backtick("symbol");
+      allowedTypes[idx2] = backtick("symbol");
     else if (type === "bigint")
-      allowedTypes[idx] = backtick("bigint");
+      allowedTypes[idx2] = backtick("bigint");
     else if (type === Array)
-      allowedTypes[idx] = backtick("Array");
+      allowedTypes[idx2] = backtick("Array");
     else if (type === Uint8Array)
-      allowedTypes[idx] = backtick("Uint8Array");
+      allowedTypes[idx2] = backtick("Uint8Array");
     else if (type === ArrayBuffer)
-      allowedTypes[idx] = backtick("ArrayBuffer");
+      allowedTypes[idx2] = backtick("ArrayBuffer");
     else
-      allowedTypes[idx] = backtick(type[1]);
+      allowedTypes[idx2] = backtick(type[1]);
   }
   var joinedTypes = allowedTypes.join(" or ");
   return backtick(valueName) + " must be of type " + joinedTypes + ", but was actually of type " + backtick(getType(value));
 };
 var assertIs = function(value, valueName, types) {
-  for (var idx = 0, len = types.length; idx < len; idx++) {
-    if (isType(value, types[idx]))
+  for (var idx2 = 0, len2 = types.length; idx2 < len2; idx2++) {
+    if (isType(value, types[idx2]))
       return;
   }
   throw new TypeError(createTypeErrorMsg(value, valueName, types));
@@ -608,8 +608,8 @@ var assertOrUndefined = function(value, valueName, types) {
   assertIs(value, valueName, types.concat("undefined"));
 };
 var assertEachIs = function(values2, valueName, types) {
-  for (var idx = 0, len = values2.length; idx < len; idx++) {
-    assertIs(values2[idx], valueName, types);
+  for (var idx2 = 0, len2 = values2.length; idx2 < len2; idx2++) {
+    assertIs(values2[idx2], valueName, types);
   }
 };
 var assertRange = function(value, valueName, min, max) {
@@ -692,8 +692,8 @@ pdfDocEncodingToUnicode[160] = toCharCode("€");
 pdfDocEncodingToUnicode[173] = toCharCode("�");
 var pdfDocEncodingDecode = function(bytes) {
   var codePoints = new Array(bytes.length);
-  for (var idx = 0, len = bytes.length; idx < len; idx++) {
-    codePoints[idx] = pdfDocEncodingToUnicode[bytes[idx]];
+  for (var idx2 = 0, len2 = bytes.length; idx2 < len2; idx2++) {
+    codePoints[idx2] = pdfDocEncodingToUnicode[bytes[idx2]];
   }
   return String.fromCodePoint.apply(String, codePoints);
 };
@@ -1269,8 +1269,8 @@ var PDFArray = (
     PDFArray2.prototype.remove = function(index) {
       this.array.splice(index, 1);
     };
-    PDFArray2.prototype.set = function(idx, object) {
-      this.array[idx] = object;
+    PDFArray2.prototype.set = function(idx2, object) {
+      this.array[idx2] = object;
     };
     PDFArray2.prototype.get = function(index) {
       return this.array[index];
@@ -1309,15 +1309,15 @@ var PDFArray = (
     };
     PDFArray2.prototype.clone = function(context) {
       var clone = PDFArray2.withContext(context || this.context);
-      for (var idx = 0, len = this.size(); idx < len; idx++) {
-        clone.push(this.array[idx]);
+      for (var idx2 = 0, len2 = this.size(); idx2 < len2; idx2++) {
+        clone.push(this.array[idx2]);
       }
       return clone;
     };
     PDFArray2.prototype.toString = function() {
       var arrayString = "[ ";
-      for (var idx = 0, len = this.size(); idx < len; idx++) {
-        arrayString += this.get(idx).toString();
+      for (var idx2 = 0, len2 = this.size(); idx2 < len2; idx2++) {
+        arrayString += this.get(idx2).toString();
         arrayString += " ";
       }
       arrayString += "]";
@@ -1325,8 +1325,8 @@ var PDFArray = (
     };
     PDFArray2.prototype.sizeInBytes = function() {
       var size = 3;
-      for (var idx = 0, len = this.size(); idx < len; idx++) {
-        size += this.get(idx).sizeInBytes() + 1;
+      for (var idx2 = 0, len2 = this.size(); idx2 < len2; idx2++) {
+        size += this.get(idx2).sizeInBytes() + 1;
       }
       return size;
     };
@@ -1334,19 +1334,19 @@ var PDFArray = (
       var initialOffset = offset;
       buffer[offset++] = CharCodes.LeftSquareBracket;
       buffer[offset++] = CharCodes.Space;
-      for (var idx = 0, len = this.size(); idx < len; idx++) {
-        offset += this.get(idx).copyBytesInto(buffer, offset);
+      for (var idx2 = 0, len2 = this.size(); idx2 < len2; idx2++) {
+        offset += this.get(idx2).copyBytesInto(buffer, offset);
         buffer[offset++] = CharCodes.Space;
       }
       buffer[offset++] = CharCodes.RightSquareBracket;
       return offset - initialOffset;
     };
     PDFArray2.prototype.scalePDFNumbers = function(x, y) {
-      for (var idx = 0, len = this.size(); idx < len; idx++) {
-        var el = this.lookup(idx);
+      for (var idx2 = 0, len2 = this.size(); idx2 < len2; idx2++) {
+        var el = this.lookup(idx2);
         if (el instanceof PDFNumber) {
-          var factor = idx % 2 === 0 ? x : y;
-          this.set(idx, PDFNumber.of(el.asNumber() * factor));
+          var factor = idx2 % 2 === 0 ? x : y;
+          this.set(idx2, PDFNumber.of(el.asNumber() * factor));
         }
       }
     };
@@ -1445,8 +1445,8 @@ var PDFName = (
         throw new PrivateConstructorError("PDFName");
       _this = _super.call(this) || this;
       var encodedName = "/";
-      for (var idx = 0, len = name.length; idx < len; idx++) {
-        var character = name[idx];
+      for (var idx2 = 0, len2 = name.length; idx2 < len2; idx2++) {
+        var character = name[idx2];
         var code = toCharCode(character);
         encodedName += isRegularChar(code) ? character : "#" + toHexString(code);
       }
@@ -1462,10 +1462,10 @@ var PDFName = (
           bytes.push(byte2);
         escaped = false;
       };
-      for (var idx = 1, len = this.encodedName.length; idx < len; idx++) {
-        var char = this.encodedName[idx];
+      for (var idx2 = 1, len2 = this.encodedName.length; idx2 < len2; idx2++) {
+        var char = this.encodedName[idx2];
         var byte = toCharCode(char);
-        var nextChar = this.encodedName[idx + 1];
+        var nextChar = this.encodedName[idx2 + 1];
         if (!escaped) {
           if (byte === CharCodes.Hash)
             escaped = true;
@@ -1654,8 +1654,8 @@ var PDFDict = (
     PDFDict2.prototype.clone = function(context) {
       var clone = PDFDict2.withContext(context || this.context);
       var entries = this.entries();
-      for (var idx = 0, len = entries.length; idx < len; idx++) {
-        var _a = entries[idx], key = _a[0], value = _a[1];
+      for (var idx2 = 0, len2 = entries.length; idx2 < len2; idx2++) {
+        var _a = entries[idx2], key = _a[0], value = _a[1];
         clone.set(key, value);
       }
       return clone;
@@ -1663,8 +1663,8 @@ var PDFDict = (
     PDFDict2.prototype.toString = function() {
       var dictString = "<<\n";
       var entries = this.entries();
-      for (var idx = 0, len = entries.length; idx < len; idx++) {
-        var _a = entries[idx], key = _a[0], value = _a[1];
+      for (var idx2 = 0, len2 = entries.length; idx2 < len2; idx2++) {
+        var _a = entries[idx2], key = _a[0], value = _a[1];
         dictString += key.toString() + " " + value.toString() + "\n";
       }
       dictString += ">>";
@@ -1673,8 +1673,8 @@ var PDFDict = (
     PDFDict2.prototype.sizeInBytes = function() {
       var size = 5;
       var entries = this.entries();
-      for (var idx = 0, len = entries.length; idx < len; idx++) {
-        var _a = entries[idx], key = _a[0], value = _a[1];
+      for (var idx2 = 0, len2 = entries.length; idx2 < len2; idx2++) {
+        var _a = entries[idx2], key = _a[0], value = _a[1];
         size += key.sizeInBytes() + value.sizeInBytes() + 2;
       }
       return size;
@@ -1685,8 +1685,8 @@ var PDFDict = (
       buffer[offset++] = CharCodes.LessThan;
       buffer[offset++] = CharCodes.Newline;
       var entries = this.entries();
-      for (var idx = 0, len = entries.length; idx < len; idx++) {
-        var _a = entries[idx], key = _a[0], value = _a[1];
+      for (var idx2 = 0, len2 = entries.length; idx2 < len2; idx2++) {
+        var _a = entries[idx2], key = _a[0], value = _a[1];
         offset += key.copyBytesInto(buffer, offset);
         buffer[offset++] = CharCodes.Space;
         offset += value.copyBytesInto(buffer, offset);
@@ -1755,8 +1755,8 @@ var PDFStream = (
       buffer[offset++] = CharCodes.m;
       buffer[offset++] = CharCodes.Newline;
       var contents = this.getContents();
-      for (var idx = 0, len = contents.length; idx < len; idx++) {
-        buffer[offset++] = contents[idx];
+      for (var idx2 = 0, len2 = contents.length; idx2 < len2; idx2++) {
+        buffer[offset++] = contents[idx2];
       }
       buffer[offset++] = CharCodes.Newline;
       buffer[offset++] = CharCodes.e;
@@ -1856,24 +1856,24 @@ var PDFOperator = (
     }
     PDFOperator2.prototype.clone = function(context) {
       var args = new Array(this.args.length);
-      for (var idx = 0, len = args.length; idx < len; idx++) {
-        var arg = this.args[idx];
-        args[idx] = arg instanceof PDFObject ? arg.clone(context) : arg;
+      for (var idx2 = 0, len2 = args.length; idx2 < len2; idx2++) {
+        var arg = this.args[idx2];
+        args[idx2] = arg instanceof PDFObject ? arg.clone(context) : arg;
       }
       return PDFOperator2.of(this.name, args);
     };
     PDFOperator2.prototype.toString = function() {
       var value = "";
-      for (var idx = 0, len = this.args.length; idx < len; idx++) {
-        value += String(this.args[idx]) + " ";
+      for (var idx2 = 0, len2 = this.args.length; idx2 < len2; idx2++) {
+        value += String(this.args[idx2]) + " ";
       }
       value += this.name;
       return value;
     };
     PDFOperator2.prototype.sizeInBytes = function() {
       var size = 0;
-      for (var idx = 0, len = this.args.length; idx < len; idx++) {
-        var arg = this.args[idx];
+      for (var idx2 = 0, len2 = this.args.length; idx2 < len2; idx2++) {
+        var arg = this.args[idx2];
         size += (arg instanceof PDFObject ? arg.sizeInBytes() : arg.length) + 1;
       }
       size += this.name.length;
@@ -1881,8 +1881,8 @@ var PDFOperator = (
     };
     PDFOperator2.prototype.copyBytesInto = function(buffer, offset) {
       var initialOffset = offset;
-      for (var idx = 0, len = this.args.length; idx < len; idx++) {
-        var arg = this.args[idx];
+      for (var idx2 = 0, len2 = this.args.length; idx2 < len2; idx2++) {
+        var arg = this.args[idx2];
         if (arg instanceof PDFObject) {
           offset += arg.copyBytesInto(buffer, offset);
         } else {
@@ -2025,32 +2025,32 @@ var PDFContentStream = (
     };
     PDFContentStream2.prototype.clone = function(context) {
       var operators = new Array(this.operators.length);
-      for (var idx = 0, len = this.operators.length; idx < len; idx++) {
-        operators[idx] = this.operators[idx].clone(context);
+      for (var idx2 = 0, len2 = this.operators.length; idx2 < len2; idx2++) {
+        operators[idx2] = this.operators[idx2].clone(context);
       }
       var _a = this, dict = _a.dict, encode = _a.encode;
       return PDFContentStream2.of(dict.clone(context), operators, encode);
     };
     PDFContentStream2.prototype.getContentsString = function() {
       var value = "";
-      for (var idx = 0, len = this.operators.length; idx < len; idx++) {
-        value += this.operators[idx] + "\n";
+      for (var idx2 = 0, len2 = this.operators.length; idx2 < len2; idx2++) {
+        value += this.operators[idx2] + "\n";
       }
       return value;
     };
     PDFContentStream2.prototype.getUnencodedContents = function() {
       var buffer = new Uint8Array(this.getUnencodedContentsSize());
       var offset = 0;
-      for (var idx = 0, len = this.operators.length; idx < len; idx++) {
-        offset += this.operators[idx].copyBytesInto(buffer, offset);
+      for (var idx2 = 0, len2 = this.operators.length; idx2 < len2; idx2++) {
+        offset += this.operators[idx2].copyBytesInto(buffer, offset);
         buffer[offset++] = CharCodes.Newline;
       }
       return buffer;
     };
     PDFContentStream2.prototype.getUnencodedContentsSize = function() {
       var size = 0;
-      for (var idx = 0, len = this.operators.length; idx < len; idx++) {
-        size += this.operators[idx].sizeInBytes() + 1;
+      for (var idx2 = 0, len2 = this.operators.length; idx2 < len2; idx2++) {
+        size += this.operators[idx2].sizeInBytes() + 1;
       }
       return size;
     };
@@ -2121,8 +2121,8 @@ var PDFContext = (
       var result = ref instanceof PDFRef ? this.indirectObjects.get(ref) : ref;
       if (!result || result === PDFNull$1 && !preservePDFNull)
         return void 0;
-      for (var idx = 0, len = types.length; idx < len; idx++) {
-        var type = types[idx];
+      for (var idx2 = 0, len2 = types.length; idx2 < len2; idx2++) {
+        var type = types[idx2];
         if (type === PDFNull$1) {
           if (result === PDFNull$1)
             return result;
@@ -2141,8 +2141,8 @@ var PDFContext = (
       var result = ref instanceof PDFRef ? this.indirectObjects.get(ref) : ref;
       if (types.length === 0)
         return result;
-      for (var idx = 0, len = types.length; idx < len; idx++) {
-        var type = types[idx];
+      for (var idx2 = 0, len2 = types.length; idx2 < len2; idx2++) {
+        var type = types[idx2];
         if (type === PDFNull$1) {
           if (result === PDFNull$1)
             return result;
@@ -2155,8 +2155,8 @@ var PDFContext = (
     };
     PDFContext2.prototype.getObjectRef = function(pdfObject) {
       var entries = Array.from(this.indirectObjects.entries());
-      for (var idx = 0, len = entries.length; idx < len; idx++) {
-        var _a = entries[idx], ref = _a[0], object = _a[1];
+      for (var idx2 = 0, len2 = entries.length; idx2 < len2; idx2++) {
+        var _a = entries[idx2], ref = _a[0], object = _a[1];
         if (object === pdfObject) {
           return ref;
         }
@@ -2179,15 +2179,15 @@ var PDFContext = (
         return literal ? PDFBool.True : PDFBool.False;
       } else if (Array.isArray(literal)) {
         var array = PDFArray.withContext(this);
-        for (var idx = 0, len = literal.length; idx < len; idx++) {
-          array.push(this.obj(literal[idx]));
+        for (var idx2 = 0, len2 = literal.length; idx2 < len2; idx2++) {
+          array.push(this.obj(literal[idx2]));
         }
         return array;
       } else {
         var dict = PDFDict.withContext(this);
         var keys = Object.keys(literal);
-        for (var idx = 0, len = keys.length; idx < len; idx++) {
-          var key = keys[idx];
+        for (var idx2 = 0, len2 = keys.length; idx2 < len2; idx2++) {
+          var key = keys[idx2];
           var value = literal[key];
           if (value !== void 0)
             dict.set(PDFName.of(key), this.obj(value));
@@ -2267,8 +2267,8 @@ var PDFPageLeaf = (
     PDFPageLeaf2.prototype.clone = function(context) {
       var clone = PDFPageLeaf2.fromMapWithContext(/* @__PURE__ */ new Map(), context || this.context, this.autoNormalizeCTM);
       var entries = this.entries();
-      for (var idx = 0, len = entries.length; idx < len; idx++) {
-        var _a = entries[idx], key = _a[0], value = _a[1];
+      for (var idx2 = 0, len2 = entries.length; idx2 < len2; idx2++) {
+        var _a = entries[idx2], key = _a[0], value = _a[1];
         clone.set(key, value);
       }
       return clone;
@@ -2462,8 +2462,8 @@ var PDFObjectCopier = (
       this.copyPDFPage = function(originalPage) {
         var clonedPage = originalPage.clone();
         var InheritableEntries = PDFPageLeaf.InheritableEntries;
-        for (var idx = 0, len = InheritableEntries.length; idx < len; idx++) {
-          var key = PDFName.of(InheritableEntries[idx]);
+        for (var idx2 = 0, len2 = InheritableEntries.length; idx2 < len2; idx2++) {
+          var key = PDFName.of(InheritableEntries[idx2]);
           var value = clonedPage.getInheritableAttribute(key);
           if (!clonedPage.get(key) && value)
             clonedPage.set(key, value);
@@ -2478,8 +2478,8 @@ var PDFObjectCopier = (
         var clonedDict = originalDict.clone(_this.dest);
         _this.traversedObjects.set(originalDict, clonedDict);
         var entries = originalDict.entries();
-        for (var idx = 0, len = entries.length; idx < len; idx++) {
-          var _a = entries[idx], key = _a[0], value = _a[1];
+        for (var idx2 = 0, len2 = entries.length; idx2 < len2; idx2++) {
+          var _a = entries[idx2], key = _a[0], value = _a[1];
           clonedDict.set(key, _this.copy(value));
         }
         return clonedDict;
@@ -2490,9 +2490,9 @@ var PDFObjectCopier = (
         }
         var clonedArray = originalArray.clone(_this.dest);
         _this.traversedObjects.set(originalArray, clonedArray);
-        for (var idx = 0, len = originalArray.size(); idx < len; idx++) {
-          var value = originalArray.get(idx);
-          clonedArray.set(idx, _this.copy(value));
+        for (var idx2 = 0, len2 = originalArray.size(); idx2 < len2; idx2++) {
+          var value = originalArray.get(idx2);
+          clonedArray.set(idx2, _this.copy(value));
         }
         return clonedArray;
       };
@@ -2503,8 +2503,8 @@ var PDFObjectCopier = (
         var clonedStream = originalStream.clone(_this.dest);
         _this.traversedObjects.set(originalStream, clonedStream);
         var entries = originalStream.dict.entries();
-        for (var idx = 0, len = entries.length; idx < len; idx++) {
-          var _a = entries[idx], key = _a[0], value = _a[1];
+        for (var idx2 = 0, len2 = entries.length; idx2 < len2; idx2++) {
+          var _a = entries[idx2], key = _a[0], value = _a[1];
           clonedStream.dict.set(key, _this.copy(value));
         }
         return clonedStream;
@@ -2564,8 +2564,8 @@ var PDFCrossRefSection = (
     };
     PDFCrossRefSection2.prototype.sizeInBytes = function() {
       var size = 5;
-      for (var idx = 0, len = this.subsections.length; idx < len; idx++) {
-        var subsection = this.subsections[idx];
+      for (var idx2 = 0, len2 = this.subsections.length; idx2 < len2; idx2++) {
+        var subsection = this.subsections[idx2];
         var subsectionLength = subsection.length;
         var firstEntry = subsection[0];
         size += 2;
@@ -2588,8 +2588,8 @@ var PDFCrossRefSection = (
     PDFCrossRefSection2.prototype.copySubsectionsIntoBuffer = function(subsections, buffer, offset) {
       var initialOffset = offset;
       var length = subsections.length;
-      for (var idx = 0; idx < length; idx++) {
-        var subsection = this.subsections[idx];
+      for (var idx2 = 0; idx2 < length; idx2++) {
+        var subsection = this.subsections[idx2];
         var firstObjectNumber = String(subsection[0].ref.objectNumber);
         offset += copyStringIntoBuffer(firstObjectNumber, buffer, offset);
         buffer[offset++] = CharCodes.Space;
@@ -2602,8 +2602,8 @@ var PDFCrossRefSection = (
     };
     PDFCrossRefSection2.prototype.copyEntriesIntoBuffer = function(entries, buffer, offset) {
       var length = entries.length;
-      for (var idx = 0; idx < length; idx++) {
-        var entry = entries[idx];
+      for (var idx2 = 0; idx2 < length; idx2++) {
+        var entry = entries[idx2];
         var entryOffset = padStart(String(entry.offset), 10, "0");
         offset += copyStringIntoBuffer(entryOffset, buffer, offset);
         buffer[offset++] = CharCodes.Space;
@@ -2742,8 +2742,8 @@ var PDFObjectStream = (
     };
     PDFObjectStream2.prototype.getContentsString = function() {
       var value = this.offsetsString;
-      for (var idx = 0, len = this.objects.length; idx < len; idx++) {
-        var _a = this.objects[idx], object = _a[1];
+      for (var idx2 = 0, len2 = this.objects.length; idx2 < len2; idx2++) {
+        var _a = this.objects[idx2], object = _a[1];
         value += object + "\n";
       }
       return value;
@@ -2751,8 +2751,8 @@ var PDFObjectStream = (
     PDFObjectStream2.prototype.getUnencodedContents = function() {
       var buffer = new Uint8Array(this.getUnencodedContentsSize());
       var offset = copyStringIntoBuffer(this.offsetsString, buffer, 0);
-      for (var idx = 0, len = this.objects.length; idx < len; idx++) {
-        var _a = this.objects[idx], object = _a[1];
+      for (var idx2 = 0, len2 = this.objects.length; idx2 < len2; idx2++) {
+        var _a = this.objects[idx2], object = _a[1];
         offset += object.copyBytesInto(buffer, offset);
         buffer[offset++] = CharCodes.Newline;
       }
@@ -2763,8 +2763,8 @@ var PDFObjectStream = (
     };
     PDFObjectStream2.prototype.computeOffsetsString = function() {
       var offsetsString = "";
-      for (var idx = 0, len = this.offsets.length; idx < len; idx++) {
-        var _a = this.offsets[idx], objectNumber = _a[0], offset = _a[1];
+      for (var idx2 = 0, len2 = this.offsets.length; idx2 < len2; idx2++) {
+        var _a = this.offsets[idx2], objectNumber = _a[0], offset = _a[1];
         offsetsString += objectNumber + " " + offset + " ";
       }
       return offsetsString;
@@ -2772,9 +2772,9 @@ var PDFObjectStream = (
     PDFObjectStream2.prototype.computeObjectOffsets = function() {
       var offset = 0;
       var offsets = new Array(this.objects.length);
-      for (var idx = 0, len = this.objects.length; idx < len; idx++) {
-        var _a = this.objects[idx], ref = _a[0], object = _a[1];
-        offsets[idx] = [ref.objectNumber, offset];
+      for (var idx2 = 0, len2 = this.objects.length; idx2 < len2; idx2++) {
+        var _a = this.objects[idx2], ref = _a[0], object = _a[1];
+        offsets[idx2] = [ref.objectNumber, offset];
         offset += object.sizeInBytes() + 1;
       }
       return offsets;
@@ -2803,7 +2803,7 @@ var PDFWriter = (
     }
     PDFWriter2.prototype.serializeToBuffer = function() {
       return __awaiter(this, void 0, void 0, function() {
-        var _a, size, header, indirectObjects, xref, trailerDict, trailer, offset, buffer, idx, len, _b, ref, object, objectNumber, generationNumber, n;
+        var _a, size, header, indirectObjects, xref, trailerDict, trailer, offset, buffer, idx2, len2, _b, ref, object, objectNumber, generationNumber, n;
         return __generator(this, function(_c) {
           switch (_c.label) {
             case 0:
@@ -2815,11 +2815,11 @@ var PDFWriter = (
               offset += header.copyBytesInto(buffer, offset);
               buffer[offset++] = CharCodes.Newline;
               buffer[offset++] = CharCodes.Newline;
-              idx = 0, len = indirectObjects.length;
+              idx2 = 0, len2 = indirectObjects.length;
               _c.label = 2;
             case 2:
-              if (!(idx < len)) return [3, 5];
-              _b = indirectObjects[idx], ref = _b[0], object = _b[1];
+              if (!(idx2 < len2)) return [3, 5];
+              _b = indirectObjects[idx2], ref = _b[0], object = _b[1];
               objectNumber = String(ref.objectNumber);
               offset += copyStringIntoBuffer(objectNumber, buffer, offset);
               buffer[offset++] = CharCodes.Space;
@@ -2847,7 +2847,7 @@ var PDFWriter = (
               _c.sent();
               _c.label = 4;
             case 4:
-              idx++;
+              idx2++;
               return [3, 2];
             case 5:
               if (xref) {
@@ -2882,7 +2882,7 @@ var PDFWriter = (
     };
     PDFWriter2.prototype.computeBufferSize = function() {
       return __awaiter(this, void 0, void 0, function() {
-        var header, size, xref, indirectObjects, idx, len, indirectObject, ref, xrefOffset, trailerDict, trailer;
+        var header, size, xref, indirectObjects, idx2, len2, indirectObject, ref, xrefOffset, trailerDict, trailer;
         return __generator(this, function(_a) {
           switch (_a.label) {
             case 0:
@@ -2890,11 +2890,11 @@ var PDFWriter = (
               size = header.sizeInBytes() + 2;
               xref = PDFCrossRefSection.create();
               indirectObjects = this.context.enumerateIndirectObjects();
-              idx = 0, len = indirectObjects.length;
+              idx2 = 0, len2 = indirectObjects.length;
               _a.label = 1;
             case 1:
-              if (!(idx < len)) return [3, 4];
-              indirectObject = indirectObjects[idx];
+              if (!(idx2 < len2)) return [3, 4];
+              indirectObject = indirectObjects[idx2];
               ref = indirectObject[0];
               xref.addEntry(ref, size);
               size += this.computeIndirectObjectSize(indirectObject);
@@ -2904,7 +2904,7 @@ var PDFWriter = (
               _a.sent();
               _a.label = 3;
             case 3:
-              idx++;
+              idx2++;
               return [3, 1];
             case 4:
               xrefOffset = size;
@@ -2944,8 +2944,8 @@ var PDFInvalidObject = (
     };
     PDFInvalidObject2.prototype.copyBytesInto = function(buffer, offset) {
       var length = this.data.length;
-      for (var idx = 0; idx < length; idx++) {
-        buffer[offset++] = this.data[idx];
+      for (var idx2 = 0; idx2 < length; idx2++) {
+        buffer[offset++] = this.data[idx2];
       }
       return length;
     };
@@ -2973,10 +2973,10 @@ var PDFCrossRefStream = (
       _this.computeIndex = function() {
         var subsections = [];
         var subsectionLength = 0;
-        for (var idx = 0, len = _this.entries.length; idx < len; idx++) {
-          var currEntry = _this.entries[idx];
-          var prevEntry = _this.entries[idx - 1];
-          if (idx === 0) {
+        for (var idx2 = 0, len2 = _this.entries.length; idx2 < len2; idx2++) {
+          var currEntry = _this.entries[idx2];
+          var prevEntry = _this.entries[idx2 - 1];
+          if (idx2 === 0) {
             subsections.push(currEntry.ref.objectNumber);
           } else if (currEntry.ref.objectNumber - prevEntry.ref.objectNumber > 1) {
             subsections.push(subsectionLength);
@@ -2990,19 +2990,19 @@ var PDFCrossRefStream = (
       };
       _this.computeEntryTuples = function() {
         var entryTuples = new Array(_this.entries.length);
-        for (var idx = 0, len = _this.entries.length; idx < len; idx++) {
-          var entry = _this.entries[idx];
+        for (var idx2 = 0, len2 = _this.entries.length; idx2 < len2; idx2++) {
+          var entry = _this.entries[idx2];
           if (entry.type === EntryType.Deleted) {
             var type = entry.type, nextFreeObjectNumber = entry.nextFreeObjectNumber, ref = entry.ref;
-            entryTuples[idx] = [type, nextFreeObjectNumber, ref.generationNumber];
+            entryTuples[idx2] = [type, nextFreeObjectNumber, ref.generationNumber];
           }
           if (entry.type === EntryType.Uncompressed) {
             var type = entry.type, offset = entry.offset, ref = entry.ref;
-            entryTuples[idx] = [type, offset, ref.generationNumber];
+            entryTuples[idx2] = [type, offset, ref.generationNumber];
           }
           if (entry.type === EntryType.Compressed) {
             var type = entry.type, objectStreamRef = entry.objectStreamRef, index = entry.index;
-            entryTuples[idx] = [type, objectStreamRef.objectNumber, index];
+            entryTuples[idx2] = [type, objectStreamRef.objectNumber, index];
           }
         }
         return entryTuples;
@@ -3010,8 +3010,8 @@ var PDFCrossRefStream = (
       _this.computeMaxEntryByteWidths = function() {
         var entryTuples = _this.entryTuplesCache.access();
         var widths = [0, 0, 0];
-        for (var idx = 0, len = entryTuples.length; idx < len; idx++) {
-          var _a = entryTuples[idx], first = _a[0], second = _a[1], third = _a[2];
+        for (var idx2 = 0, len2 = entryTuples.length; idx2 < len2; idx2++) {
+          var _a = entryTuples[idx2], first = _a[0], second = _a[1], third = _a[2];
           var firstSize = sizeInBytes(first);
           var secondSize = sizeInBytes(second);
           var thirdSize = sizeInBytes(third);
@@ -3068,14 +3068,14 @@ var PDFCrossRefStream = (
         var firstBytes = reverseArray(bytesFor(first));
         var secondBytes = reverseArray(bytesFor(second));
         var thirdBytes = reverseArray(bytesFor(third));
-        for (var idx = byteWidths[0] - 1; idx >= 0; idx--) {
-          value += (firstBytes[idx] || 0).toString(2);
+        for (var idx2 = byteWidths[0] - 1; idx2 >= 0; idx2--) {
+          value += (firstBytes[idx2] || 0).toString(2);
         }
-        for (var idx = byteWidths[1] - 1; idx >= 0; idx--) {
-          value += (secondBytes[idx] || 0).toString(2);
+        for (var idx2 = byteWidths[1] - 1; idx2 >= 0; idx2--) {
+          value += (secondBytes[idx2] || 0).toString(2);
         }
-        for (var idx = byteWidths[2] - 1; idx >= 0; idx--) {
-          value += (thirdBytes[idx] || 0).toString(2);
+        for (var idx2 = byteWidths[2] - 1; idx2 >= 0; idx2--) {
+          value += (thirdBytes[idx2] || 0).toString(2);
         }
       }
       return value;
@@ -3090,14 +3090,14 @@ var PDFCrossRefStream = (
         var firstBytes = reverseArray(bytesFor(first));
         var secondBytes = reverseArray(bytesFor(second));
         var thirdBytes = reverseArray(bytesFor(third));
-        for (var idx = byteWidths[0] - 1; idx >= 0; idx--) {
-          buffer[offset++] = firstBytes[idx] || 0;
+        for (var idx2 = byteWidths[0] - 1; idx2 >= 0; idx2--) {
+          buffer[offset++] = firstBytes[idx2] || 0;
         }
-        for (var idx = byteWidths[1] - 1; idx >= 0; idx--) {
-          buffer[offset++] = secondBytes[idx] || 0;
+        for (var idx2 = byteWidths[1] - 1; idx2 >= 0; idx2--) {
+          buffer[offset++] = secondBytes[idx2] || 0;
         }
-        for (var idx = byteWidths[2] - 1; idx >= 0; idx--) {
-          buffer[offset++] = thirdBytes[idx] || 0;
+        for (var idx2 = byteWidths[2] - 1; idx2 >= 0; idx2--) {
+          buffer[offset++] = thirdBytes[idx2] || 0;
         }
       }
       return buffer;
@@ -3144,7 +3144,7 @@ var PDFStreamWriter = (
     }
     PDFStreamWriter2.prototype.computeBufferSize = function() {
       return __awaiter(this, void 0, void 0, function() {
-        var objectNumber, header, size, xrefStream, uncompressedObjects, compressedObjects, objectStreamRefs, indirectObjects, idx, len, indirectObject, ref, object, shouldNotCompress, chunk, objectStreamRef, idx, len, chunk, ref, objectStream, xrefStreamRef, xrefOffset, trailer;
+        var objectNumber, header, size, xrefStream, uncompressedObjects, compressedObjects, objectStreamRefs, indirectObjects, idx2, len2, indirectObject, ref, object, shouldNotCompress, chunk, objectStreamRef, idx2, len2, chunk, ref, objectStream, xrefStreamRef, xrefOffset, trailer;
         return __generator(this, function(_a) {
           switch (_a.label) {
             case 0:
@@ -3156,11 +3156,11 @@ var PDFStreamWriter = (
               compressedObjects = [];
               objectStreamRefs = [];
               indirectObjects = this.context.enumerateIndirectObjects();
-              idx = 0, len = indirectObjects.length;
+              idx2 = 0, len2 = indirectObjects.length;
               _a.label = 1;
             case 1:
-              if (!(idx < len)) return [3, 6];
-              indirectObject = indirectObjects[idx];
+              if (!(idx2 < len2)) return [3, 6];
+              indirectObject = indirectObjects[idx2];
               ref = indirectObject[0], object = indirectObject[1];
               shouldNotCompress = ref === this.context.trailerInfo.Encrypt || object instanceof PDFStream || object instanceof PDFInvalidObject || ref.generationNumber !== 0;
               if (!shouldNotCompress) return [3, 4];
@@ -3187,15 +3187,15 @@ var PDFStreamWriter = (
               chunk.push(indirectObject);
               _a.label = 5;
             case 5:
-              idx++;
+              idx2++;
               return [3, 1];
             case 6:
-              idx = 0, len = compressedObjects.length;
+              idx2 = 0, len2 = compressedObjects.length;
               _a.label = 7;
             case 7:
-              if (!(idx < len)) return [3, 10];
-              chunk = compressedObjects[idx];
-              ref = objectStreamRefs[idx];
+              if (!(idx2 < len2)) return [3, 10];
+              chunk = compressedObjects[idx2];
+              ref = objectStreamRefs[idx2];
               objectStream = PDFObjectStream.withContextAndObjects(this.context, chunk, this.encodeStreams);
               xrefStream.addUncompressedEntry(ref, size);
               size += this.computeIndirectObjectSize([ref, objectStream]);
@@ -3206,7 +3206,7 @@ var PDFStreamWriter = (
               _a.sent();
               _a.label = 9;
             case 9:
-              idx++;
+              idx2++;
               return [3, 7];
             case 10:
               xrefStreamRef = PDFRef.of(objectNumber++);
@@ -3294,8 +3294,8 @@ var PDFHexString = (
     PDFHexString2.fromText = function(value) {
       var encoded = utf16Encode(value);
       var hex = "";
-      for (var idx = 0, len = encoded.length; idx < len; idx++) {
-        hex += toHexStringOfMinLength(encoded[idx], 4);
+      for (var idx2 = 0, len2 = encoded.length; idx2 < len2; idx2++) {
+        hex += toHexStringOfMinLength(encoded[idx2], 4);
       }
       return new PDFHexString2(hex);
     };
@@ -3314,17 +3314,17 @@ var StandardFontEmbedder = (
     StandardFontEmbedder2.prototype.encodeText = function(text) {
       var glyphs = this.encodeTextAsGlyphs(text);
       var hexCodes = new Array(glyphs.length);
-      for (var idx = 0, len = glyphs.length; idx < len; idx++) {
-        hexCodes[idx] = toHexString(glyphs[idx].code);
+      for (var idx2 = 0, len2 = glyphs.length; idx2 < len2; idx2++) {
+        hexCodes[idx2] = toHexString(glyphs[idx2].code);
       }
       return PDFHexString.of(hexCodes.join(""));
     };
     StandardFontEmbedder2.prototype.widthOfTextAtSize = function(text, size) {
       var glyphs = this.encodeTextAsGlyphs(text);
       var totalWidth = 0;
-      for (var idx = 0, len = glyphs.length; idx < len; idx++) {
-        var left = glyphs[idx].name;
-        var right = (glyphs[idx + 1] || {}).name;
+      for (var idx2 = 0, len2 = glyphs.length; idx2 < len2; idx2++) {
+        var left = glyphs[idx2].name;
+        var right = (glyphs[idx2 + 1] || {}).name;
         var kernAmount = this.font.getXAxisKerningForPair(left, right) || 0;
         totalWidth += this.widthOfGlyph(left) + kernAmount;
       }
@@ -3370,9 +3370,9 @@ var StandardFontEmbedder = (
     StandardFontEmbedder2.prototype.encodeTextAsGlyphs = function(text) {
       var codePoints = Array.from(text);
       var glyphs = new Array(codePoints.length);
-      for (var idx = 0, len = codePoints.length; idx < len; idx++) {
-        var codePoint = toCodePoint(codePoints[idx]);
-        glyphs[idx] = this.encoding.encodeUnicodeCodePoint(codePoint);
+      for (var idx2 = 0, len2 = codePoints.length; idx2 < len2; idx2++) {
+        var codePoint = toCodePoint(codePoints[idx2]);
+        glyphs[idx2] = this.encoding.encodeUnicodeCodePoint(codePoint);
       }
       return glyphs;
     };
@@ -3384,11 +3384,11 @@ var StandardFontEmbedder = (
 );
 var createCmap = function(glyphs, glyphId) {
   var bfChars = new Array(glyphs.length);
-  for (var idx = 0, len = glyphs.length; idx < len; idx++) {
-    var glyph = glyphs[idx];
+  for (var idx2 = 0, len2 = glyphs.length; idx2 < len2; idx2++) {
+    var glyph = glyphs[idx2];
     var id = cmapHexFormat(cmapHexString(glyphId(glyph)));
     var unicode = cmapHexFormat.apply(void 0, glyph.codePoints.map(cmapCodePointFormat));
-    bfChars[idx] = [id, unicode];
+    bfChars[idx2] = [id, unicode];
   }
   return fillCmapTemplate(bfChars);
 };
@@ -3472,10 +3472,10 @@ var PDFString = (
           bytes.push(byte2);
         escaped = false;
       };
-      for (var idx = 0, len = this.value.length; idx < len; idx++) {
-        var char = this.value[idx];
+      for (var idx2 = 0, len2 = this.value.length; idx2 < len2; idx2++) {
+        var char = this.value[idx2];
         var byte = toCharCode(char);
-        var nextChar = this.value[idx + 1];
+        var nextChar = this.value[idx2 + 1];
         if (!escaped) {
           if (byte === CharCodes.BackSlash)
             escaped = true;
@@ -3568,9 +3568,9 @@ var CustomFontEmbedder = (
       var _this = this;
       this.allGlyphsInFontSortedById = function() {
         var glyphs = new Array(_this.font.characterSet.length);
-        for (var idx = 0, len = glyphs.length; idx < len; idx++) {
-          var codePoint = _this.font.characterSet[idx];
-          glyphs[idx] = _this.font.glyphForCodePoint(codePoint);
+        for (var idx2 = 0, len2 = glyphs.length; idx2 < len2; idx2++) {
+          var codePoint = _this.font.characterSet[idx2];
+          glyphs[idx2] = _this.font.glyphForCodePoint(codePoint);
         }
         return sortedUniq(glyphs.sort(byAscendingId), function(g) {
           return g.id;
@@ -3602,16 +3602,16 @@ var CustomFontEmbedder = (
     CustomFontEmbedder2.prototype.encodeText = function(text) {
       var glyphs = this.font.layout(text, this.fontFeatures).glyphs;
       var hexCodes = new Array(glyphs.length);
-      for (var idx = 0, len = glyphs.length; idx < len; idx++) {
-        hexCodes[idx] = toHexStringOfMinLength(glyphs[idx].id, 4);
+      for (var idx2 = 0, len2 = glyphs.length; idx2 < len2; idx2++) {
+        hexCodes[idx2] = toHexStringOfMinLength(glyphs[idx2].id, 4);
       }
       return PDFHexString.of(hexCodes.join(""));
     };
     CustomFontEmbedder2.prototype.widthOfTextAtSize = function(text, size) {
       var glyphs = this.font.layout(text, this.fontFeatures).glyphs;
       var totalWidth = 0;
-      for (var idx = 0, len = glyphs.length; idx < len; idx++) {
-        totalWidth += glyphs[idx].advanceWidth * this.scale;
+      for (var idx2 = 0, len2 = glyphs.length; idx2 < len2; idx2++) {
+        totalWidth += glyphs[idx2].advanceWidth * this.scale;
       }
       var scale2 = size / 1e3;
       return totalWidth * scale2;
@@ -3765,12 +3765,12 @@ var CustomFontEmbedder = (
       var glyphs = this.glyphCache.access();
       var widths = [];
       var currSection = [];
-      for (var idx = 0, len = glyphs.length; idx < len; idx++) {
-        var currGlyph = glyphs[idx];
-        var prevGlyph = glyphs[idx - 1];
+      for (var idx2 = 0, len2 = glyphs.length; idx2 < len2; idx2++) {
+        var currGlyph = glyphs[idx2];
+        var prevGlyph = glyphs[idx2 - 1];
         var currGlyphId = this.glyphId(currGlyph);
         var prevGlyphId = this.glyphId(prevGlyph);
-        if (idx === 0) {
+        if (idx2 === 0) {
           widths.push(currGlyphId);
         } else if (currGlyphId - prevGlyphId !== 1) {
           widths.push(currSection);
@@ -3816,12 +3816,12 @@ var CustomFontSubsetEmbedder = (
     CustomFontSubsetEmbedder2.prototype.encodeText = function(text) {
       var glyphs = this.font.layout(text, this.fontFeatures).glyphs;
       var hexCodes = new Array(glyphs.length);
-      for (var idx = 0, len = glyphs.length; idx < len; idx++) {
-        var glyph = glyphs[idx];
+      for (var idx2 = 0, len2 = glyphs.length; idx2 < len2; idx2++) {
+        var glyph = glyphs[idx2];
         var subsetGlyphId = this.subset.includeGlyph(glyph);
         this.glyphs[subsetGlyphId - 1] = glyph;
         this.glyphIdMap.set(glyph.id, subsetGlyphId);
-        hexCodes[idx] = toHexStringOfMinLength(subsetGlyphId, 4);
+        hexCodes[idx2] = toHexStringOfMinLength(subsetGlyphId, 4);
       }
       this.glyphCache.invalidate();
       return PDFHexString.of(hexCodes.join(""));
@@ -4402,40 +4402,40 @@ var Ascii85Stream = (
       }
       var bufferLength = this.bufferLength;
       var buffer;
-      var i;
+      var i2;
       if (c === Z_LOWER_CHAR) {
         buffer = this.ensureBuffer(bufferLength + 4);
-        for (i = 0; i < 4; ++i) {
-          buffer[bufferLength + i] = 0;
+        for (i2 = 0; i2 < 4; ++i2) {
+          buffer[bufferLength + i2] = 0;
         }
         this.bufferLength += 4;
       } else {
         var input = this.input;
         input[0] = c;
-        for (i = 1; i < 5; ++i) {
+        for (i2 = 1; i2 < 5; ++i2) {
           c = stream2.getByte();
           while (isSpace(c)) {
             c = stream2.getByte();
           }
-          input[i] = c;
+          input[i2] = c;
           if (c === EOF || c === TILDA_CHAR) {
             break;
           }
         }
-        buffer = this.ensureBuffer(bufferLength + i - 1);
-        this.bufferLength += i - 1;
-        if (i < 5) {
-          for (; i < 5; ++i) {
-            input[i] = 33 + 84;
+        buffer = this.ensureBuffer(bufferLength + i2 - 1);
+        this.bufferLength += i2 - 1;
+        if (i2 < 5) {
+          for (; i2 < 5; ++i2) {
+            input[i2] = 33 + 84;
           }
           this.eof = true;
         }
         var t = 0;
-        for (i = 0; i < 5; ++i) {
-          t = t * 85 + (input[i] - 33);
+        for (i2 = 0; i2 < 5; ++i2) {
+          t = t * 85 + (input[i2] - 33);
         }
-        for (i = 3; i >= 0; --i) {
-          buffer[bufferLength + i] = t & 255;
+        for (i2 = 3; i2 >= 0; --i2) {
+          buffer[bufferLength + i2] = t & 255;
           t >>= 8;
         }
       }
@@ -4467,8 +4467,8 @@ var AsciiHexStream = (
       var buffer = this.ensureBuffer(this.bufferLength + maxDecodeLength);
       var bufferLength = this.bufferLength;
       var firstDigit = this.firstDigit;
-      for (var i = 0, ii = bytes.length; i < ii; i++) {
-        var ch = bytes[i];
+      for (var i2 = 0, ii = bytes.length; i2 < ii; i2++) {
+        var ch = bytes[i2];
         var digit = void 0;
         if (ch >= 48 && ch <= 57) {
           digit = ch & 15;
@@ -5158,7 +5158,7 @@ var FlateStream = (
     }
     FlateStream2.prototype.readBlock = function() {
       var buffer;
-      var len;
+      var len2;
       var str = this.stream;
       var hdr = this.getBits(3);
       if (hdr & 1) {
@@ -5217,39 +5217,39 @@ var FlateStream = (
         var numDistCodes = this.getBits(5) + 1;
         var numCodeLenCodes = this.getBits(4) + 4;
         var codeLenCodeLengths = new Uint8Array(codeLenCodeMap.length);
-        var i = void 0;
-        for (i = 0; i < numCodeLenCodes; ++i) {
-          codeLenCodeLengths[codeLenCodeMap[i]] = this.getBits(3);
+        var i2 = void 0;
+        for (i2 = 0; i2 < numCodeLenCodes; ++i2) {
+          codeLenCodeLengths[codeLenCodeMap[i2]] = this.getBits(3);
         }
         var codeLenCodeTab = this.generateHuffmanTable(codeLenCodeLengths);
-        len = 0;
-        i = 0;
+        len2 = 0;
+        i2 = 0;
         var codes = numLitCodes + numDistCodes;
         var codeLengths = new Uint8Array(codes);
         var bitsLength = void 0;
         var bitsOffset = void 0;
         var what = void 0;
-        while (i < codes) {
+        while (i2 < codes) {
           var code = this.getCode(codeLenCodeTab);
           if (code === 16) {
             bitsLength = 2;
             bitsOffset = 3;
-            what = len;
+            what = len2;
           } else if (code === 17) {
             bitsLength = 3;
             bitsOffset = 3;
-            what = len = 0;
+            what = len2 = 0;
           } else if (code === 18) {
             bitsLength = 7;
             bitsOffset = 11;
-            what = len = 0;
+            what = len2 = 0;
           } else {
-            codeLengths[i++] = len = code;
+            codeLengths[i2++] = len2 = code;
             continue;
           }
           var repeatLength = this.getBits(bitsLength) + bitsOffset;
           while (repeatLength-- > 0) {
-            codeLengths[i++] = what;
+            codeLengths[i2++] = what;
           }
         }
         litCodeTable = this.generateHuffmanTable(codeLengths.subarray(0, numLitCodes));
@@ -5280,7 +5280,7 @@ var FlateStream = (
         if (code2 > 0) {
           code2 = this.getBits(code2);
         }
-        len = (code1 & 65535) + code2;
+        len2 = (code1 & 65535) + code2;
         code1 = this.getCode(distCodeTable);
         code1 = distDecode[code1];
         code2 = code1 >> 16;
@@ -5288,11 +5288,11 @@ var FlateStream = (
           code2 = this.getBits(code2);
         }
         var dist = (code1 & 65535) + code2;
-        if (pos + len >= limit) {
-          buffer = this.ensureBuffer(pos + len);
+        if (pos + len2 >= limit) {
+          buffer = this.ensureBuffer(pos + len2);
           limit = buffer.length;
         }
-        for (var k = 0; k < len; ++k, ++pos) {
+        for (var k = 0; k < len2; ++k, ++pos) {
           buffer[pos] = buffer[pos - dist];
         }
       }
@@ -5344,25 +5344,25 @@ var FlateStream = (
     FlateStream2.prototype.generateHuffmanTable = function(lengths) {
       var n = lengths.length;
       var maxLen = 0;
-      var i;
-      for (i = 0; i < n; ++i) {
-        if (lengths[i] > maxLen) {
-          maxLen = lengths[i];
+      var i2;
+      for (i2 = 0; i2 < n; ++i2) {
+        if (lengths[i2] > maxLen) {
+          maxLen = lengths[i2];
         }
       }
       var size = 1 << maxLen;
       var codes = new Int32Array(size);
-      for (var len = 1, code = 0, skip = 2; len <= maxLen; ++len, code <<= 1, skip <<= 1) {
+      for (var len2 = 1, code = 0, skip = 2; len2 <= maxLen; ++len2, code <<= 1, skip <<= 1) {
         for (var val = 0; val < n; ++val) {
-          if (lengths[val] === len) {
+          if (lengths[val] === len2) {
             var code2 = 0;
             var t = code;
-            for (i = 0; i < len; ++i) {
+            for (i2 = 0; i2 < len2; ++i2) {
               code2 = code2 << 1 | t & 1;
               t >>= 1;
             }
-            for (i = code2; i < size; i += skip) {
-              codes[i] = len << 16 | val;
+            for (i2 = code2; i2 < size; i2 += skip) {
+              codes[i2] = len2 << 16 | val;
             }
             ++code;
           }
@@ -5393,9 +5393,9 @@ var LZWStream = (
         currentSequence: new Uint8Array(maxLzwDictionarySize),
         currentSequenceLength: 0
       };
-      for (var i = 0; i < 256; ++i) {
-        lzwState.dictionaryValues[i] = i;
-        lzwState.dictionaryLengths[i] = 1;
+      for (var i2 = 0; i2 < 256; ++i2) {
+        lzwState.dictionaryValues[i2] = i2;
+        lzwState.dictionaryLengths[i2] = 1;
       }
       _this.lzwState = lzwState;
       return _this;
@@ -5404,7 +5404,7 @@ var LZWStream = (
       var blockSize = 512;
       var estimatedDecodedSize = blockSize * 2;
       var decodedSizeDelta = blockSize;
-      var i;
+      var i2;
       var j;
       var q;
       var lzwState = this.lzwState;
@@ -5423,7 +5423,7 @@ var LZWStream = (
       var decodedLength = 0;
       var currentBufferLength = this.bufferLength;
       var buffer = this.ensureBuffer(this.bufferLength + estimatedDecodedSize);
-      for (i = 0; i < blockSize; i++) {
+      for (i2 = 0; i2 < blockSize; i2++) {
         var code = this.readBits(codeLength);
         var hasPrev = currentSequenceLength > 0;
         if (!code || code < 256) {
@@ -5523,7 +5523,7 @@ var RunLengthStream = (
         n = 257 - n;
         var b = repeatHeader[1];
         buffer = this.ensureBuffer(bufferLength + n + 1);
-        for (var i = 0; i < n; i++) {
+        for (var i2 = 0; i2 < n; i2++) {
           buffer[bufferLength++] = b;
         }
       }
@@ -5565,8 +5565,8 @@ var decodePDFRawStream = function(_a) {
   if (Filter instanceof PDFName) {
     stream2 = decodeStream(stream2, Filter, DecodeParms);
   } else if (Filter instanceof PDFArray) {
-    for (var idx = 0, len = Filter.size(); idx < len; idx++) {
-      stream2 = decodeStream(stream2, Filter.lookup(idx, PDFName), DecodeParms && DecodeParms.lookupMaybe(idx, PDFDict));
+    for (var idx2 = 0, len2 = Filter.size(); idx2 < len2; idx2++) {
+      stream2 = decodeStream(stream2, Filter.lookup(idx2, PDFName), DecodeParms && DecodeParms.lookupMaybe(idx2, PDFDict));
     }
   } else if (!!Filter) {
     throw new UnexpectedObjectTypeError([PDFName, PDFArray], Filter);
@@ -5629,8 +5629,8 @@ var PDFPageEmbedder = (
     PDFPageEmbedder2.prototype.decodeContents = function(contents) {
       var newline = Uint8Array.of(CharCodes.Newline);
       var decodedContents = [];
-      for (var idx = 0, len = contents.size(); idx < len; idx++) {
-        var stream2 = contents.lookup(idx, PDFStream);
+      for (var idx2 = 0, len2 = contents.size(); idx2 < len2; idx2++) {
+        var stream2 = contents.lookup(idx2, PDFStream);
         var content = void 0;
         if (stream2 instanceof PDFRawStream) {
           content = decodePDFRawStream(stream2).decode();
@@ -5790,9 +5790,9 @@ var ViewerPreferences = (
       if (!rng)
         return [];
       var pageRanges = [];
-      for (var i = 0; i < rng.size(); i += 2) {
-        var start = rng.lookup(i, PDFNumber).asNumber();
-        var end = rng.lookup(i + 1, PDFNumber).asNumber();
+      for (var i2 = 0; i2 < rng.size(); i2 += 2) {
+        var start = rng.lookup(i2, PDFNumber).asNumber();
+        var end = rng.lookup(i2 + 1, PDFNumber).asNumber();
         pageRanges.push({ start, end });
       }
       return pageRanges;
@@ -5853,9 +5853,9 @@ var ViewerPreferences = (
       if (!Array.isArray(printPageRange))
         printPageRange = [printPageRange];
       var flatRange = [];
-      for (var idx = 0, len = printPageRange.length; idx < len; idx++) {
-        flatRange.push(printPageRange[idx].start);
-        flatRange.push(printPageRange[idx].end);
+      for (var idx2 = 0, len2 = printPageRange.length; idx2 < len2; idx2++) {
+        flatRange.push(printPageRange[idx2].start);
+        flatRange.push(printPageRange[idx2].end);
       }
       assertEachIs(flatRange, "printPageRange", ["number"]);
       var pageRanges = this.dict.context.obj(flatRange);
@@ -6195,8 +6195,8 @@ var AppearanceCharacteristics = (
       if (!BC)
         return void 0;
       var components = [];
-      for (var idx = 0, len = BC === null || BC === void 0 ? void 0 : BC.size(); idx < len; idx++) {
-        var component = BC.get(idx);
+      for (var idx2 = 0, len2 = BC === null || BC === void 0 ? void 0 : BC.size(); idx2 < len2; idx2++) {
+        var component = BC.get(idx2);
         if (component instanceof PDFNumber)
           components.push(component.asNumber());
       }
@@ -6207,8 +6207,8 @@ var AppearanceCharacteristics = (
       if (!BG)
         return void 0;
       var components = [];
-      for (var idx = 0, len = BG === null || BG === void 0 ? void 0 : BG.size(); idx < len; idx++) {
-        var component = BG.get(idx);
+      for (var idx2 = 0, len2 = BG === null || BG === void 0 ? void 0 : BG.size(); idx2 < len2; idx2++) {
+        var component = BG.get(idx2);
         if (component instanceof PDFNumber)
           components.push(component.asNumber());
       }
@@ -6335,8 +6335,8 @@ var PDFWidgetAnnotation = (
       var normal = (_a = this.getAppearances()) === null || _a === void 0 ? void 0 : _a.normal;
       if (normal instanceof PDFDict) {
         var keys = normal.keys();
-        for (var idx = 0, len = keys.length; idx < len; idx++) {
-          var key = keys[idx];
+        for (var idx2 = 0, len2 = keys.length; idx2 < len2; idx2++) {
+          var key = keys[idx2];
           if (key !== PDFName.of("Off"))
             return key;
         }
@@ -6374,9 +6374,9 @@ var PDFAcroTerminal = (
       if (!kidDicts)
         return [PDFWidgetAnnotation.fromDict(this.dict)];
       var widgets = new Array(kidDicts.size());
-      for (var idx = 0, len = kidDicts.size(); idx < len; idx++) {
-        var dict = kidDicts.lookup(idx, PDFDict);
-        widgets[idx] = PDFWidgetAnnotation.fromDict(dict);
+      for (var idx2 = 0, len2 = kidDicts.size(); idx2 < len2; idx2++) {
+        var dict = kidDicts.lookup(idx2, PDFDict);
+        widgets[idx2] = PDFWidgetAnnotation.fromDict(dict);
       }
       return widgets;
     };
@@ -6384,17 +6384,17 @@ var PDFAcroTerminal = (
       var Kids = this.normalizedEntries().Kids;
       Kids.push(ref);
     };
-    PDFAcroTerminal2.prototype.removeWidget = function(idx) {
+    PDFAcroTerminal2.prototype.removeWidget = function(idx2) {
       var kidDicts = this.Kids();
       if (!kidDicts) {
-        if (idx !== 0)
-          throw new IndexOutOfBoundsError(idx, 0, 0);
+        if (idx2 !== 0)
+          throw new IndexOutOfBoundsError(idx2, 0, 0);
         this.setKids([]);
       } else {
-        if (idx < 0 || idx > kidDicts.size()) {
-          throw new IndexOutOfBoundsError(idx, 0, kidDicts.size());
+        if (idx2 < 0 || idx2 > kidDicts.size()) {
+          throw new IndexOutOfBoundsError(idx2, 0, kidDicts.size());
         }
-        kidDicts.remove(idx);
+        kidDicts.remove(idx2);
       }
     };
     PDFAcroTerminal2.prototype.normalizedEntries = function() {
@@ -6432,27 +6432,27 @@ var PDFAcroButton = (
         return [opt];
       }
       var values2 = [];
-      for (var idx = 0, len = opt.size(); idx < len; idx++) {
-        var value = opt.lookup(idx);
+      for (var idx2 = 0, len2 = opt.size(); idx2 < len2; idx2++) {
+        var value = opt.lookup(idx2);
         if (value instanceof PDFString || value instanceof PDFHexString) {
           values2.push(value);
         }
       }
       return values2;
     };
-    PDFAcroButton2.prototype.removeExportValue = function(idx) {
+    PDFAcroButton2.prototype.removeExportValue = function(idx2) {
       var opt = this.Opt();
       if (!opt)
         return;
       if (opt instanceof PDFString || opt instanceof PDFHexString) {
-        if (idx !== 0)
-          throw new IndexOutOfBoundsError(idx, 0, 0);
+        if (idx2 !== 0)
+          throw new IndexOutOfBoundsError(idx2, 0, 0);
         this.setOpt([]);
       } else {
-        if (idx < 0 || idx > opt.size()) {
-          throw new IndexOutOfBoundsError(idx, 0, opt.size());
+        if (idx2 < 0 || idx2 > opt.size()) {
+          throw new IndexOutOfBoundsError(idx2, 0, opt.size());
         }
-        opt.remove(idx);
+        opt.remove(idx2);
       }
     };
     PDFAcroButton2.prototype.normalizeExportValues = function() {
@@ -6460,9 +6460,9 @@ var PDFAcroButton = (
       var exportValues = (_a = this.getExportValues()) !== null && _a !== void 0 ? _a : [];
       var Opt = [];
       var widgets = this.getWidgets();
-      for (var idx = 0, len = widgets.length; idx < len; idx++) {
-        var widget = widgets[idx];
-        var exportVal = (_b = exportValues[idx]) !== null && _b !== void 0 ? _b : PDFHexString.fromText((_d = (_c = widget.getOnValue()) === null || _c === void 0 ? void 0 : _c.decodeText()) !== null && _d !== void 0 ? _d : "");
+      for (var idx2 = 0, len2 = widgets.length; idx2 < len2; idx2++) {
+        var widget = widgets[idx2];
+        var exportVal = (_b = exportValues[idx2]) !== null && _b !== void 0 ? _b : PDFHexString.fromText((_d = (_c = widget.getOnValue()) === null || _c === void 0 ? void 0 : _c.decodeText()) !== null && _d !== void 0 ? _d : "");
         Opt.push(exportVal);
       }
       this.setOpt(Opt);
@@ -6474,10 +6474,10 @@ var PDFAcroButton = (
       var existingIdx;
       if (useExistingOptIdx) {
         var exportValues = (_a = this.getExportValues()) !== null && _a !== void 0 ? _a : [];
-        for (var idx = 0, len = exportValues.length; idx < len; idx++) {
-          var exportVal = exportValues[idx];
+        for (var idx2 = 0, len2 = exportValues.length; idx2 < len2; idx2++) {
+          var exportVal = exportValues[idx2];
           if (exportVal.decodeText() === optText)
-            existingIdx = idx;
+            existingIdx = idx2;
         }
       }
       var Opt = this.Opt();
@@ -6508,8 +6508,8 @@ var PDFAcroCheckBox = (
       }
       this.dict.set(PDFName.of("V"), value);
       var widgets = this.getWidgets();
-      for (var idx = 0, len = widgets.length; idx < len; idx++) {
-        var widget = widgets[idx];
+      for (var idx2 = 0, len2 = widgets.length; idx2 < len2; idx2++) {
+        var widget = widgets[idx2];
         var state = widget.getOnValue() === value ? value : PDFName.of("Off");
         widget.setAppearanceState(state);
       }
@@ -6600,16 +6600,16 @@ var PDFAcroChoice = (
     };
     PDFAcroChoice2.prototype.valuesAreValid = function(values2) {
       var options = this.getOptions();
-      var _loop_1 = function(idx2, len2) {
-        var val = values2[idx2].decodeText();
+      var _loop_1 = function(idx3, len3) {
+        var val = values2[idx3].decodeText();
         if (!options.find(function(o) {
           return val === (o.display || o.value).decodeText();
         })) {
           return { value: false };
         }
       };
-      for (var idx = 0, len = values2.length; idx < len; idx++) {
-        var state_1 = _loop_1(idx);
+      for (var idx2 = 0, len2 = values2.length; idx2 < len2; idx2++) {
+        var state_1 = _loop_1(idx2);
         if (typeof state_1 === "object")
           return state_1.value;
       }
@@ -6619,14 +6619,14 @@ var PDFAcroChoice = (
       if (values2.length > 1) {
         var indices = new Array(values2.length);
         var options = this.getOptions();
-        var _loop_2 = function(idx2, len2) {
-          var val = values2[idx2].decodeText();
-          indices[idx2] = options.findIndex(function(o) {
+        var _loop_2 = function(idx3, len3) {
+          var val = values2[idx3].decodeText();
+          indices[idx3] = options.findIndex(function(o) {
             return val === (o.display || o.value).decodeText();
           });
         };
-        for (var idx = 0, len = values2.length; idx < len; idx++) {
-          _loop_2(idx, len);
+        for (var idx2 = 0, len2 = values2.length; idx2 < len2; idx2++) {
+          _loop_2(idx2, len2);
         }
         this.dict.set(PDFName.of("I"), this.dict.context.obj(indices.sort()));
       } else {
@@ -6639,8 +6639,8 @@ var PDFAcroChoice = (
         return [v];
       if (v instanceof PDFArray) {
         var values2 = [];
-        for (var idx = 0, len = v.size(); idx < len; idx++) {
-          var value = v.lookup(idx);
+        for (var idx2 = 0, len2 = v.size(); idx2 < len2; idx2++) {
+          var value = v.lookup(idx2);
           if (value instanceof PDFString || value instanceof PDFHexString) {
             values2.push(value);
           }
@@ -6654,9 +6654,9 @@ var PDFAcroChoice = (
     };
     PDFAcroChoice2.prototype.setOptions = function(options) {
       var newOpt = new Array(options.length);
-      for (var idx = 0, len = options.length; idx < len; idx++) {
-        var _a = options[idx], value = _a.value, display = _a.display;
-        newOpt[idx] = this.dict.context.obj([value, display || value]);
+      for (var idx2 = 0, len2 = options.length; idx2 < len2; idx2++) {
+        var _a = options[idx2], value = _a.value, display = _a.display;
+        newOpt[idx2] = this.dict.context.obj([value, display || value]);
       }
       this.dict.set(PDFName.of("Opt"), this.dict.context.obj(newOpt));
     };
@@ -6667,8 +6667,8 @@ var PDFAcroChoice = (
       }
       if (Opt instanceof PDFArray) {
         var res = [];
-        for (var idx = 0, len = Opt.size(); idx < len; idx++) {
-          var item = Opt.lookup(idx);
+        for (var idx2 = 0, len2 = Opt.size(); idx2 < len2; idx2++) {
+          var item = Opt.lookup(idx2);
           if (item instanceof PDFString || item instanceof PDFHexString) {
             res.push({ value: item, display: item });
           }
@@ -6850,8 +6850,8 @@ var PDFAcroRadioButton = (
       }
       this.dict.set(PDFName.of("V"), value);
       var widgets = this.getWidgets();
-      for (var idx = 0, len = widgets.length; idx < len; idx++) {
-        var widget = widgets[idx];
+      for (var idx2 = 0, len2 = widgets.length; idx2 < len2; idx2++) {
+        var widget = widgets[idx2];
         var state = widget.getOnValue() === value ? value : PDFName.of("Off");
         widget.setAppearanceState(state);
       }
@@ -6865,8 +6865,8 @@ var PDFAcroRadioButton = (
     PDFAcroRadioButton2.prototype.getOnValues = function() {
       var widgets = this.getWidgets();
       var onValues = [];
-      for (var idx = 0, len = widgets.length; idx < len; idx++) {
-        var onValue = widgets[idx].getOnValue();
+      for (var idx2 = 0, len2 = widgets.length; idx2 < len2; idx2++) {
+        var onValue = widgets[idx2].getOnValue();
         if (onValue)
           onValues.push(onValue);
       }
@@ -6912,9 +6912,9 @@ var createPDFAcroFields = function(kidDicts) {
   if (!kidDicts)
     return [];
   var kids = [];
-  for (var idx = 0, len = kidDicts.size(); idx < len; idx++) {
-    var ref = kidDicts.get(idx);
-    var dict = kidDicts.lookup(idx);
+  for (var idx2 = 0, len2 = kidDicts.size(); idx2 < len2; idx2++) {
+    var ref = kidDicts.get(idx2);
+    var dict = kidDicts.lookup(idx2);
     if (ref instanceof PDFRef && dict instanceof PDFDict) {
       kids.push([createPDFAcroField(dict, ref), ref]);
     }
@@ -6930,8 +6930,8 @@ var createPDFAcroField = function(dict, ref) {
 var isNonTerminalAcroField = function(dict) {
   var kids = dict.lookup(PDFName.of("Kids"));
   if (kids instanceof PDFArray) {
-    for (var idx = 0, len = kids.size(); idx < len; idx++) {
-      var kid = kids.lookup(idx);
+    for (var idx2 = 0, len2 = kids.size(); idx2 < len2; idx2++) {
+      var kid = kids.lookup(idx2);
       var kidIsField = kid instanceof PDFDict && kid.has(PDFName.of("T"));
       if (kidIsField)
         return true;
@@ -7008,10 +7008,10 @@ var PDFAcroForm = (
     PDFAcroForm2.prototype.getFields = function() {
       var Fields = this.normalizedEntries().Fields;
       var fields = new Array(Fields.size());
-      for (var idx = 0, len = Fields.size(); idx < len; idx++) {
-        var ref = Fields.get(idx);
-        var dict = Fields.lookup(idx, PDFDict);
-        fields[idx] = [createPDFAcroField(dict, ref), ref];
+      for (var idx2 = 0, len2 = Fields.size(); idx2 < len2; idx2++) {
+        var ref = Fields.get(idx2);
+        var dict = Fields.lookup(idx2, PDFDict);
+        fields[idx2] = [createPDFAcroField(dict, ref), ref];
       }
       return fields;
     };
@@ -7020,8 +7020,8 @@ var PDFAcroForm = (
       var pushFields = function(fields) {
         if (!fields)
           return;
-        for (var idx = 0, len = fields.length; idx < len; idx++) {
-          var field = fields[idx];
+        for (var idx2 = 0, len2 = fields.length; idx2 < len2; idx2++) {
+          var field = fields[idx2];
           allFields.push(field);
           var fieldModel = field[0];
           if (fieldModel instanceof PDFAcroNonTerminal) {
@@ -7163,12 +7163,12 @@ var PDFPageTree = (
         throw new InvalidTargetIndexError(targetIndex, Count);
       }
       var leafsRemainingUntilTarget = targetIndex;
-      for (var idx = 0, len = Kids.size(); idx < len; idx++) {
+      for (var idx2 = 0, len2 = Kids.size(); idx2 < len2; idx2++) {
         if (leafsRemainingUntilTarget === 0) {
-          this.insertLeafKid(idx, leafRef);
+          this.insertLeafKid(idx2, leafRef);
           return void 0;
         }
-        var kidRef = Kids.get(idx);
+        var kidRef = Kids.get(idx2);
         var kid = this.context.lookup(kidRef);
         if (kid instanceof PDFPageTree2) {
           if (kid.Count().asNumber() > leafsRemainingUntilTarget) {
@@ -7197,14 +7197,14 @@ var PDFPageTree = (
         throw new InvalidTargetIndexError(targetIndex, Count);
       }
       var leafsRemainingUntilTarget = targetIndex;
-      for (var idx = 0, len = Kids.size(); idx < len; idx++) {
-        var kidRef = Kids.get(idx);
+      for (var idx2 = 0, len2 = Kids.size(); idx2 < len2; idx2++) {
+        var kidRef = Kids.get(idx2);
         var kid = this.context.lookup(kidRef);
         if (kid instanceof PDFPageTree2) {
           if (kid.Count().asNumber() > leafsRemainingUntilTarget) {
             kid.removeLeafNode(leafsRemainingUntilTarget, prune);
             if (prune && kid.Kids().size() === 0)
-              Kids.remove(idx);
+              Kids.remove(idx2);
             return;
           } else {
             leafsRemainingUntilTarget -= kid.Count().asNumber();
@@ -7212,7 +7212,7 @@ var PDFPageTree = (
         }
         if (kid instanceof PDFPageLeaf) {
           if (leafsRemainingUntilTarget === 0) {
-            this.removeKid(idx);
+            this.removeKid(idx2);
             return;
           } else {
             leafsRemainingUntilTarget -= 1;
@@ -7229,8 +7229,8 @@ var PDFPageTree = (
     };
     PDFPageTree2.prototype.traverse = function(visitor) {
       var Kids = this.Kids();
-      for (var idx = 0, len = Kids.size(); idx < len; idx++) {
-        var kidRef = Kids.get(idx);
+      for (var idx2 = 0, len2 = Kids.size(); idx2 < len2; idx2++) {
+        var kidRef = Kids.get(idx2);
         var kid = this.context.lookup(kidRef);
         if (kid instanceof PDFPageTree2)
           kid.traverse(visitor);
@@ -7378,8 +7378,8 @@ var BaseParser = (
     };
     BaseParser2.prototype.matchKeyword = function(keyword) {
       var initialOffset = this.bytes.offset();
-      for (var idx = 0, len = keyword.length; idx < len; idx++) {
-        if (this.bytes.done() || this.bytes.next() !== keyword[idx]) {
+      for (var idx2 = 0, len2 = keyword.length; idx2 < len2; idx2++) {
+        if (this.bytes.done() || this.bytes.next() !== keyword[idx2]) {
           this.bytes.moveTo(initialOffset);
           return false;
         }
@@ -7731,7 +7731,7 @@ var PDFObjectStreamParser = (
     }
     PDFObjectStreamParser2.prototype.parseIntoContext = function() {
       return __awaiter(this, void 0, void 0, function() {
-        var offsetsAndObjectNumbers, idx, len, _a, objectNumber, offset, object, ref;
+        var offsetsAndObjectNumbers, idx2, len2, _a, objectNumber, offset, object, ref;
         return __generator(this, function(_b) {
           switch (_b.label) {
             case 0:
@@ -7740,11 +7740,11 @@ var PDFObjectStreamParser = (
               }
               this.alreadyParsed = true;
               offsetsAndObjectNumbers = this.parseOffsetsAndObjectNumbers();
-              idx = 0, len = offsetsAndObjectNumbers.length;
+              idx2 = 0, len2 = offsetsAndObjectNumbers.length;
               _b.label = 1;
             case 1:
-              if (!(idx < len)) return [3, 4];
-              _a = offsetsAndObjectNumbers[idx], objectNumber = _a.objectNumber, offset = _a.offset;
+              if (!(idx2 < len2)) return [3, 4];
+              _a = offsetsAndObjectNumbers[idx2], objectNumber = _a.objectNumber, offset = _a.offset;
               this.bytes.moveTo(this.firstOffset + offset);
               object = this.parseObject();
               ref = PDFRef.of(objectNumber, 0);
@@ -7755,7 +7755,7 @@ var PDFObjectStreamParser = (
               _b.sent();
               _b.label = 3;
             case 3:
-              idx++;
+              idx2++;
               return [3, 1];
             case 4:
               return [
@@ -7768,7 +7768,7 @@ var PDFObjectStreamParser = (
     };
     PDFObjectStreamParser2.prototype.parseOffsetsAndObjectNumbers = function() {
       var offsetsAndObjectNumbers = [];
-      for (var idx = 0, len = this.objectCount; idx < len; idx++) {
+      for (var idx2 = 0, len2 = this.objectCount; idx2 < len2; idx2++) {
         this.skipWhitespaceAndComments();
         var objectNumber = this.parseRawInt();
         this.skipWhitespaceAndComments();
@@ -7795,9 +7795,9 @@ var PDFXRefStreamParser = (
       var Index = this.dict.lookup(PDFName.of("Index"));
       if (Index instanceof PDFArray) {
         this.subsections = [];
-        for (var idx = 0, len = Index.size(); idx < len; idx += 2) {
-          var firstObjectNumber = Index.lookup(idx + 0, PDFNumber).asNumber();
-          var length_1 = Index.lookup(idx + 1, PDFNumber).asNumber();
+        for (var idx2 = 0, len2 = Index.size(); idx2 < len2; idx2 += 2) {
+          var firstObjectNumber = Index.lookup(idx2 + 0, PDFNumber).asNumber();
+          var length_1 = Index.lookup(idx2 + 1, PDFNumber).asNumber();
           this.subsections.push({ firstObjectNumber, length: length_1 });
         }
       } else {
@@ -7805,8 +7805,8 @@ var PDFXRefStreamParser = (
       }
       var W = this.dict.lookup(PDFName.of("W"), PDFArray);
       this.byteWidths = [-1, -1, -1];
-      for (var idx = 0, len = W.size(); idx < len; idx++) {
-        this.byteWidths[idx] = W.lookup(idx, PDFNumber).asNumber();
+      for (var idx2 = 0, len2 = W.size(); idx2 < len2; idx2++) {
+        this.byteWidths[idx2] = W.lookup(idx2, PDFNumber).asNumber();
       }
     }
     PDFXRefStreamParser2.prototype.parseIntoContext = function() {
@@ -7830,15 +7830,15 @@ var PDFXRefStreamParser = (
         var _b = this.subsections[subsectionIdx], firstObjectNumber = _b.firstObjectNumber, length_2 = _b.length;
         for (var objIdx = 0; objIdx < length_2; objIdx++) {
           var type = 0;
-          for (var idx = 0, len = typeFieldWidth; idx < len; idx++) {
+          for (var idx2 = 0, len2 = typeFieldWidth; idx2 < len2; idx2++) {
             type = type << 8 | this.bytes.next();
           }
           var offset = 0;
-          for (var idx = 0, len = offsetFieldWidth; idx < len; idx++) {
+          for (var idx2 = 0, len2 = offsetFieldWidth; idx2 < len2; idx2++) {
             offset = offset << 8 | this.bytes.next();
           }
           var generationNumber = 0;
-          for (var idx = 0, len = genFieldWidth; idx < len; idx++) {
+          for (var idx2 = 0, len2 = genFieldWidth; idx2 < len2; idx2++) {
             generationNumber = generationNumber << 8 | this.bytes.next();
           }
           if (typeFieldWidth === 0)
@@ -7927,8 +7927,8 @@ var PDFParser = (
       var catalog = this.context.lookup(this.context.trailerInfo.Root);
       if (!isValidCatalog(catalog)) {
         var indirectObjects = this.context.enumerateIndirectObjects();
-        for (var idx = 0, len = indirectObjects.length; idx < len; idx++) {
-          var _a = indirectObjects[idx], ref = _a[0], object = _a[1];
+        for (var idx2 = 0, len2 = indirectObjects.length; idx2 < len2; idx2++) {
+          var _a = indirectObjects[idx2], ref = _a[0], object = _a[1];
           if (isValidCatalog(object)) {
             this.context.trailerInfo.Root = ref;
           }
@@ -8585,8 +8585,8 @@ var parse = function(path) {
 var apply = function(commands) {
   cx = cy = px = py = sx = sy = 0;
   var cmds = [];
-  for (var i = 0; i < commands.length; i++) {
-    var c = commands[i];
+  for (var i2 = 0; i2 < commands.length; i2++) {
+    var c = commands[i2];
     if (c.cmd && typeof runners[c.cmd] === "function") {
       var cmd = runners[c.cmd](c.args);
       if (Array.isArray(cmd)) {
@@ -8810,10 +8810,10 @@ var arcToSegments = function(x, y, rx, ry, large, sweep, rotateX, ox, oy) {
   }
   var segments = Math.ceil(Math.abs(thArc / (Math.PI * 0.5 + 1e-3)));
   var result = [];
-  for (var i = 0; i < segments; i++) {
-    var th2 = th0 + i * thArc / segments;
-    var th3 = th0 + (i + 1) * thArc / segments;
-    result[i] = [xc, yc, th2, th3, rx, ry, sinTh, cosTh];
+  for (var i2 = 0; i2 < segments; i2++) {
+    var th2 = th0 + i2 * thArc / segments;
+    var th3 = th0 + (i2 + 1) * thArc / segments;
+    result[i2] = [xc, yc, th2, th3, rx, ry, sinTh, cosTh];
   }
   return result;
 };
@@ -8853,8 +8853,8 @@ var drawLinesOfText = function(lines, options) {
     setLineHeight(options.lineHeight),
     rotateAndSkewTextRadiansAndTranslate(toRadians(options.rotate), toRadians(options.xSkew), toRadians(options.ySkew), options.x, options.y)
   ].filter(Boolean);
-  for (var idx = 0, len = lines.length; idx < len; idx++) {
-    operators.push(showText(lines[idx]), nextLine());
+  for (var idx2 = 0, len2 = lines.length; idx2 < len2; idx2++) {
+    operators.push(showText(lines[idx2]), nextLine());
   }
   operators.push(endText(), popGraphicsState());
   return operators;
@@ -9137,8 +9137,8 @@ var drawTextLines = function(lines, options) {
     setFillingColor(options.color),
     setFontAndSize(options.font, options.size)
   ];
-  for (var idx = 0, len = lines.length; idx < len; idx++) {
-    var _a = lines[idx], encoded = _a.encoded, x = _a.x, y = _a.y;
+  for (var idx2 = 0, len2 = lines.length; idx2 < len2; idx2++) {
+    var _a = lines[idx2], encoded = _a.encoded, x = _a.x, y = _a.y;
     operators.push(rotateAndSkewTextRadiansAndTranslate(toRadians(options.rotate), toRadians(options.xSkew), toRadians(options.ySkew), x, y), showText(encoded));
   }
   operators.push(endText());
@@ -9231,8 +9231,8 @@ var drawOptionList = function(options) {
     ySkew: degrees(0)
   });
   var highlights = [];
-  for (var idx = 0, len = options.selectedLines.length; idx < len; idx++) {
-    var line = options.textLines[options.selectedLines[idx]];
+  for (var idx2 = 0, len2 = options.selectedLines.length; idx2 < len2; idx2++) {
+    var line = options.textLines[options.selectedLines[idx2]];
     highlights.push.apply(highlights, drawRectangle({
       x: line.x - padding,
       y: line.y - (lineHeight - line.height) / 2,
@@ -9466,9 +9466,9 @@ var computeFontSize = function(lines, font, bounds, multiline) {
       var line = lines[lineIdx];
       var words = line.split(" ");
       var spaceInLineRemaining = bounds.width;
-      for (var idx = 0, len = words.length; idx < len; idx++) {
-        var isLastWord = idx === len - 1;
-        var word = isLastWord ? words[idx] : words[idx] + " ";
+      for (var idx2 = 0, len2 = words.length; idx2 < len2; idx2++) {
+        var isLastWord = idx2 === len2 - 1;
+        var word = isLastWord ? words[idx2] : words[idx2] + " ";
         var widthOfWord = font.widthOfTextAtSize(word, fontSize);
         spaceInLineRemaining -= widthOfWord;
         if (spaceInLineRemaining <= 0) {
@@ -9494,8 +9494,8 @@ var computeCombedFontSize = function(line, font, bounds, cellCount) {
   var fontSize = MIN_FONT_SIZE;
   var chars2 = charSplit(line);
   while (fontSize < MAX_FONT_SIZE) {
-    for (var idx = 0, len = chars2.length; idx < len; idx++) {
-      var c = chars2[idx];
+    for (var idx2 = 0, len2 = chars2.length; idx2 < len2; idx2++) {
+      var c = chars2[idx2];
       var tooLong = font.widthOfTextAtSize(c, fontSize) > cellWidth * 0.75;
       if (tooLong)
         return fontSize - 1;
@@ -9508,9 +9508,9 @@ var computeCombedFontSize = function(line, font, bounds, cellCount) {
   return fontSize;
 };
 var lastIndexOfWhitespace = function(line) {
-  for (var idx = line.length; idx > 0; idx--) {
-    if (/\s/.test(line[idx]))
-      return idx;
+  for (var idx2 = line.length; idx2 > 0; idx2--) {
+    if (/\s/.test(line[idx2]))
+      return idx2;
   }
   return void 0;
 };
@@ -9548,8 +9548,8 @@ var layoutMultilineText = function(text, _a) {
   var maxX = bounds.x + bounds.width;
   var maxY = bounds.y + bounds.height;
   var y = bounds.y + bounds.height;
-  for (var idx = 0, len = lines.length; idx < len; idx++) {
-    var prevRemainder = lines[idx];
+  for (var idx2 = 0, len2 = lines.length; idx2 < len2; idx2++) {
+    var prevRemainder = lines[idx2];
     while (prevRemainder !== void 0) {
       var _b = splitOutLines(prevRemainder, bounds.width, font, fontSize), line = _b.line, encoded = _b.encoded, width = _b.width, remainder = _b.remainder;
       var x = alignment === TextAlignment.Left ? bounds.x : alignment === TextAlignment.Center ? bounds.x + bounds.width / 2 - width / 2 : alignment === TextAlignment.Right ? bounds.x + bounds.width - width : bounds.x;
@@ -9977,9 +9977,9 @@ var defaultOptionListAppearanceProvider = function(optionList, widget, font) {
   if (optionList.isSorted())
     options.sort();
   var text = "";
-  for (var idx = 0, len = options.length; idx < len; idx++) {
-    text += options[idx];
-    if (idx < len - 1)
+  for (var idx2 = 0, len2 = options.length; idx2 < len2; idx2++) {
+    text += options[idx2];
+    if (idx2 < len2 - 1)
       text += "\n";
   }
   var padding = 1;
@@ -9996,10 +9996,10 @@ var defaultOptionListAppearanceProvider = function(optionList, widget, font) {
     bounds
   }), lines = _d.lines, fontSize = _d.fontSize, lineHeight = _d.lineHeight;
   var selectedLines = [];
-  for (var idx = 0, len = lines.length; idx < len; idx++) {
-    var line = lines[idx];
+  for (var idx2 = 0, len2 = lines.length; idx2 < len2; idx2++) {
+    var line = lines[idx2];
     if (selected.includes(line.text))
-      selectedLines.push(idx);
+      selectedLines.push(idx2);
   }
   var blue = rgb(153 / 255, 193 / 255, 218 / 255);
   var textColor = (_b = widgetColor !== null && widgetColor !== void 0 ? widgetColor : fieldColor) !== null && _b !== void 0 ? _b : black;
@@ -10486,8 +10486,8 @@ var PDFCheckBox = (
     PDFCheckBox2.prototype.needsAppearancesUpdate = function() {
       var _a;
       var widgets = this.acroField.getWidgets();
-      for (var idx = 0, len = widgets.length; idx < len; idx++) {
-        var widget = widgets[idx];
+      for (var idx2 = 0, len2 = widgets.length; idx2 < len2; idx2++) {
+        var widget = widgets[idx2];
         var state = widget.getAppearanceState();
         var normal = (_a = widget.getAppearances()) === null || _a === void 0 ? void 0 : _a.normal;
         if (!(normal instanceof PDFDict))
@@ -10504,8 +10504,8 @@ var PDFCheckBox = (
       var _a;
       assertOrUndefined(provider, "provider", [Function]);
       var widgets = this.acroField.getWidgets();
-      for (var idx = 0, len = widgets.length; idx < len; idx++) {
-        var widget = widgets[idx];
+      for (var idx2 = 0, len2 = widgets.length; idx2 < len2; idx2++) {
+        var widget = widgets[idx2];
         var onValue = (_a = widget.getOnValue()) !== null && _a !== void 0 ? _a : PDFName.of("Yes");
         if (!onValue)
           continue;
@@ -10539,25 +10539,25 @@ var PDFDropdown = (
     PDFDropdown2.prototype.getOptions = function() {
       var rawOptions = this.acroField.getOptions();
       var options = new Array(rawOptions.length);
-      for (var idx = 0, len = options.length; idx < len; idx++) {
-        var _a = rawOptions[idx], display = _a.display, value = _a.value;
-        options[idx] = (display !== null && display !== void 0 ? display : value).decodeText();
+      for (var idx2 = 0, len2 = options.length; idx2 < len2; idx2++) {
+        var _a = rawOptions[idx2], display = _a.display, value = _a.value;
+        options[idx2] = (display !== null && display !== void 0 ? display : value).decodeText();
       }
       return options;
     };
     PDFDropdown2.prototype.getSelected = function() {
       var values2 = this.acroField.getValues();
       var selected = new Array(values2.length);
-      for (var idx = 0, len = values2.length; idx < len; idx++) {
-        selected[idx] = values2[idx].decodeText();
+      for (var idx2 = 0, len2 = values2.length; idx2 < len2; idx2++) {
+        selected[idx2] = values2[idx2].decodeText();
       }
       return selected;
     };
     PDFDropdown2.prototype.setOptions = function(options) {
       assertIs(options, "options", [Array]);
       var optionObjects = new Array(options.length);
-      for (var idx = 0, len = options.length; idx < len; idx++) {
-        optionObjects[idx] = { value: PDFHexString.fromText(options[idx]) };
+      for (var idx2 = 0, len2 = options.length; idx2 < len2; idx2++) {
+        optionObjects[idx2] = { value: PDFHexString.fromText(options[idx2]) };
       }
       this.acroField.setOptions(optionObjects);
     };
@@ -10566,8 +10566,8 @@ var PDFDropdown = (
       var optionsArr = Array.isArray(options) ? options : [options];
       var existingOptions = this.acroField.getOptions();
       var newOptions = new Array(optionsArr.length);
-      for (var idx = 0, len = optionsArr.length; idx < len; idx++) {
-        newOptions[idx] = { value: PDFHexString.fromText(optionsArr[idx]) };
+      for (var idx2 = 0, len2 = optionsArr.length; idx2 < len2; idx2++) {
+        newOptions[idx2] = { value: PDFHexString.fromText(optionsArr[idx2]) };
       }
       this.acroField.setOptions(existingOptions.concat(newOptions));
     };
@@ -10589,8 +10589,8 @@ var PDFDropdown = (
         this.enableMultiselect();
       }
       var values2 = new Array(optionsArr.length);
-      for (var idx = 0, len = optionsArr.length; idx < len; idx++) {
-        values2[idx] = PDFHexString.fromText(optionsArr[idx]);
+      for (var idx2 = 0, len2 = optionsArr.length; idx2 < len2; idx2++) {
+        values2[idx2] = PDFHexString.fromText(optionsArr[idx2]);
       }
       if (merge) {
         var existingValues = this.acroField.getValues();
@@ -10691,8 +10691,8 @@ var PDFDropdown = (
       if (this.isDirty())
         return true;
       var widgets = this.acroField.getWidgets();
-      for (var idx = 0, len = widgets.length; idx < len; idx++) {
-        var widget = widgets[idx];
+      for (var idx2 = 0, len2 = widgets.length; idx2 < len2; idx2++) {
+        var widget = widgets[idx2];
         var hasAppearances = ((_a = widget.getAppearances()) === null || _a === void 0 ? void 0 : _a.normal) instanceof PDFStream;
         if (!hasAppearances)
           return true;
@@ -10707,8 +10707,8 @@ var PDFDropdown = (
       assertIs(font, "font", [[PDFFont, "PDFFont"]]);
       assertOrUndefined(provider, "provider", [Function]);
       var widgets = this.acroField.getWidgets();
-      for (var idx = 0, len = widgets.length; idx < len; idx++) {
-        var widget = widgets[idx];
+      for (var idx2 = 0, len2 = widgets.length; idx2 < len2; idx2++) {
+        var widget = widgets[idx2];
         this.updateWidgetAppearance(widget, font, provider);
       }
       this.markAsClean();
@@ -10737,17 +10737,17 @@ var PDFOptionList = (
     PDFOptionList2.prototype.getOptions = function() {
       var rawOptions = this.acroField.getOptions();
       var options = new Array(rawOptions.length);
-      for (var idx = 0, len = options.length; idx < len; idx++) {
-        var _a = rawOptions[idx], display = _a.display, value = _a.value;
-        options[idx] = (display !== null && display !== void 0 ? display : value).decodeText();
+      for (var idx2 = 0, len2 = options.length; idx2 < len2; idx2++) {
+        var _a = rawOptions[idx2], display = _a.display, value = _a.value;
+        options[idx2] = (display !== null && display !== void 0 ? display : value).decodeText();
       }
       return options;
     };
     PDFOptionList2.prototype.getSelected = function() {
       var values2 = this.acroField.getValues();
       var selected = new Array(values2.length);
-      for (var idx = 0, len = values2.length; idx < len; idx++) {
-        selected[idx] = values2[idx].decodeText();
+      for (var idx2 = 0, len2 = values2.length; idx2 < len2; idx2++) {
+        selected[idx2] = values2[idx2].decodeText();
       }
       return selected;
     };
@@ -10755,8 +10755,8 @@ var PDFOptionList = (
       assertIs(options, "options", [Array]);
       this.markAsDirty();
       var optionObjects = new Array(options.length);
-      for (var idx = 0, len = options.length; idx < len; idx++) {
-        optionObjects[idx] = { value: PDFHexString.fromText(options[idx]) };
+      for (var idx2 = 0, len2 = options.length; idx2 < len2; idx2++) {
+        optionObjects[idx2] = { value: PDFHexString.fromText(options[idx2]) };
       }
       this.acroField.setOptions(optionObjects);
     };
@@ -10766,8 +10766,8 @@ var PDFOptionList = (
       var optionsArr = Array.isArray(options) ? options : [options];
       var existingOptions = this.acroField.getOptions();
       var newOptions = new Array(optionsArr.length);
-      for (var idx = 0, len = optionsArr.length; idx < len; idx++) {
-        newOptions[idx] = { value: PDFHexString.fromText(optionsArr[idx]) };
+      for (var idx2 = 0, len2 = optionsArr.length; idx2 < len2; idx2++) {
+        newOptions[idx2] = { value: PDFHexString.fromText(optionsArr[idx2]) };
       }
       this.acroField.setOptions(existingOptions.concat(newOptions));
     };
@@ -10785,8 +10785,8 @@ var PDFOptionList = (
         this.enableMultiselect();
       }
       var values2 = new Array(optionsArr.length);
-      for (var idx = 0, len = optionsArr.length; idx < len; idx++) {
-        values2[idx] = PDFHexString.fromText(optionsArr[idx]);
+      for (var idx2 = 0, len2 = optionsArr.length; idx2 < len2; idx2++) {
+        values2[idx2] = PDFHexString.fromText(optionsArr[idx2]);
       }
       if (merge) {
         var existingValues = this.acroField.getValues();
@@ -10869,8 +10869,8 @@ var PDFOptionList = (
       if (this.isDirty())
         return true;
       var widgets = this.acroField.getWidgets();
-      for (var idx = 0, len = widgets.length; idx < len; idx++) {
-        var widget = widgets[idx];
+      for (var idx2 = 0, len2 = widgets.length; idx2 < len2; idx2++) {
+        var widget = widgets[idx2];
         var hasAppearances = ((_a = widget.getAppearances()) === null || _a === void 0 ? void 0 : _a.normal) instanceof PDFStream;
         if (!hasAppearances)
           return true;
@@ -10885,8 +10885,8 @@ var PDFOptionList = (
       assertIs(font, "font", [[PDFFont, "PDFFont"]]);
       assertOrUndefined(provider, "provider", [Function]);
       var widgets = this.acroField.getWidgets();
-      for (var idx = 0, len = widgets.length; idx < len; idx++) {
-        var widget = widgets[idx];
+      for (var idx2 = 0, len2 = widgets.length; idx2 < len2; idx2++) {
+        var widget = widgets[idx2];
         this.updateWidgetAppearance(widget, font, provider);
       }
       this.markAsClean();
@@ -10918,15 +10918,15 @@ var PDFRadioGroup = (
       var exportValues = this.acroField.getExportValues();
       if (exportValues) {
         var exportOptions = new Array(exportValues.length);
-        for (var idx = 0, len = exportValues.length; idx < len; idx++) {
-          exportOptions[idx] = exportValues[idx].decodeText();
+        for (var idx2 = 0, len2 = exportValues.length; idx2 < len2; idx2++) {
+          exportOptions[idx2] = exportValues[idx2].decodeText();
         }
         return exportOptions;
       }
       var onValues = this.acroField.getOnValues();
       var onOptions = new Array(onValues.length);
-      for (var idx = 0, len = onOptions.length; idx < len; idx++) {
-        onOptions[idx] = onValues[idx].decodeText();
+      for (var idx2 = 0, len2 = onOptions.length; idx2 < len2; idx2++) {
+        onOptions[idx2] = onValues[idx2].decodeText();
       }
       return onOptions;
     };
@@ -10937,9 +10937,9 @@ var PDFRadioGroup = (
       var exportValues = this.acroField.getExportValues();
       if (exportValues) {
         var onValues = this.acroField.getOnValues();
-        for (var idx = 0, len = onValues.length; idx < len; idx++) {
-          if (onValues[idx] === value)
-            return exportValues[idx].decodeText();
+        for (var idx2 = 0, len2 = onValues.length; idx2 < len2; idx2++) {
+          if (onValues[idx2] === value)
+            return exportValues[idx2].decodeText();
         }
       }
       return value.decodeText();
@@ -10952,14 +10952,14 @@ var PDFRadioGroup = (
       var onValues = this.acroField.getOnValues();
       var exportValues = this.acroField.getExportValues();
       if (exportValues) {
-        for (var idx = 0, len = exportValues.length; idx < len; idx++) {
-          if (exportValues[idx].decodeText() === option) {
-            this.acroField.setValue(onValues[idx]);
+        for (var idx2 = 0, len2 = exportValues.length; idx2 < len2; idx2++) {
+          if (exportValues[idx2].decodeText() === option) {
+            this.acroField.setValue(onValues[idx2]);
           }
         }
       } else {
-        for (var idx = 0, len = onValues.length; idx < len; idx++) {
-          var value = onValues[idx];
+        for (var idx2 = 0, len2 = onValues.length; idx2 < len2; idx2++) {
+          var value = onValues[idx2];
           if (value.decodeText() === option)
             this.acroField.setValue(value);
         }
@@ -11014,8 +11014,8 @@ var PDFRadioGroup = (
     PDFRadioGroup2.prototype.needsAppearancesUpdate = function() {
       var _a;
       var widgets = this.acroField.getWidgets();
-      for (var idx = 0, len = widgets.length; idx < len; idx++) {
-        var widget = widgets[idx];
+      for (var idx2 = 0, len2 = widgets.length; idx2 < len2; idx2++) {
+        var widget = widgets[idx2];
         var state = widget.getAppearanceState();
         var normal = (_a = widget.getAppearances()) === null || _a === void 0 ? void 0 : _a.normal;
         if (!(normal instanceof PDFDict))
@@ -11031,8 +11031,8 @@ var PDFRadioGroup = (
     PDFRadioGroup2.prototype.updateAppearances = function(provider) {
       assertOrUndefined(provider, "provider", [Function]);
       var widgets = this.acroField.getWidgets();
-      for (var idx = 0, len = widgets.length; idx < len; idx++) {
-        var widget = widgets[idx];
+      for (var idx2 = 0, len2 = widgets.length; idx2 < len2; idx2++) {
+        var widget = widgets[idx2];
         var onValue = widget.getOnValue();
         if (!onValue)
           continue;
@@ -11135,8 +11135,8 @@ var PDFTextField = (
       var fieldAlignment = this.getAlignment();
       var alignment = fieldAlignment === TextAlignment.Center ? ImageAlignment.Center : fieldAlignment === TextAlignment.Right ? ImageAlignment.Right : ImageAlignment.Left;
       var widgets = this.acroField.getWidgets();
-      for (var idx = 0, len = widgets.length; idx < len; idx++) {
-        var widget = widgets[idx];
+      for (var idx2 = 0, len2 = widgets.length; idx2 < len2; idx2++) {
+        var widget = widgets[idx2];
         var streamRef = this.createImageAppearanceStream(widget, image, alignment);
         this.updateWidgetAppearances(widget, { normal: streamRef });
       }
@@ -11259,8 +11259,8 @@ var PDFTextField = (
       if (this.isDirty())
         return true;
       var widgets = this.acroField.getWidgets();
-      for (var idx = 0, len = widgets.length; idx < len; idx++) {
-        var widget = widgets[idx];
+      for (var idx2 = 0, len2 = widgets.length; idx2 < len2; idx2++) {
+        var widget = widgets[idx2];
         var hasAppearances = ((_a = widget.getAppearances()) === null || _a === void 0 ? void 0 : _a.normal) instanceof PDFStream;
         if (!hasAppearances)
           return true;
@@ -11275,8 +11275,8 @@ var PDFTextField = (
       assertIs(font, "font", [[PDFFont, "PDFFont"]]);
       assertOrUndefined(provider, "provider", [Function]);
       var widgets = this.acroField.getWidgets();
-      for (var idx = 0, len = widgets.length; idx < len; idx++) {
-        var widget = widgets[idx];
+      for (var idx2 = 0, len2 = widgets.length; idx2 < len2; idx2++) {
+        var widget = widgets[idx2];
         this.updateWidgetAppearance(widget, font, provider);
       }
       this.markAsClean();
@@ -11333,8 +11333,8 @@ var PDFForm = (
     PDFForm2.prototype.getFields = function() {
       var allFields = this.acroForm.getAllFields();
       var fields = [];
-      for (var idx = 0, len = allFields.length; idx < len; idx++) {
-        var _a = allFields[idx], acroField = _a[0], ref = _a[1];
+      for (var idx2 = 0, len2 = allFields.length; idx2 < len2; idx2++) {
+        var _a = allFields[idx2], acroField = _a[0], ref = _a[1];
         var field = convertToPDFField(acroField, ref, this.doc);
         if (field)
           fields.push(field);
@@ -11344,8 +11344,8 @@ var PDFForm = (
     PDFForm2.prototype.getFieldMaybe = function(name) {
       assertIs(name, "name", ["string"]);
       var fields = this.getFields();
-      for (var idx = 0, len = fields.length; idx < len; idx++) {
-        var field = fields[idx];
+      for (var idx2 = 0, len2 = fields.length; idx2 < len2; idx2++) {
+        var field = fields[idx2];
         if (field.getName() === name)
           return field;
       }
@@ -11469,8 +11469,8 @@ var PDFForm = (
         this.updateFieldAppearances();
       }
       var fields = this.getFields();
-      for (var i = 0, lenFields = fields.length; i < lenFields; i++) {
-        var field = fields[i];
+      for (var i2 = 0, lenFields = fields.length; i2 < lenFields; i2++) {
+        var field = fields[i2];
         var widgets = field.acroField.getWidgets();
         for (var j = 0, lenWidgets = widgets.length; j < lenWidgets; j++) {
           var widget = widgets[j];
@@ -11493,8 +11493,8 @@ var PDFForm = (
     PDFForm2.prototype.removeField = function(field) {
       var widgets = field.acroField.getWidgets();
       var pages = /* @__PURE__ */ new Set();
-      for (var i = 0, len = widgets.length; i < len; i++) {
-        var widget = widgets[i];
+      for (var i2 = 0, len2 = widgets.length; i2 < len2; i2++) {
+        var widget = widgets[i2];
         var widgetRef = this.findWidgetAppearanceRef(field, widget);
         var page = this.findWidgetPage(widget);
         pages.add(page);
@@ -11518,8 +11518,8 @@ var PDFForm = (
       assertOrUndefined(font, "font", [[PDFFont, "PDFFont"]]);
       font = font !== null && font !== void 0 ? font : this.getDefaultFont();
       var fields = this.getFields();
-      for (var idx = 0, len = fields.length; idx < len; idx++) {
-        var field = fields[idx];
+      for (var idx2 = 0, len2 = fields.length; idx2 < len2; idx2++) {
+        var field = fields[idx2];
         if (field.needsAppearancesUpdate()) {
           field.defaultUpdateAppearances(font);
         }
@@ -11577,8 +11577,8 @@ var PDFForm = (
       var nonTerminal = [
         this.acroForm
       ];
-      for (var idx = 0, len = partialNames.length; idx < len; idx++) {
-        var namePart = partialNames[idx];
+      for (var idx2 = 0, len2 = partialNames.length; idx2 < len2; idx2++) {
+        var namePart = partialNames[idx2];
         if (!namePart)
           throw new InvalidFieldNamePartError(namePart);
         var parent_1 = nonTerminal[0], parentRef = nonTerminal[1];
@@ -11598,8 +11598,8 @@ var PDFForm = (
     };
     PDFForm2.prototype.findNonTerminal = function(partialName, parent) {
       var fields = parent instanceof PDFAcroForm ? this.acroForm.getFields() : createPDFAcroFields(parent.Kids());
-      for (var idx = 0, len = fields.length; idx < len; idx++) {
-        var _a = fields[idx], field = _a[0], ref = _a[1];
+      for (var idx2 = 0, len2 = fields.length; idx2 < len2; idx2++) {
+        var _a = fields[idx2], field = _a[0], ref = _a[1];
         if (field.getPartialName() === partialName) {
           if (field instanceof PDFAcroNonTerminal)
             return [field, ref];
@@ -11638,8 +11638,8 @@ var splitFieldName = function(fullyQualifiedName) {
     throw new Error("PDF field names must not be empty strings");
   }
   var parts = fullyQualifiedName.split(".");
-  for (var idx = 0, len = parts.length; idx < len; idx++) {
-    if (parts[idx] === "") {
+  for (var idx2 = 0, len2 = parts.length; idx2 < len2; idx2++) {
+    if (parts[idx2] === "") {
       throw new Error('Periods in PDF field names must be separated by at least one character: "' + fullyQualifiedName + '"');
     }
   }
@@ -11655,8 +11655,8 @@ var addFieldToParent = function(_a, _b, partialName) {
   var field = _b[0], fieldRef = _b[1];
   var entries = parent.normalizedEntries();
   var fields = createPDFAcroFields("Kids" in entries ? entries.Kids : entries.Fields);
-  for (var idx = 0, len = fields.length; idx < len; idx++) {
-    if (fields[idx][0].getPartialName() === partialName) {
+  for (var idx2 = 0, len2 = fields.length; idx2 < len2; idx2++) {
+    if (fields[idx2][0].getPartialName() === partialName) {
       throw new FieldAlreadyExistsError(partialName);
     }
   }
@@ -12056,7 +12056,7 @@ var PDFDocument = (
     };
     PDFDocument2.prototype.copyPages = function(srcDoc, indices) {
       return __awaiter(this, void 0, void 0, function() {
-        var copier, srcPages, copiedPages, idx, len, srcPage, copiedPage, ref;
+        var copier, srcPages, copiedPages, idx2, len2, srcPage, copiedPage, ref;
         return __generator(this, function(_a) {
           switch (_a.label) {
             case 0:
@@ -12068,11 +12068,11 @@ var PDFDocument = (
               copier = PDFObjectCopier.for(srcDoc.context, this.context);
               srcPages = srcDoc.getPages();
               copiedPages = new Array(indices.length);
-              for (idx = 0, len = indices.length; idx < len; idx++) {
-                srcPage = srcPages[indices[idx]];
+              for (idx2 = 0, len2 = indices.length; idx2 < len2; idx2++) {
+                srcPage = srcPages[indices[idx2]];
                 copiedPage = copier.copy(srcPage.node);
                 ref = this.context.register(copiedPage);
-                copiedPages[idx] = PDFPage.of(copiedPage, ref, this);
+                copiedPages[idx2] = PDFPage.of(copiedPage, ref, this);
               }
               return [2, copiedPages];
           }
@@ -12081,7 +12081,7 @@ var PDFDocument = (
     };
     PDFDocument2.prototype.copy = function() {
       return __awaiter(this, void 0, void 0, function() {
-        var pdfCopy, contentPages, idx, len;
+        var pdfCopy, contentPages, idx2, len2;
         return __generator(this, function(_a) {
           switch (_a.label) {
             case 0:
@@ -12091,8 +12091,8 @@ var PDFDocument = (
               return [4, pdfCopy.copyPages(this, this.getPageIndices())];
             case 2:
               contentPages = _a.sent();
-              for (idx = 0, len = contentPages.length; idx < len; idx++) {
-                pdfCopy.addPage(contentPages[idx]);
+              for (idx2 = 0, len2 = contentPages.length; idx2 < len2; idx2++) {
+                pdfCopy.addPage(contentPages[idx2]);
               }
               if (this.getAuthor() !== void 0) {
                 pdfCopy.setAuthor(this.getAuthor());
@@ -12304,16 +12304,16 @@ var PDFDocument = (
         transformationMatrices = [];
       }
       return __awaiter(this, void 0, void 0, function() {
-        var idx, len, currPage, nextPage, context, maybeCopyPage, embeddedPages, idx, len, page, box, matrix, embedder, ref;
+        var idx2, len2, currPage, nextPage, context, maybeCopyPage, embeddedPages, idx2, len2, page, box, matrix, embedder, ref;
         var _a;
         return __generator(this, function(_b) {
           switch (_b.label) {
             case 0:
               if (pages.length === 0)
                 return [2, []];
-              for (idx = 0, len = pages.length - 1; idx < len; idx++) {
-                currPage = pages[idx];
-                nextPage = pages[idx + 1];
+              for (idx2 = 0, len2 = pages.length - 1; idx2 < len2; idx2++) {
+                currPage = pages[idx2];
+                nextPage = pages[idx2 + 1];
                 if (currPage.node.context !== nextPage.node.context) {
                   throw new PageEmbeddingMismatchedContextError();
                 }
@@ -12323,21 +12323,21 @@ var PDFDocument = (
                 return p;
               } : PDFObjectCopier.for(context, this.context).copy;
               embeddedPages = new Array(pages.length);
-              idx = 0, len = pages.length;
+              idx2 = 0, len2 = pages.length;
               _b.label = 1;
             case 1:
-              if (!(idx < len)) return [3, 4];
-              page = maybeCopyPage(pages[idx].node);
-              box = boundingBoxes[idx];
-              matrix = transformationMatrices[idx];
+              if (!(idx2 < len2)) return [3, 4];
+              page = maybeCopyPage(pages[idx2].node);
+              box = boundingBoxes[idx2];
+              matrix = transformationMatrices[idx2];
               return [4, PDFPageEmbedder.for(page, box, matrix)];
             case 2:
               embedder = _b.sent();
               ref = this.context.nextRef();
-              embeddedPages[idx] = PDFEmbeddedPage.of(ref, this, embedder);
+              embeddedPages[idx2] = PDFEmbeddedPage.of(ref, this, embedder);
               _b.label = 3;
             case 3:
-              idx++;
+              idx2++;
               return [3, 1];
             case 4:
               (_a = this.embeddedPages).push.apply(_a, embeddedPages);
@@ -12426,8 +12426,8 @@ var PDFDocument = (
     };
     PDFDocument2.prototype.findPageForAnnotationRef = function(ref) {
       var pages = this.getPages();
-      for (var idx = 0, len = pages.length; idx < len; idx++) {
-        var page = pages[idx];
+      for (var idx2 = 0, len2 = pages.length; idx2 < len2; idx2++) {
+        var page = pages[idx2];
         var annotations = page.node.Annots();
         if ((annotations === null || annotations === void 0 ? void 0 : annotations.indexOf(ref)) !== void 0) {
           return page;
@@ -12437,20 +12437,20 @@ var PDFDocument = (
     };
     PDFDocument2.prototype.embedAll = function(embeddables) {
       return __awaiter(this, void 0, void 0, function() {
-        var idx, len;
+        var idx2, len2;
         return __generator(this, function(_a) {
           switch (_a.label) {
             case 0:
-              idx = 0, len = embeddables.length;
+              idx2 = 0, len2 = embeddables.length;
               _a.label = 1;
             case 1:
-              if (!(idx < len)) return [3, 4];
-              return [4, embeddables[idx].embed()];
+              if (!(idx2 < len2)) return [3, 4];
+              return [4, embeddables[idx2].embed()];
             case 2:
               _a.sent();
               _a.label = 3;
             case 3:
-              idx++;
+              idx2++;
               return [3, 1];
             case 4:
               return [
@@ -12676,8 +12676,8 @@ var PDFPage = (
       var annots = this.node.Annots();
       if (!annots)
         return;
-      for (var idx = 0; idx < annots.size(); idx++) {
-        var annot = annots.lookup(idx);
+      for (var idx2 = 0; idx2 < annots.size(); idx2++) {
+        var annot = annots.lookup(idx2);
         if (annot instanceof PDFDict)
           this.scaleAnnot(annot, x, y);
       }
@@ -12771,8 +12771,8 @@ var PDFPage = (
       };
       var lines = options.maxWidth === void 0 ? lineSplit(cleanText(text)) : breakTextIntoLines(text, wordBreaks, options.maxWidth, textWidth);
       var encodedLines = new Array(lines.length);
-      for (var idx = 0, len = lines.length; idx < len; idx++) {
-        encodedLines[idx] = newFont.encodeText(lines[idx]);
+      for (var idx2 = 0, len2 = lines.length; idx2 < len2; idx2++) {
+        encodedLines[idx2] = newFont.encodeText(lines[idx2]);
       }
       var graphicsStateKey = this.maybeEmbedGraphicsState({
         opacity: options.opacity,
@@ -13130,15 +13130,15 @@ var PDFPage = (
     };
     PDFPage2.prototype.scaleAnnot = function(annot, x, y) {
       var selectors = ["RD", "CL", "Vertices", "QuadPoints", "L", "Rect"];
-      for (var idx = 0, len = selectors.length; idx < len; idx++) {
-        var list = annot.lookup(PDFName.of(selectors[idx]));
+      for (var idx2 = 0, len2 = selectors.length; idx2 < len2; idx2++) {
+        var list = annot.lookup(PDFName.of(selectors[idx2]));
         if (list instanceof PDFArray)
           list.scalePDFNumbers(x, y);
       }
       var inkLists = annot.lookup(PDFName.of("InkList"));
       if (inkLists instanceof PDFArray) {
-        for (var idx = 0, len = inkLists.size(); idx < len; idx++) {
-          var arr = inkLists.lookup(idx);
+        for (var idx2 = 0, len2 = inkLists.size(); idx2 < len2; idx2++) {
+          var arr = inkLists.lookup(idx2);
           if (arr instanceof PDFArray)
             arr.scalePDFNumbers(x, y);
         }
@@ -13174,8 +13174,8 @@ var PDFButton = (
         alignment = ImageAlignment.Center;
       }
       var widgets = this.acroField.getWidgets();
-      for (var idx = 0, len = widgets.length; idx < len; idx++) {
-        var widget = widgets[idx];
+      for (var idx2 = 0, len2 = widgets.length; idx2 < len2; idx2++) {
+        var widget = widgets[idx2];
         var streamRef = this.createImageAppearanceStream(widget, image, alignment);
         this.updateWidgetAppearances(widget, { normal: streamRef });
       }
@@ -13216,8 +13216,8 @@ var PDFButton = (
       if (this.isDirty())
         return true;
       var widgets = this.acroField.getWidgets();
-      for (var idx = 0, len = widgets.length; idx < len; idx++) {
-        var widget = widgets[idx];
+      for (var idx2 = 0, len2 = widgets.length; idx2 < len2; idx2++) {
+        var widget = widgets[idx2];
         var hasAppearances = ((_a = widget.getAppearances()) === null || _a === void 0 ? void 0 : _a.normal) instanceof PDFStream;
         if (!hasAppearances)
           return true;
@@ -13232,8 +13232,8 @@ var PDFButton = (
       assertIs(font, "font", [[PDFFont, "PDFFont"]]);
       assertOrUndefined(provider, "provider", [Function]);
       var widgets = this.acroField.getWidgets();
-      for (var idx = 0, len = widgets.length; idx < len; idx++) {
-        var widget = widgets[idx];
+      for (var idx2 = 0, len2 = widgets.length; idx2 < len2; idx2++) {
+        var widget = widgets[idx2];
         this.updateWidgetAppearance(widget, font, provider);
       }
     };

@@ -12,18 +12,12 @@ function _mergeNamespaces(n, m) {
         if (k !== "default" && !(k in n)) {
           const d = Object.getOwnPropertyDescriptor(e, k);
           if (d) {
-            Object.defineProperty(
-              n,
-              k,
-              d.get
-                ? d
-                : {
-                    enumerable: true,
-                    get: function () {
-                      return e[k];
-                    },
-                  },
-            );
+            Object.defineProperty(n, k, d.get ? d : {
+              enumerable: true,
+              get: function() {
+                return e[k];
+              }
+            });
           }
         }
       }
@@ -37,11 +31,9 @@ var hasRequiredParseProxyResponse;
 function requireParseProxyResponse() {
   if (hasRequiredParseProxyResponse) return parseProxyResponse;
   hasRequiredParseProxyResponse = 1;
-  var __importDefault =
-    (parseProxyResponse && parseProxyResponse.__importDefault) ||
-    function (mod) {
-      return mod && mod.__esModule ? mod : { default: mod };
-    };
+  var __importDefault = parseProxyResponse && parseProxyResponse.__importDefault || function(mod) {
+    return mod && mod.__esModule ? mod : { "default": mod };
+  };
   Object.defineProperty(parseProxyResponse, "__esModule", { value: true });
   parseProxyResponse.parseProxyResponse = void 0;
   const debug_1 = __importDefault(requireSrc());
@@ -52,8 +44,10 @@ function requireParseProxyResponse() {
       const buffers = [];
       function read() {
         const b = socket.read();
-        if (b) ondata(b);
-        else socket.once("readable", read);
+        if (b)
+          ondata(b);
+        else
+          socket.once("readable", read);
       }
       function cleanup() {
         socket.removeListener("end", onend);
@@ -91,7 +85,8 @@ function requireParseProxyResponse() {
         const statusText = firstLineParts.slice(2).join(" ");
         const headers = {};
         for (const header of headerParts) {
-          if (!header) continue;
+          if (!header)
+            continue;
           const firstColon = header.indexOf(":");
           if (firstColon === -1) {
             socket.destroy();
@@ -114,9 +109,9 @@ function requireParseProxyResponse() {
           connect: {
             statusCode,
             statusText,
-            headers,
+            headers
           },
-          buffered,
+          buffered
         });
       }
       socket.on("error", onerror);
@@ -131,53 +126,36 @@ var hasRequiredDist;
 function requireDist() {
   if (hasRequiredDist) return dist;
   hasRequiredDist = 1;
-  var __createBinding =
-    (dist && dist.__createBinding) ||
-    (Object.create
-      ? function (o, m, k, k2) {
-          if (k2 === void 0) k2 = k;
-          var desc = Object.getOwnPropertyDescriptor(m, k);
-          if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-            desc = {
-              enumerable: true,
-              get: function () {
-                return m[k];
-              },
-            };
-          }
-          Object.defineProperty(o, k2, desc);
-        }
-      : function (o, m, k, k2) {
-          if (k2 === void 0) k2 = k;
-          o[k2] = m[k];
-        });
-  var __setModuleDefault =
-    (dist && dist.__setModuleDefault) ||
-    (Object.create
-      ? function (o, v) {
-          Object.defineProperty(o, "default", { enumerable: true, value: v });
-        }
-      : function (o, v) {
-          o["default"] = v;
-        });
-  var __importStar =
-    (dist && dist.__importStar) ||
-    function (mod) {
-      if (mod && mod.__esModule) return mod;
-      var result = {};
-      if (mod != null) {
-        for (var k in mod)
-          if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k))
-            __createBinding(result, mod, k);
-      }
-      __setModuleDefault(result, mod);
-      return result;
-    };
-  var __importDefault =
-    (dist && dist.__importDefault) ||
-    function (mod) {
-      return mod && mod.__esModule ? mod : { default: mod };
-    };
+  var __createBinding = dist && dist.__createBinding || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === void 0) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() {
+        return m[k];
+      } };
+    }
+    Object.defineProperty(o, k2, desc);
+  }) : (function(o, m, k, k2) {
+    if (k2 === void 0) k2 = k;
+    o[k2] = m[k];
+  }));
+  var __setModuleDefault = dist && dist.__setModuleDefault || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+  }) : function(o, v) {
+    o["default"] = v;
+  });
+  var __importStar = dist && dist.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+      for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+  };
+  var __importDefault = dist && dist.__importDefault || function(mod) {
+    return mod && mod.__esModule ? mod : { "default": mod };
+  };
   Object.defineProperty(dist, "__esModule", { value: true });
   dist.HttpsProxyAgent = void 0;
   const net = __importStar(require$$0);
@@ -192,7 +170,7 @@ function requireDist() {
     if (options.servername === void 0 && options.host && !net.isIP(options.host)) {
       return {
         ...options,
-        servername: options.host,
+        servername: options.host
       };
     }
     return options;
@@ -205,17 +183,13 @@ function requireDist() {
       this.proxyHeaders = opts?.headers ?? {};
       debug("Creating new HttpsProxyAgent instance: %o", this.proxy.href);
       const host = (this.proxy.hostname || this.proxy.host).replace(/^\[|\]$/g, "");
-      const port = this.proxy.port
-        ? parseInt(this.proxy.port, 10)
-        : this.proxy.protocol === "https:"
-          ? 443
-          : 80;
+      const port = this.proxy.port ? parseInt(this.proxy.port, 10) : this.proxy.protocol === "https:" ? 443 : 80;
       this.connectOpts = {
         // Attempt to negotiate http/1.1 for proxy servers that support http/2
         ALPNProtocols: ["http/1.1"],
-        ...(opts ? omit(opts, "headers") : null),
+        ...opts ? omit(opts, "headers") : null,
         host,
-        port,
+        port
       };
     }
     /**
@@ -235,8 +209,7 @@ function requireDist() {
         debug("Creating `net.Socket`: %o", this.connectOpts);
         socket = net.connect(this.connectOpts);
       }
-      const headers =
-        typeof this.proxyHeaders === "function" ? this.proxyHeaders() : { ...this.proxyHeaders };
+      const headers = typeof this.proxyHeaders === "function" ? this.proxyHeaders() : { ...this.proxyHeaders };
       const host = net.isIPv6(opts.host) ? `[${opts.host}]` : opts.host;
       let payload = `CONNECT ${host}:${opts.port} HTTP/1.1\r
 `;
@@ -264,7 +237,7 @@ function requireDist() {
           debug("Upgrading socket connection to TLS");
           return tls.connect({
             ...omit(setServernameFromNonIpHost(opts), "host", "path", "port"),
-            socket,
+            socket
           });
         }
         return socket;
@@ -299,10 +272,9 @@ function requireDist() {
   return dist;
 }
 var distExports = requireDist();
-const index = /* @__PURE__ */ _mergeNamespaces(
-  {
-    __proto__: null,
-  },
-  [distExports],
-);
-export { index as i };
+const index = /* @__PURE__ */ _mergeNamespaces({
+  __proto__: null
+}, [distExports]);
+export {
+  index as i
+};

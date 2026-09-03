@@ -1,0 +1,1 @@
+import{a$ as o,b0 as t,r as n,b1 as r,aa as a}from"./index-DI_m7bjv.js";function s(){!o.current&&t();const[e]=n.useState(r.current);return a(e!==!0,"You have Reduced Motion enabled on your device. Animations may not appear as expected.","reduced-motion-disabled"),e}export{s as u};

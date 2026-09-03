@@ -1,7 +1,14 @@
 import { GoogleGenAI } from "@google/genai";
 
+function getEnvVar(name: string): string | undefined {
+  if (typeof process !== "undefined" && process.env) {
+    return process.env[name];
+  }
+  return undefined;
+}
+
 function resolvePrimaryModel(): string {
-  const envModel = process.env.AI_MODEL_PRIMARY || process.env.GEMINI_MODEL_PRIMARY;
+  const envModel = getEnvVar("AI_MODEL_PRIMARY") || getEnvVar("GEMINI_MODEL_PRIMARY");
   if (envModel && envModel !== "gemini-3.1-pro-preview" && envModel !== "gemini-3-flash-preview") {
     return envModel;
   }
@@ -9,7 +16,7 @@ function resolvePrimaryModel(): string {
 }
 
 function resolveFallbackModel(): string {
-  const envModel = process.env.AI_MODEL_FALLBACK || process.env.GEMINI_MODEL_FALLBACK;
+  const envModel = getEnvVar("AI_MODEL_FALLBACK") || getEnvVar("GEMINI_MODEL_FALLBACK");
   if (envModel && envModel !== "gemini-3-flash-preview" && envModel !== "gemini-3.1-pro-preview") {
     return envModel;
   }
@@ -18,15 +25,16 @@ function resolveFallbackModel(): string {
 
 export const PRIMARY_MODEL = resolvePrimaryModel();
 export const FALLBACK_MODEL = resolveFallbackModel();
-export const GEMINI_LIVE_MODEL = process.env.GEMINI_LIVE_MODEL || "gemini-3.1-flash-live-preview";
-export const GEMINI_TTS_MODEL = process.env.GEMINI_TTS_MODEL || "gemini-3.1-flash-tts-preview";
+
+export const GEMINI_LIVE_MODEL = getEnvVar("GEMINI_LIVE_MODEL") || "gemini-3.1-flash-live-preview";
+export const GEMINI_TTS_MODEL = getEnvVar("GEMINI_TTS_MODEL") || "gemini-3.1-flash-tts-preview";
 export const GEMINI_FEMALE_VOICE = "Aoede";
 
 let aiClient: GoogleGenAI | null = null;
 
 export function getGeminiClient(): GoogleGenAI {
   if (!aiClient) {
-    const key = process.env.GEMINI_API_KEY;
+    const key = getEnvVar("GEMINI_API_KEY");
     if (!key) {
       throw new Error("GEMINI_API_KEY environment variable is missing.");
     }

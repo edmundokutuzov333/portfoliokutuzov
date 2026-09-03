@@ -11,19 +11,9 @@ function requireSupportsColor() {
   const hasFlag = requireHasFlag();
   const { env } = process;
   let forceColor;
-  if (
-    hasFlag("no-color") ||
-    hasFlag("no-colors") ||
-    hasFlag("color=false") ||
-    hasFlag("color=never")
-  ) {
+  if (hasFlag("no-color") || hasFlag("no-colors") || hasFlag("color=false") || hasFlag("color=never")) {
     forceColor = 0;
-  } else if (
-    hasFlag("color") ||
-    hasFlag("colors") ||
-    hasFlag("color=true") ||
-    hasFlag("color=always")
-  ) {
+  } else if (hasFlag("color") || hasFlag("colors") || hasFlag("color=true") || hasFlag("color=always")) {
     forceColor = 1;
   }
   if ("FORCE_COLOR" in env) {
@@ -43,7 +33,7 @@ function requireSupportsColor() {
       level,
       hasBasic: true,
       has256: level >= 2,
-      has16m: level >= 3,
+      has16m: level >= 3
     };
   }
   function supportsColor(haveStream, streamIsTTY) {
@@ -71,12 +61,7 @@ function requireSupportsColor() {
       return 1;
     }
     if ("CI" in env) {
-      if (
-        ["TRAVIS", "CIRCLECI", "APPVEYOR", "GITLAB_CI", "GITHUB_ACTIONS", "BUILDKITE"].some(
-          (sign) => sign in env,
-        ) ||
-        env.CI_NAME === "codeship"
-      ) {
+      if (["TRAVIS", "CIRCLECI", "APPVEYOR", "GITLAB_CI", "GITHUB_ACTIONS", "BUILDKITE"].some((sign) => sign in env) || env.CI_NAME === "codeship") {
         return 1;
       }
       return min;
@@ -114,8 +99,10 @@ function requireSupportsColor() {
   supportsColor_1 = {
     supportsColor: getSupportLevel,
     stdout: translateLevel(supportsColor(true, tty.isatty(1))),
-    stderr: translateLevel(supportsColor(true, tty.isatty(2))),
+    stderr: translateLevel(supportsColor(true, tty.isatty(2)))
   };
   return supportsColor_1;
 }
-export { requireSupportsColor as r };
+export {
+  requireSupportsColor as r
+};

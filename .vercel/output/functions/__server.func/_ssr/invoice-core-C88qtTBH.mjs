@@ -5,7 +5,7 @@ const CURRENCY_SYMBOL = {
   MZN: "MT ",
   GBP: "£",
   BRL: "R$",
-  ZAR: "R ",
+  ZAR: "R "
 };
 const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
 const num = (v, fallback = 0) => {
@@ -20,11 +20,11 @@ function lineNet(item) {
 function computeTotals(input) {
   const lines = (input.items ?? []).map((i) => ({ ...i, net: lineNet(i) }));
   const subtotal = round2(lines.reduce((acc, l) => acc + l.net, 0));
-  const discount_amount = round2((subtotal * clampPct(input.discount_pct)) / 100);
+  const discount_amount = round2(subtotal * clampPct(input.discount_pct) / 100);
   const taxable = round2(subtotal - discount_amount);
-  const tax_amount = round2((taxable * clampPct(input.tax_pct)) / 100);
+  const tax_amount = round2(taxable * clampPct(input.tax_pct) / 100);
   const total = round2(taxable + tax_amount);
-  const deposit_amount = round2((total * clampPct(input.deposit_pct)) / 100);
+  const deposit_amount = round2(total * clampPct(input.deposit_pct) / 100);
   return {
     lines,
     subtotal,
@@ -33,15 +33,19 @@ function computeTotals(input) {
     tax_amount,
     total,
     deposit_amount,
-    balance: round2(total - deposit_amount),
+    balance: round2(total - deposit_amount)
   };
 }
 function money(amount, currency) {
   if (amount == null || !Number.isFinite(Number(amount))) return "—";
   const value = Number(amount).toLocaleString("en-US", {
     minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    maximumFractionDigits: 2
   });
   return `${CURRENCY_SYMBOL[(currency ?? "").toUpperCase()] ?? ""}${value}`;
 }
-export { CURRENCIES as C, computeTotals as c, money as m };
+export {
+  CURRENCIES as C,
+  computeTotals as c,
+  money as m
+};

@@ -5,24 +5,25 @@ var hasRequiredPonyfill_es2018;
 function requirePonyfill_es2018() {
   if (hasRequiredPonyfill_es2018) return ponyfill_es2018$1.exports;
   hasRequiredPonyfill_es2018 = 1;
-  (function (module, exports) {
-    (function (global, factory) {
+  (function(module, exports) {
+    (function(global, factory) {
       factory(exports);
-    })(ponyfill_es2018, function (exports2) {
+    })(ponyfill_es2018, (function(exports2) {
       function noop() {
         return void 0;
       }
       function typeIsObject(x) {
-        return (typeof x === "object" && x !== null) || typeof x === "function";
+        return typeof x === "object" && x !== null || typeof x === "function";
       }
       const rethrowAssertionErrorRejection = noop;
       function setFunctionName(fn, name) {
         try {
           Object.defineProperty(fn, "name", {
             value: name,
-            configurable: true,
+            configurable: true
           });
-        } catch (_a2) {}
+        } catch (_a2) {
+        }
       }
       const originalPromise = Promise;
       const originalPromiseThen = Promise.prototype.then;
@@ -40,11 +41,7 @@ function requirePonyfill_es2018() {
         return originalPromiseThen.call(promise, onFulfilled, onRejected);
       }
       function uponPromise(promise, onFulfilled, onRejected) {
-        PerformPromiseThen(
-          PerformPromiseThen(promise, onFulfilled, onRejected),
-          void 0,
-          rethrowAssertionErrorRejection,
-        );
+        PerformPromiseThen(PerformPromiseThen(promise, onFulfilled, onRejected), void 0, rethrowAssertionErrorRejection);
       }
       function uponFulfillment(promise, onFulfilled) {
         uponPromise(promise, onFulfilled);
@@ -87,7 +84,7 @@ function requirePonyfill_es2018() {
           this._size = 0;
           this._front = {
             _elements: [],
-            _next: void 0,
+            _next: void 0
           };
           this._back = this._front;
           this._cursor = 0;
@@ -106,7 +103,7 @@ function requirePonyfill_es2018() {
           if (oldBack._elements.length === QUEUE_MAX_ARRAY_SIZE - 1) {
             newBack = {
               _elements: [],
-              _next: void 0,
+              _next: void 0
             };
           }
           oldBack._elements.push(element);
@@ -193,19 +190,9 @@ function requirePonyfill_es2018() {
       function ReadableStreamReaderGenericRelease(reader) {
         const stream = reader._ownerReadableStream;
         if (stream._state === "readable") {
-          defaultReaderClosedPromiseReject(
-            reader,
-            new TypeError(
-              `Reader was released and can no longer be used to monitor the stream's closedness`,
-            ),
-          );
+          defaultReaderClosedPromiseReject(reader, new TypeError(`Reader was released and can no longer be used to monitor the stream's closedness`));
         } else {
-          defaultReaderClosedPromiseResetToRejected(
-            reader,
-            new TypeError(
-              `Reader was released and can no longer be used to monitor the stream's closedness`,
-            ),
-          );
+          defaultReaderClosedPromiseResetToRejected(reader, new TypeError(`Reader was released and can no longer be used to monitor the stream's closedness`));
         }
         stream._readableStreamController[ReleaseSteps]();
         stream._reader = void 0;
@@ -248,16 +235,12 @@ function requirePonyfill_es2018() {
         reader._closedPromise_resolve = void 0;
         reader._closedPromise_reject = void 0;
       }
-      const NumberIsFinite =
-        Number.isFinite ||
-        function (x) {
-          return typeof x === "number" && isFinite(x);
-        };
-      const MathTrunc =
-        Math.trunc ||
-        function (v) {
-          return v < 0 ? Math.ceil(v) : Math.floor(v);
-        };
+      const NumberIsFinite = Number.isFinite || function(x) {
+        return typeof x === "number" && isFinite(x);
+      };
+      const MathTrunc = Math.trunc || function(v) {
+        return v < 0 ? Math.ceil(v) : Math.floor(v);
+      };
       function isDictionary(x) {
         return typeof x === "object" || typeof x === "function";
       }
@@ -272,7 +255,7 @@ function requirePonyfill_es2018() {
         }
       }
       function isObject(x) {
-        return (typeof x === "object" && x !== null) || typeof x === "function";
+        return typeof x === "object" && x !== null || typeof x === "function";
       }
       function assertObject(x, context) {
         if (!isObject(x)) {
@@ -308,9 +291,7 @@ function requirePonyfill_es2018() {
         }
         x = integerPart(x);
         if (x < lowerBound || x > upperBound) {
-          throw new TypeError(
-            `${context} is outside the accepted range of ${lowerBound} to ${upperBound}, inclusive`,
-          );
+          throw new TypeError(`${context} is outside the accepted range of ${lowerBound} to ${upperBound}, inclusive`);
         }
         if (!NumberIsFinite(x) || x === 0) {
           return 0;
@@ -355,9 +336,7 @@ function requirePonyfill_es2018() {
           assertRequiredArgument(stream, 1, "ReadableStreamDefaultReader");
           assertReadableStream(stream, "First parameter");
           if (IsReadableStreamLocked(stream)) {
-            throw new TypeError(
-              "This stream has already been locked for exclusive reading by another reader",
-            );
+            throw new TypeError("This stream has already been locked for exclusive reading by another reader");
           }
           ReadableStreamReaderGenericInitialize(this, stream);
           this._readRequests = new SimpleQueue();
@@ -405,7 +384,7 @@ function requirePonyfill_es2018() {
           const readRequest = {
             _chunkSteps: (chunk) => resolvePromise({ value: chunk, done: false }),
             _closeSteps: () => resolvePromise({ value: void 0, done: true }),
-            _errorSteps: (e) => rejectPromise(e),
+            _errorSteps: (e) => rejectPromise(e)
           };
           ReadableStreamDefaultReaderRead(this, readRequest);
           return promise;
@@ -433,7 +412,7 @@ function requirePonyfill_es2018() {
         cancel: { enumerable: true },
         read: { enumerable: true },
         releaseLock: { enumerable: true },
-        closed: { enumerable: true },
+        closed: { enumerable: true }
       });
       setFunctionName(ReadableStreamDefaultReader.prototype.cancel, "cancel");
       setFunctionName(ReadableStreamDefaultReader.prototype.read, "read");
@@ -441,7 +420,7 @@ function requirePonyfill_es2018() {
       if (typeof Symbol.toStringTag === "symbol") {
         Object.defineProperty(ReadableStreamDefaultReader.prototype, Symbol.toStringTag, {
           value: "ReadableStreamDefaultReader",
-          configurable: true,
+          configurable: true
         });
       }
       function IsReadableStreamDefaultReader(x) {
@@ -477,13 +456,10 @@ function requirePonyfill_es2018() {
         });
       }
       function defaultReaderBrandCheckException(name) {
-        return new TypeError(
-          `ReadableStreamDefaultReader.prototype.${name} can only be used on a ReadableStreamDefaultReader`,
-        );
+        return new TypeError(`ReadableStreamDefaultReader.prototype.${name} can only be used on a ReadableStreamDefaultReader`);
       }
-      const AsyncIteratorPrototype = Object.getPrototypeOf(
-        Object.getPrototypeOf(async function* () {}).prototype,
-      );
+      const AsyncIteratorPrototype = Object.getPrototypeOf(Object.getPrototypeOf(async function* () {
+      }).prototype);
       class ReadableStreamAsyncIteratorImpl {
         constructor(reader, preventCancel) {
           this._ongoingPromise = void 0;
@@ -493,16 +469,12 @@ function requirePonyfill_es2018() {
         }
         next() {
           const nextSteps = () => this._nextSteps();
-          this._ongoingPromise = this._ongoingPromise
-            ? transformPromiseWith(this._ongoingPromise, nextSteps, nextSteps)
-            : nextSteps();
+          this._ongoingPromise = this._ongoingPromise ? transformPromiseWith(this._ongoingPromise, nextSteps, nextSteps) : nextSteps();
           return this._ongoingPromise;
         }
         return(value) {
           const returnSteps = () => this._returnSteps(value);
-          return this._ongoingPromise
-            ? transformPromiseWith(this._ongoingPromise, returnSteps, returnSteps)
-            : returnSteps();
+          return this._ongoingPromise ? transformPromiseWith(this._ongoingPromise, returnSteps, returnSteps) : returnSteps();
         }
         _nextSteps() {
           if (this._isFinished) {
@@ -531,7 +503,7 @@ function requirePonyfill_es2018() {
               this._isFinished = true;
               ReadableStreamReaderGenericRelease(reader);
               rejectPromise(reason);
-            },
+            }
           };
           ReadableStreamDefaultReaderRead(reader, readRequest);
           return promise;
@@ -563,7 +535,7 @@ function requirePonyfill_es2018() {
             return promiseRejectedWith(streamAsyncIteratorBrandCheckException("return"));
           }
           return this._asyncIteratorImpl.return(value);
-        },
+        }
       };
       Object.setPrototypeOf(ReadableStreamAsyncIteratorPrototype, AsyncIteratorPrototype);
       function AcquireReadableStreamAsyncIterator(stream, preventCancel) {
@@ -587,15 +559,11 @@ function requirePonyfill_es2018() {
         }
       }
       function streamAsyncIteratorBrandCheckException(name) {
-        return new TypeError(
-          `ReadableStreamAsyncIterator.${name} can only be used on a ReadableSteamAsyncIterator`,
-        );
+        return new TypeError(`ReadableStreamAsyncIterator.${name} can only be used on a ReadableSteamAsyncIterator`);
       }
-      const NumberIsNaN =
-        Number.isNaN ||
-        function (x) {
-          return x !== x;
-        };
+      const NumberIsNaN = Number.isNaN || function(x) {
+        return x !== x;
+      };
       var _a, _b, _c;
       function CreateArrayFromList(elements) {
         return elements.slice();
@@ -642,7 +610,7 @@ function requirePonyfill_es2018() {
       }
       function CreateAsyncFromSyncIterator(syncIteratorRecord) {
         const syncIterable = {
-          [Symbol.iterator]: () => syncIteratorRecord.iterator,
+          [Symbol.iterator]: () => syncIteratorRecord.iterator
         };
         const asyncIterator = (async function* () {
           return yield* syncIterable;
@@ -650,15 +618,7 @@ function requirePonyfill_es2018() {
         const nextMethod = asyncIterator.next;
         return { iterator: asyncIterator, nextMethod, done: false };
       }
-      const SymbolAsyncIterator =
-        (_c =
-          (_a = Symbol.asyncIterator) !== null && _a !== void 0
-            ? _a
-            : (_b = Symbol.for) === null || _b === void 0
-              ? void 0
-              : _b.call(Symbol, "Symbol.asyncIterator")) !== null && _c !== void 0
-          ? _c
-          : "@@asyncIterator";
+      const SymbolAsyncIterator = (_c = (_a = Symbol.asyncIterator) !== null && _a !== void 0 ? _a : (_b = Symbol.for) === null || _b === void 0 ? void 0 : _b.call(Symbol, "Symbol.asyncIterator")) !== null && _c !== void 0 ? _c : "@@asyncIterator";
       function GetIterator(obj, hint = "sync", method) {
         if (method === void 0) {
           if (hint === "async") {
@@ -769,14 +729,9 @@ function requirePonyfill_es2018() {
             throw new TypeError("This BYOB request has been invalidated");
           }
           if (IsDetachedBuffer(this._view.buffer)) {
-            throw new TypeError(
-              `The BYOB request's buffer has been detached and so cannot be used as a response`,
-            );
+            throw new TypeError(`The BYOB request's buffer has been detached and so cannot be used as a response`);
           }
-          ReadableByteStreamControllerRespond(
-            this._associatedReadableByteStreamController,
-            bytesWritten,
-          );
+          ReadableByteStreamControllerRespond(this._associatedReadableByteStreamController, bytesWritten);
         }
         respondWithNewView(view) {
           if (!IsReadableStreamBYOBRequest(this)) {
@@ -790,27 +745,22 @@ function requirePonyfill_es2018() {
             throw new TypeError("This BYOB request has been invalidated");
           }
           if (IsDetachedBuffer(view.buffer)) {
-            throw new TypeError(
-              "The given view's buffer has been detached and so cannot be used as a response",
-            );
+            throw new TypeError("The given view's buffer has been detached and so cannot be used as a response");
           }
-          ReadableByteStreamControllerRespondWithNewView(
-            this._associatedReadableByteStreamController,
-            view,
-          );
+          ReadableByteStreamControllerRespondWithNewView(this._associatedReadableByteStreamController, view);
         }
       }
       Object.defineProperties(ReadableStreamBYOBRequest.prototype, {
         respond: { enumerable: true },
         respondWithNewView: { enumerable: true },
-        view: { enumerable: true },
+        view: { enumerable: true }
       });
       setFunctionName(ReadableStreamBYOBRequest.prototype.respond, "respond");
       setFunctionName(ReadableStreamBYOBRequest.prototype.respondWithNewView, "respondWithNewView");
       if (typeof Symbol.toStringTag === "symbol") {
         Object.defineProperty(ReadableStreamBYOBRequest.prototype, Symbol.toStringTag, {
           value: "ReadableStreamBYOBRequest",
-          configurable: true,
+          configurable: true
         });
       }
       class ReadableByteStreamController {
@@ -849,9 +799,7 @@ function requirePonyfill_es2018() {
           }
           const state = this._controlledReadableByteStream._state;
           if (state !== "readable") {
-            throw new TypeError(
-              `The stream (in ${state} state) is not in the readable state and cannot be closed`,
-            );
+            throw new TypeError(`The stream (in ${state} state) is not in the readable state and cannot be closed`);
           }
           ReadableByteStreamControllerClose(this);
         }
@@ -874,9 +822,7 @@ function requirePonyfill_es2018() {
           }
           const state = this._controlledReadableByteStream._state;
           if (state !== "readable") {
-            throw new TypeError(
-              `The stream (in ${state} state) is not in the readable state and cannot be enqueued to`,
-            );
+            throw new TypeError(`The stream (in ${state} state) is not in the readable state and cannot be enqueued to`);
           }
           ReadableByteStreamControllerEnqueue(this, chunk);
         }
@@ -922,7 +868,7 @@ function requirePonyfill_es2018() {
               minimumFill: 1,
               elementSize: 1,
               viewConstructor: Uint8Array,
-              readerType: "default",
+              readerType: "default"
             };
             this._pendingPullIntos.push(pullIntoDescriptor);
           }
@@ -944,7 +890,7 @@ function requirePonyfill_es2018() {
         enqueue: { enumerable: true },
         error: { enumerable: true },
         byobRequest: { enumerable: true },
-        desiredSize: { enumerable: true },
+        desiredSize: { enumerable: true }
       });
       setFunctionName(ReadableByteStreamController.prototype.close, "close");
       setFunctionName(ReadableByteStreamController.prototype.enqueue, "enqueue");
@@ -952,7 +898,7 @@ function requirePonyfill_es2018() {
       if (typeof Symbol.toStringTag === "symbol") {
         Object.defineProperty(ReadableByteStreamController.prototype, Symbol.toStringTag, {
           value: "ReadableByteStreamController",
-          configurable: true,
+          configurable: true
         });
       }
       function IsReadableByteStreamController(x) {
@@ -984,21 +930,17 @@ function requirePonyfill_es2018() {
         }
         controller._pulling = true;
         const pullPromise = controller._pullAlgorithm();
-        uponPromise(
-          pullPromise,
-          () => {
-            controller._pulling = false;
-            if (controller._pullAgain) {
-              controller._pullAgain = false;
-              ReadableByteStreamControllerCallPullIfNeeded(controller);
-            }
-            return null;
-          },
-          (e) => {
-            ReadableByteStreamControllerError(controller, e);
-            return null;
-          },
-        );
+        uponPromise(pullPromise, () => {
+          controller._pulling = false;
+          if (controller._pullAgain) {
+            controller._pullAgain = false;
+            ReadableByteStreamControllerCallPullIfNeeded(controller);
+          }
+          return null;
+        }, (e) => {
+          ReadableByteStreamControllerError(controller, e);
+          return null;
+        });
       }
       function ReadableByteStreamControllerClearPendingPullIntos(controller) {
         ReadableByteStreamControllerInvalidateBYOBRequest(controller);
@@ -1009,8 +951,7 @@ function requirePonyfill_es2018() {
         if (stream._state === "closed") {
           done = true;
         }
-        const filledView =
-          ReadableByteStreamControllerConvertPullIntoDescriptor(pullIntoDescriptor);
+        const filledView = ReadableByteStreamControllerConvertPullIntoDescriptor(pullIntoDescriptor);
         if (pullIntoDescriptor.readerType === "default") {
           ReadableStreamFulfillReadRequest(stream, filledView, done);
         } else {
@@ -1020,27 +961,13 @@ function requirePonyfill_es2018() {
       function ReadableByteStreamControllerConvertPullIntoDescriptor(pullIntoDescriptor) {
         const bytesFilled = pullIntoDescriptor.bytesFilled;
         const elementSize = pullIntoDescriptor.elementSize;
-        return new pullIntoDescriptor.viewConstructor(
-          pullIntoDescriptor.buffer,
-          pullIntoDescriptor.byteOffset,
-          bytesFilled / elementSize,
-        );
+        return new pullIntoDescriptor.viewConstructor(pullIntoDescriptor.buffer, pullIntoDescriptor.byteOffset, bytesFilled / elementSize);
       }
-      function ReadableByteStreamControllerEnqueueChunkToQueue(
-        controller,
-        buffer,
-        byteOffset,
-        byteLength,
-      ) {
+      function ReadableByteStreamControllerEnqueueChunkToQueue(controller, buffer, byteOffset, byteLength) {
         controller._queue.push({ buffer, byteOffset, byteLength });
         controller._queueTotalSize += byteLength;
       }
-      function ReadableByteStreamControllerEnqueueClonedChunkToQueue(
-        controller,
-        buffer,
-        byteOffset,
-        byteLength,
-      ) {
+      function ReadableByteStreamControllerEnqueueClonedChunkToQueue(controller, buffer, byteOffset, byteLength) {
         let clonedChunk;
         try {
           clonedChunk = ArrayBufferSlice(buffer, byteOffset, byteOffset + byteLength);
@@ -1050,28 +977,14 @@ function requirePonyfill_es2018() {
         }
         ReadableByteStreamControllerEnqueueChunkToQueue(controller, clonedChunk, 0, byteLength);
       }
-      function ReadableByteStreamControllerEnqueueDetachedPullIntoToQueue(
-        controller,
-        firstDescriptor,
-      ) {
+      function ReadableByteStreamControllerEnqueueDetachedPullIntoToQueue(controller, firstDescriptor) {
         if (firstDescriptor.bytesFilled > 0) {
-          ReadableByteStreamControllerEnqueueClonedChunkToQueue(
-            controller,
-            firstDescriptor.buffer,
-            firstDescriptor.byteOffset,
-            firstDescriptor.bytesFilled,
-          );
+          ReadableByteStreamControllerEnqueueClonedChunkToQueue(controller, firstDescriptor.buffer, firstDescriptor.byteOffset, firstDescriptor.bytesFilled);
         }
         ReadableByteStreamControllerShiftPendingPullInto(controller);
       }
-      function ReadableByteStreamControllerFillPullIntoDescriptorFromQueue(
-        controller,
-        pullIntoDescriptor,
-      ) {
-        const maxBytesToCopy = Math.min(
-          controller._queueTotalSize,
-          pullIntoDescriptor.byteLength - pullIntoDescriptor.bytesFilled,
-        );
+      function ReadableByteStreamControllerFillPullIntoDescriptorFromQueue(controller, pullIntoDescriptor) {
+        const maxBytesToCopy = Math.min(controller._queueTotalSize, pullIntoDescriptor.byteLength - pullIntoDescriptor.bytesFilled);
         const maxBytesFilled = pullIntoDescriptor.bytesFilled + maxBytesToCopy;
         let totalBytesToCopyRemaining = maxBytesToCopy;
         let ready = false;
@@ -1086,13 +999,7 @@ function requirePonyfill_es2018() {
           const headOfQueue = queue.peek();
           const bytesToCopy = Math.min(totalBytesToCopyRemaining, headOfQueue.byteLength);
           const destStart = pullIntoDescriptor.byteOffset + pullIntoDescriptor.bytesFilled;
-          CopyDataBlockBytes(
-            pullIntoDescriptor.buffer,
-            destStart,
-            headOfQueue.buffer,
-            headOfQueue.byteOffset,
-            bytesToCopy,
-          );
+          CopyDataBlockBytes(pullIntoDescriptor.buffer, destStart, headOfQueue.buffer, headOfQueue.byteOffset, bytesToCopy);
           if (headOfQueue.byteLength === bytesToCopy) {
             queue.shift();
           } else {
@@ -1100,20 +1007,12 @@ function requirePonyfill_es2018() {
             headOfQueue.byteLength -= bytesToCopy;
           }
           controller._queueTotalSize -= bytesToCopy;
-          ReadableByteStreamControllerFillHeadPullIntoDescriptor(
-            controller,
-            bytesToCopy,
-            pullIntoDescriptor,
-          );
+          ReadableByteStreamControllerFillHeadPullIntoDescriptor(controller, bytesToCopy, pullIntoDescriptor);
           totalBytesToCopyRemaining -= bytesToCopy;
         }
         return ready;
       }
-      function ReadableByteStreamControllerFillHeadPullIntoDescriptor(
-        controller,
-        size,
-        pullIntoDescriptor,
-      ) {
+      function ReadableByteStreamControllerFillHeadPullIntoDescriptor(controller, size, pullIntoDescriptor) {
         pullIntoDescriptor.bytesFilled += size;
       }
       function ReadableByteStreamControllerHandleQueueDrain(controller) {
@@ -1138,17 +1037,9 @@ function requirePonyfill_es2018() {
             return;
           }
           const pullIntoDescriptor = controller._pendingPullIntos.peek();
-          if (
-            ReadableByteStreamControllerFillPullIntoDescriptorFromQueue(
-              controller,
-              pullIntoDescriptor,
-            )
-          ) {
+          if (ReadableByteStreamControllerFillPullIntoDescriptorFromQueue(controller, pullIntoDescriptor)) {
             ReadableByteStreamControllerShiftPendingPullInto(controller);
-            ReadableByteStreamControllerCommitPullIntoDescriptor(
-              controller._controlledReadableByteStream,
-              pullIntoDescriptor,
-            );
+            ReadableByteStreamControllerCommitPullIntoDescriptor(controller._controlledReadableByteStream, pullIntoDescriptor);
           }
         }
       }
@@ -1184,7 +1075,7 @@ function requirePonyfill_es2018() {
           minimumFill,
           elementSize,
           viewConstructor: ctor,
-          readerType: "byob",
+          readerType: "byob"
         };
         if (controller._pendingPullIntos.length > 0) {
           controller._pendingPullIntos.push(pullIntoDescriptor);
@@ -1197,14 +1088,8 @@ function requirePonyfill_es2018() {
           return;
         }
         if (controller._queueTotalSize > 0) {
-          if (
-            ReadableByteStreamControllerFillPullIntoDescriptorFromQueue(
-              controller,
-              pullIntoDescriptor,
-            )
-          ) {
-            const filledView =
-              ReadableByteStreamControllerConvertPullIntoDescriptor(pullIntoDescriptor);
+          if (ReadableByteStreamControllerFillPullIntoDescriptorFromQueue(controller, pullIntoDescriptor)) {
+            const filledView = ReadableByteStreamControllerConvertPullIntoDescriptor(pullIntoDescriptor);
             ReadableByteStreamControllerHandleQueueDrain(controller);
             readIntoRequest._chunkSteps(filledView);
             return;
@@ -1232,21 +1117,10 @@ function requirePonyfill_es2018() {
           }
         }
       }
-      function ReadableByteStreamControllerRespondInReadableState(
-        controller,
-        bytesWritten,
-        pullIntoDescriptor,
-      ) {
-        ReadableByteStreamControllerFillHeadPullIntoDescriptor(
-          controller,
-          bytesWritten,
-          pullIntoDescriptor,
-        );
+      function ReadableByteStreamControllerRespondInReadableState(controller, bytesWritten, pullIntoDescriptor) {
+        ReadableByteStreamControllerFillHeadPullIntoDescriptor(controller, bytesWritten, pullIntoDescriptor);
         if (pullIntoDescriptor.readerType === "none") {
-          ReadableByteStreamControllerEnqueueDetachedPullIntoToQueue(
-            controller,
-            pullIntoDescriptor,
-          );
+          ReadableByteStreamControllerEnqueueDetachedPullIntoToQueue(controller, pullIntoDescriptor);
           ReadableByteStreamControllerProcessPullIntoDescriptorsUsingQueue(controller);
           return;
         }
@@ -1257,18 +1131,10 @@ function requirePonyfill_es2018() {
         const remainderSize = pullIntoDescriptor.bytesFilled % pullIntoDescriptor.elementSize;
         if (remainderSize > 0) {
           const end = pullIntoDescriptor.byteOffset + pullIntoDescriptor.bytesFilled;
-          ReadableByteStreamControllerEnqueueClonedChunkToQueue(
-            controller,
-            pullIntoDescriptor.buffer,
-            end - remainderSize,
-            remainderSize,
-          );
+          ReadableByteStreamControllerEnqueueClonedChunkToQueue(controller, pullIntoDescriptor.buffer, end - remainderSize, remainderSize);
         }
         pullIntoDescriptor.bytesFilled -= remainderSize;
-        ReadableByteStreamControllerCommitPullIntoDescriptor(
-          controller._controlledReadableByteStream,
-          pullIntoDescriptor,
-        );
+        ReadableByteStreamControllerCommitPullIntoDescriptor(controller._controlledReadableByteStream, pullIntoDescriptor);
         ReadableByteStreamControllerProcessPullIntoDescriptorsUsingQueue(controller);
       }
       function ReadableByteStreamControllerRespondInternal(controller, bytesWritten) {
@@ -1278,11 +1144,7 @@ function requirePonyfill_es2018() {
         if (state === "closed") {
           ReadableByteStreamControllerRespondInClosedState(controller, firstDescriptor);
         } else {
-          ReadableByteStreamControllerRespondInReadableState(
-            controller,
-            bytesWritten,
-            firstDescriptor,
-          );
+          ReadableByteStreamControllerRespondInReadableState(controller, bytesWritten, firstDescriptor);
         }
         ReadableByteStreamControllerCallPullIfNeeded(controller);
       }
@@ -1301,16 +1163,10 @@ function requirePonyfill_es2018() {
         if (!controller._started) {
           return false;
         }
-        if (
-          ReadableStreamHasDefaultReader(stream) &&
-          ReadableStreamGetNumReadRequests(stream) > 0
-        ) {
+        if (ReadableStreamHasDefaultReader(stream) && ReadableStreamGetNumReadRequests(stream) > 0) {
           return true;
         }
-        if (
-          ReadableStreamHasBYOBReader(stream) &&
-          ReadableStreamGetNumReadIntoRequests(stream) > 0
-        ) {
+        if (ReadableStreamHasBYOBReader(stream) && ReadableStreamGetNumReadIntoRequests(stream) > 0) {
           return true;
         }
         const desiredSize = ReadableByteStreamControllerGetDesiredSize(controller);
@@ -1356,28 +1212,18 @@ function requirePonyfill_es2018() {
         if (controller._pendingPullIntos.length > 0) {
           const firstPendingPullInto = controller._pendingPullIntos.peek();
           if (IsDetachedBuffer(firstPendingPullInto.buffer)) {
-            throw new TypeError(
-              "The BYOB request's buffer has been detached and so cannot be filled with an enqueued chunk",
-            );
+            throw new TypeError("The BYOB request's buffer has been detached and so cannot be filled with an enqueued chunk");
           }
           ReadableByteStreamControllerInvalidateBYOBRequest(controller);
           firstPendingPullInto.buffer = TransferArrayBuffer(firstPendingPullInto.buffer);
           if (firstPendingPullInto.readerType === "none") {
-            ReadableByteStreamControllerEnqueueDetachedPullIntoToQueue(
-              controller,
-              firstPendingPullInto,
-            );
+            ReadableByteStreamControllerEnqueueDetachedPullIntoToQueue(controller, firstPendingPullInto);
           }
         }
         if (ReadableStreamHasDefaultReader(stream)) {
           ReadableByteStreamControllerProcessReadRequestsUsingQueue(controller);
           if (ReadableStreamGetNumReadRequests(stream) === 0) {
-            ReadableByteStreamControllerEnqueueChunkToQueue(
-              controller,
-              transferredBuffer,
-              byteOffset,
-              byteLength,
-            );
+            ReadableByteStreamControllerEnqueueChunkToQueue(controller, transferredBuffer, byteOffset, byteLength);
           } else {
             if (controller._pendingPullIntos.length > 0) {
               ReadableByteStreamControllerShiftPendingPullInto(controller);
@@ -1386,20 +1232,10 @@ function requirePonyfill_es2018() {
             ReadableStreamFulfillReadRequest(stream, transferredView, false);
           }
         } else if (ReadableStreamHasBYOBReader(stream)) {
-          ReadableByteStreamControllerEnqueueChunkToQueue(
-            controller,
-            transferredBuffer,
-            byteOffset,
-            byteLength,
-          );
+          ReadableByteStreamControllerEnqueueChunkToQueue(controller, transferredBuffer, byteOffset, byteLength);
           ReadableByteStreamControllerProcessPullIntoDescriptorsUsingQueue(controller);
         } else {
-          ReadableByteStreamControllerEnqueueChunkToQueue(
-            controller,
-            transferredBuffer,
-            byteOffset,
-            byteLength,
-          );
+          ReadableByteStreamControllerEnqueueChunkToQueue(controller, transferredBuffer, byteOffset, byteLength);
         }
         ReadableByteStreamControllerCallPullIfNeeded(controller);
       }
@@ -1423,11 +1259,7 @@ function requirePonyfill_es2018() {
       function ReadableByteStreamControllerGetBYOBRequest(controller) {
         if (controller._byobRequest === null && controller._pendingPullIntos.length > 0) {
           const firstDescriptor = controller._pendingPullIntos.peek();
-          const view = new Uint8Array(
-            firstDescriptor.buffer,
-            firstDescriptor.byteOffset + firstDescriptor.bytesFilled,
-            firstDescriptor.byteLength - firstDescriptor.bytesFilled,
-          );
+          const view = new Uint8Array(firstDescriptor.buffer, firstDescriptor.byteOffset + firstDescriptor.bytesFilled, firstDescriptor.byteLength - firstDescriptor.bytesFilled);
           const byobRequest = Object.create(ReadableStreamBYOBRequest.prototype);
           SetUpReadableStreamBYOBRequest(byobRequest, controller, view);
           controller._byobRequest = byobRequest;
@@ -1453,9 +1285,7 @@ function requirePonyfill_es2018() {
           }
         } else {
           if (bytesWritten === 0) {
-            throw new TypeError(
-              "bytesWritten must be greater than 0 when calling respond() on a readable stream",
-            );
+            throw new TypeError("bytesWritten must be greater than 0 when calling respond() on a readable stream");
           }
           if (firstDescriptor.bytesFilled + bytesWritten > firstDescriptor.byteLength) {
             throw new RangeError("bytesWritten out of range");
@@ -1469,15 +1299,11 @@ function requirePonyfill_es2018() {
         const state = controller._controlledReadableByteStream._state;
         if (state === "closed") {
           if (view.byteLength !== 0) {
-            throw new TypeError(
-              "The view's length must be 0 when calling respondWithNewView() on a closed stream",
-            );
+            throw new TypeError("The view's length must be 0 when calling respondWithNewView() on a closed stream");
           }
         } else {
           if (view.byteLength === 0) {
-            throw new TypeError(
-              "The view's length must be greater than 0 when calling respondWithNewView() on a readable stream",
-            );
+            throw new TypeError("The view's length must be greater than 0 when calling respondWithNewView() on a readable stream");
           }
         }
         if (firstDescriptor.byteOffset + firstDescriptor.bytesFilled !== view.byteOffset) {
@@ -1493,15 +1319,7 @@ function requirePonyfill_es2018() {
         firstDescriptor.buffer = TransferArrayBuffer(view.buffer);
         ReadableByteStreamControllerRespondInternal(controller, viewByteLength);
       }
-      function SetUpReadableByteStreamController(
-        stream,
-        controller,
-        startAlgorithm,
-        pullAlgorithm,
-        cancelAlgorithm,
-        highWaterMark,
-        autoAllocateChunkSize,
-      ) {
+      function SetUpReadableByteStreamController(stream, controller, startAlgorithm, pullAlgorithm, cancelAlgorithm, highWaterMark, autoAllocateChunkSize) {
         controller._controlledReadableByteStream = stream;
         controller._pullAgain = false;
         controller._pulling = false;
@@ -1517,24 +1335,16 @@ function requirePonyfill_es2018() {
         controller._pendingPullIntos = new SimpleQueue();
         stream._readableStreamController = controller;
         const startResult = startAlgorithm();
-        uponPromise(
-          promiseResolvedWith(startResult),
-          () => {
-            controller._started = true;
-            ReadableByteStreamControllerCallPullIfNeeded(controller);
-            return null;
-          },
-          (r) => {
-            ReadableByteStreamControllerError(controller, r);
-            return null;
-          },
-        );
+        uponPromise(promiseResolvedWith(startResult), () => {
+          controller._started = true;
+          ReadableByteStreamControllerCallPullIfNeeded(controller);
+          return null;
+        }, (r) => {
+          ReadableByteStreamControllerError(controller, r);
+          return null;
+        });
       }
-      function SetUpReadableByteStreamControllerFromUnderlyingSource(
-        stream,
-        underlyingByteSource,
-        highWaterMark,
-      ) {
+      function SetUpReadableByteStreamControllerFromUnderlyingSource(stream, underlyingByteSource, highWaterMark) {
         const controller = Object.create(ReadableByteStreamController.prototype);
         let startAlgorithm;
         let pullAlgorithm;
@@ -1558,59 +1368,38 @@ function requirePonyfill_es2018() {
         if (autoAllocateChunkSize === 0) {
           throw new TypeError("autoAllocateChunkSize must be greater than 0");
         }
-        SetUpReadableByteStreamController(
-          stream,
-          controller,
-          startAlgorithm,
-          pullAlgorithm,
-          cancelAlgorithm,
-          highWaterMark,
-          autoAllocateChunkSize,
-        );
+        SetUpReadableByteStreamController(stream, controller, startAlgorithm, pullAlgorithm, cancelAlgorithm, highWaterMark, autoAllocateChunkSize);
       }
       function SetUpReadableStreamBYOBRequest(request, controller, view) {
         request._associatedReadableByteStreamController = controller;
         request._view = view;
       }
       function byobRequestBrandCheckException(name) {
-        return new TypeError(
-          `ReadableStreamBYOBRequest.prototype.${name} can only be used on a ReadableStreamBYOBRequest`,
-        );
+        return new TypeError(`ReadableStreamBYOBRequest.prototype.${name} can only be used on a ReadableStreamBYOBRequest`);
       }
       function byteStreamControllerBrandCheckException(name) {
-        return new TypeError(
-          `ReadableByteStreamController.prototype.${name} can only be used on a ReadableByteStreamController`,
-        );
+        return new TypeError(`ReadableByteStreamController.prototype.${name} can only be used on a ReadableByteStreamController`);
       }
       function convertReaderOptions(options, context) {
         assertDictionary(options, context);
         const mode = options === null || options === void 0 ? void 0 : options.mode;
         return {
-          mode:
-            mode === void 0
-              ? void 0
-              : convertReadableStreamReaderMode(mode, `${context} has member 'mode' that`),
+          mode: mode === void 0 ? void 0 : convertReadableStreamReaderMode(mode, `${context} has member 'mode' that`)
         };
       }
       function convertReadableStreamReaderMode(mode, context) {
         mode = `${mode}`;
         if (mode !== "byob") {
-          throw new TypeError(
-            `${context} '${mode}' is not a valid enumeration value for ReadableStreamReaderMode`,
-          );
+          throw new TypeError(`${context} '${mode}' is not a valid enumeration value for ReadableStreamReaderMode`);
         }
         return mode;
       }
       function convertByobReadOptions(options, context) {
         var _a2;
         assertDictionary(options, context);
-        const min =
-          (_a2 = options === null || options === void 0 ? void 0 : options.min) !== null &&
-          _a2 !== void 0
-            ? _a2
-            : 1;
+        const min = (_a2 = options === null || options === void 0 ? void 0 : options.min) !== null && _a2 !== void 0 ? _a2 : 1;
         return {
-          min: convertUnsignedLongLongWithEnforceRange(min, `${context} has member 'min' that`),
+          min: convertUnsignedLongLongWithEnforceRange(min, `${context} has member 'min' that`)
         };
       }
       function AcquireReadableStreamBYOBReader(stream) {
@@ -1646,14 +1435,10 @@ function requirePonyfill_es2018() {
           assertRequiredArgument(stream, 1, "ReadableStreamBYOBReader");
           assertReadableStream(stream, "First parameter");
           if (IsReadableStreamLocked(stream)) {
-            throw new TypeError(
-              "This stream has already been locked for exclusive reading by another reader",
-            );
+            throw new TypeError("This stream has already been locked for exclusive reading by another reader");
           }
           if (!IsReadableByteStreamController(stream._readableStreamController)) {
-            throw new TypeError(
-              "Cannot construct a ReadableStreamBYOBReader for a stream not constructed with a byte source",
-            );
+            throw new TypeError("Cannot construct a ReadableStreamBYOBReader for a stream not constructed with a byte source");
           }
           ReadableStreamReaderGenericInitialize(this, stream);
           this._readIntoRequests = new SimpleQueue();
@@ -1691,9 +1476,7 @@ function requirePonyfill_es2018() {
             return promiseRejectedWith(new TypeError("view must have non-zero byteLength"));
           }
           if (view.buffer.byteLength === 0) {
-            return promiseRejectedWith(
-              new TypeError(`view's buffer must have non-zero byteLength`),
-            );
+            return promiseRejectedWith(new TypeError(`view's buffer must have non-zero byteLength`));
           }
           if (IsDetachedBuffer(view.buffer)) {
             return promiseRejectedWith(new TypeError("view's buffer has been detached"));
@@ -1710,14 +1493,10 @@ function requirePonyfill_es2018() {
           }
           if (!isDataView(view)) {
             if (min > view.length) {
-              return promiseRejectedWith(
-                new RangeError("options.min must be less than or equal to view's length"),
-              );
+              return promiseRejectedWith(new RangeError("options.min must be less than or equal to view's length"));
             }
           } else if (min > view.byteLength) {
-            return promiseRejectedWith(
-              new RangeError("options.min must be less than or equal to view's byteLength"),
-            );
+            return promiseRejectedWith(new RangeError("options.min must be less than or equal to view's byteLength"));
           }
           if (this._ownerReadableStream === void 0) {
             return promiseRejectedWith(readerLockException("read from"));
@@ -1731,7 +1510,7 @@ function requirePonyfill_es2018() {
           const readIntoRequest = {
             _chunkSteps: (chunk) => resolvePromise({ value: chunk, done: false }),
             _closeSteps: (chunk) => resolvePromise({ value: chunk, done: true }),
-            _errorSteps: (e) => rejectPromise(e),
+            _errorSteps: (e) => rejectPromise(e)
           };
           ReadableStreamBYOBReaderRead(this, view, min, readIntoRequest);
           return promise;
@@ -1759,7 +1538,7 @@ function requirePonyfill_es2018() {
         cancel: { enumerable: true },
         read: { enumerable: true },
         releaseLock: { enumerable: true },
-        closed: { enumerable: true },
+        closed: { enumerable: true }
       });
       setFunctionName(ReadableStreamBYOBReader.prototype.cancel, "cancel");
       setFunctionName(ReadableStreamBYOBReader.prototype.read, "read");
@@ -1767,7 +1546,7 @@ function requirePonyfill_es2018() {
       if (typeof Symbol.toStringTag === "symbol") {
         Object.defineProperty(ReadableStreamBYOBReader.prototype, Symbol.toStringTag, {
           value: "ReadableStreamBYOBReader",
-          configurable: true,
+          configurable: true
         });
       }
       function IsReadableStreamBYOBReader(x) {
@@ -1785,12 +1564,7 @@ function requirePonyfill_es2018() {
         if (stream._state === "errored") {
           readIntoRequest._errorSteps(stream._storedError);
         } else {
-          ReadableByteStreamControllerPullInto(
-            stream._readableStreamController,
-            view,
-            min,
-            readIntoRequest,
-          );
+          ReadableByteStreamControllerPullInto(stream._readableStreamController, view, min, readIntoRequest);
         }
       }
       function ReadableStreamBYOBReaderRelease(reader) {
@@ -1806,9 +1580,7 @@ function requirePonyfill_es2018() {
         });
       }
       function byobReaderBrandCheckException(name) {
-        return new TypeError(
-          `ReadableStreamBYOBReader.prototype.${name} can only be used on a ReadableStreamBYOBReader`,
-        );
+        return new TypeError(`ReadableStreamBYOBReader.prototype.${name} can only be used on a ReadableStreamBYOBReader`);
       }
       function ExtractHighWaterMark(strategy, defaultHWM) {
         const { highWaterMark } = strategy;
@@ -1832,12 +1604,8 @@ function requirePonyfill_es2018() {
         const highWaterMark = init === null || init === void 0 ? void 0 : init.highWaterMark;
         const size = init === null || init === void 0 ? void 0 : init.size;
         return {
-          highWaterMark:
-            highWaterMark === void 0 ? void 0 : convertUnrestrictedDouble(highWaterMark),
-          size:
-            size === void 0
-              ? void 0
-              : convertQueuingStrategySize(size, `${context} has member 'size' that`),
+          highWaterMark: highWaterMark === void 0 ? void 0 : convertUnrestrictedDouble(highWaterMark),
+          size: size === void 0 ? void 0 : convertQueuingStrategySize(size, `${context} has member 'size' that`)
         };
       }
       function convertQueuingStrategySize(fn, context) {
@@ -1852,39 +1620,11 @@ function requirePonyfill_es2018() {
         const type = original === null || original === void 0 ? void 0 : original.type;
         const write = original === null || original === void 0 ? void 0 : original.write;
         return {
-          abort:
-            abort === void 0
-              ? void 0
-              : convertUnderlyingSinkAbortCallback(
-                  abort,
-                  original,
-                  `${context} has member 'abort' that`,
-                ),
-          close:
-            close === void 0
-              ? void 0
-              : convertUnderlyingSinkCloseCallback(
-                  close,
-                  original,
-                  `${context} has member 'close' that`,
-                ),
-          start:
-            start === void 0
-              ? void 0
-              : convertUnderlyingSinkStartCallback(
-                  start,
-                  original,
-                  `${context} has member 'start' that`,
-                ),
-          write:
-            write === void 0
-              ? void 0
-              : convertUnderlyingSinkWriteCallback(
-                  write,
-                  original,
-                  `${context} has member 'write' that`,
-                ),
-          type,
+          abort: abort === void 0 ? void 0 : convertUnderlyingSinkAbortCallback(abort, original, `${context} has member 'abort' that`),
+          close: close === void 0 ? void 0 : convertUnderlyingSinkCloseCallback(close, original, `${context} has member 'close' that`),
+          start: start === void 0 ? void 0 : convertUnderlyingSinkStartCallback(start, original, `${context} has member 'start' that`),
+          write: write === void 0 ? void 0 : convertUnderlyingSinkWriteCallback(write, original, `${context} has member 'write' that`),
+          type
         };
       }
       function convertUnderlyingSinkAbortCallback(fn, original, context) {
@@ -1941,12 +1681,7 @@ function requirePonyfill_es2018() {
           }
           const sizeAlgorithm = ExtractSizeAlgorithm(strategy);
           const highWaterMark = ExtractHighWaterMark(strategy, 1);
-          SetUpWritableStreamDefaultControllerFromUnderlyingSink(
-            this,
-            underlyingSink,
-            highWaterMark,
-            sizeAlgorithm,
-          );
+          SetUpWritableStreamDefaultControllerFromUnderlyingSink(this, underlyingSink, highWaterMark, sizeAlgorithm);
         }
         /**
          * Returns whether or not the writable stream is locked to a writer.
@@ -1971,9 +1706,7 @@ function requirePonyfill_es2018() {
             return promiseRejectedWith(streamBrandCheckException$2("abort"));
           }
           if (IsWritableStreamLocked(this)) {
-            return promiseRejectedWith(
-              new TypeError("Cannot abort a stream that already has a writer"),
-            );
+            return promiseRejectedWith(new TypeError("Cannot abort a stream that already has a writer"));
           }
           return WritableStreamAbort(this, reason);
         }
@@ -1990,9 +1723,7 @@ function requirePonyfill_es2018() {
             return promiseRejectedWith(streamBrandCheckException$2("close"));
           }
           if (IsWritableStreamLocked(this)) {
-            return promiseRejectedWith(
-              new TypeError("Cannot close a stream that already has a writer"),
-            );
+            return promiseRejectedWith(new TypeError("Cannot close a stream that already has a writer"));
           }
           if (WritableStreamCloseQueuedOrInFlight(this)) {
             return promiseRejectedWith(new TypeError("Cannot close an already-closing stream"));
@@ -2018,7 +1749,7 @@ function requirePonyfill_es2018() {
         abort: { enumerable: true },
         close: { enumerable: true },
         getWriter: { enumerable: true },
-        locked: { enumerable: true },
+        locked: { enumerable: true }
       });
       setFunctionName(WritableStream.prototype.abort, "abort");
       setFunctionName(WritableStream.prototype.close, "close");
@@ -2026,33 +1757,17 @@ function requirePonyfill_es2018() {
       if (typeof Symbol.toStringTag === "symbol") {
         Object.defineProperty(WritableStream.prototype, Symbol.toStringTag, {
           value: "WritableStream",
-          configurable: true,
+          configurable: true
         });
       }
       function AcquireWritableStreamDefaultWriter(stream) {
         return new WritableStreamDefaultWriter(stream);
       }
-      function CreateWritableStream(
-        startAlgorithm,
-        writeAlgorithm,
-        closeAlgorithm,
-        abortAlgorithm,
-        highWaterMark = 1,
-        sizeAlgorithm = () => 1,
-      ) {
+      function CreateWritableStream(startAlgorithm, writeAlgorithm, closeAlgorithm, abortAlgorithm, highWaterMark = 1, sizeAlgorithm = () => 1) {
         const stream = Object.create(WritableStream.prototype);
         InitializeWritableStream(stream);
         const controller = Object.create(WritableStreamDefaultController.prototype);
-        SetUpWritableStreamDefaultController(
-          stream,
-          controller,
-          startAlgorithm,
-          writeAlgorithm,
-          closeAlgorithm,
-          abortAlgorithm,
-          highWaterMark,
-          sizeAlgorithm,
-        );
+        SetUpWritableStreamDefaultController(stream, controller, startAlgorithm, writeAlgorithm, closeAlgorithm, abortAlgorithm, highWaterMark, sizeAlgorithm);
         return stream;
       }
       function InitializeWritableStream(stream) {
@@ -2088,9 +1803,7 @@ function requirePonyfill_es2018() {
           return promiseResolvedWith(void 0);
         }
         stream._writableStreamController._abortReason = reason;
-        (_a2 = stream._writableStreamController._abortController) === null || _a2 === void 0
-          ? void 0
-          : _a2.abort(reason);
+        (_a2 = stream._writableStreamController._abortController) === null || _a2 === void 0 ? void 0 : _a2.abort(reason);
         const state = stream._state;
         if (state === "closed" || state === "errored") {
           return promiseResolvedWith(void 0);
@@ -2109,7 +1822,7 @@ function requirePonyfill_es2018() {
             _resolve: resolve,
             _reject: reject,
             _reason: reason,
-            _wasAlreadyErroring: wasAlreadyErroring,
+            _wasAlreadyErroring: wasAlreadyErroring
           };
         });
         stream._pendingAbortRequest._promise = promise;
@@ -2121,16 +1834,12 @@ function requirePonyfill_es2018() {
       function WritableStreamClose(stream) {
         const state = stream._state;
         if (state === "closed" || state === "errored") {
-          return promiseRejectedWith(
-            new TypeError(
-              `The stream (in ${state} state) is not in the writable state and cannot be closed`,
-            ),
-          );
+          return promiseRejectedWith(new TypeError(`The stream (in ${state} state) is not in the writable state and cannot be closed`));
         }
         const promise = newPromise((resolve, reject) => {
           const closeRequest = {
             _resolve: resolve,
-            _reject: reject,
+            _reject: reject
           };
           stream._closeRequest = closeRequest;
         });
@@ -2145,7 +1854,7 @@ function requirePonyfill_es2018() {
         const promise = newPromise((resolve, reject) => {
           const writeRequest = {
             _resolve: resolve,
-            _reject: reject,
+            _reject: reject
           };
           stream._writeRequests.push(writeRequest);
         });
@@ -2191,19 +1900,15 @@ function requirePonyfill_es2018() {
           return;
         }
         const promise = stream._writableStreamController[AbortSteps](abortRequest._reason);
-        uponPromise(
-          promise,
-          () => {
-            abortRequest._resolve();
-            WritableStreamRejectCloseAndClosedPromiseIfNeeded(stream);
-            return null;
-          },
-          (reason) => {
-            abortRequest._reject(reason);
-            WritableStreamRejectCloseAndClosedPromiseIfNeeded(stream);
-            return null;
-          },
-        );
+        uponPromise(promise, () => {
+          abortRequest._resolve();
+          WritableStreamRejectCloseAndClosedPromiseIfNeeded(stream);
+          return null;
+        }, (reason) => {
+          abortRequest._reject(reason);
+          WritableStreamRejectCloseAndClosedPromiseIfNeeded(stream);
+          return null;
+        });
       }
       function WritableStreamFinishInFlightWrite(stream) {
         stream._inFlightWriteRequest._resolve(void 0);
@@ -2285,9 +1990,7 @@ function requirePonyfill_es2018() {
           assertRequiredArgument(stream, 1, "WritableStreamDefaultWriter");
           assertWritableStream(stream, "First parameter");
           if (IsWritableStreamLocked(stream)) {
-            throw new TypeError(
-              "This stream has already been locked for exclusive writing by another writer",
-            );
+            throw new TypeError("This stream has already been locked for exclusive writing by another writer");
           }
           this._ownerWritableStream = stream;
           stream._writer = this;
@@ -2417,7 +2120,7 @@ function requirePonyfill_es2018() {
         write: { enumerable: true },
         closed: { enumerable: true },
         desiredSize: { enumerable: true },
-        ready: { enumerable: true },
+        ready: { enumerable: true }
       });
       setFunctionName(WritableStreamDefaultWriter.prototype.abort, "abort");
       setFunctionName(WritableStreamDefaultWriter.prototype.close, "close");
@@ -2426,7 +2129,7 @@ function requirePonyfill_es2018() {
       if (typeof Symbol.toStringTag === "symbol") {
         Object.defineProperty(WritableStreamDefaultWriter.prototype, Symbol.toStringTag, {
           value: "WritableStreamDefaultWriter",
-          configurable: true,
+          configurable: true
         });
       }
       function IsWritableStreamDefaultWriter(x) {
@@ -2484,9 +2187,7 @@ function requirePonyfill_es2018() {
       }
       function WritableStreamDefaultWriterRelease(writer) {
         const stream = writer._ownerWritableStream;
-        const releasedError = new TypeError(
-          `Writer was released and can no longer be used to monitor the stream's closedness`,
-        );
+        const releasedError = new TypeError(`Writer was released and can no longer be used to monitor the stream's closedness`);
         WritableStreamDefaultWriterEnsureReadyPromiseRejected(writer, releasedError);
         WritableStreamDefaultWriterEnsureClosedPromiseRejected(writer, releasedError);
         stream._writer = void 0;
@@ -2504,9 +2205,7 @@ function requirePonyfill_es2018() {
           return promiseRejectedWith(stream._storedError);
         }
         if (WritableStreamCloseQueuedOrInFlight(stream) || state === "closed") {
-          return promiseRejectedWith(
-            new TypeError("The stream is closing or closed and cannot be written to"),
-          );
+          return promiseRejectedWith(new TypeError("The stream is closing or closed and cannot be written to"));
         }
         if (state === "erroring") {
           return promiseRejectedWith(stream._storedError);
@@ -2541,9 +2240,7 @@ function requirePonyfill_es2018() {
             throw defaultControllerBrandCheckException$2("signal");
           }
           if (this._abortController === void 0) {
-            throw new TypeError(
-              "WritableStreamDefaultController.prototype.signal is not supported",
-            );
+            throw new TypeError("WritableStreamDefaultController.prototype.signal is not supported");
           }
           return this._abortController.signal;
         }
@@ -2578,12 +2275,12 @@ function requirePonyfill_es2018() {
       Object.defineProperties(WritableStreamDefaultController.prototype, {
         abortReason: { enumerable: true },
         signal: { enumerable: true },
-        error: { enumerable: true },
+        error: { enumerable: true }
       });
       if (typeof Symbol.toStringTag === "symbol") {
         Object.defineProperty(WritableStreamDefaultController.prototype, Symbol.toStringTag, {
           value: "WritableStreamDefaultController",
-          configurable: true,
+          configurable: true
         });
       }
       function IsWritableStreamDefaultController(x) {
@@ -2595,16 +2292,7 @@ function requirePonyfill_es2018() {
         }
         return x instanceof WritableStreamDefaultController;
       }
-      function SetUpWritableStreamDefaultController(
-        stream,
-        controller,
-        startAlgorithm,
-        writeAlgorithm,
-        closeAlgorithm,
-        abortAlgorithm,
-        highWaterMark,
-        sizeAlgorithm,
-      ) {
+      function SetUpWritableStreamDefaultController(stream, controller, startAlgorithm, writeAlgorithm, closeAlgorithm, abortAlgorithm, highWaterMark, sizeAlgorithm) {
         controller._controlledWritableStream = stream;
         stream._writableStreamController = controller;
         controller._queue = void 0;
@@ -2622,26 +2310,17 @@ function requirePonyfill_es2018() {
         WritableStreamUpdateBackpressure(stream, backpressure);
         const startResult = startAlgorithm();
         const startPromise = promiseResolvedWith(startResult);
-        uponPromise(
-          startPromise,
-          () => {
-            controller._started = true;
-            WritableStreamDefaultControllerAdvanceQueueIfNeeded(controller);
-            return null;
-          },
-          (r) => {
-            controller._started = true;
-            WritableStreamDealWithRejection(stream, r);
-            return null;
-          },
-        );
+        uponPromise(startPromise, () => {
+          controller._started = true;
+          WritableStreamDefaultControllerAdvanceQueueIfNeeded(controller);
+          return null;
+        }, (r) => {
+          controller._started = true;
+          WritableStreamDealWithRejection(stream, r);
+          return null;
+        });
       }
-      function SetUpWritableStreamDefaultControllerFromUnderlyingSink(
-        stream,
-        underlyingSink,
-        highWaterMark,
-        sizeAlgorithm,
-      ) {
+      function SetUpWritableStreamDefaultControllerFromUnderlyingSink(stream, underlyingSink, highWaterMark, sizeAlgorithm) {
         const controller = Object.create(WritableStreamDefaultController.prototype);
         let startAlgorithm;
         let writeAlgorithm;
@@ -2667,16 +2346,7 @@ function requirePonyfill_es2018() {
         } else {
           abortAlgorithm = () => promiseResolvedWith(void 0);
         }
-        SetUpWritableStreamDefaultController(
-          stream,
-          controller,
-          startAlgorithm,
-          writeAlgorithm,
-          closeAlgorithm,
-          abortAlgorithm,
-          highWaterMark,
-          sizeAlgorithm,
-        );
+        SetUpWritableStreamDefaultController(stream, controller, startAlgorithm, writeAlgorithm, closeAlgorithm, abortAlgorithm, highWaterMark, sizeAlgorithm);
       }
       function WritableStreamDefaultControllerClearAlgorithms(controller) {
         controller._writeAlgorithm = void 0;
@@ -2747,43 +2417,35 @@ function requirePonyfill_es2018() {
         DequeueValue(controller);
         const sinkClosePromise = controller._closeAlgorithm();
         WritableStreamDefaultControllerClearAlgorithms(controller);
-        uponPromise(
-          sinkClosePromise,
-          () => {
-            WritableStreamFinishInFlightClose(stream);
-            return null;
-          },
-          (reason) => {
-            WritableStreamFinishInFlightCloseWithError(stream, reason);
-            return null;
-          },
-        );
+        uponPromise(sinkClosePromise, () => {
+          WritableStreamFinishInFlightClose(stream);
+          return null;
+        }, (reason) => {
+          WritableStreamFinishInFlightCloseWithError(stream, reason);
+          return null;
+        });
       }
       function WritableStreamDefaultControllerProcessWrite(controller, chunk) {
         const stream = controller._controlledWritableStream;
         WritableStreamMarkFirstWriteRequestInFlight(stream);
         const sinkWritePromise = controller._writeAlgorithm(chunk);
-        uponPromise(
-          sinkWritePromise,
-          () => {
-            WritableStreamFinishInFlightWrite(stream);
-            const state = stream._state;
-            DequeueValue(controller);
-            if (!WritableStreamCloseQueuedOrInFlight(stream) && state === "writable") {
-              const backpressure = WritableStreamDefaultControllerGetBackpressure(controller);
-              WritableStreamUpdateBackpressure(stream, backpressure);
-            }
-            WritableStreamDefaultControllerAdvanceQueueIfNeeded(controller);
-            return null;
-          },
-          (reason) => {
-            if (stream._state === "writable") {
-              WritableStreamDefaultControllerClearAlgorithms(controller);
-            }
-            WritableStreamFinishInFlightWriteWithError(stream, reason);
-            return null;
-          },
-        );
+        uponPromise(sinkWritePromise, () => {
+          WritableStreamFinishInFlightWrite(stream);
+          const state = stream._state;
+          DequeueValue(controller);
+          if (!WritableStreamCloseQueuedOrInFlight(stream) && state === "writable") {
+            const backpressure = WritableStreamDefaultControllerGetBackpressure(controller);
+            WritableStreamUpdateBackpressure(stream, backpressure);
+          }
+          WritableStreamDefaultControllerAdvanceQueueIfNeeded(controller);
+          return null;
+        }, (reason) => {
+          if (stream._state === "writable") {
+            WritableStreamDefaultControllerClearAlgorithms(controller);
+          }
+          WritableStreamFinishInFlightWriteWithError(stream, reason);
+          return null;
+        });
       }
       function WritableStreamDefaultControllerGetBackpressure(controller) {
         const desiredSize = WritableStreamDefaultControllerGetDesiredSize(controller);
@@ -2795,19 +2457,13 @@ function requirePonyfill_es2018() {
         WritableStreamStartErroring(stream, error);
       }
       function streamBrandCheckException$2(name) {
-        return new TypeError(
-          `WritableStream.prototype.${name} can only be used on a WritableStream`,
-        );
+        return new TypeError(`WritableStream.prototype.${name} can only be used on a WritableStream`);
       }
       function defaultControllerBrandCheckException$2(name) {
-        return new TypeError(
-          `WritableStreamDefaultController.prototype.${name} can only be used on a WritableStreamDefaultController`,
-        );
+        return new TypeError(`WritableStreamDefaultController.prototype.${name} can only be used on a WritableStreamDefaultController`);
       }
       function defaultWriterBrandCheckException(name) {
-        return new TypeError(
-          `WritableStreamDefaultWriter.prototype.${name} can only be used on a WritableStreamDefaultWriter`,
-        );
+        return new TypeError(`WritableStreamDefaultWriter.prototype.${name} can only be used on a WritableStreamDefaultWriter`);
       }
       function defaultWriterLockException(name) {
         return new TypeError("Cannot " + name + " a stream using a released writer");
@@ -2928,22 +2584,11 @@ function requirePonyfill_es2018() {
         };
         setFunctionName(ctor, "DOMException");
         ctor.prototype = Object.create(Error.prototype);
-        Object.defineProperty(ctor.prototype, "constructor", {
-          value: ctor,
-          writable: true,
-          configurable: true,
-        });
+        Object.defineProperty(ctor.prototype, "constructor", { value: ctor, writable: true, configurable: true });
         return ctor;
       }
       const DOMException = getFromGlobal() || createPolyfill();
-      function ReadableStreamPipeTo(
-        source,
-        dest,
-        preventClose,
-        preventAbort,
-        preventCancel,
-        signal,
-      ) {
+      function ReadableStreamPipeTo(source, dest, preventClose, preventAbort, preventCancel, signal) {
         const reader = AcquireReadableStreamDefaultReader(source);
         const writer = AcquireWritableStreamDefaultWriter(dest);
         source._disturbed = true;
@@ -2953,10 +2598,7 @@ function requirePonyfill_es2018() {
           let abortAlgorithm;
           if (signal !== void 0) {
             abortAlgorithm = () => {
-              const error =
-                signal.reason !== void 0
-                  ? signal.reason
-                  : new DOMException("Aborted", "AbortError");
+              const error = signal.reason !== void 0 ? signal.reason : new DOMException("Aborted", "AbortError");
               const actions = [];
               if (!preventAbort) {
                 actions.push(() => {
@@ -3002,15 +2644,11 @@ function requirePonyfill_es2018() {
               return newPromise((resolveRead, rejectRead) => {
                 ReadableStreamDefaultReaderRead(reader, {
                   _chunkSteps: (chunk) => {
-                    currentWrite = PerformPromiseThen(
-                      WritableStreamDefaultWriterWrite(writer, chunk),
-                      void 0,
-                      noop,
-                    );
+                    currentWrite = PerformPromiseThen(WritableStreamDefaultWriterWrite(writer, chunk), void 0, noop);
                     resolveRead(false);
                   },
                   _closeSteps: () => resolveRead(true),
-                  _errorSteps: rejectRead,
+                  _errorSteps: rejectRead
                 });
               });
             });
@@ -3025,11 +2663,7 @@ function requirePonyfill_es2018() {
           });
           isOrBecomesErrored(dest, writer._closedPromise, (storedError) => {
             if (!preventCancel) {
-              shutdownWithAction(
-                () => ReadableStreamCancel(source, storedError),
-                true,
-                storedError,
-              );
+              shutdownWithAction(() => ReadableStreamCancel(source, storedError), true, storedError);
             } else {
               shutdown(true, storedError);
             }
@@ -3037,18 +2671,14 @@ function requirePonyfill_es2018() {
           });
           isOrBecomesClosed(source, reader._closedPromise, () => {
             if (!preventClose) {
-              shutdownWithAction(() =>
-                WritableStreamDefaultWriterCloseWithErrorPropagation(writer),
-              );
+              shutdownWithAction(() => WritableStreamDefaultWriterCloseWithErrorPropagation(writer));
             } else {
               shutdown();
             }
             return null;
           });
           if (WritableStreamCloseQueuedOrInFlight(dest) || dest._state === "closed") {
-            const destClosed = new TypeError(
-              "the destination writable stream closed before all data could be piped to it",
-            );
+            const destClosed = new TypeError("the destination writable stream closed before all data could be piped to it");
             if (!preventCancel) {
               shutdownWithAction(() => ReadableStreamCancel(source, destClosed), true, destClosed);
             } else {
@@ -3058,9 +2688,7 @@ function requirePonyfill_es2018() {
           setPromiseIsHandledToTrue(pipeLoop());
           function waitForWritesToFinish() {
             const oldCurrentWrite = currentWrite;
-            return PerformPromiseThen(currentWrite, () =>
-              oldCurrentWrite !== currentWrite ? waitForWritesToFinish() : void 0,
-            );
+            return PerformPromiseThen(currentWrite, () => oldCurrentWrite !== currentWrite ? waitForWritesToFinish() : void 0);
           }
           function isOrBecomesErrored(stream, promise, action) {
             if (stream._state === "errored") {
@@ -3087,11 +2715,7 @@ function requirePonyfill_es2018() {
               doTheRest();
             }
             function doTheRest() {
-              uponPromise(
-                action(),
-                () => finalize(originalIsError, originalError),
-                (newError) => finalize(true, newError),
-              );
+              uponPromise(action(), () => finalize(originalIsError, originalError), (newError) => finalize(true, newError));
               return null;
             }
           }
@@ -3191,13 +2815,14 @@ function requirePonyfill_es2018() {
           }
         }
         /** @internal */
-        [ReleaseSteps]() {}
+        [ReleaseSteps]() {
+        }
       }
       Object.defineProperties(ReadableStreamDefaultController.prototype, {
         close: { enumerable: true },
         enqueue: { enumerable: true },
         error: { enumerable: true },
-        desiredSize: { enumerable: true },
+        desiredSize: { enumerable: true }
       });
       setFunctionName(ReadableStreamDefaultController.prototype.close, "close");
       setFunctionName(ReadableStreamDefaultController.prototype.enqueue, "enqueue");
@@ -3205,7 +2830,7 @@ function requirePonyfill_es2018() {
       if (typeof Symbol.toStringTag === "symbol") {
         Object.defineProperty(ReadableStreamDefaultController.prototype, Symbol.toStringTag, {
           value: "ReadableStreamDefaultController",
-          configurable: true,
+          configurable: true
         });
       }
       function IsReadableStreamDefaultController(x) {
@@ -3228,21 +2853,17 @@ function requirePonyfill_es2018() {
         }
         controller._pulling = true;
         const pullPromise = controller._pullAlgorithm();
-        uponPromise(
-          pullPromise,
-          () => {
-            controller._pulling = false;
-            if (controller._pullAgain) {
-              controller._pullAgain = false;
-              ReadableStreamDefaultControllerCallPullIfNeeded(controller);
-            }
-            return null;
-          },
-          (e) => {
-            ReadableStreamDefaultControllerError(controller, e);
-            return null;
-          },
-        );
+        uponPromise(pullPromise, () => {
+          controller._pulling = false;
+          if (controller._pullAgain) {
+            controller._pullAgain = false;
+            ReadableStreamDefaultControllerCallPullIfNeeded(controller);
+          }
+          return null;
+        }, (e) => {
+          ReadableStreamDefaultControllerError(controller, e);
+          return null;
+        });
       }
       function ReadableStreamDefaultControllerShouldCallPull(controller) {
         const stream = controller._controlledReadableStream;
@@ -3333,15 +2954,7 @@ function requirePonyfill_es2018() {
         }
         return false;
       }
-      function SetUpReadableStreamDefaultController(
-        stream,
-        controller,
-        startAlgorithm,
-        pullAlgorithm,
-        cancelAlgorithm,
-        highWaterMark,
-        sizeAlgorithm,
-      ) {
+      function SetUpReadableStreamDefaultController(stream, controller, startAlgorithm, pullAlgorithm, cancelAlgorithm, highWaterMark, sizeAlgorithm) {
         controller._controlledReadableStream = stream;
         controller._queue = void 0;
         controller._queueTotalSize = void 0;
@@ -3356,25 +2969,16 @@ function requirePonyfill_es2018() {
         controller._cancelAlgorithm = cancelAlgorithm;
         stream._readableStreamController = controller;
         const startResult = startAlgorithm();
-        uponPromise(
-          promiseResolvedWith(startResult),
-          () => {
-            controller._started = true;
-            ReadableStreamDefaultControllerCallPullIfNeeded(controller);
-            return null;
-          },
-          (r) => {
-            ReadableStreamDefaultControllerError(controller, r);
-            return null;
-          },
-        );
+        uponPromise(promiseResolvedWith(startResult), () => {
+          controller._started = true;
+          ReadableStreamDefaultControllerCallPullIfNeeded(controller);
+          return null;
+        }, (r) => {
+          ReadableStreamDefaultControllerError(controller, r);
+          return null;
+        });
       }
-      function SetUpReadableStreamDefaultControllerFromUnderlyingSource(
-        stream,
-        underlyingSource,
-        highWaterMark,
-        sizeAlgorithm,
-      ) {
+      function SetUpReadableStreamDefaultControllerFromUnderlyingSource(stream, underlyingSource, highWaterMark, sizeAlgorithm) {
         const controller = Object.create(ReadableStreamDefaultController.prototype);
         let startAlgorithm;
         let pullAlgorithm;
@@ -3394,20 +2998,10 @@ function requirePonyfill_es2018() {
         } else {
           cancelAlgorithm = () => promiseResolvedWith(void 0);
         }
-        SetUpReadableStreamDefaultController(
-          stream,
-          controller,
-          startAlgorithm,
-          pullAlgorithm,
-          cancelAlgorithm,
-          highWaterMark,
-          sizeAlgorithm,
-        );
+        SetUpReadableStreamDefaultController(stream, controller, startAlgorithm, pullAlgorithm, cancelAlgorithm, highWaterMark, sizeAlgorithm);
       }
       function defaultControllerBrandCheckException$1(name) {
-        return new TypeError(
-          `ReadableStreamDefaultController.prototype.${name} can only be used on a ReadableStreamDefaultController`,
-        );
+        return new TypeError(`ReadableStreamDefaultController.prototype.${name} can only be used on a ReadableStreamDefaultController`);
       }
       function ReadableStreamTee(stream, cloneForBranch2) {
         if (IsReadableByteStreamController(stream._readableStreamController)) {
@@ -3467,7 +3061,7 @@ function requirePonyfill_es2018() {
             },
             _errorSteps: () => {
               reading = false;
-            },
+            }
           };
           ReadableStreamDefaultReaderRead(reader, readRequest);
           return promiseResolvedWith(void 0);
@@ -3492,7 +3086,8 @@ function requirePonyfill_es2018() {
           }
           return cancelPromise;
         }
-        function startAlgorithm() {}
+        function startAlgorithm() {
+        }
         branch1 = CreateReadableStream(startAlgorithm, pullAlgorithm, cancel1Algorithm);
         branch2 = CreateReadableStream(startAlgorithm, pullAlgorithm, cancel2Algorithm);
         uponRejection(reader._closedPromise, (r) => {
@@ -3590,7 +3185,7 @@ function requirePonyfill_es2018() {
             },
             _errorSteps: () => {
               reading = false;
-            },
+            }
           };
           ReadableStreamDefaultReaderRead(reader, readRequest);
         }
@@ -3615,28 +3210,16 @@ function requirePonyfill_es2018() {
                     clonedChunk = CloneAsUint8Array(chunk);
                   } catch (cloneE) {
                     ReadableByteStreamControllerError(byobBranch._readableStreamController, cloneE);
-                    ReadableByteStreamControllerError(
-                      otherBranch._readableStreamController,
-                      cloneE,
-                    );
+                    ReadableByteStreamControllerError(otherBranch._readableStreamController, cloneE);
                     resolveCancelPromise(ReadableStreamCancel(stream, cloneE));
                     return;
                   }
                   if (!byobCanceled) {
-                    ReadableByteStreamControllerRespondWithNewView(
-                      byobBranch._readableStreamController,
-                      chunk,
-                    );
+                    ReadableByteStreamControllerRespondWithNewView(byobBranch._readableStreamController, chunk);
                   }
-                  ReadableByteStreamControllerEnqueue(
-                    otherBranch._readableStreamController,
-                    clonedChunk,
-                  );
+                  ReadableByteStreamControllerEnqueue(otherBranch._readableStreamController, clonedChunk);
                 } else if (!byobCanceled) {
-                  ReadableByteStreamControllerRespondWithNewView(
-                    byobBranch._readableStreamController,
-                    chunk,
-                  );
+                  ReadableByteStreamControllerRespondWithNewView(byobBranch._readableStreamController, chunk);
                 }
                 reading = false;
                 if (readAgainForBranch1) {
@@ -3658,15 +3241,9 @@ function requirePonyfill_es2018() {
               }
               if (chunk !== void 0) {
                 if (!byobCanceled) {
-                  ReadableByteStreamControllerRespondWithNewView(
-                    byobBranch._readableStreamController,
-                    chunk,
-                  );
+                  ReadableByteStreamControllerRespondWithNewView(byobBranch._readableStreamController, chunk);
                 }
-                if (
-                  !otherCanceled &&
-                  otherBranch._readableStreamController._pendingPullIntos.length > 0
-                ) {
+                if (!otherCanceled && otherBranch._readableStreamController._pendingPullIntos.length > 0) {
                   ReadableByteStreamControllerRespond(otherBranch._readableStreamController, 0);
                 }
               }
@@ -3676,7 +3253,7 @@ function requirePonyfill_es2018() {
             },
             _errorSteps: () => {
               reading = false;
-            },
+            }
           };
           ReadableStreamBYOBReaderRead(reader, view, 1, readIntoRequest);
         }
@@ -3686,9 +3263,7 @@ function requirePonyfill_es2018() {
             return promiseResolvedWith(void 0);
           }
           reading = true;
-          const byobRequest = ReadableByteStreamControllerGetBYOBRequest(
-            branch1._readableStreamController,
-          );
+          const byobRequest = ReadableByteStreamControllerGetBYOBRequest(branch1._readableStreamController);
           if (byobRequest === null) {
             pullWithDefaultReader();
           } else {
@@ -3702,9 +3277,7 @@ function requirePonyfill_es2018() {
             return promiseResolvedWith(void 0);
           }
           reading = true;
-          const byobRequest = ReadableByteStreamControllerGetBYOBRequest(
-            branch2._readableStreamController,
-          );
+          const byobRequest = ReadableByteStreamControllerGetBYOBRequest(branch2._readableStreamController);
           if (byobRequest === null) {
             pullWithDefaultReader();
           } else {
@@ -3763,9 +3336,7 @@ function requirePonyfill_es2018() {
           const nextPromise = promiseResolvedWith(nextResult);
           return transformPromiseWith(nextPromise, (iterResult) => {
             if (!typeIsObject(iterResult)) {
-              throw new TypeError(
-                "The promise returned by the iterator.next() method must fulfill with an object",
-              );
+              throw new TypeError("The promise returned by the iterator.next() method must fulfill with an object");
             }
             const done = IteratorComplete(iterResult);
             if (done) {
@@ -3796,9 +3367,7 @@ function requirePonyfill_es2018() {
           const returnPromise = promiseResolvedWith(returnResult);
           return transformPromiseWith(returnPromise, (iterResult) => {
             if (!typeIsObject(iterResult)) {
-              throw new TypeError(
-                "The promise returned by the iterator.return() method must fulfill with an object",
-              );
+              throw new TypeError("The promise returned by the iterator.return() method must fulfill with an object");
             }
             return void 0;
           });
@@ -3818,9 +3387,7 @@ function requirePonyfill_es2018() {
           }
           return transformPromiseWith(readPromise, (readResult) => {
             if (!typeIsObject(readResult)) {
-              throw new TypeError(
-                "The promise returned by the reader.read() method must fulfill with an object",
-              );
+              throw new TypeError("The promise returned by the reader.read() method must fulfill with an object");
             }
             if (readResult.done) {
               ReadableStreamDefaultControllerClose(stream._readableStreamController);
@@ -3843,48 +3410,17 @@ function requirePonyfill_es2018() {
       function convertUnderlyingDefaultOrByteSource(source, context) {
         assertDictionary(source, context);
         const original = source;
-        const autoAllocateChunkSize =
-          original === null || original === void 0 ? void 0 : original.autoAllocateChunkSize;
+        const autoAllocateChunkSize = original === null || original === void 0 ? void 0 : original.autoAllocateChunkSize;
         const cancel = original === null || original === void 0 ? void 0 : original.cancel;
         const pull = original === null || original === void 0 ? void 0 : original.pull;
         const start = original === null || original === void 0 ? void 0 : original.start;
         const type = original === null || original === void 0 ? void 0 : original.type;
         return {
-          autoAllocateChunkSize:
-            autoAllocateChunkSize === void 0
-              ? void 0
-              : convertUnsignedLongLongWithEnforceRange(
-                  autoAllocateChunkSize,
-                  `${context} has member 'autoAllocateChunkSize' that`,
-                ),
-          cancel:
-            cancel === void 0
-              ? void 0
-              : convertUnderlyingSourceCancelCallback(
-                  cancel,
-                  original,
-                  `${context} has member 'cancel' that`,
-                ),
-          pull:
-            pull === void 0
-              ? void 0
-              : convertUnderlyingSourcePullCallback(
-                  pull,
-                  original,
-                  `${context} has member 'pull' that`,
-                ),
-          start:
-            start === void 0
-              ? void 0
-              : convertUnderlyingSourceStartCallback(
-                  start,
-                  original,
-                  `${context} has member 'start' that`,
-                ),
-          type:
-            type === void 0
-              ? void 0
-              : convertReadableStreamType(type, `${context} has member 'type' that`),
+          autoAllocateChunkSize: autoAllocateChunkSize === void 0 ? void 0 : convertUnsignedLongLongWithEnforceRange(autoAllocateChunkSize, `${context} has member 'autoAllocateChunkSize' that`),
+          cancel: cancel === void 0 ? void 0 : convertUnderlyingSourceCancelCallback(cancel, original, `${context} has member 'cancel' that`),
+          pull: pull === void 0 ? void 0 : convertUnderlyingSourcePullCallback(pull, original, `${context} has member 'pull' that`),
+          start: start === void 0 ? void 0 : convertUnderlyingSourceStartCallback(start, original, `${context} has member 'start' that`),
+          type: type === void 0 ? void 0 : convertReadableStreamType(type, `${context} has member 'type' that`)
         };
       }
       function convertUnderlyingSourceCancelCallback(fn, original, context) {
@@ -3902,23 +3438,19 @@ function requirePonyfill_es2018() {
       function convertReadableStreamType(type, context) {
         type = `${type}`;
         if (type !== "bytes") {
-          throw new TypeError(
-            `${context} '${type}' is not a valid enumeration value for ReadableStreamType`,
-          );
+          throw new TypeError(`${context} '${type}' is not a valid enumeration value for ReadableStreamType`);
         }
         return type;
       }
       function convertIteratorOptions(options, context) {
         assertDictionary(options, context);
-        const preventCancel =
-          options === null || options === void 0 ? void 0 : options.preventCancel;
+        const preventCancel = options === null || options === void 0 ? void 0 : options.preventCancel;
         return { preventCancel: Boolean(preventCancel) };
       }
       function convertPipeOptions(options, context) {
         assertDictionary(options, context);
         const preventAbort = options === null || options === void 0 ? void 0 : options.preventAbort;
-        const preventCancel =
-          options === null || options === void 0 ? void 0 : options.preventCancel;
+        const preventCancel = options === null || options === void 0 ? void 0 : options.preventCancel;
         const preventClose = options === null || options === void 0 ? void 0 : options.preventClose;
         const signal = options === null || options === void 0 ? void 0 : options.signal;
         if (signal !== void 0) {
@@ -3928,7 +3460,7 @@ function requirePonyfill_es2018() {
           preventAbort: Boolean(preventAbort),
           preventCancel: Boolean(preventCancel),
           preventClose: Boolean(preventClose),
-          signal,
+          signal
         };
       }
       function assertAbortSignal(signal, context) {
@@ -3954,30 +3486,18 @@ function requirePonyfill_es2018() {
             assertObject(rawUnderlyingSource, "First parameter");
           }
           const strategy = convertQueuingStrategy(rawStrategy, "Second parameter");
-          const underlyingSource = convertUnderlyingDefaultOrByteSource(
-            rawUnderlyingSource,
-            "First parameter",
-          );
+          const underlyingSource = convertUnderlyingDefaultOrByteSource(rawUnderlyingSource, "First parameter");
           InitializeReadableStream(this);
           if (underlyingSource.type === "bytes") {
             if (strategy.size !== void 0) {
               throw new RangeError("The strategy for a byte stream cannot have a size function");
             }
             const highWaterMark = ExtractHighWaterMark(strategy, 0);
-            SetUpReadableByteStreamControllerFromUnderlyingSource(
-              this,
-              underlyingSource,
-              highWaterMark,
-            );
+            SetUpReadableByteStreamControllerFromUnderlyingSource(this, underlyingSource, highWaterMark);
           } else {
             const sizeAlgorithm = ExtractSizeAlgorithm(strategy);
             const highWaterMark = ExtractHighWaterMark(strategy, 1);
-            SetUpReadableStreamDefaultControllerFromUnderlyingSource(
-              this,
-              underlyingSource,
-              highWaterMark,
-              sizeAlgorithm,
-            );
+            SetUpReadableStreamDefaultControllerFromUnderlyingSource(this, underlyingSource, highWaterMark, sizeAlgorithm);
           }
         }
         /**
@@ -4000,9 +3520,7 @@ function requirePonyfill_es2018() {
             return promiseRejectedWith(streamBrandCheckException$1("cancel"));
           }
           if (IsReadableStreamLocked(this)) {
-            return promiseRejectedWith(
-              new TypeError("Cannot cancel a stream that already has a reader"),
-            );
+            return promiseRejectedWith(new TypeError("Cannot cancel a stream that already has a reader"));
           }
           return ReadableStreamCancel(this, reason);
         }
@@ -4024,23 +3542,12 @@ function requirePonyfill_es2018() {
           const transform = convertReadableWritablePair(rawTransform, "First parameter");
           const options = convertPipeOptions(rawOptions, "Second parameter");
           if (IsReadableStreamLocked(this)) {
-            throw new TypeError(
-              "ReadableStream.prototype.pipeThrough cannot be used on a locked ReadableStream",
-            );
+            throw new TypeError("ReadableStream.prototype.pipeThrough cannot be used on a locked ReadableStream");
           }
           if (IsWritableStreamLocked(transform.writable)) {
-            throw new TypeError(
-              "ReadableStream.prototype.pipeThrough cannot be used on a locked WritableStream",
-            );
+            throw new TypeError("ReadableStream.prototype.pipeThrough cannot be used on a locked WritableStream");
           }
-          const promise = ReadableStreamPipeTo(
-            this,
-            transform.writable,
-            options.preventClose,
-            options.preventAbort,
-            options.preventCancel,
-            options.signal,
-          );
+          const promise = ReadableStreamPipeTo(this, transform.writable, options.preventClose, options.preventAbort, options.preventCancel, options.signal);
           setPromiseIsHandledToTrue(promise);
           return transform.readable;
         }
@@ -4052,11 +3559,7 @@ function requirePonyfill_es2018() {
             return promiseRejectedWith(`Parameter 1 is required in 'pipeTo'.`);
           }
           if (!IsWritableStream(destination)) {
-            return promiseRejectedWith(
-              new TypeError(
-                `ReadableStream.prototype.pipeTo's first argument must be a WritableStream`,
-              ),
-            );
+            return promiseRejectedWith(new TypeError(`ReadableStream.prototype.pipeTo's first argument must be a WritableStream`));
           }
           let options;
           try {
@@ -4065,27 +3568,12 @@ function requirePonyfill_es2018() {
             return promiseRejectedWith(e);
           }
           if (IsReadableStreamLocked(this)) {
-            return promiseRejectedWith(
-              new TypeError(
-                "ReadableStream.prototype.pipeTo cannot be used on a locked ReadableStream",
-              ),
-            );
+            return promiseRejectedWith(new TypeError("ReadableStream.prototype.pipeTo cannot be used on a locked ReadableStream"));
           }
           if (IsWritableStreamLocked(destination)) {
-            return promiseRejectedWith(
-              new TypeError(
-                "ReadableStream.prototype.pipeTo cannot be used on a locked WritableStream",
-              ),
-            );
+            return promiseRejectedWith(new TypeError("ReadableStream.prototype.pipeTo cannot be used on a locked WritableStream"));
           }
-          return ReadableStreamPipeTo(
-            this,
-            destination,
-            options.preventClose,
-            options.preventAbort,
-            options.preventCancel,
-            options.signal,
-          );
+          return ReadableStreamPipeTo(this, destination, options.preventClose, options.preventAbort, options.preventCancel, options.signal);
         }
         /**
          * Tees this readable stream, returning a two-element array containing the two resulting branches as
@@ -4126,7 +3614,7 @@ function requirePonyfill_es2018() {
         }
       }
       Object.defineProperties(ReadableStream, {
-        from: { enumerable: true },
+        from: { enumerable: true }
       });
       Object.defineProperties(ReadableStream.prototype, {
         cancel: { enumerable: true },
@@ -4135,7 +3623,7 @@ function requirePonyfill_es2018() {
         pipeTo: { enumerable: true },
         tee: { enumerable: true },
         values: { enumerable: true },
-        locked: { enumerable: true },
+        locked: { enumerable: true }
       });
       setFunctionName(ReadableStream.from, "from");
       setFunctionName(ReadableStream.prototype.cancel, "cancel");
@@ -4147,48 +3635,26 @@ function requirePonyfill_es2018() {
       if (typeof Symbol.toStringTag === "symbol") {
         Object.defineProperty(ReadableStream.prototype, Symbol.toStringTag, {
           value: "ReadableStream",
-          configurable: true,
+          configurable: true
         });
       }
       Object.defineProperty(ReadableStream.prototype, SymbolAsyncIterator, {
         value: ReadableStream.prototype.values,
         writable: true,
-        configurable: true,
+        configurable: true
       });
-      function CreateReadableStream(
-        startAlgorithm,
-        pullAlgorithm,
-        cancelAlgorithm,
-        highWaterMark = 1,
-        sizeAlgorithm = () => 1,
-      ) {
+      function CreateReadableStream(startAlgorithm, pullAlgorithm, cancelAlgorithm, highWaterMark = 1, sizeAlgorithm = () => 1) {
         const stream = Object.create(ReadableStream.prototype);
         InitializeReadableStream(stream);
         const controller = Object.create(ReadableStreamDefaultController.prototype);
-        SetUpReadableStreamDefaultController(
-          stream,
-          controller,
-          startAlgorithm,
-          pullAlgorithm,
-          cancelAlgorithm,
-          highWaterMark,
-          sizeAlgorithm,
-        );
+        SetUpReadableStreamDefaultController(stream, controller, startAlgorithm, pullAlgorithm, cancelAlgorithm, highWaterMark, sizeAlgorithm);
         return stream;
       }
       function CreateReadableByteStream(startAlgorithm, pullAlgorithm, cancelAlgorithm) {
         const stream = Object.create(ReadableStream.prototype);
         InitializeReadableStream(stream);
         const controller = Object.create(ReadableByteStreamController.prototype);
-        SetUpReadableByteStreamController(
-          stream,
-          controller,
-          startAlgorithm,
-          pullAlgorithm,
-          cancelAlgorithm,
-          0,
-          void 0,
-        );
+        SetUpReadableByteStreamController(stream, controller, startAlgorithm, pullAlgorithm, cancelAlgorithm, 0, void 0);
         return stream;
       }
       function InitializeReadableStream(stream) {
@@ -4262,16 +3728,14 @@ function requirePonyfill_es2018() {
         }
       }
       function streamBrandCheckException$1(name) {
-        return new TypeError(
-          `ReadableStream.prototype.${name} can only be used on a ReadableStream`,
-        );
+        return new TypeError(`ReadableStream.prototype.${name} can only be used on a ReadableStream`);
       }
       function convertQueuingStrategyInit(init, context) {
         assertDictionary(init, context);
         const highWaterMark = init === null || init === void 0 ? void 0 : init.highWaterMark;
         assertRequiredField(highWaterMark, "highWaterMark", "QueuingStrategyInit");
         return {
-          highWaterMark: convertUnrestrictedDouble(highWaterMark),
+          highWaterMark: convertUnrestrictedDouble(highWaterMark)
         };
       }
       const byteLengthSizeFunction = (chunk) => {
@@ -4305,18 +3769,16 @@ function requirePonyfill_es2018() {
       }
       Object.defineProperties(ByteLengthQueuingStrategy.prototype, {
         highWaterMark: { enumerable: true },
-        size: { enumerable: true },
+        size: { enumerable: true }
       });
       if (typeof Symbol.toStringTag === "symbol") {
         Object.defineProperty(ByteLengthQueuingStrategy.prototype, Symbol.toStringTag, {
           value: "ByteLengthQueuingStrategy",
-          configurable: true,
+          configurable: true
         });
       }
       function byteLengthBrandCheckException(name) {
-        return new TypeError(
-          `ByteLengthQueuingStrategy.prototype.${name} can only be used on a ByteLengthQueuingStrategy`,
-        );
+        return new TypeError(`ByteLengthQueuingStrategy.prototype.${name} can only be used on a ByteLengthQueuingStrategy`);
       }
       function IsByteLengthQueuingStrategy(x) {
         if (!typeIsObject(x)) {
@@ -4359,18 +3821,16 @@ function requirePonyfill_es2018() {
       }
       Object.defineProperties(CountQueuingStrategy.prototype, {
         highWaterMark: { enumerable: true },
-        size: { enumerable: true },
+        size: { enumerable: true }
       });
       if (typeof Symbol.toStringTag === "symbol") {
         Object.defineProperty(CountQueuingStrategy.prototype, Symbol.toStringTag, {
           value: "CountQueuingStrategy",
-          configurable: true,
+          configurable: true
         });
       }
       function countBrandCheckException(name) {
-        return new TypeError(
-          `CountQueuingStrategy.prototype.${name} can only be used on a CountQueuingStrategy`,
-        );
+        return new TypeError(`CountQueuingStrategy.prototype.${name} can only be used on a CountQueuingStrategy`);
       }
       function IsCountQueuingStrategy(x) {
         if (!typeIsObject(x)) {
@@ -4385,47 +3845,17 @@ function requirePonyfill_es2018() {
         assertDictionary(original, context);
         const cancel = original === null || original === void 0 ? void 0 : original.cancel;
         const flush = original === null || original === void 0 ? void 0 : original.flush;
-        const readableType =
-          original === null || original === void 0 ? void 0 : original.readableType;
+        const readableType = original === null || original === void 0 ? void 0 : original.readableType;
         const start = original === null || original === void 0 ? void 0 : original.start;
         const transform = original === null || original === void 0 ? void 0 : original.transform;
-        const writableType =
-          original === null || original === void 0 ? void 0 : original.writableType;
+        const writableType = original === null || original === void 0 ? void 0 : original.writableType;
         return {
-          cancel:
-            cancel === void 0
-              ? void 0
-              : convertTransformerCancelCallback(
-                  cancel,
-                  original,
-                  `${context} has member 'cancel' that`,
-                ),
-          flush:
-            flush === void 0
-              ? void 0
-              : convertTransformerFlushCallback(
-                  flush,
-                  original,
-                  `${context} has member 'flush' that`,
-                ),
+          cancel: cancel === void 0 ? void 0 : convertTransformerCancelCallback(cancel, original, `${context} has member 'cancel' that`),
+          flush: flush === void 0 ? void 0 : convertTransformerFlushCallback(flush, original, `${context} has member 'flush' that`),
           readableType,
-          start:
-            start === void 0
-              ? void 0
-              : convertTransformerStartCallback(
-                  start,
-                  original,
-                  `${context} has member 'start' that`,
-                ),
-          transform:
-            transform === void 0
-              ? void 0
-              : convertTransformerTransformCallback(
-                  transform,
-                  original,
-                  `${context} has member 'transform' that`,
-                ),
-          writableType,
+          start: start === void 0 ? void 0 : convertTransformerStartCallback(start, original, `${context} has member 'start' that`),
+          transform: transform === void 0 ? void 0 : convertTransformerTransformCallback(transform, original, `${context} has member 'transform' that`),
+          writableType
         };
       }
       function convertTransformerFlushCallback(fn, original, context) {
@@ -4466,14 +3896,7 @@ function requirePonyfill_es2018() {
           const startPromise = newPromise((resolve) => {
             startPromise_resolve = resolve;
           });
-          InitializeTransformStream(
-            this,
-            startPromise,
-            writableHighWaterMark,
-            writableSizeAlgorithm,
-            readableHighWaterMark,
-            readableSizeAlgorithm,
-          );
+          InitializeTransformStream(this, startPromise, writableHighWaterMark, writableSizeAlgorithm, readableHighWaterMark, readableSizeAlgorithm);
           SetUpTransformStreamDefaultControllerFromTransformer(this, transformer);
           if (transformer.start !== void 0) {
             startPromise_resolve(transformer.start(this._transformStreamController));
@@ -4502,22 +3925,15 @@ function requirePonyfill_es2018() {
       }
       Object.defineProperties(TransformStream.prototype, {
         readable: { enumerable: true },
-        writable: { enumerable: true },
+        writable: { enumerable: true }
       });
       if (typeof Symbol.toStringTag === "symbol") {
         Object.defineProperty(TransformStream.prototype, Symbol.toStringTag, {
           value: "TransformStream",
-          configurable: true,
+          configurable: true
         });
       }
-      function InitializeTransformStream(
-        stream,
-        startPromise,
-        writableHighWaterMark,
-        writableSizeAlgorithm,
-        readableHighWaterMark,
-        readableSizeAlgorithm,
-      ) {
+      function InitializeTransformStream(stream, startPromise, writableHighWaterMark, writableSizeAlgorithm, readableHighWaterMark, readableSizeAlgorithm) {
         function startAlgorithm() {
           return startPromise;
         }
@@ -4530,27 +3946,14 @@ function requirePonyfill_es2018() {
         function closeAlgorithm() {
           return TransformStreamDefaultSinkCloseAlgorithm(stream);
         }
-        stream._writable = CreateWritableStream(
-          startAlgorithm,
-          writeAlgorithm,
-          closeAlgorithm,
-          abortAlgorithm,
-          writableHighWaterMark,
-          writableSizeAlgorithm,
-        );
+        stream._writable = CreateWritableStream(startAlgorithm, writeAlgorithm, closeAlgorithm, abortAlgorithm, writableHighWaterMark, writableSizeAlgorithm);
         function pullAlgorithm() {
           return TransformStreamDefaultSourcePullAlgorithm(stream);
         }
         function cancelAlgorithm(reason) {
           return TransformStreamDefaultSourceCancelAlgorithm(stream, reason);
         }
-        stream._readable = CreateReadableStream(
-          startAlgorithm,
-          pullAlgorithm,
-          cancelAlgorithm,
-          readableHighWaterMark,
-          readableSizeAlgorithm,
-        );
+        stream._readable = CreateReadableStream(startAlgorithm, pullAlgorithm, cancelAlgorithm, readableHighWaterMark, readableSizeAlgorithm);
         stream._backpressure = void 0;
         stream._backpressureChangePromise = void 0;
         stream._backpressureChangePromise_resolve = void 0;
@@ -4600,8 +4003,7 @@ function requirePonyfill_es2018() {
           if (!IsTransformStreamDefaultController(this)) {
             throw defaultControllerBrandCheckException("desiredSize");
           }
-          const readableController =
-            this._controlledTransformStream._readable._readableStreamController;
+          const readableController = this._controlledTransformStream._readable._readableStreamController;
           return ReadableStreamDefaultControllerGetDesiredSize(readableController);
         }
         enqueue(chunk = void 0) {
@@ -4635,7 +4037,7 @@ function requirePonyfill_es2018() {
         enqueue: { enumerable: true },
         error: { enumerable: true },
         terminate: { enumerable: true },
-        desiredSize: { enumerable: true },
+        desiredSize: { enumerable: true }
       });
       setFunctionName(TransformStreamDefaultController.prototype.enqueue, "enqueue");
       setFunctionName(TransformStreamDefaultController.prototype.error, "error");
@@ -4643,7 +4045,7 @@ function requirePonyfill_es2018() {
       if (typeof Symbol.toStringTag === "symbol") {
         Object.defineProperty(TransformStreamDefaultController.prototype, Symbol.toStringTag, {
           value: "TransformStreamDefaultController",
-          configurable: true,
+          configurable: true
         });
       }
       function IsTransformStreamDefaultController(x) {
@@ -4655,13 +4057,7 @@ function requirePonyfill_es2018() {
         }
         return x instanceof TransformStreamDefaultController;
       }
-      function SetUpTransformStreamDefaultController(
-        stream,
-        controller,
-        transformAlgorithm,
-        flushAlgorithm,
-        cancelAlgorithm,
-      ) {
+      function SetUpTransformStreamDefaultController(stream, controller, transformAlgorithm, flushAlgorithm, cancelAlgorithm) {
         controller._controlledTransformStream = stream;
         stream._transformStreamController = controller;
         controller._transformAlgorithm = transformAlgorithm;
@@ -4698,13 +4094,7 @@ function requirePonyfill_es2018() {
         } else {
           cancelAlgorithm = () => promiseResolvedWith(void 0);
         }
-        SetUpTransformStreamDefaultController(
-          stream,
-          controller,
-          transformAlgorithm,
-          flushAlgorithm,
-          cancelAlgorithm,
-        );
+        SetUpTransformStreamDefaultController(stream, controller, transformAlgorithm, flushAlgorithm, cancelAlgorithm);
       }
       function TransformStreamDefaultControllerClearAlgorithms(controller) {
         controller._transformAlgorithm = void 0;
@@ -4772,23 +4162,19 @@ function requirePonyfill_es2018() {
         });
         const cancelPromise = controller._cancelAlgorithm(reason);
         TransformStreamDefaultControllerClearAlgorithms(controller);
-        uponPromise(
-          cancelPromise,
-          () => {
-            if (readable._state === "errored") {
-              defaultControllerFinishPromiseReject(controller, readable._storedError);
-            } else {
-              ReadableStreamDefaultControllerError(readable._readableStreamController, reason);
-              defaultControllerFinishPromiseResolve(controller);
-            }
-            return null;
-          },
-          (r) => {
-            ReadableStreamDefaultControllerError(readable._readableStreamController, r);
-            defaultControllerFinishPromiseReject(controller, r);
-            return null;
-          },
-        );
+        uponPromise(cancelPromise, () => {
+          if (readable._state === "errored") {
+            defaultControllerFinishPromiseReject(controller, readable._storedError);
+          } else {
+            ReadableStreamDefaultControllerError(readable._readableStreamController, reason);
+            defaultControllerFinishPromiseResolve(controller);
+          }
+          return null;
+        }, (r) => {
+          ReadableStreamDefaultControllerError(readable._readableStreamController, r);
+          defaultControllerFinishPromiseReject(controller, r);
+          return null;
+        });
         return controller._finishPromise;
       }
       function TransformStreamDefaultSinkCloseAlgorithm(stream) {
@@ -4803,23 +4189,19 @@ function requirePonyfill_es2018() {
         });
         const flushPromise = controller._flushAlgorithm();
         TransformStreamDefaultControllerClearAlgorithms(controller);
-        uponPromise(
-          flushPromise,
-          () => {
-            if (readable._state === "errored") {
-              defaultControllerFinishPromiseReject(controller, readable._storedError);
-            } else {
-              ReadableStreamDefaultControllerClose(readable._readableStreamController);
-              defaultControllerFinishPromiseResolve(controller);
-            }
-            return null;
-          },
-          (r) => {
-            ReadableStreamDefaultControllerError(readable._readableStreamController, r);
-            defaultControllerFinishPromiseReject(controller, r);
-            return null;
-          },
-        );
+        uponPromise(flushPromise, () => {
+          if (readable._state === "errored") {
+            defaultControllerFinishPromiseReject(controller, readable._storedError);
+          } else {
+            ReadableStreamDefaultControllerClose(readable._readableStreamController);
+            defaultControllerFinishPromiseResolve(controller);
+          }
+          return null;
+        }, (r) => {
+          ReadableStreamDefaultControllerError(readable._readableStreamController, r);
+          defaultControllerFinishPromiseReject(controller, r);
+          return null;
+        });
         return controller._finishPromise;
       }
       function TransformStreamDefaultSourcePullAlgorithm(stream) {
@@ -4838,34 +4220,25 @@ function requirePonyfill_es2018() {
         });
         const cancelPromise = controller._cancelAlgorithm(reason);
         TransformStreamDefaultControllerClearAlgorithms(controller);
-        uponPromise(
-          cancelPromise,
-          () => {
-            if (writable._state === "errored") {
-              defaultControllerFinishPromiseReject(controller, writable._storedError);
-            } else {
-              WritableStreamDefaultControllerErrorIfNeeded(
-                writable._writableStreamController,
-                reason,
-              );
-              TransformStreamUnblockWrite(stream);
-              defaultControllerFinishPromiseResolve(controller);
-            }
-            return null;
-          },
-          (r) => {
-            WritableStreamDefaultControllerErrorIfNeeded(writable._writableStreamController, r);
+        uponPromise(cancelPromise, () => {
+          if (writable._state === "errored") {
+            defaultControllerFinishPromiseReject(controller, writable._storedError);
+          } else {
+            WritableStreamDefaultControllerErrorIfNeeded(writable._writableStreamController, reason);
             TransformStreamUnblockWrite(stream);
-            defaultControllerFinishPromiseReject(controller, r);
-            return null;
-          },
-        );
+            defaultControllerFinishPromiseResolve(controller);
+          }
+          return null;
+        }, (r) => {
+          WritableStreamDefaultControllerErrorIfNeeded(writable._writableStreamController, r);
+          TransformStreamUnblockWrite(stream);
+          defaultControllerFinishPromiseReject(controller, r);
+          return null;
+        });
         return controller._finishPromise;
       }
       function defaultControllerBrandCheckException(name) {
-        return new TypeError(
-          `TransformStreamDefaultController.prototype.${name} can only be used on a TransformStreamDefaultController`,
-        );
+        return new TypeError(`TransformStreamDefaultController.prototype.${name} can only be used on a TransformStreamDefaultController`);
       }
       function defaultControllerFinishPromiseResolve(controller) {
         if (controller._finishPromise_resolve === void 0) {
@@ -4885,9 +4258,7 @@ function requirePonyfill_es2018() {
         controller._finishPromise_reject = void 0;
       }
       function streamBrandCheckException(name) {
-        return new TypeError(
-          `TransformStream.prototype.${name} can only be used on a TransformStream`,
-        );
+        return new TypeError(`TransformStream.prototype.${name} can only be used on a TransformStream`);
       }
       exports2.ByteLengthQueuingStrategy = ByteLengthQueuingStrategy;
       exports2.CountQueuingStrategy = CountQueuingStrategy;
@@ -4902,8 +4273,10 @@ function requirePonyfill_es2018() {
       exports2.WritableStream = WritableStream;
       exports2.WritableStreamDefaultController = WritableStreamDefaultController;
       exports2.WritableStreamDefaultWriter = WritableStreamDefaultWriter;
-    });
+    }));
   })(ponyfill_es2018$1, ponyfill_es2018$1.exports);
   return ponyfill_es2018$1.exports;
 }
-export { requirePonyfill_es2018 as r };
+export {
+  requirePonyfill_es2018 as r
+};

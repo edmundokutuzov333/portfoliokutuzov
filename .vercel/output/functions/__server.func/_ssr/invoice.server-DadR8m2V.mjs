@@ -15,25 +15,19 @@ const COL = {
   qty: M + 300,
   unit: M + 350,
   price: M + 400,
-  total: M + CONTENT_W,
+  total: M + CONTENT_W
 };
 function hexToRgb(hex, fallback) {
   const m = /^#?([0-9a-f]{6})$/i.exec((hex ?? "").trim());
   if (!m) return rgb(...fallback);
   const n = parseInt(m[1], 16);
-  return rgb(((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255);
+  return rgb((n >> 16 & 255) / 255, (n >> 8 & 255) / 255, (n & 255) / 255);
 }
 function luminance(c) {
   return 0.2126 * c.red + 0.7152 * c.green + 0.0722 * c.blue;
 }
 function sanitize(input) {
-  return (input ?? "")
-    .replace(/\u2019|\u2018/g, "'")
-    .replace(/\u201c|\u201d/g, '"')
-    .replace(/\u2013|\u2014/g, "-")
-    .replace(/\u2026/g, "...")
-    .replace(/\u00a0/g, " ")
-    .replace(/[^\x09\x0a\x20-\x7e\u00a1-\u00ff\u20ac]/g, "");
+  return (input ?? "").replace(/\u2019|\u2018/g, "'").replace(/\u201c|\u201d/g, '"').replace(/\u2013|\u2014/g, "-").replace(/\u2026/g, "...").replace(/\u00a0/g, " ").replace(/[^\x09\x0a\x20-\x7e\u00a1-\u00ff\u20ac]/g, "");
 }
 function wrap(text, font, size, maxWidth) {
   const out = [];
@@ -80,7 +74,7 @@ function drawQr(page, text, x, y, size, color) {
     y: y - 3,
     width: size + 6,
     height: size + 6,
-    color: rgb(1, 1, 1),
+    color: rgb(1, 1, 1)
   });
   for (let r = 0; r < n; r++) {
     for (let c = 0; c < n; c++) {
@@ -90,7 +84,7 @@ function drawQr(page, text, x, y, size, color) {
         y: y + size - (r + 1) * cell,
         width: cell + 0.2,
         height: cell + 0.2,
-        color,
+        color
       });
     }
   }
@@ -107,7 +101,7 @@ async function buildInvoicePdf(ctx) {
     items: ctx.items,
     discount_pct: ctx.discountPct,
     tax_pct: ctx.taxPct,
-    deposit_pct: ctx.depositPct,
+    deposit_pct: ctx.depositPct
   });
   const pdf = await PDFDocument.create();
   const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
@@ -126,14 +120,12 @@ async function buildInvoicePdf(ctx) {
       if (res.ok) {
         const bytes = new Uint8Array(await res.arrayBuffer());
         const ct = res.headers.get("content-type") ?? "";
-        const img =
-          ct.includes("png") || s.logo_url.toLowerCase().endsWith(".png")
-            ? await pdf.embedPng(bytes)
-            : await pdf.embedJpg(bytes);
+        const img = ct.includes("png") || s.logo_url.toLowerCase().endsWith(".png") ? await pdf.embedPng(bytes) : await pdf.embedJpg(bytes);
         const scale = Math.min(118 / img.width, 34 / img.height);
         logo = { img, w: img.width * scale, h: img.height * scale };
       }
-    } catch {}
+    } catch {
+    }
   }
   const pages = [];
   const text = (page2, t, x, y2, o = {}) => {
@@ -145,8 +137,7 @@ async function buildInvoicePdf(ctx) {
     if (o.align === "center") px = x - font.widthOfTextAtSize(str, size) / 2;
     page2.drawText(str, { x: px, y: y2, size, font, color: o.color ?? ink });
   };
-  const label = (page2, t, x, y2, color = soft, align) =>
-    text(page2, t.toUpperCase(), x, y2, { size: 7.2, font: bold, color, align });
+  const label = (page2, t, x, y2, color = soft, align) => text(page2, t.toUpperCase(), x, y2, { size: 7.2, font: bold, color, align });
   const newPage = (first) => {
     const page2 = pdf.addPage([PAGE_W, PAGE_H]);
     pages.push(page2);
@@ -155,7 +146,7 @@ async function buildInvoicePdf(ctx) {
       text(page2, `${s.studio_name ?? ""} — Invoice ${ctx.invoiceNumber}`, M, PAGE_H - 34, {
         size: 8.5,
         font: bold,
-        color: soft,
+        color: soft
       });
       page2.drawRectangle({ x: M, y: PAGE_H - 44, width: CONTENT_W, height: 0.7, color: hair });
       return { page: page2, y: PAGE_H - 72 };
@@ -170,7 +161,7 @@ async function buildInvoicePdf(ctx) {
     y: plateY,
     width: PAGE_W,
     height: plateH,
-    color: rgb(0.016, 0.031, 0.055),
+    color: rgb(0.016, 0.031, 0.055)
   });
   page.drawRectangle({ x: 0, y: plateY, width: 4, height: plateH, color: accent });
   if (logo) {
@@ -178,7 +169,7 @@ async function buildInvoicePdf(ctx) {
       x: M,
       y: plateY + plateH - 26 - logo.h,
       width: logo.w,
-      height: logo.h,
+      height: logo.h
     });
   }
   const identY = logo ? plateY + plateH - 34 - logo.h - 18 : plateY + plateH - 46;
@@ -188,7 +179,7 @@ async function buildInvoicePdf(ctx) {
     s.studio_address,
     s.studio_email,
     s.studio_phone,
-    s.studio_tax_id && `Tax ID: ${s.studio_tax_id}`,
+    s.studio_tax_id && `Tax ID: ${s.studio_tax_id}`
   ]) {
     if (!line) continue;
     text(page, line, M, metaY, { size: 8.4, color: rgb(0.62, 0.68, 0.76) });
@@ -200,28 +191,27 @@ async function buildInvoicePdf(ctx) {
     size: 21,
     font: bold,
     color: rgb(1, 1, 1),
-    align: "right",
+    align: "right"
   });
   text(page, `${money(totals.total, ctx.currency)} ${ctx.currency}`, rightX, plateY + plateH - 80, {
     size: 12,
     font: bold,
     color: accent,
-    align: "right",
+    align: "right"
   });
-  const statusText =
-    ctx.status === "paid" ? "PAID IN FULL" : ctx.status === "void" ? "VOID" : "AMOUNT DUE";
+  const statusText = ctx.status === "paid" ? "PAID IN FULL" : ctx.status === "void" ? "VOID" : "AMOUNT DUE";
   text(page, statusText, rightX, plateY + plateH - 95, {
     size: 7.5,
     font: bold,
     color: rgb(0.62, 0.68, 0.76),
-    align: "right",
+    align: "right"
   });
   y = plateY - 30;
   const metaCols = [
     ["Issued", ctx.issueDate],
     ["Due", ctx.dueDate ?? "On receipt"],
     ["Reference", ctx.invoiceNumber],
-    ["Currency", ctx.currency],
+    ["Currency", ctx.currency]
   ];
   const colW = CONTENT_W / metaCols.length;
   metaCols.forEach(([k, v], i) => {
@@ -238,18 +228,18 @@ async function buildInvoicePdf(ctx) {
   text(page, ctx.client.full_name, M, y, { size: 12, font: bold });
   text(page, ctx.client.project_type ?? "Creative direction", M + CONTENT_W / 2, y, {
     size: 12,
-    font: bold,
+    font: bold
   });
   y -= 13;
   const leftLines = [
     ctx.client.company_name,
     ctx.client.email,
     ctx.client.phone,
-    ctx.client.country,
+    ctx.client.country
   ].filter(Boolean);
   const rightLines = [
     ctx.dueDate ? `Payment due ${ctx.dueDate}` : null,
-    ctx.depositPct > 0 ? `${ctx.depositPct}% deposit to start` : null,
+    ctx.depositPct > 0 ? `${ctx.depositPct}% deposit to start` : null
   ].filter(Boolean);
   const infoRows = Math.max(leftLines.length, rightLines.length);
   for (let i = 0; i < infoRows; i++) {
@@ -264,7 +254,7 @@ async function buildInvoicePdf(ctx) {
       y: top - 16,
       width: CONTENT_W,
       height: 20,
-      color: rgb(0.055, 0.09, 0.14),
+      color: rgb(0.055, 0.09, 0.14)
     });
     label(p, "Description", COL.desc + 8, top - 10, rgb(0.72, 0.78, 0.86));
     label(p, "Qty", COL.qty + 34, top - 10, rgb(0.72, 0.78, 0.86), "right");
@@ -279,11 +269,7 @@ async function buildInvoicePdf(ctx) {
   for (const line of totals.lines) {
     const titleLines = wrap(line.description || "Item", bold, 9.8, descW);
     const detailLines = line.detail ? wrap(line.detail, reg, 8.4, descW) : [];
-    const rowH =
-      12 +
-      titleLines.length * 12.5 +
-      detailLines.length * 10.5 +
-      (line.discount_pct > 0 ? 10.5 : 0);
+    const rowH = 12 + titleLines.length * 12.5 + detailLines.length * 10.5 + (line.discount_pct > 0 ? 10.5 : 0);
     if (y - rowH < 190) {
       const next = newPage(false);
       page = next.page;
@@ -306,7 +292,7 @@ async function buildInvoicePdf(ctx) {
       text(page, `line discount -${line.discount_pct}%`, COL.desc + 8, ty, {
         size: 8,
         font: obl,
-        color: accent,
+        color: accent
       });
       ty -= 10.5;
     }
@@ -314,28 +300,30 @@ async function buildInvoicePdf(ctx) {
     text(page, line.unit ?? "un", COL.unit, y, { size: 9, color: soft });
     text(page, money(line.unit_price, ctx.currency), COL.price + 44, y, {
       size: 9.6,
-      align: "right",
+      align: "right"
     });
     text(page, money(line.net, ctx.currency), COL.total - 8, y, {
       size: 9.8,
       font: bold,
-      align: "right",
+      align: "right"
     });
     y = y - rowH;
     page.drawRectangle({ x: M, y: y + 6, width: CONTENT_W, height: 0.6, color: hair });
   }
-  const totalsRows = [["Subtotal", money(totals.subtotal, ctx.currency), false]];
+  const totalsRows = [
+    ["Subtotal", money(totals.subtotal, ctx.currency), false]
+  ];
   if (totals.discount_amount > 0)
     totalsRows.push([
       `Discount (${ctx.discountPct}%)`,
       `-${money(totals.discount_amount, ctx.currency)}`,
-      false,
+      false
     ]);
   if (ctx.taxPct > 0)
     totalsRows.push([
       ctx.taxLabel || `Tax (${ctx.taxPct}%)`,
       money(totals.tax_amount, ctx.currency),
-      false,
+      false
     ]);
   const totalsH = 30 + totalsRows.length * 16 + 46 + (totals.deposit_amount > 0 ? 34 : 0);
   if (y - totalsH < 170) {
@@ -359,14 +347,14 @@ async function buildInvoicePdf(ctx) {
     width: 220,
     height: 30,
     color: accent,
-    opacity: 0.1,
+    opacity: 0.1
   });
   text(page, "TOTAL", tx - 210, y, { size: 9.5, font: bold, color: soft });
   text(page, `${money(totals.total, ctx.currency)} ${ctx.currency}`, tx - 8, y, {
     size: 14,
     font: bold,
     color: accent,
-    align: "right",
+    align: "right"
   });
   y -= 30;
   if (totals.deposit_amount > 0) {
@@ -374,14 +362,14 @@ async function buildInvoicePdf(ctx) {
     text(page, `${money(totals.deposit_amount, ctx.currency)} ${ctx.currency}`, tx - 8, y, {
       size: 10.5,
       font: bold,
-      align: "right",
+      align: "right"
     });
     y -= 14;
     text(page, "Balance on delivery", tx - 210, y, { size: 8.6, color: soft });
     text(page, money(totals.balance, ctx.currency), tx - 8, y, {
       size: 8.8,
       color: soft,
-      align: "right",
+      align: "right"
     });
     y -= 20;
   }
@@ -456,12 +444,12 @@ async function buildInvoicePdf(ctx) {
     p.drawRectangle({ x: M, y: 40, width: CONTENT_W, height: 0.7, color: hair });
     text(p, `${s.studio_name ?? ""}${s.footer_note ? ` — ${s.footer_note}` : ""}`, M, 28, {
       size: 7.6,
-      color: soft,
+      color: soft
     });
     text(p, `${ctx.invoiceNumber} · page ${i + 1} of ${total}`, PAGE_W - M, 28, {
       size: 7.6,
       color: soft,
-      align: "right",
+      align: "right"
     });
     p.drawRectangle({ x: 0, y: 0, width: PAGE_W, height: 4, color: accent });
   });
@@ -476,7 +464,7 @@ async function buildInvoicePdf(ctx) {
       font: bold,
       color: stampColor,
       opacity: 0.12,
-      rotate: degrees(26),
+      rotate: degrees(26)
     });
   }
   return await pdf.save();
@@ -486,27 +474,15 @@ const PROOF_BUCKET = "invoice-proofs";
 const SIGNED_URL_TTL = 60 * 60 * 24 * 7;
 const RESEND_GATEWAY = "https://connector-gateway.lovable.dev/resend";
 function siteOrigin() {
-  return (
-    process.env["PUBLIC_SITE_URL"] ||
-    process.env["SITE_URL"] ||
-    "https://portfoliokutuzov.lovable.app"
-  ).replace(/\/$/, "");
+  return (process.env["PUBLIC_SITE_URL"] || process.env["SITE_URL"] || "https://portfoliokutuzov.lovable.app").replace(/\/$/, "");
 }
 function adminEmail() {
-  return (
-    process.env["BRIEFING_ADMIN_EMAIL"] ??
-    process.env["ADMIN_EMAIL"] ??
-    "contact@edmundokutuzov.art"
-  );
+  return process.env["BRIEFING_ADMIN_EMAIL"] ?? process.env["ADMIN_EMAIL"] ?? "contact@edmundokutuzov.art";
 }
 function fromEmail() {
   return process.env["BRIEFING_FROM"] ?? "Edmundo Kutuzov <onboarding@resend.dev>";
 }
-const esc = (s) =>
-  String(s ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 function randomToken() {
   const bytes = crypto.getRandomValues(new Uint8Array(24));
   return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
@@ -522,19 +498,11 @@ async function assertAdmin(context) {
   if (!data) throw new Error("Forbidden: admin only");
 }
 async function loadBranding(admin) {
-  const { data } = await admin
-    .from("site_settings")
-    .select("value")
-    .eq("key", "invoice_settings")
-    .maybeSingle();
+  const { data } = await admin.from("site_settings").select("value").eq("key", "invoice_settings").maybeSingle();
   return data?.value ?? {};
 }
 async function loadItems(admin, briefingId) {
-  const { data, error } = await admin
-    .from("invoice_line_items")
-    .select("id, description, detail, qty, unit, unit_price, discount_pct, sort_order")
-    .eq("briefing_id", briefingId)
-    .order("sort_order", { ascending: true });
+  const { data, error } = await admin.from("invoice_line_items").select("id, description, detail, qty, unit, unit_price, discount_pct, sort_order").eq("briefing_id", briefingId).order("sort_order", { ascending: true });
   if (error) throw new Error(error.message);
   return (data ?? []).map((r) => ({
     id: r.id,
@@ -544,7 +512,7 @@ async function loadItems(admin, briefingId) {
     unit: r.unit,
     unit_price: Number(r.unit_price),
     discount_pct: Number(r.discount_pct),
-    sort_order: r.sort_order,
+    sort_order: r.sort_order
   }));
 }
 function itemsOrFallback(items, brief) {
@@ -556,8 +524,8 @@ function itemsOrFallback(items, brief) {
       qty: 1,
       unit: "project",
       unit_price: Number(brief.invoice_amount ?? 0),
-      discount_pct: 0,
-    },
+      discount_pct: 0
+    }
   ];
 }
 async function logEvent(admin, briefingId, eventType, actor, detail = {}, recipients) {
@@ -566,13 +534,13 @@ async function logEvent(admin, briefingId, eventType, actor, detail = {}, recipi
     event_type: eventType,
     actor,
     recipients: recipients ?? null,
-    detail,
+    detail
   });
 }
 function toPdfContext(a) {
   return {
     invoiceNumber: a.invoiceNumber,
-    issueDate: a.brief.invoice_issue_date ?? /* @__PURE__ */ new Date().toISOString().slice(0, 10),
+    issueDate: a.brief.invoice_issue_date ?? (/* @__PURE__ */ new Date()).toISOString().slice(0, 10),
     dueDate: a.brief.invoice_due_date ?? null,
     currency: (a.brief.invoice_currency || "EUR").toUpperCase(),
     status: a.status ?? a.brief.invoice_status ?? "draft",
@@ -589,10 +557,10 @@ function toPdfContext(a) {
       company_name: a.brief.company_name,
       country: a.brief.country,
       phone: a.brief.phone,
-      project_type: a.brief.project_type,
+      project_type: a.brief.project_type
     },
     portalUrl: a.token ? `${siteOrigin()}/i/${a.token}` : null,
-    settings: a.branding,
+    settings: a.branding
   };
 }
 async function renderPdf(a) {
@@ -603,7 +571,7 @@ function totalsFor(brief, items) {
     items: itemsOrFallback(items, brief),
     discount_pct: Number(brief.invoice_discount_pct ?? 0),
     tax_pct: Number(brief.invoice_tax_pct ?? 0),
-    deposit_pct: Number(brief.invoice_deposit_pct ?? 0),
+    deposit_pct: Number(brief.invoice_deposit_pct ?? 0)
   });
 }
 async function sendMail(args) {
@@ -615,7 +583,7 @@ async function sendMail(args) {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${lovableKey}`,
-      "X-Connection-Api-Key": resendKey,
+      "X-Connection-Api-Key": resendKey
     },
     body: JSON.stringify({
       from: fromEmail(),
@@ -623,8 +591,8 @@ async function sendMail(args) {
       cc: args.cc,
       subject: args.subject,
       html: args.html,
-      attachments: args.attachment ? [args.attachment] : void 0,
-    }),
+      attachments: args.attachment ? [args.attachment] : void 0
+    })
   });
   return { skipped: false, ok: res.ok, status: res.status };
 }
@@ -635,34 +603,18 @@ function buildInvoiceEmail(a) {
   const t = totalsFor(a.brief, a.items);
   const firstName = String(a.brief.full_name ?? "").split(" ")[0] || "there";
   const studio = s.studio_name || "Edmundo Kutuzov";
-  const heading =
-    a.variant === "receipt"
-      ? `Payment received — thank you, ${esc(firstName)}.`
-      : a.variant === "reminder"
-        ? `A gentle reminder, ${esc(firstName)}.`
-        : `Hi ${esc(firstName)}, your invoice is ready.`;
-  const lead =
-    a.variant === "receipt"
-      ? `We've confirmed payment for <b>${esc(a.brief.project_type)}</b>. Your invoice is now marked as paid — the PDF below is your record.`
-      : a.variant === "reminder"
-        ? `Invoice <b>${esc(a.invoiceNumber)}</b> for <b>${esc(a.brief.project_type)}</b> is still open${a.brief.invoice_due_date ? ` and was due on ${esc(a.brief.invoice_due_date)}` : ""}. If it's already on its way, please ignore this note.`
-        : `Please find the invoice for <b>${esc(a.brief.project_type)}</b> below. Once payment is confirmed we kick off production straight away.`;
-  const rows = t.lines
-    .slice(0, 12)
-    .map(
-      (l) => `<tr>
+  const heading = a.variant === "receipt" ? `Payment received — thank you, ${esc(firstName)}.` : a.variant === "reminder" ? `A gentle reminder, ${esc(firstName)}.` : `Hi ${esc(firstName)}, your invoice is ready.`;
+  const lead = a.variant === "receipt" ? `We've confirmed payment for <b>${esc(a.brief.project_type)}</b>. Your invoice is now marked as paid — the PDF below is your record.` : a.variant === "reminder" ? `Invoice <b>${esc(a.invoiceNumber)}</b> for <b>${esc(a.brief.project_type)}</b> is still open${a.brief.invoice_due_date ? ` and was due on ${esc(a.brief.invoice_due_date)}` : ""}. If it's already on its way, please ignore this note.` : `Please find the invoice for <b>${esc(a.brief.project_type)}</b> below. Once payment is confirmed we kick off production straight away.`;
+  const rows = t.lines.slice(0, 12).map(
+    (l) => `<tr>
         <td style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.07);font-size:13px;color:#e2e8f0">
           <b>${esc(l.description)}</b>${l.detail ? `<br><span style="color:#94a3b8;font-size:12px">${esc(l.detail)}</span>` : ""}
         </td>
         <td style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.07);font-size:13px;color:#94a3b8;text-align:right;white-space:nowrap">${esc(l.qty)} × ${esc(money(l.unit_price, currency))}</td>
         <td style="padding:8px 0 8px 14px;border-bottom:1px solid rgba(255,255,255,0.07);font-size:13px;color:#f5f8ff;text-align:right;white-space:nowrap"><b>${esc(money(l.net, currency))}</b></td>
-      </tr>`,
-    )
-    .join("");
-  const payLine = (k, v) =>
-    v
-      ? `<p style="margin:4px 0;font-size:13px;color:#cbd5e1"><span style="color:#94a3b8">${esc(k)}:</span> <b>${esc(v)}</b></p>`
-      : "";
+      </tr>`
+  ).join("");
+  const payLine = (k, v) => v ? `<p style="margin:4px 0;font-size:13px;color:#cbd5e1"><span style="color:#94a3b8">${esc(k)}:</span> <b>${esc(v)}</b></p>` : "";
   const html = `<div style="font-family:-apple-system,Segoe UI,Inter,Helvetica,sans-serif;background:#01040A;color:#e2e8f0;padding:32px">
     <div style="max-width:600px;margin:0 auto">
       <p style="font-family:ui-monospace,monospace;letter-spacing:.18em;color:${accent};font-size:11px;margin:0 0 14px">
@@ -692,14 +644,10 @@ function buildInvoiceEmail(a) {
         <a href="${esc(a.pdfUrl)}" style="display:inline-block;border:1px solid ${accent};color:${accent};padding:13px 22px;border-radius:9px;font-weight:700;text-decoration:none">Download PDF</a>
       </p>
 
-      ${
-        a.variant === "receipt"
-          ? ""
-          : `<div style="margin:24px 0;border-top:1px solid rgba(255,255,255,0.08);padding-top:16px">
+      ${a.variant === "receipt" ? "" : `<div style="margin:24px 0;border-top:1px solid rgba(255,255,255,0.08);padding-top:16px">
               <p style="font-family:ui-monospace,monospace;letter-spacing:.18em;color:${accent};font-size:10px;margin:0 0 8px">PAYMENT DETAILS</p>
               ${payLine("Bank", s.bank_name)}${payLine("Account", s.bank_account_name)}${payLine("IBAN", s.bank_iban)}${payLine("SWIFT / BIC", s.bank_swift)}${payLine("M-Pesa", s.mpesa_number)}${payLine("Reference", a.invoiceNumber)}
-            </div>`
-      }
+            </div>`}
 
       ${a.brief.invoice_notes ? `<div style="margin:20px 0"><p style="font-family:ui-monospace,monospace;letter-spacing:.18em;color:${accent};font-size:10px;margin:0 0 8px">NOTES</p><p style="font-size:13px;line-height:1.7;color:#e2e8f0;white-space:pre-wrap;margin:0">${esc(a.brief.invoice_notes)}</p></div>` : ""}
       ${a.brief.invoice_terms || s.payment_terms ? `<p style="font-size:12px;line-height:1.7;color:#94a3b8;margin:18px 0 0">${esc(a.brief.invoice_terms || s.payment_terms)}</p>` : ""}
@@ -707,12 +655,7 @@ function buildInvoiceEmail(a) {
       <p style="font-size:12px;color:#64748b;margin:28px 0 0">— ${esc(studio)}${s.footer_note ? ` · ${esc(s.footer_note)}` : ""}</p>
     </div>
   </div>`;
-  const subjectPrefix =
-    a.variant === "receipt"
-      ? "Payment received"
-      : a.variant === "reminder"
-        ? "Reminder: invoice"
-        : "Invoice";
+  const subjectPrefix = a.variant === "receipt" ? "Payment received" : a.variant === "reminder" ? "Reminder: invoice" : "Invoice";
   return { subject: `${subjectPrefix} ${a.invoiceNumber} — ${studio}`, html };
 }
 function toBase64(bytes) {
@@ -742,5 +685,5 @@ export {
   siteOrigin,
   toBase64,
   toPdfContext,
-  totalsFor,
+  totalsFor
 };

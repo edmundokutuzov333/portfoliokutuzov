@@ -28,13 +28,11 @@ function requireDataStream() {
     if (data.length || typeof data === "object") {
       this.buffer = data;
       this.writable = false;
-      process.nextTick(
-        function () {
-          this.emit("end", data);
-          this.readable = false;
-          this.emit("close");
-        }.bind(this),
-      );
+      process.nextTick((function() {
+        this.emit("end", data);
+        this.readable = false;
+        this.emit("close");
+      }).bind(this));
       return this;
     }
     throw new TypeError("Unexpected data type (" + typeof data + ")");
@@ -45,7 +43,8 @@ function requireDataStream() {
     this.emit("data", data);
   };
   DataStream.prototype.end = function end(data) {
-    if (data) this.write(data);
+    if (data)
+      this.write(data);
     this.emit("end", data);
     this.emit("close");
     this.writable = false;
@@ -61,8 +60,10 @@ function requireTostring() {
   hasRequiredTostring = 1;
   var Buffer = require$$0.Buffer;
   tostring = function toString(obj) {
-    if (typeof obj === "string") return obj;
-    if (typeof obj === "number" || Buffer.isBuffer(obj)) return obj.toString();
+    if (typeof obj === "string")
+      return obj;
+    if (typeof obj === "number" || Buffer.isBuffer(obj))
+      return obj.toString();
     return JSON.stringify(obj);
   };
   return tostring;
@@ -79,11 +80,7 @@ function requireSignStream() {
   var toString = requireTostring();
   var util = require$$2;
   function base64url(string, encoding) {
-    return Buffer.from(string, encoding)
-      .toString("base64")
-      .replace(/=/g, "")
-      .replace(/\+/g, "-")
-      .replace(/\//g, "_");
+    return Buffer.from(string, encoding).toString("base64").replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
   }
   function jwsSecuredInput(header, payload, encoding) {
     encoding = encoding || "utf8";
@@ -114,18 +111,14 @@ function requireSignStream() {
     this.encoding = opts.encoding;
     this.secret = this.privateKey = this.key = secretStream;
     this.payload = new DataStream(opts.payload);
-    this.secret.once(
-      "close",
-      function () {
-        if (!this.payload.writable && this.readable) this.sign();
-      }.bind(this),
-    );
-    this.payload.once(
-      "close",
-      function () {
-        if (!this.secret.writable && this.readable) this.sign();
-      }.bind(this),
-    );
+    this.secret.once("close", (function() {
+      if (!this.payload.writable && this.readable)
+        this.sign();
+    }).bind(this));
+    this.payload.once("close", (function() {
+      if (!this.secret.writable && this.readable)
+        this.sign();
+    }).bind(this));
   }
   util.inherits(SignStream, Stream);
   SignStream.prototype.sign = function sign() {
@@ -134,7 +127,7 @@ function requireSignStream() {
         header: this.header,
         payload: this.payload.buffer,
         secret: this.secret.buffer,
-        encoding: this.encoding,
+        encoding: this.encoding
       });
       this.emit("done", signature);
       this.emit("data", signature);
@@ -167,7 +160,8 @@ function requireVerifyStream() {
     return Object.prototype.toString.call(thing) === "[object Object]";
   }
   function safeJsonParse(thing) {
-    if (isObject(thing)) return thing;
+    if (isObject(thing))
+      return thing;
     try {
       return JSON.parse(thing);
     } catch (e) {
@@ -207,15 +201,18 @@ function requireVerifyStream() {
   function jwsDecode(jwsSig, opts) {
     opts = opts || {};
     jwsSig = toString(jwsSig);
-    if (!isValidJws(jwsSig)) return null;
+    if (!isValidJws(jwsSig))
+      return null;
     var header = headerFromJWS(jwsSig);
-    if (!header) return null;
+    if (!header)
+      return null;
     var payload = payloadFromJWS(jwsSig);
-    if (header.typ === "JWT" || opts.json) payload = JSON.parse(payload, opts.encoding);
+    if (header.typ === "JWT" || opts.json)
+      payload = JSON.parse(payload, opts.encoding);
     return {
       header,
       payload,
-      signature: signatureFromJWS(jwsSig),
+      signature: signatureFromJWS(jwsSig)
     };
   }
   function VerifyStream(opts) {
@@ -232,18 +229,14 @@ function requireVerifyStream() {
     this.encoding = opts.encoding;
     this.secret = this.publicKey = this.key = secretStream;
     this.signature = new DataStream(opts.signature);
-    this.secret.once(
-      "close",
-      function () {
-        if (!this.signature.writable && this.readable) this.verify();
-      }.bind(this),
-    );
-    this.signature.once(
-      "close",
-      function () {
-        if (!this.secret.writable && this.readable) this.verify();
-      }.bind(this),
-    );
+    this.secret.once("close", (function() {
+      if (!this.signature.writable && this.readable)
+        this.verify();
+    }).bind(this));
+    this.signature.once("close", (function() {
+      if (!this.secret.writable && this.readable)
+        this.verify();
+    }).bind(this));
   }
   util.inherits(VerifyStream, Stream);
   VerifyStream.prototype.verify = function verify() {
@@ -285,7 +278,7 @@ function requireJws() {
     "PS512",
     "ES256",
     "ES384",
-    "ES512",
+    "ES512"
   ];
   jws.ALGORITHMS = ALGORITHMS;
   jws.sign = SignStream.sign;
@@ -300,4 +293,6 @@ function requireJws() {
   };
   return jws;
 }
-export { requireJws as r };
+export {
+  requireJws as r
+};

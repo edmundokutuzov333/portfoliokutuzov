@@ -1,11 +1,6 @@
 import { p as parseHref } from "./tanstack__history.mjs";
 import { s as splitSetCookieString } from "./cookie-es.mjs";
-import {
-  c as createPlugin,
-  a as createStream,
-  b as crossSerializeStream,
-  g as getCrossReferenceHeader,
-} from "./seroval.mjs";
+import { c as createPlugin, a as createStream, b as crossSerializeStream, g as getCrossReferenceHeader } from "./seroval.mjs";
 import { R as ReadableStreamPlugin } from "./seroval-plugins.mjs";
 import { ReadableStream as ReadableStream$1 } from "node:stream/web";
 import { Readable } from "node:stream";
@@ -20,16 +15,16 @@ function isNotFound(obj) {
 const rootRouteId = "__root__";
 function redirect(opts) {
   opts.statusCode = opts.statusCode || opts.code || 307;
-  if (!opts._builtLocation && !opts.reloadDocument && typeof opts.href === "string")
-    try {
-      new URL(opts.href);
-      opts.reloadDocument = true;
-    } catch {}
+  if (!opts._builtLocation && !opts.reloadDocument && typeof opts.href === "string") try {
+    new URL(opts.href);
+    opts.reloadDocument = true;
+  } catch {
+  }
   const headers = new Headers(opts.headers);
   if (opts.href && headers.get("Location") === null) headers.set("Location", opts.href);
   const response = new Response(null, {
     status: opts.statusCode,
-    headers,
+    headers
   });
   response.options = opts;
   if (opts.throw) throw response;
@@ -45,11 +40,7 @@ function parseRedirect(obj) {
   if (obj !== null && typeof obj === "object" && obj.isSerializedRedirect) return redirect(obj);
 }
 function dehydrateSsrMatchId(id) {
-  return id
-    .replaceAll("~", "~~")
-    .replaceAll("\0", "~0")
-    .replaceAll("�", "~r")
-    .replaceAll("/", "\0");
+  return id.replaceAll("~", "~~").replaceAll("\0", "~0").replaceAll("�", "~r").replaceAll("/", "\0");
 }
 function createLRUCache(max) {
   const cache = /* @__PURE__ */ new Map();
@@ -101,7 +92,7 @@ function createLRUCache(max) {
         const entry = {
           key,
           value,
-          prev: newest,
+          prev: newest
         };
         if (newest) newest.next = entry;
         newest = entry;
@@ -113,7 +104,7 @@ function createLRUCache(max) {
       cache.clear();
       oldest = void 0;
       newest = void 0;
-    },
+    }
   };
 }
 function invariant() {
@@ -208,16 +199,7 @@ function parseSegment(path, start, output = new Uint16Array(6)) {
   output[5] = end;
   return output;
 }
-function parseSegments(
-  defaultCaseSensitive,
-  data,
-  route,
-  start,
-  node,
-  depth,
-  dynamicListsToSort,
-  onRoute,
-) {
+function parseSegments(defaultCaseSensitive, data, route, start, node, depth, dynamicListsToSort, onRoute) {
   onRoute?.(route);
   let cursor = start;
   {
@@ -261,27 +243,10 @@ function parseSegments(
           const prefix_raw = path.substring(start2, segment[1]);
           const suffix_raw = path.substring(segment[4], end);
           const actuallyCaseSensitive = caseSensitive && !!(prefix_raw || suffix_raw);
-          const prefix = !prefix_raw
-            ? void 0
-            : actuallyCaseSensitive
-              ? prefix_raw
-              : prefix_raw.toLowerCase();
-          const suffix = !suffix_raw
-            ? void 0
-            : actuallyCaseSensitive
-              ? suffix_raw
-              : suffix_raw.toLowerCase();
+          const prefix = !prefix_raw ? void 0 : actuallyCaseSensitive ? prefix_raw : prefix_raw.toLowerCase();
+          const suffix = !suffix_raw ? void 0 : actuallyCaseSensitive ? suffix_raw : suffix_raw.toLowerCase();
           const siblings = kind === 1 ? node.dynamic : kind === 3 ? node.optional : node.wildcard;
-          const existingNode =
-            kind !== 2 &&
-            !parseParams &&
-            siblings?.find(
-              (s) =>
-                !s.parse &&
-                s.caseSensitive === actuallyCaseSensitive &&
-                s.prefix === prefix &&
-                s.suffix === suffix,
-            );
+          const existingNode = kind !== 2 && !parseParams && siblings?.find((s) => !s.parse && s.caseSensitive === actuallyCaseSensitive && s.prefix === prefix && s.suffix === suffix);
           if (existingNode) nextNode = existingNode;
           else {
             const next = createDynamicNode(kind, path, actuallyCaseSensitive, prefix, suffix);
@@ -300,13 +265,7 @@ function parseSegments(
       }
       node = nextNode;
     }
-    if (
-      parseParams &&
-      route.children &&
-      !route.isRoot &&
-      route.id &&
-      route.id.charCodeAt(route.id.lastIndexOf("/") + 1) === 95
-    ) {
+    if (parseParams && route.children && !route.isRoot && route.id && route.id.charCodeAt(route.id.lastIndexOf("/") + 1) === 95) {
       const pathlessNode = createStaticNode(path);
       pathlessNode.kind = SEGMENT_TYPE_PATHLESS;
       pathlessNode.parent = node;
@@ -333,18 +292,7 @@ function parseSegments(
       node.fullPath = path;
     }
   }
-  if (route.children)
-    for (const child of route.children)
-      parseSegments(
-        defaultCaseSensitive,
-        data,
-        child,
-        cursor,
-        node,
-        depth,
-        dynamicListsToSort,
-        onRoute,
-      );
+  if (route.children) for (const child of route.children) parseSegments(defaultCaseSensitive, data, child, cursor, node, depth, dynamicListsToSort, onRoute);
 }
 function sortDynamic(a, b) {
   if (a.parse && !b.parse) return -1;
@@ -381,7 +329,7 @@ function createStaticNode(fullPath) {
     fullPath,
     parent: null,
     parse: null,
-    priority: 0,
+    priority: 0
   };
 }
 function createDynamicNode(kind, fullPath, caseSensitive, prefix, suffix) {
@@ -402,15 +350,14 @@ function createDynamicNode(kind, fullPath, caseSensitive, prefix, suffix) {
     priority: 0,
     caseSensitive,
     prefix,
-    suffix,
+    suffix
   };
 }
 function processRouteMasks(routeList, processedTree) {
   const segmentTree = createStaticNode("/");
   const data = new Uint16Array(6);
   const dynamicListsToSort = [];
-  for (const route of routeList)
-    parseSegments(false, data, route, 1, segmentTree, 0, dynamicListsToSort);
+  for (const route of routeList) parseSegments(false, data, route, 1, segmentTree, 0, dynamicListsToSort);
   for (const nodes of dynamicListsToSort) nodes.sort(sortDynamic);
   processedTree.masksTree = segmentTree;
   processedTree.flatCache = createLRUCache(1e3);
@@ -469,8 +416,7 @@ function processRouteTree(routeTree, caseSensitive = false, initRoute) {
     routesById[route.id] = route;
     if (index !== 0 && route.path) {
       const trimmedFullPath = trimPathRight$1(route.fullPath);
-      if (!routesByPath[trimmedFullPath] || route.fullPath.endsWith("/"))
-        routesByPath[trimmedFullPath] = route;
+      if (!routesByPath[trimmedFullPath] || route.fullPath.endsWith("/")) routesByPath[trimmedFullPath] = route;
     }
     index++;
   });
@@ -481,10 +427,10 @@ function processRouteTree(routeTree, caseSensitive = false, initRoute) {
       singleCache: createLRUCache(1e3),
       matchCache: createLRUCache(1e3),
       flatCache: null,
-      masksTree: null,
+      masksTree: null
     },
     routesById,
-    routesByPath,
+    routesByPath
   };
 }
 function findMatch(path, segmentTree, fuzzy = false) {
@@ -494,7 +440,7 @@ function findMatch(path, segmentTree, fuzzy = false) {
   const [rawParams] = extractParams(path, parts, leaf);
   return {
     route: leaf.node.route,
-    rawParams,
+    rawParams
   };
 }
 function extractParams(path, parts, leaf) {
@@ -531,7 +477,7 @@ function extractParams(path, parts, leaf) {
         rawParams[name] = decodeURIComponent(part);
       }
     } else if (node.kind === 3) {
-      if (leaf.skipped & (1 << nodeIndex)) {
+      if (leaf.skipped & 1 << nodeIndex) {
         partIndex--;
         pathIndex = currentPathIndex - 1;
         continue;
@@ -541,15 +487,11 @@ function extractParams(path, parts, leaf) {
       const preLength = node.prefix?.length ?? 0;
       const sufLength = node.suffix?.length ?? 0;
       const name = nodePart.substring(preLength + 3, nodePart.length - sufLength - 1);
-      const value =
-        node.suffix || node.prefix ? part.substring(preLength, part.length - sufLength) : part;
+      const value = node.suffix || node.prefix ? part.substring(preLength, part.length - sufLength) : part;
       if (value) rawParams[name] = decodeURIComponent(value);
     } else if (node.kind === 2) {
       const n = node;
-      const value = path.substring(
-        currentPathIndex + (n.prefix?.length ?? 0),
-        path.length - (n.suffix?.length ?? 0),
-      );
+      const value = path.substring(currentPathIndex + (n.prefix?.length ?? 0), path.length - (n.suffix?.length ?? 0));
       const splat = decodeURIComponent(value);
       rawParams["*"] = splat;
       rawParams._splat = splat;
@@ -557,15 +499,12 @@ function extractParams(path, parts, leaf) {
     }
   }
   if (leaf.rawParams) Object.assign(rawParams, leaf.rawParams);
-  return [
-    rawParams,
-    {
-      part: partIndex,
-      node: nodeIndex,
-      path: pathIndex,
-      segment: segmentCount,
-    },
-  ];
+  return [rawParams, {
+    part: partIndex,
+    node: nodeIndex,
+    path: pathIndex,
+    segment: segmentCount
+  }];
 }
 function buildRouteBranch(route) {
   const list = [route];
@@ -585,24 +524,21 @@ function buildBranch(node) {
   return list;
 }
 function getNodeMatch(path, parts, segmentTree, fuzzy) {
-  if (path === "/" && segmentTree.index)
-    return {
-      node: segmentTree.index,
-      skipped: 0,
-    };
+  if (path === "/" && segmentTree.index) return {
+    node: segmentTree.index,
+    skipped: 0
+  };
   const trailingSlash = !last(parts);
   const pathIsIndex = trailingSlash && path !== "/";
   const partsLength = parts.length - (trailingSlash ? 1 : 0);
-  const stack = [
-    {
-      node: segmentTree,
-      index: 1,
-      skipped: 0,
-      statics: 0,
-      dynamics: 0,
-      optionals: 0,
-    },
-  ];
+  const stack = [{
+    node: segmentTree,
+    index: 1,
+    skipped: 0,
+    statics: 0,
+    dynamics: 0,
+    optionals: 0
+  }];
   let bestFuzzy = null;
   let bestMatch = null;
   while (stack.length) {
@@ -615,21 +551,10 @@ function getNodeMatch(path, parts, segmentTree, fuzzy) {
       rawParams = frame.rawParams;
       extract = frame.extract;
     }
-    if (
-      fuzzy &&
-      node.route &&
-      node.kind !== SEGMENT_TYPE_INDEX &&
-      isFrameMoreSpecific(bestFuzzy, frame)
-    )
-      bestFuzzy = frame;
+    if (fuzzy && node.route && node.kind !== SEGMENT_TYPE_INDEX && isFrameMoreSpecific(bestFuzzy, frame)) bestFuzzy = frame;
     const isBeyondPath = index === partsLength;
     if (isBeyondPath) {
-      if (
-        node.route &&
-        (!pathIsIndex || node.kind === SEGMENT_TYPE_INDEX || node.kind === 2) &&
-        isFrameMoreSpecific(bestMatch, frame)
-      )
-        bestMatch = frame;
+      if (node.route && (!pathIsIndex || node.kind === SEGMENT_TYPE_INDEX || node.kind === 2) && isFrameMoreSpecific(bestMatch, frame)) bestMatch = frame;
       if (!node.optional && !node.wildcard && !node.index && !node.pathless) continue;
     }
     const part = isBeyondPath ? void 0 : parts[index];
@@ -643,47 +568,42 @@ function getNodeMatch(path, parts, segmentTree, fuzzy) {
         dynamics,
         optionals,
         extract,
-        rawParams,
+        rawParams
       };
       let indexValid = true;
       if (node.index.parse) {
         if (!validateParseParams(path, parts, indexFrame)) indexValid = false;
       }
       if (indexValid) {
-        if (!dynamics && !optionals && !skipped && isPerfectStaticMatch(statics, partsLength))
-          return indexFrame;
+        if (!dynamics && !optionals && !skipped && isPerfectStaticMatch(statics, partsLength)) return indexFrame;
         if (isFrameMoreSpecific(bestMatch, indexFrame)) bestMatch = indexFrame;
       }
     }
-    if (node.wildcard)
-      for (let i = node.wildcard.length - 1; i >= 0; i--) {
-        const segment = node.wildcard[i];
-        const { prefix, suffix } = segment;
-        if (prefix) {
-          if (isBeyondPath) continue;
-          if (
-            !(segment.caseSensitive ? part : (lowerPart ??= part.toLowerCase())).startsWith(prefix)
-          )
-            continue;
-        }
-        if (suffix) {
-          if (isBeyondPath) continue;
-          const end = parts.slice(index).join("/").slice(-suffix.length);
-          if ((segment.caseSensitive ? end : end.toLowerCase()) !== suffix) continue;
-        }
-        stack.push({
-          node: segment,
-          index: partsLength,
-          skipped,
-          statics,
-          dynamics,
-          optionals,
-          extract,
-          rawParams,
-        });
+    if (node.wildcard) for (let i = node.wildcard.length - 1; i >= 0; i--) {
+      const segment = node.wildcard[i];
+      const { prefix, suffix } = segment;
+      if (prefix) {
+        if (isBeyondPath) continue;
+        if (!(segment.caseSensitive ? part : lowerPart ??= part.toLowerCase()).startsWith(prefix)) continue;
       }
+      if (suffix) {
+        if (isBeyondPath) continue;
+        const end = parts.slice(index).join("/").slice(-suffix.length);
+        if ((segment.caseSensitive ? end : end.toLowerCase()) !== suffix) continue;
+      }
+      stack.push({
+        node: segment,
+        index: partsLength,
+        skipped,
+        statics,
+        dynamics,
+        optionals,
+        extract,
+        rawParams
+      });
+    }
     if (node.optional) {
-      const nextSkipped = skipped | (1 << (node.depth + 1));
+      const nextSkipped = skipped | 1 << node.depth + 1;
       for (let i = node.optional.length - 1; i >= 0; i--) {
         const segment = node.optional[i];
         stack.push({
@@ -694,36 +614,14 @@ function getNodeMatch(path, parts, segmentTree, fuzzy) {
           dynamics,
           optionals,
           extract,
-          rawParams,
+          rawParams
         });
       }
-      if (!isBeyondPath)
-        for (let i = node.optional.length - 1; i >= 0; i--) {
-          const segment = node.optional[i];
-          const { prefix, suffix } = segment;
-          if (prefix || suffix) {
-            const casePart = segment.caseSensitive ? part : (lowerPart ??= part.toLowerCase());
-            if (prefix && !casePart.startsWith(prefix)) continue;
-            if (suffix && !casePart.endsWith(suffix)) continue;
-          }
-          stack.push({
-            node: segment,
-            index: index + 1,
-            skipped,
-            statics,
-            dynamics,
-            optionals: optionals + segmentScore(partsLength, index),
-            extract,
-            rawParams,
-          });
-        }
-    }
-    if (!isBeyondPath && node.dynamic && part)
-      for (let i = node.dynamic.length - 1; i >= 0; i--) {
-        const segment = node.dynamic[i];
+      if (!isBeyondPath) for (let i = node.optional.length - 1; i >= 0; i--) {
+        const segment = node.optional[i];
         const { prefix, suffix } = segment;
         if (prefix || suffix) {
-          const casePart = segment.caseSensitive ? part : (lowerPart ??= part.toLowerCase());
+          const casePart = segment.caseSensitive ? part : lowerPart ??= part.toLowerCase();
           if (prefix && !casePart.startsWith(prefix)) continue;
           if (suffix && !casePart.endsWith(suffix)) continue;
         }
@@ -732,54 +630,71 @@ function getNodeMatch(path, parts, segmentTree, fuzzy) {
           index: index + 1,
           skipped,
           statics,
-          dynamics: dynamics + segmentScore(partsLength, index),
-          optionals,
+          dynamics,
+          optionals: optionals + segmentScore(partsLength, index),
           extract,
-          rawParams,
+          rawParams
         });
       }
+    }
+    if (!isBeyondPath && node.dynamic && part) for (let i = node.dynamic.length - 1; i >= 0; i--) {
+      const segment = node.dynamic[i];
+      const { prefix, suffix } = segment;
+      if (prefix || suffix) {
+        const casePart = segment.caseSensitive ? part : lowerPart ??= part.toLowerCase();
+        if (prefix && !casePart.startsWith(prefix)) continue;
+        if (suffix && !casePart.endsWith(suffix)) continue;
+      }
+      stack.push({
+        node: segment,
+        index: index + 1,
+        skipped,
+        statics,
+        dynamics: dynamics + segmentScore(partsLength, index),
+        optionals,
+        extract,
+        rawParams
+      });
+    }
     if (!isBeyondPath && node.staticInsensitive) {
-      const match = node.staticInsensitive.get((lowerPart ??= part.toLowerCase()));
-      if (match)
-        stack.push({
-          node: match,
-          index: index + 1,
-          skipped,
-          statics: statics + segmentScore(partsLength, index),
-          dynamics,
-          optionals,
-          extract,
-          rawParams,
-        });
+      const match = node.staticInsensitive.get(lowerPart ??= part.toLowerCase());
+      if (match) stack.push({
+        node: match,
+        index: index + 1,
+        skipped,
+        statics: statics + segmentScore(partsLength, index),
+        dynamics,
+        optionals,
+        extract,
+        rawParams
+      });
     }
     if (!isBeyondPath && node.static) {
       const match = node.static.get(part);
-      if (match)
-        stack.push({
-          node: match,
-          index: index + 1,
-          skipped,
-          statics: statics + segmentScore(partsLength, index),
-          dynamics,
-          optionals,
-          extract,
-          rawParams,
-        });
+      if (match) stack.push({
+        node: match,
+        index: index + 1,
+        skipped,
+        statics: statics + segmentScore(partsLength, index),
+        dynamics,
+        optionals,
+        extract,
+        rawParams
+      });
     }
-    if (node.pathless)
-      for (let i = node.pathless.length - 1; i >= 0; i--) {
-        const segment = node.pathless[i];
-        stack.push({
-          node: segment,
-          index,
-          skipped,
-          statics,
-          dynamics,
-          optionals,
-          extract,
-          rawParams,
-        });
-      }
+    if (node.pathless) for (let i = node.pathless.length - 1; i >= 0; i--) {
+      const segment = node.pathless[i];
+      stack.push({
+        node: segment,
+        index,
+        skipped,
+        statics,
+        dynamics,
+        optionals,
+        extract,
+        rawParams
+      });
+    }
   }
   if (bestMatch) return bestMatch;
   if (fuzzy && bestFuzzy) {
@@ -811,32 +726,18 @@ function validateParseParams(path, parts, frame) {
   if (!frame.node.parse) return true;
   try {
     if (frame.node.parse(rawParams) === false) return null;
-  } catch {}
+  } catch {
+  }
   return true;
 }
 function isFrameMoreSpecific(prev, next) {
   if (!prev) return true;
-  return (
-    next.statics > prev.statics ||
-    (next.statics === prev.statics &&
-      (next.dynamics > prev.dynamics ||
-        (next.dynamics === prev.dynamics &&
-          (next.optionals > prev.optionals ||
-            (next.optionals === prev.optionals &&
-              ((next.node.kind === SEGMENT_TYPE_INDEX) > (prev.node.kind === SEGMENT_TYPE_INDEX) ||
-                ((next.node.kind === SEGMENT_TYPE_INDEX) ===
-                  (prev.node.kind === SEGMENT_TYPE_INDEX) &&
-                  next.node.depth > prev.node.depth)))))))
-  );
+  return next.statics > prev.statics || next.statics === prev.statics && (next.dynamics > prev.dynamics || next.dynamics === prev.dynamics && (next.optionals > prev.optionals || next.optionals === prev.optionals && ((next.node.kind === SEGMENT_TYPE_INDEX) > (prev.node.kind === SEGMENT_TYPE_INDEX) || next.node.kind === SEGMENT_TYPE_INDEX === (prev.node.kind === SEGMENT_TYPE_INDEX) && next.node.depth > prev.node.depth)));
 }
 function joinPaths(paths) {
-  return cleanPath(
-    paths
-      .filter((val) => {
-        return val !== void 0;
-      })
-      .join("/"),
-  );
+  return cleanPath(paths.filter((val) => {
+    return val !== void 0;
+  }).join("/"));
 }
 function cleanPath(path) {
   return path.replace(/\/{2,}/g, "/");
@@ -879,10 +780,9 @@ function resolvePath({ base, to, trailingSlash = "never", cache }) {
       if (value === "") {
         if (!index) baseSegments = [value];
         else if (index === length - 1) baseSegments.push(value);
-      } else if (value === "..")
-        if (baseSegments.length > 1) baseSegments.pop();
-        else baseSegments = [""];
-      else if (value === ".");
+      } else if (value === "..") if (baseSegments.length > 1) baseSegments.pop();
+      else baseSegments = [""];
+      else if (value === ".") ;
       else baseSegments.push(value);
     }
   }
@@ -896,12 +796,8 @@ function resolvePath({ base, to, trailingSlash = "never", cache }) {
   return result;
 }
 function compileDecodeCharMap(pathParamsAllowedCharacters) {
-  const charMap = new Map(
-    pathParamsAllowedCharacters.map((char) => [encodeURIComponent(char), char]),
-  );
-  const pattern = Array.from(charMap.keys())
-    .map((key) => key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
-    .join("|");
+  const charMap = new Map(pathParamsAllowedCharacters.map((char) => [encodeURIComponent(char), char]));
+  const pattern = Array.from(charMap.keys()).map((key) => key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
   const regex = new RegExp(pattern, "g");
   return (encoded) => encoded.replace(regex, (match) => charMap.get(match) ?? match);
 }
@@ -910,27 +806,22 @@ function encodeParam(key, params, decoder) {
   if (typeof value !== "string") return value;
   if (key === "_splat") {
     if (/^[a-zA-Z0-9\-._~!/]*$/.test(value)) return value;
-    return value
-      .split("/")
-      .map((segment) => encodePathParam(segment, decoder))
-      .join("/");
+    return value.split("/").map((segment) => encodePathParam(segment, decoder)).join("/");
   } else return encodePathParam(value, decoder);
 }
 function interpolatePath({ path, params, decoder, ...rest }) {
   let isMissingParams = false;
   const usedParams = /* @__PURE__ */ Object.create(null);
-  if (!path || path === "/")
-    return {
-      interpolatedPath: "/",
-      usedParams,
-      isMissingParams,
-    };
-  if (!path.includes("$"))
-    return {
-      interpolatedPath: path,
-      usedParams,
-      isMissingParams,
-    };
+  if (!path || path === "/") return {
+    interpolatedPath: "/",
+    usedParams,
+    isMissingParams
+  };
+  if (!path.includes("$")) return {
+    interpolatedPath: path,
+    usedParams,
+    isMissingParams
+  };
   {
     if (path.indexOf("{") === -1) {
       const length2 = path.length;
@@ -945,31 +836,30 @@ function interpolatePath({ path, params, decoder, ...rest }) {
         cursor2 = end;
         const part = path.substring(start, end);
         if (!part) continue;
-        if (part.charCodeAt(0) === 36)
-          if (part.length === 1) {
-            const splat = params._splat;
-            usedParams._splat = splat;
-            usedParams["*"] = splat;
-            if (!splat) {
-              isMissingParams = true;
-              continue;
-            }
-            const value = encodeParam("_splat", params, decoder);
-            joined2 += "/" + value;
-          } else {
-            const key = part.substring(1);
-            if (!isMissingParams && !(key in params)) isMissingParams = true;
-            usedParams[key] = params[key];
-            const value = encodeParam(key, params, decoder) ?? "undefined";
-            joined2 += "/" + value;
+        if (part.charCodeAt(0) === 36) if (part.length === 1) {
+          const splat = params._splat;
+          usedParams._splat = splat;
+          usedParams["*"] = splat;
+          if (!splat) {
+            isMissingParams = true;
+            continue;
           }
+          const value = encodeParam("_splat", params, decoder);
+          joined2 += "/" + value;
+        } else {
+          const key = part.substring(1);
+          if (!isMissingParams && !(key in params)) isMissingParams = true;
+          usedParams[key] = params[key];
+          const value = encodeParam(key, params, decoder) ?? "undefined";
+          joined2 += "/" + value;
+        }
         else joined2 += "/" + part;
       }
       if (path.endsWith("/")) joined2 += "/";
       return {
         usedParams,
         interpolatedPath: joined2 || "/",
-        isMissingParams,
+        isMissingParams
       };
     }
   }
@@ -1029,7 +919,7 @@ function interpolatePath({ path, params, decoder, ...rest }) {
   return {
     usedParams,
     interpolatedPath: joined || "/",
-    isMissingParams,
+    isMissingParams
   };
 }
 function encodePathParam(value, decoder) {
@@ -1082,10 +972,10 @@ function parseSearchWith(parser) {
     const query = decode(searchStr);
     for (const key in query) {
       const value = query[key];
-      if (typeof value === "string")
-        try {
-          query[key] = parser(value);
-        } catch (_err) {}
+      if (typeof value === "string") try {
+        query[key] = parser(value);
+      } catch (_err) {
+      }
     }
     return query;
   };
@@ -1093,16 +983,17 @@ function parseSearchWith(parser) {
 function stringifySearchWith(stringify, parser) {
   const isJsonParser = parser === JSON.parse;
   function stringifyValue(val) {
-    if (val && typeof val === "object")
-      try {
-        return stringify(val);
-      } catch (_err) {}
+    if (val && typeof val === "object") try {
+      return stringify(val);
+    } catch (_err) {
+    }
     else if (parser && typeof val === "string") {
       if (isJsonParser && !jsonStart.test(val)) return val;
       try {
         parser(val);
         return stringify(val);
-      } catch (_err) {}
+      } catch (_err) {
+      }
     }
     return val;
   }
@@ -1120,7 +1011,7 @@ function composeRewrites(rewrites) {
     output: ({ url }) => {
       for (let i = rewrites.length - 1; i >= 0; i--) url = executeRewriteOutput(rewrites[i], url);
       return url;
-    },
+    }
   };
 }
 function rewriteBasepath(opts) {
@@ -1132,14 +1023,17 @@ function rewriteBasepath(opts) {
     input: ({ url }) => {
       const pathname = opts.caseSensitive ? url.pathname : url.pathname.toLowerCase();
       if (pathname === checkBasepath) url.pathname = "/";
-      else if (pathname.startsWith(checkBasepathWithSlash))
-        url.pathname = url.pathname.slice(normalizedBasepath.length);
+      else if (pathname.startsWith(checkBasepathWithSlash)) url.pathname = url.pathname.slice(normalizedBasepath.length);
       return url;
     },
     output: ({ url }) => {
-      url.pathname = joinPaths(["/", trimmedBasepath, url.pathname]);
+      url.pathname = joinPaths([
+        "/",
+        trimmedBasepath,
+        url.pathname
+      ]);
       return url;
-    },
+    }
   };
 }
 function executeRewriteInput(rewrite, url) {
@@ -1166,15 +1060,13 @@ function createNonReactiveMutableStore(initialValue) {
     },
     set(nextOrUpdater) {
       value = functionalUpdate(nextOrUpdater, value);
-    },
+    }
   };
 }
 function createNonReactiveReadonlyStore(read) {
-  return {
-    get() {
-      return read();
-    },
-  };
+  return { get() {
+    return read();
+  } };
 }
 function createRouterStores(initialLocation, config) {
   const { createMutableStore, createReadonlyStore, batch } = config;
@@ -1189,7 +1081,7 @@ function createRouterStores(initialLocation, config) {
     isLoading: status.get() === "pending",
     matches: matches.get(),
     location: location.get(),
-    resolvedLocation: resolvedLocation.get(),
+    resolvedLocation: resolvedLocation.get()
   }));
   function getMatchStore(routeId) {
     let matchStore = byRoute.get(routeId);
@@ -1208,7 +1100,7 @@ function createRouterStores(initialLocation, config) {
     byRoute,
     __store,
     getMatchStore,
-    setMatches,
+    setMatches
   };
   function setMatches(nextMatches) {
     const previousIds = ids.get();
@@ -1225,13 +1117,7 @@ function createRouterStores(initialLocation, config) {
   return store;
 }
 function routeNeedsLoad(route) {
-  return (
-    route.options.loader ||
-    route.options.beforeLoad ||
-    route.lazyFn ||
-    route.options.component?.preload ||
-    route.options.pendingComponent?.preload
-  );
+  return route.options.loader || route.options.beforeLoad || route.lazyFn || route.options.component?.preload || route.options.pendingComponent?.preload;
 }
 function getLocationChangeInfo(location, resolvedLocation) {
   return {
@@ -1239,33 +1125,24 @@ function getLocationChangeInfo(location, resolvedLocation) {
     toLocation: location,
     pathChanged: resolvedLocation?.pathname !== location.pathname,
     hrefChanged: resolvedLocation?.href !== location.href,
-    hashChanged: resolvedLocation?.hash !== location.hash,
+    hashChanged: resolvedLocation?.hash !== location.hash
   };
 }
-function _getUserHistoryState({
-  key: _key,
-  __TSR_key: _tsrKey,
-  __TSR_index: _tsrIndex,
-  __hashScrollIntoViewOptions: _hashScroll,
-  ...state
-}) {
+function _getUserHistoryState({ key: _key, __TSR_key: _tsrKey, __TSR_index: _tsrIndex, __hashScrollIntoViewOptions: _hashScroll, ...state }) {
   return state;
 }
 function runRouteLifecycle(router, previous, matches, isCurrent) {
   for (const match of previous) {
-    if (!matches.some((candidate) => candidate.routeId === match.routeId))
-      router.routesById[match.routeId].options.onLeave?.(match);
+    if (!matches.some((candidate) => candidate.routeId === match.routeId)) router.routesById[match.routeId].options.onLeave?.(match);
   }
   for (const match of matches) {
-    router.routesById[match.routeId].options[
-      previous.some((candidate) => candidate.routeId === match.routeId) ? "onStay" : "onEnter"
-    ]?.(match);
+    router.routesById[match.routeId].options[previous.some((candidate) => candidate.routeId === match.routeId) ? "onStay" : "onEnter"]?.(match);
   }
 }
 var RouterCore = class {
   /**
-   * @deprecated Use the `createRouter` function instead
-   */
+  * @deprecated Use the `createRouter` function instead
+  */
   constructor(options, getStoreConfig) {
     this.tempLocationKey = `${Math.round(Math.random() * 1e7)}`;
     this._scroll = { next: true };
@@ -1285,15 +1162,13 @@ var RouterCore = class {
       const prevRewriteOption = prevOptions?.rewrite;
       this.options = {
         ...prevOptions,
-        ...newOptions,
+        ...newOptions
       };
       this.isServer = this.options.isServer ?? isServer ?? typeof document === "undefined";
       this.protocolAllowlist = new Set(this.options.protocolAllowlist);
-      if (this.options.pathParamsAllowedCharacters)
-        this.pathParamsDecoder = compileDecodeCharMap(this.options.pathParamsAllowedCharacters);
-      if (!this.history || (this.options.history && this.options.history !== this.history))
-        if (!this.options.history);
-        else this.history = this.options.history;
+      if (this.options.pathParamsAllowedCharacters) this.pathParamsDecoder = compileDecodeCharMap(this.options.pathParamsAllowedCharacters);
+      if (!this.history || this.options.history && this.options.history !== this.history) if (!this.options.history) ;
+      else this.history = this.options.history;
       this.origin = this.options.origin;
       if (!this.origin) this.origin = "http://localhost";
       if (this.history) this.updateLatestLocation();
@@ -1307,12 +1182,11 @@ var RouterCore = class {
         } else {
           this.resolvePathCache = createLRUCache(1e3);
           processRouteTreeResult = this.buildRouteTree();
-          if (globalThis.__TSR_CACHE__ === void 0)
-            globalThis.__TSR_CACHE__ = {
-              routeTree: this.routeTree,
-              processRouteTreeResult,
-              resolvePathCache: this.resolvePathCache,
-            };
+          if (globalThis.__TSR_CACHE__ === void 0) globalThis.__TSR_CACHE__ = {
+            routeTree: this.routeTree,
+            processRouteTreeResult,
+            resolvePathCache: this.resolvePathCache
+          };
         }
         this.setRoutes(processRouteTreeResult);
       }
@@ -1323,22 +1197,13 @@ var RouterCore = class {
       }
       const nextBasepath = this.options.basepath ?? "/";
       const nextRewriteOption = this.options.rewrite;
-      if (
-        basepathWasUnset ||
-        prevBasepath !== nextBasepath ||
-        prevRewriteOption !== nextRewriteOption
-      ) {
+      if (basepathWasUnset || prevBasepath !== nextBasepath || prevRewriteOption !== nextRewriteOption) {
         this.basepath = nextBasepath;
         const rewrites = [];
         const trimmed = trimPath(nextBasepath);
         if (trimmed && trimmed !== "/") rewrites.push(rewriteBasepath({ basepath: nextBasepath }));
         if (nextRewriteOption) rewrites.push(nextRewriteOption);
-        this.rewrite =
-          rewrites.length === 0
-            ? void 0
-            : rewrites.length === 1
-              ? rewrites[0]
-              : composeRewrites(rewrites);
+        this.rewrite = rewrites.length === 0 ? void 0 : rewrites.length === 1 ? rewrites[0] : composeRewrites(rewrites);
         if (this.history) this.updateLatestLocation();
         if (this.stores) this.stores.location.set(this.latestLocation);
       }
@@ -1356,7 +1221,7 @@ var RouterCore = class {
     this.subscribe = (eventType, fn) => {
       const listener = {
         eventType,
-        fn,
+        fn
       };
       this.subscribers.add(listener);
       return () => {
@@ -1364,13 +1229,11 @@ var RouterCore = class {
       };
     };
     this.emit = (routerEvent) => {
-      for (const listener of this.subscribers)
-        if (listener.eventType === routerEvent.type)
-          try {
-            listener.fn(routerEvent);
-          } catch (e) {
-            console.error(e);
-          }
+      for (const listener of this.subscribers) if (listener.eventType === routerEvent.type) try {
+        listener.fn(routerEvent);
+      } catch (e) {
+        console.error(e);
+      }
     };
     this.parseLocation = (locationToParse, previousLocation) => {
       const parse = ({ pathname, search, hash, href, state }) => {
@@ -1385,7 +1248,7 @@ var RouterCore = class {
             searchStr: searchStr2,
             search: nullReplaceEqualDeep(previousLocation?.search, parsedSearch2),
             hash: decodePath(hash.slice(1)).path,
-            state: replaceEqualDeep(previousLocation?.state, state),
+            state: replaceEqualDeep(previousLocation?.state, state)
           };
         }
         const fullUrl = new URL(href, this.origin);
@@ -1401,7 +1264,7 @@ var RouterCore = class {
           searchStr,
           search: nullReplaceEqualDeep(previousLocation?.search, parsedSearch),
           hash: decodePath(url.hash.slice(1)).path,
-          state: replaceEqualDeep(previousLocation?.state, state),
+          state: replaceEqualDeep(previousLocation?.state, state)
         };
       };
       const location = parse(locationToParse);
@@ -1413,7 +1276,7 @@ var RouterCore = class {
         delete parsedTempLocation.state.__tempLocation;
         return {
           ...parsedTempLocation,
-          maskedLocation: location,
+          maskedLocation: location
         };
       }
       return location;
@@ -1423,40 +1286,36 @@ var RouterCore = class {
         base: from,
         to: path.includes("//") ? cleanPath(path) : path,
         trailingSlash: this.options.trailingSlash,
-        cache: this.resolvePathCache,
+        cache: this.resolvePathCache
       });
     };
     this.matchRoutes = (pathnameOrNext, locationSearchOrOpts, opts) => {
-      if (typeof pathnameOrNext === "string")
-        return this.matchRoutesInternal(
-          {
-            pathname: pathnameOrNext,
-            search: locationSearchOrOpts,
-          },
-          opts,
-        );
+      if (typeof pathnameOrNext === "string") return this.matchRoutesInternal({
+        pathname: pathnameOrNext,
+        search: locationSearchOrOpts
+      }, opts);
       return this.matchRoutesInternal(pathnameOrNext, locationSearchOrOpts);
     };
     this.getMatchedRoutes = (pathname) => {
       const rawParams = /* @__PURE__ */ Object.create(null);
       const match = findRouteMatch(trimPathRight(pathname), this.processedTree, true);
       if (match) Object.assign(rawParams, match.rawParams);
-      return [match?.branch || [this.routesById["__root__"]], rawParams, match?.route];
+      return [
+        match?.branch || [this.routesById["__root__"]],
+        rawParams,
+        match?.route
+      ];
     };
     this.buildLocation = (opts) => {
       const build = (dest = {}) => {
         const currentLocation = dest._fromLocation || this._pendingLocation || this.latestLocation;
         const lightweightResult = this.matchRoutesLightweight(currentLocation);
-        if (dest.from && false);
-        const defaultedFromPath =
-          dest.unsafeRelative === "path"
-            ? currentLocation.pathname
-            : (dest.from ?? lightweightResult[1]);
+        if (dest.from && false) ;
+        const defaultedFromPath = dest.unsafeRelative === "path" ? currentLocation.pathname : dest.from ?? lightweightResult[1];
         const destTo = dest.to ? `${dest.to}` : void 0;
         const fromSearch = lightweightResult[2];
         const fromParams = Object.assign(/* @__PURE__ */ Object.create(null), lightweightResult[3]);
-        const sourcePath =
-          destTo?.charCodeAt(0) === 47 ? "/" : this.resolvePathWithBase(defaultedFromPath, ".");
+        const sourcePath = destTo?.charCodeAt(0) === 47 ? "/" : this.resolvePathWithBase(defaultedFromPath, ".");
         const nextTo = destTo ? this.resolvePathWithBase(sourcePath, destTo) : sourcePath;
         const nextParams = resolveNextParams(dest.params, fromParams);
         const destRoute = this.routesByPath[trimPathRight(nextTo)];
@@ -1466,68 +1325,41 @@ var RouterCore = class {
         else {
           const [matchedRoutes, rawParams, foundRoute] = this.getMatchedRoutes(nextTo);
           destRoutes = matchedRoutes;
-          if (
-            this.options.notFoundRoute &&
-            (!foundRoute || (foundRoute.path !== "/" && rawParams["**"]))
-          )
-            destRoutes = [...destRoutes, this.options.notFoundRoute];
+          if (this.options.notFoundRoute && (!foundRoute || foundRoute.path !== "/" && rawParams["**"])) destRoutes = [...destRoutes, this.options.notFoundRoute];
         }
-        if (destRoutes.length && hasKeys(nextParams))
-          for (const route of destRoutes) {
-            const fn = route.options.params?.stringify ?? route.options.stringifyParams;
-            if (fn)
-              try {
-                Object.assign(nextParams, fn(nextParams));
-              } catch {}
+        if (destRoutes.length && hasKeys(nextParams)) for (const route of destRoutes) {
+          const fn = route.options.params?.stringify ?? route.options.stringifyParams;
+          if (fn) try {
+            Object.assign(nextParams, fn(nextParams));
+          } catch {
           }
-        const nextPathname = opts.leaveParams
-          ? nextTo
-          : decodePath(
-              interpolatePath({
-                path: nextTo,
-                params: nextParams,
-                decoder: this.pathParamsDecoder,
-                server: this.isServer,
-              }).interpolatedPath,
-            ).path;
+        }
+        const nextPathname = opts.leaveParams ? nextTo : decodePath(interpolatePath({
+          path: nextTo,
+          params: nextParams,
+          decoder: this.pathParamsDecoder,
+          server: this.isServer
+        }).interpolatedPath).path;
         let nextSearch = fromSearch;
         if (opts._includeValidateSearch && this.options.search?.strict) {
           const validatedSearch = {};
           destRoutes.forEach((route) => {
-            if (route.options.validateSearch)
-              try {
-                Object.assign(
-                  validatedSearch,
-                  validateSearch(route.options.validateSearch, {
-                    ...validatedSearch,
-                    ...nextSearch,
-                  }),
-                );
-              } catch {}
+            if (route.options.validateSearch) try {
+              Object.assign(validatedSearch, validateSearch(route.options.validateSearch, {
+                ...validatedSearch,
+                ...nextSearch
+              }));
+            } catch {
+            }
           });
           nextSearch = validatedSearch;
         }
-        nextSearch = applySearchMiddleware(
-          nextSearch,
-          dest,
-          destRoutes,
-          opts._includeValidateSearch,
-        );
+        nextSearch = applySearchMiddleware(nextSearch, dest, destRoutes, opts._includeValidateSearch);
         nextSearch = nullReplaceEqualDeep(fromSearch, nextSearch);
         const searchStr = this.options.stringifySearch(nextSearch);
-        const hash =
-          dest.hash === true
-            ? currentLocation.hash
-            : dest.hash
-              ? functionalUpdate(dest.hash, currentLocation.hash)
-              : void 0;
+        const hash = dest.hash === true ? currentLocation.hash : dest.hash ? functionalUpdate(dest.hash, currentLocation.hash) : void 0;
         const hashStr = hash ? `#${hash}` : "";
-        let nextState =
-          dest.state === true
-            ? currentLocation.state
-            : dest.state
-              ? functionalUpdate(dest.state, currentLocation.state)
-              : {};
+        let nextState = dest.state === true ? currentLocation.state : dest.state ? functionalUpdate(dest.state, currentLocation.state) : {};
         nextState = replaceEqualDeep(currentLocation.state, nextState);
         const fullPath = `${nextPathname}${searchStr}${hashStr}`;
         let href;
@@ -1554,7 +1386,7 @@ var RouterCore = class {
           state: nextState,
           hash: hash ?? "",
           external,
-          unmaskOnReload: dest.unmaskOnReload,
+          unmaskOnReload: dest.unmaskOnReload
         };
       };
       const buildWithMatches = (dest = {}, maskedDest) => {
@@ -1571,7 +1403,7 @@ var RouterCore = class {
               maskedDest = {
                 from: opts.from,
                 ...maskProps,
-                params: nextParams,
+                params: nextParams
               };
               maskedNext = build(maskedDest);
             }
@@ -1580,21 +1412,15 @@ var RouterCore = class {
         if (maskedNext) next.maskedLocation = maskedNext;
         return next;
       };
-      if (opts.mask)
-        return buildWithMatches(opts, {
-          from: opts.from,
-          ...opts.mask,
-        });
+      if (opts.mask) return buildWithMatches(opts, {
+        from: opts.from,
+        ...opts.mask
+      });
       return buildWithMatches(opts);
     };
     this.commitLocation = async ({ viewTransition, ignoreBlocker, ...next }) => {
       let historyAction;
-      const isSameLocation =
-        trimPathRight(this.latestLocation.href) === trimPathRight(next.href) &&
-        deepEqual(
-          _getUserHistoryState(next.state),
-          _getUserHistoryState(this.latestLocation.state),
-        );
+      const isSameLocation = trimPathRight(this.latestLocation.href) === trimPathRight(next.href) && deepEqual(_getUserHistoryState(next.state), _getUserHistoryState(this.latestLocation.state));
       const previousCommitPromise = this._commitPromise;
       let resolve;
       const commitPromise = new Promise((done) => {
@@ -1622,38 +1448,23 @@ var RouterCore = class {
                   __tempKey: void 0,
                   __tempLocation: void 0,
                   __TSR_key: void 0,
-                  key: void 0,
-                },
-              },
-            },
+                  key: void 0
+                }
+              }
+            }
           };
-          if (nextHistory.unmaskOnReload ?? this.options.unmaskOnReload ?? false)
-            nextHistory.state.__tempKey = this.tempLocationKey;
+          if (nextHistory.unmaskOnReload ?? this.options.unmaskOnReload ?? false) nextHistory.state.__tempKey = this.tempLocationKey;
         }
-        nextHistory.state.__hashScrollIntoViewOptions =
-          hashScrollIntoView ?? this.options.defaultHashScrollIntoView ?? true;
+        nextHistory.state.__hashScrollIntoViewOptions = hashScrollIntoView ?? this.options.defaultHashScrollIntoView ?? true;
         this.shouldViewTransition = viewTransition;
         historyAction = next.replace ? "REPLACE" : "PUSH";
-        this.history[historyAction === "REPLACE" ? "replace" : "push"](
-          nextHistory.publicHref,
-          nextHistory.state,
-          { ignoreBlocker },
-        );
+        this.history[historyAction === "REPLACE" ? "replace" : "push"](nextHistory.publicHref, nextHistory.state, { ignoreBlocker });
         if (!this.history.subscribers.size) this.load({ action: { type: historyAction } });
       }
       this._scroll.next = next.resetScroll ?? true;
       return this._commitPromise;
     };
-    this.buildAndCommitLocation = ({
-      replace,
-      resetScroll,
-      hashScrollIntoView,
-      viewTransition,
-      ignoreBlocker,
-      _redirects,
-      href,
-      ...rest
-    } = {}) => {
+    this.buildAndCommitLocation = ({ replace, resetScroll, hashScrollIntoView, viewTransition, ignoreBlocker, _redirects, href, ...rest } = {}) => {
       if (href) {
         const currentIndex = this.history.location.state.__TSR_index;
         const parsed = parseHref(href, { __TSR_index: replace ? currentIndex : currentIndex + 1 });
@@ -1664,7 +1475,7 @@ var RouterCore = class {
       }
       const location = this.buildLocation({
         ...rest,
-        _includeValidateSearch: true,
+        _includeValidateSearch: true
       });
       if (_redirects) location._redirects = _redirects;
       this._pendingLocation = location;
@@ -1674,7 +1485,7 @@ var RouterCore = class {
         replace,
         resetScroll,
         hashScrollIntoView,
-        ignoreBlocker,
+        ignoreBlocker
       });
       queueMicrotask(() => {
         if (this._pendingLocation === location) this._pendingLocation = void 0;
@@ -1683,17 +1494,17 @@ var RouterCore = class {
     };
     this.navigate = async ({ to, reloadDocument, href, publicHref, ...rest }) => {
       let hrefIsUrl = false;
-      if (href)
-        try {
-          new URL(`${href}`);
-          hrefIsUrl = true;
-        } catch {}
+      if (href) try {
+        new URL(`${href}`);
+        hrefIsUrl = true;
+      } catch {
+      }
       if (hrefIsUrl && !reloadDocument) reloadDocument = true;
       if (reloadDocument) {
         if (to !== void 0 || !href) {
           const location = this.buildLocation({
             to,
-            ...rest,
+            ...rest
           });
           href = href ?? location.publicHref;
           publicHref = publicHref ?? location.publicHref;
@@ -1704,17 +1515,13 @@ var RouterCore = class {
         }
         if (!rest.ignoreBlocker) {
           const blockers = this.history.getBlockers?.() ?? [];
-          for (const blocker of blockers)
-            if (blocker?.blockerFn) {
-              if (
-                await blocker.blockerFn({
-                  currentLocation: this.latestLocation,
-                  nextLocation: this.latestLocation,
-                  action: "PUSH",
-                })
-              )
-                return;
-            }
+          for (const blocker of blockers) if (blocker?.blockerFn) {
+            if (await blocker.blockerFn({
+              currentLocation: this.latestLocation,
+              nextLocation: this.latestLocation,
+              action: "PUSH"
+            })) return;
+          }
         }
         if (rest.replace) window.location.replace(reloadHref);
         else window.location.href = reloadHref;
@@ -1724,7 +1531,7 @@ var RouterCore = class {
         ...rest,
         href,
         to,
-        _isNavigate: true,
+        _isNavigate: true
       });
     };
     this.load = async (opts) => {
@@ -1739,35 +1546,27 @@ var RouterCore = class {
       const committedMatches = this._committed;
       const filter = opts?.filter;
       const preloads = this._preloads;
-      const invalidIds = new Set(
-        [
-          ...committedMatches,
-          ...this._cache.values(),
-          ...[...(preloads?.values() ?? [])].flat(),
-          ...(this._tx?.[3] ?? []),
-        ]
-          .filter((match) => !filter || filter(match))
-          .map((match) => match.id),
-      );
+      const invalidIds = new Set([
+        ...committedMatches,
+        ...this._cache.values(),
+        ...[...preloads?.values() ?? []].flat(),
+        ...this._tx?.[3] ?? []
+      ].filter((match) => !filter || filter(match)).map((match) => match.id));
       const discardedPreloads = [];
-      for (const [controller, matches] of preloads ?? [])
-        if (matches.some((match) => invalidIds.has(match.id))) {
-          preloads.delete(controller);
-          discardedPreloads.push(controller);
-        }
+      for (const [controller, matches] of preloads ?? []) if (matches.some((match) => invalidIds.has(match.id))) {
+        preloads.delete(controller);
+        discardedPreloads.push(controller);
+      }
       const invalidate = (d) => {
         if (invalidIds.has(d.id)) {
           const route = this.routesById[d.routeId];
           const next = {
             ...d,
             invalid: true,
-            ...((opts?.forcePending || d.status === "error" || d.status === "notFound") &&
-            routeNeedsLoad(route)
-              ? {
-                  status: "pending",
-                  error: void 0,
-                }
-              : void 0),
+            ...(opts?.forcePending || d.status === "error" || d.status === "notFound") && routeNeedsLoad(route) ? {
+              status: "pending",
+              error: void 0
+            } : void 0
           };
           d._flight = void 0;
           return next;
@@ -1775,11 +1574,10 @@ var RouterCore = class {
         return d;
       };
       this._committed = committedMatches.map(invalidate);
-      for (const [id, match] of this._cache)
-        if (invalidIds.has(id)) {
-          match.invalid = true;
-          if (opts?.forcePending) match.status = "pending";
-        }
+      for (const [id, match] of this._cache) if (invalidIds.has(id)) {
+        match.invalid = true;
+        if (opts?.forcePending) match.status = "pending";
+      }
       for (const id of invalidIds) this._flights?.delete(id);
       for (const controller of discardedPreloads) controller.abort();
       this.shouldViewTransition = false;
@@ -1788,28 +1586,20 @@ var RouterCore = class {
     this.resolveRedirect = (redirect2) => {
       const locationHeader = redirect2.headers.get("Location");
       if (!redirect2.options.href || redirect2.options._builtLocation) {
-        const href =
-          (redirect2.options._builtLocation ?? this.buildLocation(redirect2.options)).publicHref ||
-          "/";
+        const href = (redirect2.options._builtLocation ?? this.buildLocation(redirect2.options)).publicHref || "/";
         redirect2.options.href = href;
         redirect2.headers.set("Location", href);
-      } else if (locationHeader)
-        try {
-          const url = new URL(locationHeader);
-          if (this.origin && url.origin === this.origin) {
-            const href = url.pathname + url.search + url.hash;
-            redirect2.options.href = href;
-            redirect2.headers.set("Location", href);
-          }
-        } catch {}
-      if (
-        redirect2.options.href &&
-        !redirect2.options._builtLocation &&
-        isDangerousProtocol(redirect2.options.href, this.protocolAllowlist)
-      )
-        throw new Error("Redirect blocked: unsafe protocol");
-      if (!redirect2.headers.get("Location"))
-        redirect2.headers.set("Location", redirect2.options.href);
+      } else if (locationHeader) try {
+        const url = new URL(locationHeader);
+        if (this.origin && url.origin === this.origin) {
+          const href = url.pathname + url.search + url.hash;
+          redirect2.options.href = href;
+          redirect2.headers.set("Location", href);
+        }
+      } catch {
+      }
+      if (redirect2.options.href && !redirect2.options._builtLocation && isDangerousProtocol(redirect2.options.href, this.protocolAllowlist)) throw new Error("Redirect blocked: unsafe protocol");
+      if (!redirect2.headers.get("Location")) redirect2.headers.set("Location", redirect2.options.href);
       return redirect2;
     };
     this.clearCache = (opts) => {
@@ -1818,17 +1608,15 @@ var RouterCore = class {
       const filter = opts?.filter;
       const discarded = [];
       const discardedIds = [];
-      for (const [id, match] of cached)
-        if (!filter || filter(match)) {
-          discardedIds.push(id);
-          discarded.push(match);
-        }
+      for (const [id, match] of cached) if (!filter || filter(match)) {
+        discardedIds.push(id);
+        discarded.push(match);
+      }
       const abort = [];
-      for (const [controller, matches] of preloads ?? [])
-        if (!filter || matches.some(filter)) {
-          abort.push(controller);
-          discarded.push(...matches);
-        }
+      for (const [controller, matches] of preloads ?? []) if (!filter || matches.some(filter)) {
+        abort.push(controller);
+        discarded.push(...matches);
+      }
       for (const id of discardedIds) cached.delete(id);
       for (const controller of abort) preloads.delete(controller);
       for (const match of discarded) {
@@ -1848,30 +1636,18 @@ var RouterCore = class {
         ...location,
         to: location.to ? this.resolvePathWithBase(location.from || "", location.to) : void 0,
         params: location.params || {},
-        leaveParams: true,
+        leaveParams: true
       };
       const next = this.buildLocation(matchLocation);
       const isPending = this.stores.status.get() === "pending";
       if (opts?.pending && !isPending) return false;
-      const baseLocation =
-        (opts?.pending ?? !isPending)
-          ? this.latestLocation
-          : this.stores.resolvedLocation.get() || this.stores.location.get();
-      const match = findSingleMatch(
-        next.pathname,
-        opts?.caseSensitive ?? false,
-        opts?.fuzzy ?? false,
-        baseLocation.pathname,
-        this.processedTree,
-      );
+      const baseLocation = opts?.pending ?? !isPending ? this.latestLocation : this.stores.resolvedLocation.get() || this.stores.location.get();
+      const match = findSingleMatch(next.pathname, opts?.caseSensitive ?? false, opts?.fuzzy ?? false, baseLocation.pathname, this.processedTree);
       if (!match) return false;
       if (location.params) {
         if (!deepEqual(match.rawParams, location.params, { partial: true })) return false;
       }
-      if (opts?.includeSearch ?? true)
-        return deepEqual(baseLocation.search, next.search, { partial: true })
-          ? match.rawParams
-          : false;
+      if (opts?.includeSearch ?? true) return deepEqual(baseLocation.search, next.search, { partial: true }) ? match.rawParams : false;
       return match.rawParams;
     };
     this.getStoreConfig = getStoreConfig;
@@ -1885,7 +1661,7 @@ var RouterCore = class {
       notFoundMode: options.notFoundMode ?? "fuzzy",
       stringifySearch: options.stringifySearch ?? defaultStringifySearch,
       parseSearch: options.parseSearch ?? defaultParseSearch,
-      protocolAllowlist: options.protocolAllowlist ?? DEFAULT_PROTOCOL_ALLOWLIST,
+      protocolAllowlist: options.protocolAllowlist ?? DEFAULT_PROTOCOL_ALLOWLIST
     });
   }
   isShell() {
@@ -1916,22 +1692,14 @@ var RouterCore = class {
     const [initialMatchedRoutes, rawParams, foundRoute] = this.getMatchedRoutes(next.pathname);
     let matchedRoutes = initialMatchedRoutes;
     let isGlobalNotFound = false;
-    if (foundRoute ? foundRoute.path !== "/" && rawParams["**"] : trimPathRight(next.pathname))
-      if (this.options.notFoundRoute)
-        matchedRoutes = [...matchedRoutes, this.options.notFoundRoute];
-      else isGlobalNotFound = true;
-    const _notFoundRouteId = isGlobalNotFound
-      ? findGlobalNotFoundRouteId(this.options.notFoundMode, matchedRoutes)
-      : void 0;
+    if (foundRoute ? foundRoute.path !== "/" && rawParams["**"] : trimPathRight(next.pathname)) if (this.options.notFoundRoute) matchedRoutes = [...matchedRoutes, this.options.notFoundRoute];
+    else isGlobalNotFound = true;
+    const _notFoundRouteId = isGlobalNotFound ? findGlobalNotFoundRouteId(this.options.notFoundMode, matchedRoutes) : void 0;
     const matches = new Array(matchedRoutes.length);
     const committed = this._committed;
     const previousAt = (route, index) => {
       const match = committed[index];
-      return match?.routeId === route.id
-        ? match
-        : route === this.options.notFoundRoute
-          ? committed.find((candidate) => candidate.routeId === route.id)
-          : void 0;
+      return match?.routeId === route.id ? match : route === this.options.notFoundRoute ? committed.find((candidate) => candidate.routeId === route.id) : void 0;
     };
     let strictParams;
     for (let index = 0; index < matchedRoutes.length; index++) {
@@ -1944,20 +1712,18 @@ var RouterCore = class {
         const parentSearch = parentMatch?.search ?? next.search;
         const parentStrictSearch = parentMatch?._strictSearch ?? void 0;
         try {
-          const strictSearch =
-            validateSearch(route.options.validateSearch, { ...parentSearch }) ?? void 0;
+          const strictSearch = validateSearch(route.options.validateSearch, { ...parentSearch }) ?? void 0;
           preMatchSearch = {
             ...parentSearch,
-            ...strictSearch,
+            ...strictSearch
           };
           strictMatchSearch = {
             ...parentStrictSearch,
-            ...strictSearch,
+            ...strictSearch
           };
         } catch (err) {
           let searchParamError = err;
-          if (!(err instanceof SearchParamError))
-            searchParamError = new SearchParamError(err.message, { cause: err });
+          if (!(err instanceof SearchParamError)) searchParamError = new SearchParamError(err.message, { cause: err });
           if (opts?.throwOnError) throw searchParamError;
           preMatchSearch = parentSearch;
           strictMatchSearch = {};
@@ -1977,34 +1743,29 @@ var RouterCore = class {
         path: route.fullPath,
         params: rawParams,
         decoder: this.pathParamsDecoder,
-        server: this.isServer,
+        server: this.isServer
       });
       const matchId = route.id + interpolatedPath + loaderDepsHash;
       const previousMatch = previousAt(route, index);
-      const existingMatch =
-        this._cache.get(matchId) ?? (previousMatch?.id === matchId ? previousMatch : void 0);
+      const existingMatch = this._cache.get(matchId) ?? (previousMatch?.id === matchId ? previousMatch : void 0);
       strictParams = existingMatch?._strictParams ?? Object.assign(usedParams, strictParams);
       let paramsError;
-      if (!existingMatch)
-        try {
-          extractStrictParams(route, strictParams);
-        } catch (err) {
-          if (isNotFound(err) || isRedirect(err)) paramsError = err;
-          else paramsError = new PathParamError(err.message, { cause: err });
-          if (opts?.throwOnError) throw paramsError;
-        }
+      if (!existingMatch) try {
+        extractStrictParams(route, strictParams);
+      } catch (err) {
+        if (isNotFound(err) || isRedirect(err)) paramsError = err;
+        else paramsError = new PathParamError(err.message, { cause: err });
+        if (opts?.throwOnError) throw paramsError;
+      }
       const cause = previousMatch ? "stay" : "enter";
       let match;
-      if (existingMatch)
-        match = {
-          ...existingMatch,
-          cause,
-          search: previousMatch
-            ? nullReplaceEqualDeep(previousMatch.search, preMatchSearch)
-            : nullReplaceEqualDeep(existingMatch.search, preMatchSearch),
-          _strictSearch: strictMatchSearch,
-          searchError,
-        };
+      if (existingMatch) match = {
+        ...existingMatch,
+        cause,
+        search: previousMatch ? nullReplaceEqualDeep(previousMatch.search, preMatchSearch) : nullReplaceEqualDeep(existingMatch.search, preMatchSearch),
+        _strictSearch: strictMatchSearch,
+        searchError
+      };
       else {
         const status = routeNeedsLoad(route) ? "pending" : "success";
         match = {
@@ -2016,9 +1777,7 @@ var RouterCore = class {
           _strictParams: strictParams,
           pathname: interpolatedPath,
           updatedAt: Date.now(),
-          search: previousMatch
-            ? nullReplaceEqualDeep(previousMatch.search, preMatchSearch)
-            : preMatchSearch,
+          search: previousMatch ? nullReplaceEqualDeep(previousMatch.search, preMatchSearch) : preMatchSearch,
           _strictSearch: strictMatchSearch,
           searchError,
           status,
@@ -2028,13 +1787,11 @@ var RouterCore = class {
           context: {},
           abortController: opts?._controller ?? new AbortController(),
           cause,
-          loaderDeps: previousMatch
-            ? replaceEqualDeep(previousMatch.loaderDeps, loaderDeps)
-            : loaderDeps,
+          loaderDeps: previousMatch ? replaceEqualDeep(previousMatch.loaderDeps, loaderDeps) : loaderDeps,
           invalid: false,
           preload: false,
           staticData: route.options.staticData || {},
-          fullPath: route.fullPath,
+          fullPath: route.fullPath
         };
       }
       const _notFound = _notFoundRouteId === route.id;
@@ -2044,17 +1801,16 @@ var RouterCore = class {
     }
     for (let index = 0; index < matches.length; index++) {
       const match = matches[index];
-      match.params =
-        match.cause === "stay" ? nullReplaceEqualDeep(match.params, strictParams) : strictParams;
+      match.params = match.cause === "stay" ? nullReplaceEqualDeep(match.params, strictParams) : strictParams;
       if (opts?._controller) match.context = {};
     }
     return matches;
   }
   /**
-   * Lightweight route matching for buildLocation.
-   * Only computes fullPath, accumulated search, and params - skipping expensive
-   * operations like AbortController, loaderDeps, and full match objects.
-   */
+  * Lightweight route matching for buildLocation.
+  * Only computes fullPath, accumulated search, and params - skipping expensive
+  * operations like AbortController, loaderDeps, and full match objects.
+  */
   matchRoutesLightweight(location) {
     const lastRouteId = last(this.stores.ids.get());
     const lastStateMatch = lastRouteId ? this.stores.byRoute.get(lastRouteId).get() : void 0;
@@ -2064,41 +1820,41 @@ var RouterCore = class {
     const [matchedRoutes, rawParams] = this.getMatchedRoutes(location.pathname);
     const lastRoute = last(matchedRoutes);
     const accumulatedSearch = { ...location.search };
-    for (const route of matchedRoutes)
-      try {
-        Object.assign(
-          accumulatedSearch,
-          validateSearch(route.options.validateSearch, accumulatedSearch),
-        );
-      } catch {}
-    const canReuseParams =
-      lastStateMatch &&
-      lastStateMatch.routeId === lastRoute.id &&
-      lastStateMatch.pathname === location.pathname;
+    for (const route of matchedRoutes) try {
+      Object.assign(accumulatedSearch, validateSearch(route.options.validateSearch, accumulatedSearch));
+    } catch {
+    }
+    const canReuseParams = lastStateMatch && lastStateMatch.routeId === lastRoute.id && lastStateMatch.pathname === location.pathname;
     let params;
     if (canReuseParams) params = lastStateMatch.params;
     else {
       const strictParams = Object.assign(/* @__PURE__ */ Object.create(null), rawParams);
-      for (const route of matchedRoutes)
-        try {
-          extractStrictParams(route, strictParams);
-        } catch {}
+      for (const route of matchedRoutes) try {
+        extractStrictParams(route, strictParams);
+      } catch {
+      }
       params = strictParams;
     }
-    const result = [matchedRoutes, lastRoute.fullPath, accumulatedSearch, params];
+    const result = [
+      matchedRoutes,
+      lastRoute.fullPath,
+      accumulatedSearch,
+      params
+    ];
     this.lightweightCache.set(location, [lastStateMatchId, result]);
     return result;
   }
 };
-var SearchParamError = class extends Error {};
-var PathParamError = class extends Error {};
+var SearchParamError = class extends Error {
+};
+var PathParamError = class extends Error {
+};
 function validateSearch(validateSearch2, input) {
   if (validateSearch2 == null) return {};
   if ("~standard" in validateSearch2) {
     const result = validateSearch2["~standard"].validate(input);
     if (result instanceof Promise) throw new SearchParamError("Async validation not supported");
-    if (result.issues)
-      throw new SearchParamError(JSON.stringify(result.issues, void 0, 2), { cause: result });
+    if (result.issues) throw new SearchParamError(JSON.stringify(result.issues, void 0, 2), { cause: result });
     return result.value;
   }
   if ("parse" in validateSearch2) return validateSearch2.parse(input);
@@ -2113,14 +1869,8 @@ function applySearchMiddleware(search, dest, destRoutes, includeValidateSearch) 
       if (routeOptions.search?.middlewares) middlewares.push(...routeOptions.search.middlewares);
     } else if (routeOptions.preSearchFilters || routeOptions.postSearchFilters) {
       const legacyMiddleware = ({ search: search2, next }) => {
-        const result = next(
-          routeOptions.preSearchFilters
-            ? routeOptions.preSearchFilters.reduce((prev, next2) => next2(prev), search2)
-            : search2,
-        );
-        return routeOptions.postSearchFilters
-          ? routeOptions.postSearchFilters.reduce((prev, next2) => next2(prev), result)
-          : result;
+        const result = next(routeOptions.preSearchFilters ? routeOptions.preSearchFilters.reduce((prev, next2) => next2(prev), search2) : search2);
+        return routeOptions.postSearchFilters ? routeOptions.postSearchFilters.reduce((prev, next2) => next2(prev), result) : result;
       };
       middlewares.push(legacyMiddleware);
     }
@@ -2128,19 +1878,17 @@ function applySearchMiddleware(search, dest, destRoutes, includeValidateSearch) 
     if (routeValidateSearch) {
       const validate = ({ search: search2, next, meta }) => {
         const result = next(search2);
-        if (includeValidateSearch)
-          try {
-            const validated = validateSearch(routeValidateSearch, result);
-            if (meta && validated) {
-              for (const key in validated)
-                if (!(key in result))
-                  (meta.defaulted ||= /* @__PURE__ */ new Map()).set(key, validated[key]);
-            }
-            return {
-              ...result,
-              ...validated,
-            };
-          } catch {}
+        if (includeValidateSearch) try {
+          const validated = validateSearch(routeValidateSearch, result);
+          if (meta && validated) {
+            for (const key in validated) if (!(key in result)) (meta.defaulted ||= /* @__PURE__ */ new Map()).set(key, validated[key]);
+          }
+          return {
+            ...result,
+            ...validated
+          };
+        } catch {
+        }
         return result;
       };
       middlewares.push(validate);
@@ -2159,7 +1907,7 @@ function applySearchMiddleware(search, dest, destRoutes, includeValidateSearch) 
         const nextMeta = meta || {};
         return {
           search: applyNext(index + 1, newSearch, nextMeta),
-          meta: nextMeta,
+          meta: nextMeta
         };
       }
       return applyNext(index + 1, newSearch, meta);
@@ -2167,7 +1915,7 @@ function applySearchMiddleware(search, dest, destRoutes, includeValidateSearch) 
     return middlewares[index]({
       search: currentSearch,
       next,
-      meta,
+      meta
     });
   };
   return applyNext(0, search);
@@ -2185,11 +1933,7 @@ function findGlobalNotFoundRouteId(notFoundMode, routes) {
   return rootRouteId;
 }
 function resolveNextParams(spec, base) {
-  return spec === false || spec === null
-    ? /* @__PURE__ */ Object.create(null)
-    : (spec ?? true) === true
-      ? base
-      : Object.assign(base, functionalUpdate(spec, base));
+  return spec === false || spec === null ? /* @__PURE__ */ Object.create(null) : (spec ?? true) === true ? base : Object.assign(base, functionalUpdate(spec, base));
 }
 function extractStrictParams(route, accumulatedParams) {
   const parseParams = route.options.params?.parse ?? route.options.parseParams;
@@ -2203,32 +1947,25 @@ function loadComponents(route, onPendingReady) {
   const pending = preloadComponent(route, "pendingComponent");
   const pendingReady = onPendingReady && pending ? pending.then(onPendingReady) : pending;
   if (onPendingReady && !pending) onPendingReady();
-  if (component && pendingReady) return Promise.all([component, pendingReady]).then(() => {});
+  if (component && pendingReady) return Promise.all([component, pendingReady]).then(() => {
+  });
   return component ?? pendingReady;
 }
 function loadRouteChunk(route, componentType, onPendingReady) {
-  const afterLazy = () =>
-    componentType === false
-      ? void 0
-      : componentType
-        ? preloadComponent(route, componentType)
-        : loadComponents(route, onPendingReady);
+  const afterLazy = () => componentType === false ? void 0 : componentType ? preloadComponent(route, componentType) : loadComponents(route, onPendingReady);
   const current = route._lazy;
   if (current) return current === true ? afterLazy() : current.then(afterLazy);
   if (!route.lazyFn) return afterLazy();
-  const promise = route.lazyFn().then(
-    (lazyRoute) => {
-      {
-        const { id: _id, ...options } = lazyRoute.options;
-        Object.assign(route.options, options);
-        route._lazy = true;
-      }
-    },
-    (error) => {
-      route._lazy = void 0;
-      throw error;
-    },
-  );
+  const promise = route.lazyFn().then((lazyRoute) => {
+    {
+      const { id: _id, ...options } = lazyRoute.options;
+      Object.assign(route.options, options);
+      route._lazy = true;
+    }
+  }, (error) => {
+    route._lazy = void 0;
+    throw error;
+  });
   route._lazy = promise;
   return promise.then(afterLazy);
 }
@@ -2264,9 +2001,7 @@ function waitFor$1(value, signal) {
   return new Promise((resolve, reject) => {
     const abort = () => reject(signal);
     signal.addEventListener("abort", abort, { once: true });
-    Promise.resolve(value)
-      .then(resolve, reject)
-      .finally(() => signal.removeEventListener("abort", abort));
+    Promise.resolve(value).then(resolve, reject).finally(() => signal.removeEventListener("abort", abort));
   });
 }
 function getRoute$1(router, match) {
@@ -2278,8 +2013,7 @@ function normalize$1(value, rejected, routeId) {
     value.routeId ||= routeId;
     return [NOT_FOUND$1, value];
   }
-  if (rejected && typeof value?.then === "function")
-    value = new Error("A Promise was thrown", { cause: value });
+  if (rejected && typeof value?.then === "function") value = new Error("A Promise was thrown", { cause: value });
   return rejected ? [ERROR$1, value] : [SUCCESS$1, value];
 }
 function normalizeError$1(route, cause) {
@@ -2300,11 +2034,10 @@ function normalizeLaneError(route, cause, options) {
   return normalizeError$1(route, cause);
 }
 function navigateFrom$1(router, location) {
-  return (opts) =>
-    router.navigate({
-      ...opts,
-      _fromLocation: location,
-    });
+  return (opts) => router.navigate({
+    ...opts,
+    _fromLocation: location
+  });
 }
 async function contextualize$1(router, lane, options, end, planSuccessfulLane, retainedEnd) {
   const [location, matches] = lane;
@@ -2324,21 +2057,19 @@ async function contextualize$1(router, lane, options, end, planSuccessfulLane, r
       abortController: options[0],
       preload,
       matches,
-      routeId: route.id,
+      routeId: route.id
     };
     let context = parentContext;
     try {
       let routeContext = match._ctx;
-      if (!routeContext && route.options.context)
-        routeContext = match._ctx =
-          route.options.context({
-            ...common,
-            deps: match.loaderDeps,
-            context: parentContext,
-          }) || {};
+      if (!routeContext && route.options.context) routeContext = match._ctx = route.options.context({
+        ...common,
+        deps: match.loaderDeps,
+        context: parentContext
+      }) || {};
       context = {
         ...parentContext,
-        ...routeContext,
+        ...routeContext
       };
       match.context = context;
     } catch (cause) {
@@ -2360,7 +2091,7 @@ async function contextualize$1(router, lane, options, end, planSuccessfulLane, r
       ...common,
       search: match.search,
       context,
-      ...router.options.additionalContext,
+      ...router.options.additionalContext
     };
     const previousStatus = match.status;
     if (previousStatus === "success" && index >= retainedEnd) match.status = "pending";
@@ -2379,7 +2110,7 @@ async function contextualize$1(router, lane, options, end, planSuccessfulLane, r
       }
       match.context = {
         ...context,
-        ...result,
+        ...result
       };
     } catch (cause) {
       releaseFlight(router, match);
@@ -2395,15 +2126,7 @@ function releaseOwnedFlight(router, match, flight) {
   if (!flight || --flight[2]) return;
   if (router._flights?.get(match.id) === flight) {
     const current = router._tx;
-    if (
-      current &&
-      !current[0].signal.aborted &&
-      true &&
-      !current[3].includes(match) &&
-      current[3].some((candidate) => candidate.id === match.id) &&
-      current[3].some((candidate) => candidate.isFetching === "beforeLoad")
-    )
-      return;
+    if (current && !current[0].signal.aborted && true && !current[3].includes(match) && current[3].some((candidate) => candidate.id === match.id) && current[3].some((candidate) => candidate.isFetching === "beforeLoad")) return;
     router._flights.delete(match.id);
   }
   return flight[1];
@@ -2436,11 +2159,10 @@ function setFetching(router, match, value, owner) {
   if (owner && router._tx?.[0] !== owner) return;
   const store = router.stores.byRoute.get(match.routeId);
   const presented = store?.get();
-  if (presented?.id === match.id)
-    store.set({
-      ...presented,
-      isFetching: value,
-    });
+  if (presented?.id === match.id) store.set({
+    ...presented,
+    isFetching: value
+  });
 }
 function getLoaderContext$1(router, lane, match, route, controller, parentMatchPromise, preload) {
   const location = lane[0];
@@ -2455,19 +2177,10 @@ function getLoaderContext$1(router, lane, match, route, controller, parentMatchP
     parentMatchPromise,
     context: match.context,
     route,
-    ...router.options.additionalContext,
+    ...router.options.additionalContext
   };
 }
-async function loadResource(
-  router,
-  lane,
-  match,
-  route,
-  loader,
-  parentMatchPromise,
-  preload,
-  owner,
-) {
+async function loadResource(router, lane, match, route, loader, parentMatchPromise, preload, owner) {
   const signal = owner.signal;
   if (signal.aborted) return [CANCELED];
   if (!loader) return [SUCCESS$1, void 0];
@@ -2477,33 +2190,15 @@ async function loadResource(
     if (!flight) {
       const controller = new AbortController();
       flight = [
-        Promise.resolve()
-          .then(() =>
-            loader(
-              getLoaderContext$1(
-                router,
-                lane,
-                match,
-                route,
-                controller,
-                parentMatchPromise,
-                preload,
-              ),
-            ),
-          )
-          .then(
-            (value) => normalize$1(value, false, route.id),
-            (cause) => normalize$1(cause, true, route.id),
-          )
-          .then((result) => {
-            if (result[0] !== SUCCESS$1 && router._flights?.get(match.id) === flight) {
-              router._flights.delete(match.id);
-              if (!flight[2]) controller.abort();
-            }
-            return result[0] === ERROR$1 && flight[2] ? normalizeError$1(route, result[1]) : result;
-          }),
+        Promise.resolve().then(() => loader(getLoaderContext$1(router, lane, match, route, controller, parentMatchPromise, preload))).then((value) => normalize$1(value, false, route.id), (cause) => normalize$1(cause, true, route.id)).then((result) => {
+          if (result[0] !== SUCCESS$1 && router._flights?.get(match.id) === flight) {
+            router._flights.delete(match.id);
+            if (!flight[2]) controller.abort();
+          }
+          return result[0] === ERROR$1 && flight[2] ? normalizeError$1(route, result[1]) : result;
+        }),
         controller,
-        1,
+        1
       ];
       (router._flights ??= /* @__PURE__ */ new Map()).set(match.id, flight);
     }
@@ -2534,30 +2229,23 @@ function settleInto(match, result, preload) {
 }
 function cacheLoaderMatch(router, match, planned) {
   const current = router._cache.get(match.id);
-  if (
-    current !== planned ||
-    router._committed.some(
-      (candidate) => candidate.id === match.id && candidate._flight === match._flight,
-    )
-  )
-    return;
+  if (current !== planned || router._committed.some((candidate) => candidate.id === match.id && candidate._flight === match._flight)) return;
   const cached = {
     ...match,
     _notFound: void 0,
-    context: {},
+    context: {}
   };
   if (cached._flight) cached._flight[2]++;
   router._cache.set(match.id, cached);
   if (current) releaseFlight(router, current);
 }
 function getParentSnapshot(match, outcome) {
-  if (outcome[0] === ERROR$1 || outcome[0] === NOT_FOUND$1)
-    return {
-      ...match,
-      status: outcome[0] === ERROR$1 ? "error" : "notFound",
-      error: outcome[1],
-      _flight: void 0,
-    };
+  if (outcome[0] === ERROR$1 || outcome[0] === NOT_FOUND$1) return {
+    ...match,
+    status: outcome[0] === ERROR$1 ? "error" : "notFound",
+    error: outcome[1],
+    _flight: void 0
+  };
   return match;
 }
 function createLoaderTask$1(router, lane, index, tasks, semanticParent, options, retainedEnd) {
@@ -2571,34 +2259,17 @@ function createLoaderTask$1(router, lane, index, tasks, semanticParent, options,
   try {
     if (match.status === "success") {
       configured = route.options.shouldReload;
-      if (typeof configured === "function")
-        configured = configured(
-          getLoaderContext$1(router, lane, match, route, options[0], semanticParent, preload),
-        );
+      if (typeof configured === "function") configured = configured(getLoaderContext$1(router, lane, match, route, options[0], semanticParent, preload));
       if (!options[2]()) {
         options[0].abort();
         reloadFailure = [CANCELED];
       }
     }
-    if (!reloadFailure)
-      if (match.status !== "success") reload = true;
-      else {
-        const staleAge =
-          options[4] || match.preload
-            ? (route.options.preloadStaleTime ?? router.options.defaultPreloadStaleTime ?? 3e4)
-            : (route.options.staleTime ?? router.options.defaultStaleTime ?? 0);
-        reload = !!(
-          match.invalid ||
-          configured ||
-          (configured === void 0 &&
-            Date.now() - match.updatedAt >= staleAge &&
-            (options[6] ||
-              match.cause === "enter" ||
-              options[3].some(
-                (candidate2) => candidate2.routeId === match.routeId && candidate2.id !== match.id,
-              )))
-        );
-      }
+    if (!reloadFailure) if (match.status !== "success") reload = true;
+    else {
+      const staleAge = options[4] || match.preload ? route.options.preloadStaleTime ?? router.options.defaultPreloadStaleTime ?? 3e4 : route.options.staleTime ?? router.options.defaultStaleTime ?? 0;
+      reload = !!(match.invalid || configured || configured === void 0 && Date.now() - match.updatedAt >= staleAge && (options[6] || match.cause === "enter" || options[3].some((candidate2) => candidate2.routeId === match.routeId && candidate2.id !== match.id)));
+    }
   } catch (cause) {
     match.invalid = true;
     releaseFlight(router, match);
@@ -2606,22 +2277,11 @@ function createLoaderTask$1(router, lane, index, tasks, semanticParent, options,
   }
   const routeLoader = route.options.loader;
   const loader = typeof routeLoader === "function" ? routeLoader : routeLoader?.handler;
-  let donor =
-    (!preload || route.options.preload !== false) && routeLoader && true
-      ? router._flights?.get(match.id)
-      : void 0;
+  let donor = (!preload || route.options.preload !== false) && routeLoader && true ? router._flights?.get(match.id) : void 0;
   if (donor === match._flight || reloadFailure) donor = void 0;
   else if (donor && !reload && !preload && configured === void 0) reload = true;
   else if (!reload) donor = void 0;
-  const background = !!(
-    routeLoader &&
-    reload &&
-    match.status === "success" &&
-    !preload &&
-    !options[5] &&
-    ((typeof routeLoader === "function" ? void 0 : routeLoader?.staleReloadMode) ??
-      router.options.defaultStaleReloadMode) !== "blocking"
-  );
+  const background = !!(routeLoader && reload && match.status === "success" && !preload && !options[5] && ((typeof routeLoader === "function" ? void 0 : routeLoader?.staleReloadMode) ?? router.options.defaultStaleReloadMode) !== "blocking");
   const loaded = reload && (!preload || route.options.preload !== false);
   const blocking = loaded && !background && (match.status !== "success" || !!routeLoader);
   const onLazyReady = route.lazyFn && route._lazy !== true ? options[8] : void 0;
@@ -2638,124 +2298,89 @@ function createLoaderTask$1(router, lane, index, tasks, semanticParent, options,
     options[8]?.();
   }
   if (!loaded) match.isFetching = false;
-  const outcome = (
-    reloadFailure
-      ? Promise.resolve(reloadFailure)
-      : !blocking
-        ? Promise.resolve([SUCCESS$1, match.loaderData])
-        : loadResource(router, lane, match, route, loader, semanticParent, preload, options[0])
-  ).then((result) => {
+  const outcome = (reloadFailure ? Promise.resolve(reloadFailure) : !blocking ? Promise.resolve([SUCCESS$1, match.loaderData]) : loadResource(router, lane, match, route, loader, semanticParent, preload, options[0])).then((result) => {
     if (blocking) {
       settleInto(match, result, preload);
       if (result[0] === SUCCESS$1) {
-        if (routeLoader && !options[0].signal.aborted && true)
-          cacheLoaderMatch(router, match, plannedCacheMatch);
+        if (routeLoader && !options[0].signal.aborted && true) cacheLoaderMatch(router, match, plannedCacheMatch);
         match.status = "pending";
       }
     }
     return result;
   });
-  const chunkFailure = waitFor$1(
-    Promise.resolve().then(() => loadRouteChunk(route, void 0, onLazyReady)),
-    options[0].signal,
-  )
-    .then(
-      () => void 0,
-      (cause) => [index, normalizeLaneError(route, cause, options)],
-    )
-    .then((failure) =>
-      outcome.then((result) => {
-        if (
-          blocking &&
-          !failure &&
-          result[0] === SUCCESS$1 &&
-          match.status === "pending" &&
-          options[2]()
-        ) {
-          match.status = "success";
-          options[8]?.();
-        }
-        return failure;
-      }),
-    );
-  tasks.push([index, outcome, chunkFailure]);
+  const chunkFailure = waitFor$1(Promise.resolve().then(() => loadRouteChunk(route, void 0, onLazyReady)), options[0].signal).then(() => void 0, (cause) => [index, normalizeLaneError(route, cause, options)]).then((failure) => outcome.then((result) => {
+    if (blocking && !failure && result[0] === SUCCESS$1 && match.status === "pending" && options[2]()) {
+      match.status = "success";
+      options[8]?.();
+    }
+    return failure;
+  }));
+  tasks.push([
+    index,
+    outcome,
+    chunkFailure
+  ]);
   if (!background) return outcome.then((result) => getParentSnapshot(match, result));
   const candidate = {
     ...match,
     status: "pending",
     preload: false,
-    _flight: donor,
+    _flight: donor
   };
   match.invalid = false;
   match.isFetching = "loader";
-  const backgroundOutcome = loadResource(
-    router,
-    lane,
-    candidate,
-    route,
-    loader,
-    semanticParent,
-    false,
-    options[0],
-  ).then((result) => {
+  const backgroundOutcome = loadResource(router, lane, candidate, route, loader, semanticParent, false, options[0]).then((result) => {
     match.isFetching = false;
     settleInto(candidate, result, false);
     return result;
   });
-  (lane[2] ??= []).push([index, backgroundOutcome, chunkFailure, candidate]);
+  (lane[2] ??= []).push([
+    index,
+    backgroundOutcome,
+    chunkFailure,
+    candidate
+  ]);
   return backgroundOutcome.then((result) => getParentSnapshot(candidate, result));
 }
 async function getNotFoundBoundary$1(router, matches, indexed, signal, fallback = 0) {
   const cause = indexed?.[1][1];
-  let index = cause?.routeId
-    ? matches.findIndex((match) => match.routeId === cause.routeId)
-    : (indexed?.[0] ?? matches.length - 1);
+  let index = cause?.routeId ? matches.findIndex((match) => match.routeId === cause.routeId) : indexed?.[0] ?? matches.length - 1;
   if (index < 0) index = 0;
   for (let i = index; i >= 0; i--) {
     const route = getRoute$1(router, matches[i]);
     const loading = loadRouteChunk(route, false);
-    if (loading)
-      try {
-        await waitFor$1(loading, signal);
-      } catch (cause2) {
-        if (cause2 === signal) throw cause2;
-      }
+    if (loading) try {
+      await waitFor$1(loading, signal);
+    } catch (cause2) {
+      if (cause2 === signal) throw cause2;
+    }
     if (route.options.notFoundComponent) return i;
   }
   return cause?.routeId ? index : fallback;
 }
 function discardBackground(router, lane) {
   if (lane[2]) {
-    transferMatchResources(
-      router,
-      lane[2].map((task) => task[3]),
-    );
+    transferMatchResources(router, lane[2].map((task) => task[3]));
     lane[2] = void 0;
   }
 }
 async function settleTasks(tasks, serialFailure, redirectTasks, gate) {
   let loaderFailure;
   try {
-    await Promise.all(
-      tasks.map((task) =>
-        task[1].then(async (outcome) => {
-          const taskIndex = task[0];
-          if (gate && taskIndex >= (await gate)) return;
-          if (outcome[0] >= REDIRECTED$1) throw [taskIndex, outcome];
-          if (!loaderFailure && outcome[0] !== SUCCESS$1) {
-            loaderFailure = [taskIndex, outcome];
-            await Promise.all(
-              (redirectTasks ?? []).map((nextTask) => {
-                if (nextTask[0] <= taskIndex) return;
-                return nextTask[1].then((nextOutcome) => {
-                  if (nextOutcome[0] === REDIRECTED$1) throw [nextTask[0], nextOutcome];
-                });
-              }),
-            );
-          }
-        }),
-      ),
-    );
+    await Promise.all(tasks.map((task) => task[1].then(async (outcome) => {
+      const taskIndex = task[0];
+      if (gate && taskIndex >= await gate) return;
+      if (outcome[0] >= REDIRECTED$1) throw [taskIndex, outcome];
+      if (!loaderFailure && outcome[0] !== SUCCESS$1) {
+        loaderFailure = [taskIndex, outcome];
+        await Promise.all((redirectTasks ?? []).map((nextTask) => {
+          if (nextTask[0] <= taskIndex) return;
+          return nextTask[1].then((nextOutcome) => {
+            if (nextOutcome[0] === REDIRECTED$1) throw [nextTask[0], nextOutcome];
+          });
+        }));
+      }
+    })));
   } catch (cause) {
     return cause;
   }
@@ -2766,10 +2391,7 @@ async function reduceLane(router, lane, tasks, controller, redirects, settlement
   let failure = await settlement;
   let redirectLimitExceeded = false;
   const plannedBoundary = matches.findIndex((match) => match._notFound);
-  const boundaryOf = (found) =>
-    found[1][0] === NOT_FOUND$1
-      ? getNotFoundBoundary$1(router, matches, found, controller.signal)
-      : found[0];
+  const boundaryOf = (found) => found[1][0] === NOT_FOUND$1 ? getNotFoundBoundary$1(router, matches, found, controller.signal) : found[0];
   let readinessEnd = plannedBoundary < 0 ? matches.length : plannedBoundary;
   if ((failure?.[1][0] ?? 0) >= REDIRECTED$1) readinessEnd = 0;
   else if (failure) {
@@ -2777,11 +2399,7 @@ async function reduceLane(router, lane, tasks, controller, redirects, settlement
     for (const task of tasks) {
       if (task[0] >= readinessEnd) break;
       const outcome = await task[1];
-      if (
-        outcome[0] !== SUCCESS$1 &&
-        outcome[0] < REDIRECTED$1 &&
-        !("loaderData" in matches[task[0]])
-      ) {
+      if (outcome[0] !== SUCCESS$1 && outcome[0] < REDIRECTED$1 && !("loaderData" in matches[task[0]])) {
         failure = [task[0], outcome];
         readinessEnd = failure[2] = await boundaryOf(failure);
         break;
@@ -2804,7 +2422,7 @@ async function reduceLane(router, lane, tasks, controller, redirects, settlement
     redirectLimitExceeded = true;
     failure = [0, [ERROR$1, /* @__PURE__ */ new Error("Too many redirects")]];
   }
-  const boundary = failure ? (failure[2] ?? (await boundaryOf(failure))) : plannedBoundary;
+  const boundary = failure ? failure[2] ?? await boundaryOf(failure) : plannedBoundary;
   if (boundary >= 0) {
     const outcome = failure?.[1];
     const kind = outcome?.[0];
@@ -2828,14 +2446,7 @@ async function reduceLane(router, lane, tasks, controller, redirects, settlement
     install();
     const route = getRoute$1(router, match);
     try {
-      await waitFor$1(
-        outcome
-          ? Promise.resolve().then(() =>
-              loadRouteChunk(route, kind === ERROR$1 ? "errorComponent" : "notFoundComponent"),
-            )
-          : Promise.all([loadRouteChunk(route), loadRouteChunk(route, "notFoundComponent")]),
-        controller.signal,
-      );
+      await waitFor$1(outcome ? Promise.resolve().then(() => loadRouteChunk(route, kind === ERROR$1 ? "errorComponent" : "notFoundComponent")) : Promise.all([loadRouteChunk(route), loadRouteChunk(route, "notFoundComponent")]), controller.signal);
     } catch (cause2) {
       if (cause2 === controller.signal) {
         discardBackground(router, lane);
@@ -2850,7 +2461,7 @@ async function reduceLane(router, lane, tasks, controller, redirects, settlement
       await Promise.all([
         ...tasks.map((task) => task[1]),
         ...tasks.map((task) => task[2]),
-        ...(lane[2] ?? []).map((task) => task[1]),
+        ...(lane[2] ?? []).map((task) => task[1])
       ]);
       discardBackground(router, lane);
       transferMatchResources(router, matches);
@@ -2864,28 +2475,24 @@ async function projectLane$1(router, lane, signal, start = 0, end = lane[1].leng
   for (let index = start; index < end; index++) {
     const match = matches[index];
     const routeOptions = getRoute$1(router, match).options;
-    if (routeOptions.head || routeOptions.scripts)
-      try {
-        const context = {
-          ssr: router.options.ssr,
-          matches,
-          match,
-          params: match.params,
-          loaderData: match.loaderData,
-        };
-        const [head, scripts] = await waitFor$1(
-          Promise.all([routeOptions.head?.(context), routeOptions.scripts?.(context)]),
-          signal,
-        );
-        match.meta = head?.meta;
-        match.links = head?.links;
-        match.headScripts = head?.scripts;
-        match.styles = head?.styles;
-        match.scripts = scripts;
-      } catch (cause) {
-        if (cause === signal) break;
-        console.error(cause);
-      }
+    if (routeOptions.head || routeOptions.scripts) try {
+      const context = {
+        ssr: router.options.ssr,
+        matches,
+        match,
+        params: match.params,
+        loaderData: match.loaderData
+      };
+      const [head, scripts] = await waitFor$1(Promise.all([routeOptions.head?.(context), routeOptions.scripts?.(context)]), signal);
+      match.meta = head?.meta;
+      match.links = head?.links;
+      match.headScripts = head?.scripts;
+      match.styles = head?.styles;
+      match.scripts = scripts;
+    } catch (cause) {
+      if (cause === signal) break;
+      console.error(cause);
+    }
     if (match.status !== "success" || match._notFound) break;
   }
   return lane;
@@ -2895,13 +2502,7 @@ async function executeClientLane(router, location, matches, options) {
   const presented = router.stores.matches.get();
   let plannedBoundary = matches.findIndex((match) => match._notFound);
   if (router.options.notFoundMode !== "root" && plannedBoundary >= 0) {
-    const boundary = await getNotFoundBoundary$1(
-      router,
-      matched[1],
-      void 0,
-      options[0].signal,
-      plannedBoundary,
-    );
+    const boundary = await getNotFoundBoundary$1(router, matched[1], void 0, options[0].signal, plannedBoundary);
     if (boundary !== plannedBoundary) {
       matches[plannedBoundary]._notFound = void 0;
       matches[boundary]._notFound = true;
@@ -2914,16 +2515,7 @@ async function executeClientLane(router, location, matches, options) {
     const match = matches[retainedEnd];
     const committed = options[3][retainedEnd];
     const visible = presented[retainedEnd];
-    if (
-      committed?.id !== match.id ||
-      committed.status !== "success" ||
-      committed._notFound ||
-      match.preload ||
-      visible?.id !== match.id ||
-      visible.status !== "success" ||
-      visible._notFound
-    )
-      break;
+    if (committed?.id !== match.id || committed.status !== "success" || committed._notFound || match.preload || visible?.id !== match.id || visible.status !== "success" || visible._notFound) break;
     retainedEnd++;
   }
   const tasks = [];
@@ -2932,25 +2524,10 @@ async function executeClientLane(router, location, matches, options) {
   const planSuccessfulLane = () => {
     for (let index = start; index < end; index++) {
       if (options[0].signal.aborted) break;
-      semanticParent = createLoaderTask$1(
-        router,
-        matched,
-        index,
-        tasks,
-        semanticParent,
-        options,
-        retainedEnd,
-      );
+      semanticParent = createLoaderTask$1(router, matched, index, tasks, semanticParent, options, retainedEnd);
     }
   };
-  const failure = await contextualize$1(
-    router,
-    matched,
-    options,
-    end,
-    planSuccessfulLane,
-    retainedEnd,
-  );
+  const failure = await contextualize$1(router, matched, options, end, planSuccessfulLane, retainedEnd);
   if (failure) {
     options[5] = true;
     end = failure[0];
@@ -2962,46 +2539,23 @@ async function executeClientLane(router, location, matches, options) {
   }
   if (options[2]() && !options[4]) {
     const abort = [];
-    for (const [id, flight] of router._flights ?? [])
-      if (!flight[2]) {
-        router._flights.delete(id);
-        abort.push(flight[1]);
-      }
+    for (const [id, flight] of router._flights ?? []) if (!flight[2]) {
+      router._flights.delete(id);
+      abort.push(flight[1]);
+    }
     for (const controller of abort) controller.abort();
   }
   let reduced;
   try {
-    const reduction = reduceLane(
-      router,
-      matched,
-      tasks,
-      options[0],
-      options[1],
-      settleTasks(tasks, failure, matched[2]),
-      options[8],
-    );
-    if (matched[2]?.length)
-      matched[3] = settleTasks(
-        matched[2],
-        void 0,
-        void 0,
-        reduction.then(
-          (foreground) => (isControl(foreground) ? 0 : _getRenderedMatches(foreground[1]).length),
-          () => 0,
-        ),
-      );
+    const reduction = reduceLane(router, matched, tasks, options[0], options[1], settleTasks(tasks, failure, matched[2]), options[8]);
+    if (matched[2]?.length) matched[3] = settleTasks(matched[2], void 0, void 0, reduction.then((foreground) => isControl(foreground) ? 0 : _getRenderedMatches(foreground[1]).length, () => 0));
     reduced = await reduction;
   } catch (cause) {
     discardBackground(router, matched);
     throw cause;
   }
   if (isControl(reduced)) return reduced;
-  return projectLane$1(
-    router,
-    reduced,
-    options[0].signal,
-    options[7] === reduced[1].length ? options[7] : 0,
-  );
+  return projectLane$1(router, reduced, options[0].signal, options[7] === reduced[1].length ? options[7] : 0);
 }
 async function preloadClientRoute(router, opts, redirects = 0) {
   if (redirects > 20) return;
@@ -3027,7 +2581,7 @@ async function preloadClientRoute(router, opts, redirects = 0) {
         redirects,
         () => true,
         base,
-        true,
+        true
       ]);
     } finally {
       active = router._preloads.delete(controller);
@@ -3035,15 +2589,10 @@ async function preloadClientRoute(router, opts, redirects = 0) {
       controller.abort();
     }
     if (!isControl(result)) return result[1];
-    if (active && result[0] === REDIRECTED$1 && !result[1].options.reloadDocument)
-      return preloadClientRoute(
-        router,
-        {
-          ...result[1].options,
-          _fromLocation: location,
-        },
-        redirects + 1,
-      );
+    if (active && result[0] === REDIRECTED$1 && !result[1].options.reloadDocument) return preloadClientRoute(router, {
+      ...result[1].options,
+      _fromLocation: location
+    }, redirects + 1);
   } catch (cause) {
     if (!isNotFound(cause)) console.error(cause);
   }
@@ -3056,12 +2605,10 @@ function waitForReason(value, signal, onLate) {
   return new Promise((resolve, reject) => {
     const abort = () => reject(signal.reason);
     signal.addEventListener("abort", abort, { once: true });
-    promise
-      .then((result) => {
-        if (signal.aborted);
-        else resolve(result);
-      }, reject)
-      .finally(() => signal.removeEventListener("abort", abort));
+    promise.then((result) => {
+      if (signal.aborted) ;
+      else resolve(result);
+    }, reject).finally(() => signal.removeEventListener("abort", abort));
   });
 }
 const SUCCESS = 0;
@@ -3075,8 +2622,7 @@ function getRoute(router, match) {
 function normalize(value, rejected) {
   if (isRedirect(value)) return [REDIRECTED, value];
   if (isNotFound(value)) return [NOT_FOUND, value];
-  if (rejected && typeof value?.then === "function")
-    value = new Error("A Promise was thrown", { cause: value });
+  if (rejected && typeof value?.then === "function") value = new Error("A Promise was thrown", { cause: value });
   return rejected ? [ERROR, value] : [SUCCESS, value];
 }
 function normalizeError(route, cause) {
@@ -3090,22 +2636,20 @@ function normalizeError(route, cause) {
   return outcome;
 }
 function maybe(value, cause) {
-  if (cause !== void 0)
-    return {
-      status: "error",
-      error: cause,
-    };
+  if (cause !== void 0) return {
+    status: "error",
+    error: cause
+  };
   return {
     status: "success",
-    value,
+    value
   };
 }
 function navigateFrom(router, location) {
-  return (options) =>
-    router.navigate({
-      ...options,
-      _fromLocation: location,
-    });
+  return (options) => router.navigate({
+    ...options,
+    _fromLocation: location
+  });
 }
 function waitFor(value, signal) {
   return signal ? waitForReason(value, signal) : value;
@@ -3125,24 +2669,22 @@ async function resolveSsr(router, lane, index) {
   const option = route.options.ssr;
   if (option === void 0) return inheritedDefault;
   if (typeof option !== "function") return inherit(option);
-  return inherit(
-    (await option({
-      search: maybe(match.search, match.searchError),
-      params: maybe(match.params, match.paramsError),
-      location: lane.location,
-      matches: lane.matches.map((candidate) => ({
-        index: candidate.index,
-        pathname: candidate.pathname,
-        fullPath: candidate.fullPath,
-        staticData: candidate.staticData,
-        id: candidate.id,
-        routeId: candidate.routeId,
-        search: maybe(candidate.search, candidate.searchError),
-        params: maybe(candidate.params, candidate.paramsError),
-        ssr: candidate.ssr,
-      })),
-    })) ?? defaultSsr,
-  );
+  return inherit(await option({
+    search: maybe(match.search, match.searchError),
+    params: maybe(match.params, match.paramsError),
+    location: lane.location,
+    matches: lane.matches.map((candidate) => ({
+      index: candidate.index,
+      pathname: candidate.pathname,
+      fullPath: candidate.fullPath,
+      staticData: candidate.staticData,
+      id: candidate.id,
+      routeId: candidate.routeId,
+      search: maybe(candidate.search, candidate.searchError),
+      params: maybe(candidate.params, candidate.paramsError),
+      ssr: candidate.ssr
+    }))
+  }) ?? defaultSsr);
 }
 function stampNotFound(match, outcome) {
   if (outcome[0] === NOT_FOUND && !outcome[1].routeId) outcome[1].routeId = match.routeId;
@@ -3152,7 +2694,7 @@ async function contextualize(router, lane, signal) {
   const globalBoundary = lane.matches.findIndex((match) => match._notFound);
   let end = globalBoundary < 0 ? lane.matches.length : globalBoundary + 1;
   let failure;
-  let parentContext = { ...(router.options.context ?? {}) };
+  let parentContext = { ...router.options.context ?? {} };
   for (let index = 0; index < end; index++) {
     const match = lane.matches[index];
     const route = getRoute(router, match);
@@ -3181,13 +2723,13 @@ async function contextualize(router, lane, signal) {
           abortController: match.abortController,
           preload: false,
           matches: lane.matches,
-          routeId: route.id,
+          routeId: route.id
         };
         routeContext = route.options.context(routeContextOptions) ?? void 0;
       }
       context = {
         ...parentContext,
-        ...routeContext,
+        ...routeContext
       };
       match.context = context;
     } catch (cause) {
@@ -3222,7 +2764,7 @@ async function contextualize(router, lane, signal) {
       cause: match.cause,
       matches: lane.matches,
       routeId: route.id,
-      ...router.options.additionalContext,
+      ...router.options.additionalContext
     };
     try {
       const beforeLoadContext = await route.options.beforeLoad(options);
@@ -3236,7 +2778,7 @@ async function contextualize(router, lane, signal) {
       match.__beforeLoadContext = beforeLoadContext;
       match.context = {
         ...context,
-        ...beforeLoadContext,
+        ...beforeLoadContext
       };
       parentContext = match.context;
     } catch (cause) {
@@ -3250,7 +2792,7 @@ async function contextualize(router, lane, signal) {
     location: lane.location,
     matches: lane.matches,
     end,
-    failure,
+    failure
   };
 }
 function getLoaderContext(router, lane, match, route, index, tasks) {
@@ -3265,7 +2807,7 @@ function getLoaderContext(router, lane, match, route, index, tasks) {
     navigate: navigateFrom(router, lane.location),
     cause: match.cause,
     route,
-    ...router.options.additionalContext,
+    ...router.options.additionalContext
   };
 }
 function createLoaderTask(router, lane, index, tasks, signal) {
@@ -3277,22 +2819,11 @@ function createLoaderTask(router, lane, index, tasks, signal) {
     const routeLoader = route.options.loader;
     const loader = typeof routeLoader === "function" ? routeLoader : routeLoader?.handler;
     if (!loader) outcome = Promise.resolve([SUCCESS, void 0]);
-    else
-      outcome = Promise.resolve()
-        .then(() => loader(getLoaderContext(router, lane, match, route, index, tasks)))
-        .then(
-          (result) => normalize(result, false),
-          (cause) => normalize(cause, true),
-        )
-        .then((result) => {
-          if (
-            result[0] !== REDIRECTED &&
-            (signal?.aborted || match.abortController.signal.reason === lane)
-          )
-            return [SKIPPED];
-          if (result[0] === ERROR) result = normalizeError(route, result[1]);
-          return stampNotFound(match, result);
-        });
+    else outcome = Promise.resolve().then(() => loader(getLoaderContext(router, lane, match, route, index, tasks))).then((result) => normalize(result, false), (cause) => normalize(cause, true)).then((result) => {
+      if (result[0] !== REDIRECTED && (signal?.aborted || match.abortController.signal.reason === lane)) return [SKIPPED];
+      if (result[0] === ERROR) result = normalizeError(route, result[1]);
+      return stampNotFound(match, result);
+    });
   }
   const parentMatch = outcome.then((result) => {
     const snapshot = { ...match };
@@ -3314,38 +2845,34 @@ function createLoaderTask(router, lane, index, tasks, signal) {
   return {
     index,
     outcome,
-    match: parentMatch,
+    match: parentMatch
   };
 }
 async function getNotFoundBoundary(router, matches, indexed, signal, fallback = 0) {
   const cause = indexed?.[1][1];
-  let index = cause?.routeId
-    ? matches.findIndex((match) => match.routeId === cause.routeId)
-    : (indexed?.[0] ?? matches.length - 1);
+  let index = cause?.routeId ? matches.findIndex((match) => match.routeId === cause.routeId) : indexed?.[0] ?? matches.length - 1;
   if (index < 0) index = 0;
   for (let candidate = index; candidate >= 0; candidate--) {
     const route = getRoute(router, matches[candidate]);
     const loading = loadRouteChunk(route, false);
-    if (loading)
-      try {
-        await loading;
-      } catch {
-        signal?.throwIfAborted();
-      }
+    if (loading) try {
+      await loading;
+    } catch {
+      signal?.throwIfAborted();
+    }
     signal?.throwIfAborted();
     if (route.options.notFoundComponent) return candidate;
   }
   return cause?.routeId ? index : fallback;
 }
 function abortMatches(matches, start = 0, reason) {
-  for (let index = start; index < matches.length; index++)
-    matches[index].abortController.abort(reason);
+  for (let index = start; index < matches.length; index++) matches[index].abortController.abort(reason);
 }
 function resolveServerRedirect(router, location, value) {
   value.options._fromLocation = location;
   return {
     type: "redirect",
-    redirect: router.resolveRedirect(value),
+    redirect: router.resolveRedirect(value)
   };
 }
 async function applyFailure(router, lane, indexed, signal) {
@@ -3356,7 +2883,7 @@ async function applyFailure(router, lane, indexed, signal) {
       return {
         status: 404,
         boundary: boundary2,
-        kind: NOT_FOUND,
+        kind: NOT_FOUND
       };
     }
     return { status: 200 };
@@ -3372,10 +2899,10 @@ async function applyFailure(router, lane, indexed, signal) {
     return {
       status: 500,
       boundary: index,
-      kind: ERROR,
+      kind: ERROR
     };
   }
-  const boundary = indexed[2] ?? (await getNotFoundBoundary(router, lane.matches, indexed, signal));
+  const boundary = indexed[2] ?? await getNotFoundBoundary(router, lane.matches, indexed, signal);
   const match = lane.matches[boundary];
   const cause = outcome[1];
   cause.routeId = match.routeId;
@@ -3393,7 +2920,7 @@ async function applyFailure(router, lane, indexed, signal) {
   return {
     status: 404,
     boundary,
-    kind: NOT_FOUND,
+    kind: NOT_FOUND
   };
 }
 async function loadNormalChunks(router, lane, end, signal) {
@@ -3405,16 +2932,14 @@ async function loadNormalChunks(router, lane, end, signal) {
     try {
       const loading = loadRouteChunk(route);
       if (loading) {
-        const chunk = loading.then(
-          () => {
-            signal?.throwIfAborted();
-          },
-          (cause) => {
-            signal?.throwIfAborted();
-            return [index, stampNotFound(match, normalizeError(route, cause))];
-          },
-        );
-        chunk.catch(() => {});
+        const chunk = loading.then(() => {
+          signal?.throwIfAborted();
+        }, (cause) => {
+          signal?.throwIfAborted();
+          return [index, stampNotFound(match, normalizeError(route, cause))];
+        });
+        chunk.catch(() => {
+        });
         chunks.push(chunk);
       }
     } catch (cause) {
@@ -3436,13 +2961,13 @@ async function projectLane(router, lane, signal) {
         matches: lane.matches,
         match,
         params: match.params,
-        loaderData: match.loaderData,
+        loaderData: match.loaderData
       };
       try {
         const [head, scripts, headers] = await Promise.all([
           routeOptions.head?.(context),
           routeOptions.scripts?.(context),
-          routeOptions.headers?.(context),
+          routeOptions.headers?.(context)
         ]);
         signal?.throwIfAborted();
         match.meta = head?.meta;
@@ -3467,8 +2992,8 @@ async function executeServerLane(router, location, matchedMatches, signal) {
       __beforeLoadContext: void 0,
       context: {},
       isFetching: false,
-      abortController: new AbortController(),
-    })),
+      abortController: new AbortController()
+    }))
   };
   const abortLane = () => abortMatches(matched.matches, 0, signal?.reason);
   if (signal?.aborted) {
@@ -3479,13 +3004,7 @@ async function executeServerLane(router, location, matchedMatches, signal) {
   try {
     const plannedGlobalBoundary = matched.matches.findIndex((match) => match._notFound);
     if (router.options.notFoundMode !== "root" && plannedGlobalBoundary >= 0) {
-      const boundary = await getNotFoundBoundary(
-        router,
-        matched.matches,
-        void 0,
-        signal,
-        plannedGlobalBoundary,
-      );
+      const boundary = await getNotFoundBoundary(router, matched.matches, void 0, signal, plannedGlobalBoundary);
       if (boundary !== plannedGlobalBoundary) {
         matched.matches[plannedGlobalBoundary]._notFound = void 0;
         matched.matches[boundary]._notFound = true;
@@ -3507,33 +3026,29 @@ async function executeServerLane(router, location, matchedMatches, signal) {
     let loaderFailure;
     let control = lane.failure?.[1][0] === REDIRECTED ? lane.failure : void 0;
     try {
-      await Promise.all(
-        tasks.map((task) =>
-          task.outcome.then((loadedOutcome) => {
-            const match = lane.matches[task.index];
-            const outcome = loadedOutcome;
-            if (outcome[0] === SUCCESS) {
-              match.loaderData = outcome[1];
-              match.status = "success";
-              match.error = void 0;
-              match.invalid = false;
-              match.isFetching = false;
-              match.updatedAt = Date.now();
-            } else if (outcome[0] === REDIRECTED) {
-              control = [task.index, outcome];
-              throw control;
-            } else {
-              if (match.ssr !== false) {
-                match.status = "success";
-                match.error = void 0;
-                match.invalid = true;
-                match.isFetching = false;
-              }
-              if (!loaderFailure && outcome[0] !== SKIPPED) loaderFailure = [task.index, outcome];
-            }
-          }),
-        ),
-      );
+      await Promise.all(tasks.map((task) => task.outcome.then((loadedOutcome) => {
+        const match = lane.matches[task.index];
+        const outcome = loadedOutcome;
+        if (outcome[0] === SUCCESS) {
+          match.loaderData = outcome[1];
+          match.status = "success";
+          match.error = void 0;
+          match.invalid = false;
+          match.isFetching = false;
+          match.updatedAt = Date.now();
+        } else if (outcome[0] === REDIRECTED) {
+          control = [task.index, outcome];
+          throw control;
+        } else {
+          if (match.ssr !== false) {
+            match.status = "success";
+            match.error = void 0;
+            match.invalid = true;
+            match.isFetching = false;
+          }
+          if (!loaderFailure && outcome[0] !== SKIPPED) loaderFailure = [task.index, outcome];
+        }
+      })));
     } catch (cause) {
       if (!Array.isArray(cause)) throw cause;
       control = cause;
@@ -3547,23 +3062,13 @@ async function executeServerLane(router, location, matchedMatches, signal) {
     const plannedBoundary = lane.matches.findIndex((match) => match._notFound);
     let readinessEnd;
     if (failure) {
-      const outcomeEnd = (failure[2] ??=
-        failure[1][0] === NOT_FOUND
-          ? await getNotFoundBoundary(router, lane.matches, failure, signal)
-          : failure[0]);
+      const outcomeEnd = failure[2] ??= failure[1][0] === NOT_FOUND ? await getNotFoundBoundary(router, lane.matches, failure, signal) : failure[0];
       for (const task of tasks) {
         if (task.index >= outcomeEnd) break;
         const outcome = await task.outcome;
-        if (
-          outcome[0] !== SUCCESS &&
-          outcome[0] < REDIRECTED &&
-          !("loaderData" in lane.matches[task.index])
-        ) {
+        if (outcome[0] !== SUCCESS && outcome[0] < REDIRECTED && !("loaderData" in lane.matches[task.index])) {
           failure = [task.index, outcome];
-          failure[2] =
-            outcome[0] === NOT_FOUND
-              ? await getNotFoundBoundary(router, lane.matches, failure, signal)
-              : task.index;
+          failure[2] = outcome[0] === NOT_FOUND ? await getNotFoundBoundary(router, lane.matches, failure, signal) : task.index;
           break;
         }
       }
@@ -3585,28 +3090,24 @@ async function executeServerLane(router, location, matchedMatches, signal) {
         const route = getRoute(router, match);
         try {
           if (terminal.kind === ERROR) await loadRouteChunk(route, "errorComponent");
-          else if (match._notFound)
-            await Promise.all([loadRouteChunk(route), loadRouteChunk(route, "notFoundComponent")]);
+          else if (match._notFound) await Promise.all([loadRouteChunk(route), loadRouteChunk(route, "notFoundComponent")]);
           else await loadRouteChunk(route, "notFoundComponent");
-        } catch {}
+        } catch {
+        }
         signal?.throwIfAborted();
       }
     }
     signal?.throwIfAborted();
-    await projectLane(
-      router,
-      {
-        location: lane.location,
-        matches: lane.matches,
-      },
-      signal,
-    );
+    await projectLane(router, {
+      location: lane.location,
+      matches: lane.matches
+    }, signal);
     signal?.throwIfAborted();
     router.serverSsr?.onCleanup(abortLane);
     return {
       type: "render",
       status: terminal.status,
-      matches: lane.matches,
+      matches: lane.matches
     };
   } finally {
     signal?.removeEventListener("abort", abortLane);
@@ -3624,31 +3125,26 @@ async function loadServerRoute(router, opts) {
       params: true,
       hash: true,
       state: true,
-      _includeValidateSearch: true,
+      _includeValidateSearch: true
     });
     if (next.publicHref !== canonical.publicHref) {
       const href = canonical.publicHref || "/";
-      throw canonical.external
-        ? redirect({ href })
-        : redirect({
-            href,
-            _builtLocation: canonical,
-          });
+      throw canonical.external ? redirect({ href }) : redirect({
+        href,
+        _builtLocation: canonical
+      });
     }
     const changeInfo = getLocationChangeInfo(next, router.stores.resolvedLocation.get());
     router.emit({
       type: "onBeforeNavigate",
-      ...changeInfo,
+      ...changeInfo
     });
     router.emit({
       type: "onBeforeLoad",
-      ...changeInfo,
+      ...changeInfo
     });
     opts?._signal?.throwIfAborted();
-    result = await waitFor(
-      executeServerLane(router, next, router.matchRoutes(next), opts?._signal),
-      opts?._signal,
-    );
+    result = await waitFor(executeServerLane(router, next, router.matchRoutes(next), opts?._signal), opts?._signal);
     opts?._signal?.throwIfAborted();
   } catch (cause) {
     opts?._signal?.throwIfAborted();
@@ -3715,39 +3211,30 @@ function deepEqual(a, b, opts) {
   if (isPlainObject(a) && isPlainObject(b)) {
     const ignoreUndefined = opts?.ignoreUndefined ?? true;
     if (opts?.partial) {
-      for (const k in b)
-        if (!ignoreUndefined || b[k] !== void 0) {
-          if (!deepEqual(a[k], b[k], opts)) return false;
-        }
+      for (const k in b) if (!ignoreUndefined || b[k] !== void 0) {
+        if (!deepEqual(a[k], b[k], opts)) return false;
+      }
       return true;
     }
     let aCount = 0;
     if (!ignoreUndefined) aCount = Object.keys(a).length;
     else for (const k in a) if (a[k] !== void 0) aCount++;
     let bCount = 0;
-    for (const k in b)
-      if (!ignoreUndefined || b[k] !== void 0) {
-        bCount++;
-        if (bCount > aCount || !deepEqual(a[k], b[k], opts)) return false;
-      }
+    for (const k in b) if (!ignoreUndefined || b[k] !== void 0) {
+      bCount++;
+      if (bCount > aCount || !deepEqual(a[k], b[k], opts)) return false;
+    }
     return aCount === bCount;
   }
   return false;
 }
 function isModuleNotFoundError(error) {
   if (typeof error?.message !== "string") return false;
-  return (
-    error.message.startsWith("Failed to fetch dynamically imported module") ||
-    error.message.startsWith("error loading dynamically imported module") ||
-    error.message.startsWith("Importing a module script failed")
-  );
+  return error.message.startsWith("Failed to fetch dynamically imported module") || error.message.startsWith("error loading dynamically imported module") || error.message.startsWith("Importing a module script failed");
 }
 const PATH_UNSAFE_RE = /[\x00-\x1f\x7f"<>`{}]/g;
 function sanitizePathSegment(segment) {
-  return segment.replace(
-    PATH_UNSAFE_RE,
-    (ch) => "%" + ch.charCodeAt(0).toString(16).toUpperCase().padStart(2, "0"),
-  );
+  return segment.replace(PATH_UNSAFE_RE, (ch) => "%" + ch.charCodeAt(0).toString(16).toUpperCase().padStart(2, "0"));
 }
 function decodeSegment(segment) {
   let decoded;
@@ -3764,7 +3251,12 @@ function decodeSegment(segment) {
   }
   return sanitizePathSegment(decoded);
 }
-const DEFAULT_PROTOCOL_ALLOWLIST = ["http:", "https:", "mailto:", "tel:"];
+const DEFAULT_PROTOCOL_ALLOWLIST = [
+  "http:",
+  "https:",
+  "mailto:",
+  "tel:"
+];
 function isDangerousProtocol(url, allowlist) {
   if (!url) return false;
   try {
@@ -3779,23 +3271,21 @@ const HTML_ESCAPE_LOOKUP = {
   ">": "\\u003e",
   "<": "\\u003c",
   "\u2028": "\\u2028",
-  "\u2029": "\\u2029",
+  "\u2029": "\\u2029"
 };
 const HTML_ESCAPE_REGEX = /[&><\u2028\u2029]/g;
 function escapeHtml(str) {
   return str.replace(HTML_ESCAPE_REGEX, (match) => HTML_ESCAPE_LOOKUP[match]);
 }
 function decodePath(path) {
-  if (!path)
-    return {
-      path,
-      handledProtocolRelativeURL: false,
-    };
-  if (!/[%\\\x00-\x1f\x7f]/.test(path) && !path.startsWith("//"))
-    return {
-      path,
-      handledProtocolRelativeURL: false,
-    };
+  if (!path) return {
+    path,
+    handledProtocolRelativeURL: false
+  };
+  if (!/[%\\\x00-\x1f\x7f]/.test(path) && !path.startsWith("//")) return {
+    path,
+    handledProtocolRelativeURL: false
+  };
   const re = /%25|%5C/gi;
   let cursor = 0;
   let result = "";
@@ -3812,7 +3302,7 @@ function decodePath(path) {
   }
   return {
     path: result,
-    handledProtocolRelativeURL,
+    handledProtocolRelativeURL
   };
 }
 function encodePathLikeUrl(path) {
@@ -3837,22 +3327,19 @@ function getScriptPreloadAttrs(manifest, link, assetCrossOrigin) {
   const preloadLink = resolveManifestAssetLink(link);
   const crossOrigin = getAssetCrossOrigin(assetCrossOrigin, "script") ?? preloadLink.crossOrigin;
   return {
-    ...(getManifestScriptFormat(manifest) === "iife"
-      ? {
-          rel: "preload",
-          as: "script",
-        }
-      : { rel: "modulepreload" }),
+    ...getManifestScriptFormat(manifest) === "iife" ? {
+      rel: "preload",
+      as: "script"
+    } : { rel: "modulepreload" },
     href: preloadLink.href,
-    ...(crossOrigin ? { crossOrigin } : {}),
+    ...crossOrigin ? { crossOrigin } : {}
   };
 }
 function resolveManifestAssetLink(link) {
-  if (typeof link === "string")
-    return {
-      href: link,
-      crossOrigin: void 0,
-    };
+  if (typeof link === "string") return {
+    href: link,
+    crossOrigin: void 0
+  };
   return link;
 }
 function appendUniqueUserTags(target, tags) {
@@ -3873,17 +3360,16 @@ function getStylesheetHref(asset) {
   return resolveManifestCssLink(asset).href;
 }
 function resolveManifestCssLink(link) {
-  if (typeof link === "string")
-    return {
-      href: link,
-      crossOrigin: void 0,
-    };
+  if (typeof link === "string") return {
+    href: link,
+    crossOrigin: void 0
+  };
   return link;
 }
 function createInlineCssStyleAsset(css) {
   return {
     attrs: { suppressHydrationWarning: true },
-    children: css,
+    children: css
   };
 }
 function createInlineCssPlaceholderAsset() {
@@ -3915,9 +3401,7 @@ var BaseRoute = class {
       let path = isRoot ? rootRouteId : options2?.path;
       if (path && path !== "/") path = trimPathLeft(path);
       const customId = options2?.id || path;
-      let id = isRoot
-        ? rootRouteId
-        : joinPaths([this.parentRoute.id === "__root__" ? "" : this.parentRoute.id, customId]);
+      let id = isRoot ? rootRouteId : joinPaths([this.parentRoute.id === "__root__" ? "" : this.parentRoute.id, customId]);
       if (path === "__root__") path = "/";
       if (id !== "__root__") id = joinPaths(["/", id]);
       const fullPath = id === "__root__" ? "/" : joinPaths([this.parentRoute.fullPath, path]);
@@ -3931,8 +3415,7 @@ var BaseRoute = class {
     };
     this._addFileChildren = (children) => {
       if (Array.isArray(children)) this.children = children;
-      if (typeof children === "object" && children !== null)
-        this.children = Object.values(children);
+      if (typeof children === "object" && children !== null) this.children = Object.values(children);
       return this;
     };
     this._addFileTypes = () => {
@@ -3950,15 +3433,13 @@ var BaseRoute = class {
       this.lazyFn = lazyFn;
       return this;
     };
-    this.redirect = (opts) =>
-      redirect({
-        from: this.fullPath,
-        ...opts,
-      });
+    this.redirect = (opts) => redirect({
+      from: this.fullPath,
+      ...opts
+    });
     this.options = options || {};
     this.isRoot = !options?.getParentRoute;
-    if (options?.id && options?.path)
-      throw new Error(`Route cannot have both an 'id' and a 'path' option.`);
+    if (options?.id && options?.path) throw new Error(`Route cannot have both an 'id' and a 'path' option.`);
   }
 };
 var BaseRootRoute = class extends BaseRoute {
@@ -3976,18 +3457,14 @@ function makeSsrSerovalPlugin(serializationAdapter, options) {
   return /* @__PURE__ */ createPlugin({
     tag: "$TSR/t/" + serializationAdapter.key,
     test: serializationAdapter.test,
-    parse: {
-      stream(value, ctx, _data) {
-        return { v: ctx.parse(serializationAdapter.toSerializable(value)) };
-      },
-    },
+    parse: { stream(value, ctx, _data) {
+      return { v: ctx.parse(serializationAdapter.toSerializable(value)) };
+    } },
     serialize(node, ctx, _data) {
       options.didRun = true;
-      return (
-        GLOBAL_TSR + '.t.get("' + serializationAdapter.key + '")(' + ctx.serialize(node.v) + ")"
-      );
+      return GLOBAL_TSR + '.t.get("' + serializationAdapter.key + '")(' + ctx.serialize(node.v) + ")";
     },
-    deserialize: void 0,
+    deserialize: void 0
   });
 }
 // @__NO_SIDE_EFFECTS__
@@ -4004,12 +3481,12 @@ function makeSerovalPlugin(serializationAdapter) {
       },
       stream(value, ctx, _data) {
         return { v: ctx.parse(serializationAdapter.toSerializable(value)) };
-      },
+      }
     },
     serialize: void 0,
     deserialize(node, ctx, _data) {
       return serializationAdapter.fromSerializable(ctx.deserialize(node.v));
-    },
+    }
   });
 }
 var RawStream = class {
@@ -4044,48 +3521,47 @@ function base64ToUint8Array(base64) {
 }
 const RAW_STREAM_FACTORY_BINARY = /* @__PURE__ */ Object.create(null);
 const RAW_STREAM_FACTORY_TEXT = /* @__PURE__ */ Object.create(null);
-const RAW_STREAM_FACTORY_CONSTRUCTOR_BINARY = (stream) =>
-  new ReadableStream({
-    start(controller) {
-      stream.on({
-        next(base64) {
-          try {
-            controller.enqueue(base64ToUint8Array(base64));
-          } catch {}
-        },
-        throw(error) {
-          controller.error(error);
-        },
-        return() {
-          try {
-            controller.close();
-          } catch {}
-        },
-      });
+const RAW_STREAM_FACTORY_CONSTRUCTOR_BINARY = (stream) => new ReadableStream({ start(controller) {
+  stream.on({
+    next(base64) {
+      try {
+        controller.enqueue(base64ToUint8Array(base64));
+      } catch {
+      }
     },
+    throw(error) {
+      controller.error(error);
+    },
+    return() {
+      try {
+        controller.close();
+      } catch {
+      }
+    }
   });
+} });
 const textEncoderForFactory = new TextEncoder();
 const RAW_STREAM_FACTORY_CONSTRUCTOR_TEXT = (stream) => {
-  return new ReadableStream({
-    start(controller) {
-      stream.on({
-        next(value) {
-          try {
-            if (typeof value === "string") controller.enqueue(textEncoderForFactory.encode(value));
-            else controller.enqueue(base64ToUint8Array(value.$b64));
-          } catch {}
-        },
-        throw(error) {
-          controller.error(error);
-        },
-        return() {
-          try {
-            controller.close();
-          } catch {}
-        },
-      });
-    },
-  });
+  return new ReadableStream({ start(controller) {
+    stream.on({
+      next(value) {
+        try {
+          if (typeof value === "string") controller.enqueue(textEncoderForFactory.encode(value));
+          else controller.enqueue(base64ToUint8Array(value.$b64));
+        } catch {
+        }
+      },
+      throw(error) {
+        controller.error(error);
+      },
+      return() {
+        try {
+          controller.close();
+        } catch {
+        }
+      }
+    });
+  } });
 };
 const FACTORY_BINARY = `(s=>new ReadableStream({start(c){s.on({next(b){try{const d=atob(b),a=new Uint8Array(d.length);for(let i=0;i<d.length;i++)a[i]=d.charCodeAt(i);c.enqueue(a)}catch(_){}},throw(e){c.error(e)},return(){try{c.close()}catch(_){}}})}}))`;
 const FACTORY_TEXT = `(s=>{const e=new TextEncoder();return new ReadableStream({start(c){s.on({next(v){try{if(typeof v==='string'){c.enqueue(e.encode(v))}else{const d=atob(v.$b64),a=new Uint8Array(d.length);for(let i=0;i<d.length;i++)a[i]=d.charCodeAt(i);c.enqueue(a)}}catch(_){}},throw(x){c.error(x)},return(){try{c.close()}catch(_){}}})}})})`;
@@ -4122,7 +3598,8 @@ function toTextStream(readable) {
           try {
             const remaining = decoder.decode();
             if (remaining.length > 0) stream.next(remaining);
-          } catch {}
+          } catch {
+          }
           stream.return(void 0);
           break;
         }
@@ -4143,54 +3620,51 @@ function toTextStream(readable) {
 }
 const RawStreamSSRPlugin = /* @__PURE__ */ createPlugin({
   tag: "tss/RawStream",
-  extends: [
-    /* @__PURE__ */ createPlugin({
-      tag: "tss/RawStreamFactory",
-      test(value) {
-        return value === RAW_STREAM_FACTORY_BINARY;
+  extends: [/* @__PURE__ */ createPlugin({
+    tag: "tss/RawStreamFactory",
+    test(value) {
+      return value === RAW_STREAM_FACTORY_BINARY;
+    },
+    parse: {
+      sync(_value, _ctx, _data) {
+        return {};
       },
-      parse: {
-        sync(_value, _ctx, _data) {
-          return {};
-        },
-        async async(_value, _ctx, _data) {
-          return {};
-        },
-        stream(_value, _ctx, _data) {
-          return {};
-        },
+      async async(_value, _ctx, _data) {
+        return {};
       },
-      serialize(_node, _ctx, _data) {
-        return FACTORY_BINARY;
+      stream(_value, _ctx, _data) {
+        return {};
+      }
+    },
+    serialize(_node, _ctx, _data) {
+      return FACTORY_BINARY;
+    },
+    deserialize(_node, _ctx, _data) {
+      return RAW_STREAM_FACTORY_BINARY;
+    }
+  }), /* @__PURE__ */ createPlugin({
+    tag: "tss/RawStreamFactoryText",
+    test(value) {
+      return value === RAW_STREAM_FACTORY_TEXT;
+    },
+    parse: {
+      sync(_value, _ctx, _data) {
+        return {};
       },
-      deserialize(_node, _ctx, _data) {
-        return RAW_STREAM_FACTORY_BINARY;
+      async async(_value, _ctx, _data) {
+        return {};
       },
-    }),
-    /* @__PURE__ */ createPlugin({
-      tag: "tss/RawStreamFactoryText",
-      test(value) {
-        return value === RAW_STREAM_FACTORY_TEXT;
-      },
-      parse: {
-        sync(_value, _ctx, _data) {
-          return {};
-        },
-        async async(_value, _ctx, _data) {
-          return {};
-        },
-        stream(_value, _ctx, _data) {
-          return {};
-        },
-      },
-      serialize(_node, _ctx, _data) {
-        return FACTORY_TEXT;
-      },
-      deserialize(_node, _ctx, _data) {
-        return RAW_STREAM_FACTORY_TEXT;
-      },
-    }),
-  ],
+      stream(_value, _ctx, _data) {
+        return {};
+      }
+    },
+    serialize(_node, _ctx, _data) {
+      return FACTORY_TEXT;
+    },
+    deserialize(_node, _ctx, _data) {
+      return RAW_STREAM_FACTORY_TEXT;
+    }
+  })],
   test(value) {
     return value instanceof RawStream;
   },
@@ -4200,39 +3674,35 @@ const RawStreamSSRPlugin = /* @__PURE__ */ createPlugin({
       return {
         hint: ctx.parse(value.hint),
         factory: ctx.parse(factory),
-        stream: ctx.parse(createStream()),
+        stream: ctx.parse(createStream())
       };
     },
     async async(value, ctx, _data) {
       const factory = value.hint === "text" ? RAW_STREAM_FACTORY_TEXT : RAW_STREAM_FACTORY_BINARY;
-      const encodedStream =
-        value.hint === "text" ? toTextStream(value.stream) : toBinaryStream(value.stream);
+      const encodedStream = value.hint === "text" ? toTextStream(value.stream) : toBinaryStream(value.stream);
       return {
         hint: await ctx.parse(value.hint),
         factory: await ctx.parse(factory),
-        stream: await ctx.parse(encodedStream),
+        stream: await ctx.parse(encodedStream)
       };
     },
     stream(value, ctx, _data) {
       const factory = value.hint === "text" ? RAW_STREAM_FACTORY_TEXT : RAW_STREAM_FACTORY_BINARY;
-      const encodedStream =
-        value.hint === "text" ? toTextStream(value.stream) : toBinaryStream(value.stream);
+      const encodedStream = value.hint === "text" ? toTextStream(value.stream) : toBinaryStream(value.stream);
       return {
         hint: ctx.parse(value.hint),
         factory: ctx.parse(factory),
-        stream: ctx.parse(encodedStream),
+        stream: ctx.parse(encodedStream)
       };
-    },
+    }
   },
   serialize(node, ctx, _data) {
     return "(" + ctx.serialize(node.factory) + ")(" + ctx.serialize(node.stream) + ")";
   },
   deserialize(node, ctx, _data) {
     const stream = ctx.deserialize(node.stream);
-    return ctx.deserialize(node.hint) === "text"
-      ? RAW_STREAM_FACTORY_CONSTRUCTOR_TEXT(stream)
-      : RAW_STREAM_FACTORY_CONSTRUCTOR_BINARY(stream);
-  },
+    return ctx.deserialize(node.hint) === "text" ? RAW_STREAM_FACTORY_CONSTRUCTOR_TEXT(stream) : RAW_STREAM_FACTORY_CONSTRUCTOR_BINARY(stream);
+  }
 });
 // @__NO_SIDE_EFFECTS__
 function createRawStreamRPCPlugin(onRawStream) {
@@ -4252,18 +3722,14 @@ function createRawStreamRPCPlugin(onRawStream) {
         const streamId = nextStreamId++;
         onRawStream(streamId, value.stream);
         return { streamId: ctx.parse(streamId) };
-      },
+      }
     },
     serialize() {
-      throw new Error(
-        "RawStreamRPCPlugin.serialize should not be called. RPC uses JSON serialization, not JS code generation.",
-      );
+      throw new Error("RawStreamRPCPlugin.serialize should not be called. RPC uses JSON serialization, not JS code generation.");
     },
     deserialize() {
-      throw new Error(
-        "RawStreamRPCPlugin.deserialize should not be called. Use createRawStreamDeserializePlugin on client.",
-      );
-    },
+      throw new Error("RawStreamRPCPlugin.deserialize should not be called. Use createRawStreamDeserializePlugin on client.");
+    }
   });
 }
 const ShallowErrorPlugin = /* @__PURE__ */ createPlugin({
@@ -4280,16 +3746,20 @@ const ShallowErrorPlugin = /* @__PURE__ */ createPlugin({
     },
     stream(value, ctx) {
       return { message: ctx.parse(value.message) };
-    },
+    }
   },
   serialize(node, ctx) {
     return "new Error(" + ctx.serialize(node.message) + ")";
   },
   deserialize(node, ctx) {
     return new Error(ctx.deserialize(node.message));
-  },
+  }
 });
-const defaultSerovalPlugins = [ShallowErrorPlugin, RawStreamSSRPlugin, ReadableStreamPlugin];
+const defaultSerovalPlugins = [
+  ShallowErrorPlugin,
+  RawStreamSSRPlugin,
+  ReadableStreamPlugin
+];
 function toHeadersInstance(init) {
   if (init instanceof Headers) return init;
   else if (Array.isArray(init)) return new Headers(init);
@@ -4300,15 +3770,12 @@ function mergeHeaders(...headers) {
   return headers.reduce((acc, header) => {
     const headersInstance = toHeadersInstance(header);
     if (!headersInstance) return acc;
-    for (const [key, value] of headersInstance.entries())
-      if (key === "set-cookie")
-        splitSetCookieString(value).forEach((cookie) => acc.append("set-cookie", cookie));
-      else acc.set(key, value);
+    for (const [key, value] of headersInstance.entries()) if (key === "set-cookie") splitSetCookieString(value).forEach((cookie) => acc.append("set-cookie", cookie));
+    else acc.set(key, value);
     return acc;
   }, new Headers());
 }
-var tsrScript_default =
-  "self.$_TSR={h(){this.hydrated=!0,this.c()},e(){this.streamEnded=!0,this.c()},c(){this.hydrated&&this.streamEnded&&(delete self.$_TSR,delete self.$R.tsr)},p(e){this.initialized?e():this.buffer.push(e)},buffer:[]}";
+var tsrScript_default = "self.$_TSR={h(){this.hydrated=!0,this.c()},e(){this.streamEnded=!0,this.c()},c(){this.hydrated&&this.streamEnded&&(delete self.$_TSR,delete self.$R.tsr)},p(e){this.initialized?e():this.buffer.push(e)},buffer:[]}";
 const SCOPE_ID = "tsr";
 const TSR_PREFIX = GLOBAL_TSR + ".router=";
 const P_PREFIX = GLOBAL_TSR + ".p(()=>";
@@ -4317,15 +3784,14 @@ function dehydrateMatch(match) {
   const dehydratedMatch = {
     i: dehydrateSsrMatchId(match.id),
     u: match.updatedAt,
-    s: match.status,
+    s: match.status
   };
   for (const [key, shorthand] of [
     ["__beforeLoadContext", "b"],
     ["loaderData", "l"],
     ["error", "e"],
-    ["ssr", "ssr"],
-  ])
-    if (match[key] !== void 0) dehydratedMatch[shorthand] = match[key];
+    ["ssr", "ssr"]
+  ]) if (match[key] !== void 0) dehydratedMatch[shorthand] = match[key];
   if (match._notFound) dehydratedMatch.g = true;
   return dehydratedMatch;
 }
@@ -4365,12 +3831,12 @@ var ScriptBuffer = class {
     this._microtaskVersion++;
   }
   /**
-   * Flushes any pending scripts synchronously.
-   * Call this before signaling serialization finished to ensure all scripts are injected.
-   *
-   * IMPORTANT: Only injects if the barrier has been lifted. Before the barrier is lifted,
-   * scripts should remain in the queue so takeBufferedScripts() can retrieve them
-   */
+  * Flushes any pending scripts synchronously.
+  * Call this before signaling serialization finished to ensure all scripts are injected.
+  *
+  * IMPORTANT: Only injects if the barrier has been lifted. Before the barrier is lifted,
+  * scripts should remain in the queue so takeBufferedScripts() can retrieve them
+  */
   flush() {
     if (!this._scriptBarrierLifted) return;
     if (this._cleanedUp) return;
@@ -4384,8 +3850,7 @@ var ScriptBuffer = class {
     if (count <= 0) return void 0;
     const bufferedScripts = this._queue.splice(0, count);
     if (bufferedScripts.length === 0) return;
-    if (bufferedScripts.length === 1)
-      return bufferedScripts[0] + ";document.currentScript.remove()";
+    if (bufferedScripts.length === 1) return bufferedScripts[0] + ";document.currentScript.remove()";
     return bufferedScripts.join(";") + ";document.currentScript.remove()";
   }
   hasPending() {
@@ -4451,7 +3916,7 @@ function prepareMatchedManifestRoutes(manifest, matches) {
     }
     return {
       routes,
-      hasStrippedRoutes: false,
+      hasStrippedRoutes: false
     };
   }
   const inlineCssHrefs = [];
@@ -4461,27 +3926,17 @@ function prepareMatchedManifestRoutes(manifest, matches) {
     const routeId = match.routeId;
     const route = manifest.routes[routeId];
     if (!route) continue;
-    const nextRoute = stripInlinedStylesheetAssetsFromRoute(
-      inlineStyles,
-      route,
-      inlineCssHrefs,
-      seenInlineCssHrefs,
-    );
+    const nextRoute = stripInlinedStylesheetAssetsFromRoute(inlineStyles, route, inlineCssHrefs, seenInlineCssHrefs);
     if (nextRoute !== route) hasStrippedRoutes = true;
     routes[routeId] = nextRoute;
   }
   return {
     routes,
     hasStrippedRoutes,
-    ...(inlineCssHrefs.length ? { inlineCssHrefs } : {}),
+    ...inlineCssHrefs.length ? { inlineCssHrefs } : {}
   };
 }
-function stripInlinedStylesheetAssetsFromRoute(
-  inlineStyles,
-  route,
-  inlineCssHrefs,
-  seenInlineCssHrefs,
-) {
+function stripInlinedStylesheetAssetsFromRoute(inlineStyles, route, inlineCssHrefs, seenInlineCssHrefs) {
   const css = route.css;
   if (!css) return route;
   if (css.length === 0) {
@@ -4504,11 +3959,10 @@ function stripInlinedStylesheetAssetsFromRoute(
     if (!cssLinks) cssLinks = css.slice(0, i);
   }
   if (!cssLinks) return route;
-  if (cssLinks.length > 0)
-    return {
-      ...route,
-      css: cssLinks,
-    };
+  if (cssLinks.length > 0) return {
+    ...route,
+    css: cssLinks
+  };
   const nextRoute = { ...route };
   delete nextRoute.css;
   return nextRoute;
@@ -4520,62 +3974,48 @@ function hasRequestAssets(assets) {
   return !!assets && (!!assets.preloads?.length || hasRouteAssets(assets));
 }
 function mergeRequestAssetsIntoRootRoute(rootRoute, requestAssets) {
-  const preloads = requestAssets?.preloads?.length
-    ? [...requestAssets.preloads, ...(rootRoute?.preloads ?? [])]
-    : rootRoute?.preloads;
-  const scripts = requestAssets?.scripts?.length
-    ? [...requestAssets.scripts, ...(rootRoute?.scripts ?? [])]
-    : rootRoute?.scripts;
-  const cssLinks = requestAssets?.css?.length
-    ? [...requestAssets.css, ...(rootRoute?.css ?? [])]
-    : rootRoute?.css;
+  const preloads = requestAssets?.preloads?.length ? [...requestAssets.preloads, ...rootRoute?.preloads ?? []] : rootRoute?.preloads;
+  const scripts = requestAssets?.scripts?.length ? [...requestAssets.scripts, ...rootRoute?.scripts ?? []] : rootRoute?.scripts;
+  const cssLinks = requestAssets?.css?.length ? [...requestAssets.css, ...rootRoute?.css ?? []] : rootRoute?.css;
   return {
-    ...(rootRoute ?? {}),
-    ...(preloads?.length ? { preloads } : {}),
-    ...(scripts?.length ? { scripts } : {}),
-    ...(cssLinks?.length ? { css: cssLinks } : {}),
+    ...rootRoute ?? {},
+    ...preloads?.length ? { preloads } : {},
+    ...scripts?.length ? { scripts } : {},
+    ...cssLinks?.length ? { css: cssLinks } : {}
   };
 }
 function attachRouterServerSsrUtils({ router, manifest, getRequestAssets }) {
-  router.ssr = {
-    get manifest() {
-      if (!manifest) return manifest;
-      const requestAssets = getRequestAssets?.();
-      const matches = _getRenderedMatches(router.stores.matches.get());
-      const hasAssets = hasRequestAssets(requestAssets);
-      if (!hasAssets && !manifest.inlineCss) return manifest;
-      let inlineCssAsset;
-      let routes = manifest.routes;
-      if (manifest.inlineCss) {
-        const preparedManifest = getPreparedMatchedManifestRoutes(
-          manifest,
-          matches,
-          getMatchedRoutesCacheKey(matches),
-        );
-        inlineCssAsset = getInlineCssAssetForPreparedRoutes(manifest, preparedManifest);
-        if (preparedManifest.hasStrippedRoutes)
-          routes = {
-            ...manifest.routes,
-            ...preparedManifest.routes,
-          };
-      }
-      if (!hasAssets)
-        return {
-          ...(manifest.scriptFormat ? { scriptFormat: manifest.scriptFormat } : {}),
-          ...(inlineCssAsset ? { inlineStyle: inlineCssAsset } : {}),
-          routes,
-        };
-      const rootRoute = routes[rootRouteId];
-      return {
-        ...(manifest.scriptFormat ? { scriptFormat: manifest.scriptFormat } : {}),
-        ...(inlineCssAsset ? { inlineStyle: inlineCssAsset } : {}),
-        routes: {
-          ...routes,
-          [rootRouteId]: mergeRequestAssetsIntoRootRoute(rootRoute, requestAssets),
-        },
+  router.ssr = { get manifest() {
+    if (!manifest) return manifest;
+    const requestAssets = getRequestAssets?.();
+    const matches = _getRenderedMatches(router.stores.matches.get());
+    const hasAssets = hasRequestAssets(requestAssets);
+    if (!hasAssets && !manifest.inlineCss) return manifest;
+    let inlineCssAsset;
+    let routes = manifest.routes;
+    if (manifest.inlineCss) {
+      const preparedManifest = getPreparedMatchedManifestRoutes(manifest, matches, getMatchedRoutesCacheKey(matches));
+      inlineCssAsset = getInlineCssAssetForPreparedRoutes(manifest, preparedManifest);
+      if (preparedManifest.hasStrippedRoutes) routes = {
+        ...manifest.routes,
+        ...preparedManifest.routes
       };
-    },
-  };
+    }
+    if (!hasAssets) return {
+      ...manifest.scriptFormat ? { scriptFormat: manifest.scriptFormat } : {},
+      ...inlineCssAsset ? { inlineStyle: inlineCssAsset } : {},
+      routes
+    };
+    const rootRoute = routes[rootRouteId];
+    return {
+      ...manifest.scriptFormat ? { scriptFormat: manifest.scriptFormat } : {},
+      ...inlineCssAsset ? { inlineStyle: inlineCssAsset } : {},
+      routes: {
+        ...routes,
+        [rootRouteId]: mergeRequestAssetsIntoRootRoute(rootRoute, requestAssets)
+      }
+    };
+  } };
   let _dehydrated = false;
   let _serializationFinished = false;
   let streamFastPathReserved = false;
@@ -4587,12 +4027,11 @@ function attachRouterServerSsrUtils({ router, manifest, getRequestAssets }) {
   let injectedHtmlBuffer = "";
   const callListeners = (listeners, errorPrefix) => {
     const snapshot = listeners.slice();
-    for (const l of snapshot)
-      try {
-        l();
-      } catch (err) {
-        console.error(`${errorPrefix}:`, err);
-      }
+    for (const l of snapshot) try {
+      l();
+    } catch (err) {
+      console.error(`${errorPrefix}:`, err);
+    }
   };
   const removeListener = (listeners, listener) => {
     const index = listeners.indexOf(listener);
@@ -4622,30 +4061,24 @@ function attachRouterServerSsrUtils({ router, manifest, getRequestAssets }) {
       let manifestToDehydrate = void 0;
       if (manifest) {
         const cacheKey = getMatchedRoutesCacheKey(matchesToDehydrate);
-        const preparedManifest = getPreparedMatchedManifestRoutes(
-          manifest,
-          matchesToDehydrate,
-          cacheKey,
-        );
+        const preparedManifest = getPreparedMatchedManifestRoutes(manifest, matchesToDehydrate, cacheKey);
         manifestToDehydrate = {
-          ...(manifest.scriptFormat ? { scriptFormat: manifest.scriptFormat } : {}),
-          ...(preparedManifest.inlineCssHrefs
-            ? { inlineStyle: createInlineCssPlaceholderAsset() }
-            : {}),
-          routes: preparedManifest.routes,
+          ...manifest.scriptFormat ? { scriptFormat: manifest.scriptFormat } : {},
+          ...preparedManifest.inlineCssHrefs ? { inlineStyle: createInlineCssPlaceholderAsset() } : {},
+          routes: preparedManifest.routes
         };
         const requestAssets = opts?.requestAssets;
         if (hasRequestAssets(requestAssets)) {
           const existingRoot = manifestToDehydrate.routes[rootRouteId];
           manifestToDehydrate.routes = {
             ...manifestToDehydrate.routes,
-            [rootRouteId]: mergeRequestAssetsIntoRootRoute(existingRoot, requestAssets),
+            [rootRouteId]: mergeRequestAssetsIntoRootRoute(existingRoot, requestAssets)
           };
         }
       }
       const dehydratedRouter = {
         manifest: manifestToDehydrate,
-        matches,
+        matches
       };
       const dehydratedData = await router.options.dehydrate?.();
       if (cleanupStarted) return;
@@ -4653,11 +4086,7 @@ function attachRouterServerSsrUtils({ router, manifest, getRequestAssets }) {
       _dehydrated = true;
       const trackPlugins = { didRun: false };
       const serializationAdapters = router.options.serializationAdapters;
-      const plugins = serializationAdapters
-        ? serializationAdapters
-            .map((t) => /* @__PURE__ */ makeSsrSerovalPlugin(t, trackPlugins))
-            .concat(defaultSerovalPlugins)
-        : defaultSerovalPlugins;
+      const plugins = serializationAdapters ? serializationAdapters.map((t) => /* @__PURE__ */ makeSsrSerovalPlugin(t, trackPlugins)).concat(defaultSerovalPlugins) : defaultSerovalPlugins;
       let serializationCompleteSignaled = false;
       const signalSerializationComplete = () => {
         if (serializationCompleteSignaled || cleanupStarted) return;
@@ -4665,12 +4094,11 @@ function attachRouterServerSsrUtils({ router, manifest, getRequestAssets }) {
         _serializationFinished = true;
         const listeners = serializationFinishedListeners.slice();
         serializationFinishedListeners.length = 0;
-        for (const l of listeners)
-          try {
-            l();
-          } catch (err) {
-            console.error("Serialization listener error:", err);
-          }
+        for (const l of listeners) try {
+          l();
+        } catch (err) {
+          console.error("Serialization listener error:", err);
+        }
       };
       const finishScriptSerialization = () => {
         if (serializationCompleteSignaled || cleanupStarted) return;
@@ -4694,7 +4122,7 @@ function attachRouterServerSsrUtils({ router, manifest, getRequestAssets }) {
         scopeId: SCOPE_ID,
         onDone: () => {
           finishScriptSerialization();
-        },
+        }
       });
     },
     isDehydrated() {
@@ -4704,21 +4132,15 @@ function attachRouterServerSsrUtils({ router, manifest, getRequestAssets }) {
       return _serializationFinished;
     },
     reserveStreamFastPath() {
-      if (
-        !cleanupStarted &&
-        _serializationFinished &&
-        !streamFastPathReserved &&
-        renderFinishedListeners.length === 0 &&
-        !injectedHtmlBuffer &&
-        !scriptBuffer.hasPending()
-      ) {
+      if (!cleanupStarted && _serializationFinished && !streamFastPathReserved && renderFinishedListeners.length === 0 && !injectedHtmlBuffer && !scriptBuffer.hasPending()) {
         streamFastPathReserved = true;
         return true;
       }
       return false;
     },
     onInjectedHtml: (listener) => {
-      if (cleanupStarted) return () => {};
+      if (cleanupStarted) return () => {
+      };
       injectedHtmlListeners.push(listener);
       return () => removeListener(injectedHtmlListeners, listener);
     },
@@ -4727,14 +4149,16 @@ function attachRouterServerSsrUtils({ router, manifest, getRequestAssets }) {
       renderFinishedListeners.push(listener);
     },
     onSerializationFinished: (listener) => {
-      if (cleanupStarted) return () => {};
+      if (cleanupStarted) return () => {
+      };
       if (_serializationFinished && !cleanupStarted) {
         try {
           listener();
         } catch (err) {
           console.error("Serialization listener error:", err);
         }
-        return () => {};
+        return () => {
+        };
       }
       serializationFinishedListeners.push(listener);
       return () => removeListener(serializationFinishedListeners, listener);
@@ -4748,12 +4172,11 @@ function attachRouterServerSsrUtils({ router, manifest, getRequestAssets }) {
       scriptBuffer.liftBarrier();
       const listeners = renderFinishedListeners.slice();
       renderFinishedListeners.length = 0;
-      for (const l of listeners)
-        try {
-          l();
-        } catch (err) {
-          console.error("Error in render finished listener:", err);
-        }
+      for (const l of listeners) try {
+        l();
+      } catch (err) {
+        console.error("Error in render finished listener:", err);
+      }
       if (_serializationFinished) scriptBuffer.flush();
     },
     takeBufferedScripts() {
@@ -4764,9 +4187,9 @@ function attachRouterServerSsrUtils({ router, manifest, getRequestAssets }) {
         attrs: {
           nonce: router.options.ssr?.nonce,
           className: "$tsr",
-          id: TSR_SCRIPT_BARRIER_ID,
+          id: TSR_SCRIPT_BARRIER_ID
         },
-        children: scripts,
+        children: scripts
       };
     },
     liftScriptBarrier() {
@@ -4783,32 +4206,31 @@ function attachRouterServerSsrUtils({ router, manifest, getRequestAssets }) {
       cleanupStarted = true;
       const listeners = cleanupListeners.slice();
       cleanupListeners.length = 0;
-      for (const l of listeners)
-        try {
-          l();
-        } catch (err) {
-          console.error("Error in SSR cleanup listener:", err);
-        }
+      for (const l of listeners) try {
+        l();
+      } catch (err) {
+        console.error("Error in SSR cleanup listener:", err);
+      }
       renderFinishedListeners.length = 0;
       injectedHtmlListeners.length = 0;
       serializationFinishedListeners.length = 0;
       injectedHtmlBuffer = "";
       scriptBuffer.cleanup();
       router.serverSsr = void 0;
-    },
+    }
   };
   router.serverSsr = serverSsr;
-  for (const listener of router.serverSsrLifecycle?.onServerSsrAttach ?? [])
-    try {
-      listener(serverSsr);
-    } catch (err) {
-      console.error("SSR attach listener error:", err);
-    }
+  for (const listener of router.serverSsrLifecycle?.onServerSsrAttach ?? []) try {
+    listener(serverSsr);
+  } catch (err) {
+    console.error("SSR attach listener error:", err);
+  }
 }
 function getOrigin(request) {
   try {
     return new URL(request.url).origin;
-  } catch {}
+  } catch {
+  }
   return "http://localhost";
 }
 function getNormalizedURL(url, base) {
@@ -4816,28 +4238,20 @@ function getNormalizedURL(url, base) {
   const rawUrl = new URL(url, base);
   const { path: decodedPathname, handledProtocolRelativeURL } = decodePath(rawUrl.pathname);
   const searchParams = new URLSearchParams(rawUrl.search);
-  const normalizedHref =
-    decodedPathname + (searchParams.size > 0 ? "?" : "") + searchParams.toString() + rawUrl.hash;
+  const normalizedHref = decodedPathname + (searchParams.size > 0 ? "?" : "") + searchParams.toString() + rawUrl.hash;
   return {
     url: new URL(normalizedHref, rawUrl.origin),
-    handledProtocolRelativeURL,
+    handledProtocolRelativeURL
   };
 }
 function isSsrResponse(value) {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "response" in value &&
-    "serverSsrCleanup" in value
-  );
+  return typeof value === "object" && value !== null && "response" in value && "serverSsrCleanup" in value;
 }
 function normalizeSsrResponse(result) {
-  return isSsrResponse(result)
-    ? result
-    : {
-        response: result,
-        serverSsrCleanup: "none",
-      };
+  return isSsrResponse(result) ? result : {
+    response: result,
+    serverSsrCleanup: "none"
+  };
 }
 function disposeSsrResponse(response, reason) {
   if (response.serverSsrCleanup !== "stream") return Promise.resolve();
@@ -4853,12 +4267,11 @@ function disposeSsrResponseDetached(result, reason, onError = console.error) {
     disposeSsrResponse(ssrResponse, reason).catch(onError);
     return;
   }
-  if (ssrResponse.response.body)
-    try {
-      ssrResponse.response.body.cancel(reason).catch(onError);
-    } catch (error) {
-      onError(error);
-    }
+  if (ssrResponse.response.body) try {
+    ssrResponse.response.body.cancel(reason).catch(onError);
+  } catch (error) {
+    onError(error);
+  }
 }
 function createSsrStreamResponse(router, response) {
   if (!response.body) throw new Error("Invariant failed: SSR stream response requires a body");
@@ -4872,8 +4285,9 @@ function createSsrStreamResponse(router, response) {
       router.serverSsr?.cleanup();
       try {
         await response.body.cancel(reason);
-      } catch {}
-    },
+      } catch {
+      }
+    }
   };
 }
 function bindSsrResponseToRequest(router, result, signal) {
@@ -4903,7 +4317,7 @@ async function replaceSsrResponse(result, response, reason) {
   await disposeSsrResponse(normalizeSsrResponse(result), reason);
   return {
     response,
-    serverSsrCleanup: "none",
+    serverSsrCleanup: "none"
   };
 }
 async function stripSsrResponseBody(result, reason) {
@@ -4911,7 +4325,7 @@ async function stripSsrResponseBody(result, reason) {
   await disposeSsrResponse(ssrResponse, reason);
   return {
     response: new Response(null, ssrResponse.response),
-    serverSsrCleanup: "none",
+    serverSsrCleanup: "none"
   };
 }
 function defineHandlerCallback(handler) {
@@ -4930,7 +4344,8 @@ function removeRequestWaiter(waiters, index, reject) {
 function waitForRequest(value, signal, onLate) {
   const promise = Promise.resolve(value);
   if (signal.aborted) {
-    promise.then(onLate, () => {});
+    promise.then(onLate, () => {
+    });
     return Promise.reject(signal.reason);
   }
   return new Promise((resolve, reject) => {
@@ -4942,27 +4357,20 @@ function waitForRequest(value, signal, onLate) {
       waiters = newWaiters;
       index = 0;
       requestWaiters.set(signal, newWaiters);
-      signal.addEventListener(
-        "abort",
-        () => {
-          requestWaiters.delete(signal);
-          for (const rejectWaiter of newWaiters) rejectWaiter?.(signal.reason);
-          newWaiters.length = 0;
-        },
-        { once: true },
-      );
+      signal.addEventListener("abort", () => {
+        requestWaiters.delete(signal);
+        for (const rejectWaiter of newWaiters) rejectWaiter?.(signal.reason);
+        newWaiters.length = 0;
+      }, { once: true });
     }
-    promise.then(
-      (result) => {
-        removeRequestWaiter(waiters, index, reject);
-        if (signal.aborted) onLate?.(result);
-        else resolve(result);
-      },
-      (error) => {
-        removeRequestWaiter(waiters, index, reject);
-        reject(error);
-      },
-    );
+    promise.then((result) => {
+      removeRequestWaiter(waiters, index, reject);
+      if (signal.aborted) onLate?.(result);
+      else resolve(result);
+    }, (error) => {
+      removeRequestWaiter(waiters, index, reject);
+      reject(error);
+    });
   });
 }
 function transformReadableStreamWithRouter(router, routerStream, opts) {
@@ -4983,10 +4391,11 @@ const MergeState = {
   HoldingTail: 1,
   AppDone: 2,
   Draining: 3,
-  Done: 4,
+  Done: 4
 };
 const textEncoder = new TextEncoder();
-const noop = () => {};
+const noop = () => {
+};
 const resolvedPromise = Promise.resolve();
 function findHtmlBoundary(str) {
   let lastClosingTagEnd = -1;
@@ -4994,31 +4403,15 @@ function findHtmlBoundary(str) {
   while (searchFrom >= 0) {
     const openSlash = str.lastIndexOf("</", searchFrom);
     if (openSlash === -1) break;
-    if (
-      (str.charCodeAt(openSlash + 2) | 32) === 98 &&
-      (str.charCodeAt(openSlash + 3) | 32) === 111 &&
-      (str.charCodeAt(openSlash + 4) | 32) === 100 &&
-      (str.charCodeAt(openSlash + 5) | 32) === 121 &&
-      str.charCodeAt(openSlash + 6) === 62
-    )
-      return -openSlash - 2;
+    if ((str.charCodeAt(openSlash + 2) | 32) === 98 && (str.charCodeAt(openSlash + 3) | 32) === 111 && (str.charCodeAt(openSlash + 4) | 32) === 100 && (str.charCodeAt(openSlash + 5) | 32) === 121 && str.charCodeAt(openSlash + 6) === 62) return -openSlash - 2;
     if (lastClosingTagEnd === -1) {
       let i = openSlash + 2;
       const startCode = str.charCodeAt(i);
-      if ((startCode >= 97 && startCode <= 122) || (startCode >= 65 && startCode <= 90)) {
+      if (startCode >= 97 && startCode <= 122 || startCode >= 65 && startCode <= 90) {
         i++;
         while (i < str.length) {
           const code = str.charCodeAt(i);
-          if (
-            (code >= 97 && code <= 122) ||
-            (code >= 65 && code <= 90) ||
-            (code >= 48 && code <= 57) ||
-            code === 95 ||
-            code === 58 ||
-            code === 46 ||
-            code === 45
-          )
-            i++;
+          if (code >= 97 && code <= 122 || code >= 65 && code <= 90 || code >= 48 && code <= 57 || code === 95 || code === 58 || code === 46 || code === 45) i++;
           else break;
         }
         if (str.charCodeAt(i) === 62) lastClosingTagEnd = i + 1;
@@ -5040,11 +4433,11 @@ function safeCancelReader(reader, reason) {
   let cancelPromise;
   try {
     cancelPromise = reader.cancel(reason);
-  } catch {}
-  if (!safeReleaseReader(reader) && cancelPromise)
-    return cancelPromise.then(noop, noop).then(() => {
-      safeReleaseReader(reader);
-    });
+  } catch {
+  }
+  if (!safeReleaseReader(reader) && cancelPromise) return cancelPromise.then(noop, noop).then(() => {
+    safeReleaseReader(reader);
+  });
   return cancelPromise ? cancelPromise.then(noop, noop) : resolvedPromise;
 }
 function createReaderState(appStream) {
@@ -5061,7 +4454,7 @@ function createReaderState(appStream) {
       if (released) return;
       released = true;
       safeReleaseReader(reader);
-    },
+    }
   };
 }
 function createAbortNotifier(opts) {
@@ -5071,7 +4464,8 @@ function createAbortNotifier(opts) {
     abortNotified = true;
     try {
       opts?.onAbort?.(reason);
-    } catch {}
+    } catch {
+    }
   };
 }
 function listenToAbort(signal, onAbort) {
@@ -5124,18 +4518,16 @@ function makeFastPathStream(appStream, opts, serverSsr) {
     stopListeningToAbort = void 0;
     try {
       stopListeningToInjectedHtml?.();
-    } catch {}
+    } catch {
+    }
     stopListeningToInjectedHtml = void 0;
     if (cancelReader) notifyAbort(reason);
-    const readerDone = cancelReader
-      ? readerState.cancel(reason)
-      : (readerState.release(), resolvedPromise);
-    if (serverSsr)
-      try {
-        serverSsr.cleanup();
-      } catch (error) {
-        console.error("Error in SSR cleanup:", error);
-      }
+    const readerDone = cancelReader ? readerState.cancel(reason) : (readerState.release(), resolvedPromise);
+    if (serverSsr) try {
+      serverSsr.cleanup();
+    } catch (error) {
+      console.error("Error in SSR cleanup:", error);
+    }
     return readerDone;
   };
   const safeClose = () => {
@@ -5143,28 +4535,27 @@ function makeFastPathStream(appStream, opts, serverSsr) {
     state = MergeState.Done;
     try {
       controller?.close();
-    } catch {}
+    } catch {
+    }
   };
   const safeError = (error) => {
     if (isDone()) return;
     state = MergeState.Done;
     try {
       controller?.error(error);
-    } catch {}
+    } catch {
+    }
   };
-  if (serverSsr)
-    stopListeningToInjectedHtml = serverSsr.onInjectedHtml(() => {
-      const err = /* @__PURE__ */ new Error("SSR router HTML injected during fast path");
-      safeError(err);
-      cleanup(err);
-    });
+  if (serverSsr) stopListeningToInjectedHtml = serverSsr.onInjectedHtml(() => {
+    const err = /* @__PURE__ */ new Error("SSR router HTML injected during fast path");
+    safeError(err);
+    cleanup(err);
+  });
   const lifetimeMs = opts?.lifetimeMs ?? DEFAULT_LIFETIME_TIMEOUT_MS;
   lifetimeTimeoutHandle = setTimeout(() => {
     if (!cleanedUp && !isDone()) {
       const err = /* @__PURE__ */ new Error("Stream lifetime exceeded");
-      console.warn(
-        `SSR stream transform exceeded maximum lifetime (${lifetimeMs}ms), forcing cleanup`,
-      );
+      console.warn(`SSR stream transform exceeded maximum lifetime (${lifetimeMs}ms), forcing cleanup`);
       safeError(err);
       cleanup(err);
     }
@@ -5188,10 +4579,10 @@ function makeFastPathStream(appStream, opts, serverSsr) {
       } catch (error) {
         if (cleanedUp) return;
         console.error("Error reading appStream:", error);
-        if (state < MergeState.AppDone)
-          try {
-            serverSsr?.setRenderFinished();
-          } catch {}
+        if (state < MergeState.AppDone) try {
+          serverSsr?.setRenderFinished();
+        } catch {
+        }
         safeError(error);
         return cleanup(error);
       } finally {
@@ -5201,7 +4592,7 @@ function makeFastPathStream(appStream, opts, serverSsr) {
     cancel(reason) {
       state = MergeState.Done;
       return cleanup(reason);
-    },
+    }
   });
   stopListeningToAbort = listenToAbort(opts?.signal, (reason) => {
     safeError(reason);
@@ -5230,10 +4621,9 @@ function makeMainStream(serverSsr, appStream, opts) {
     pendingWriteChars = 0;
   }
   let drainResolve = null;
-  const waitForDrain = () =>
-    new Promise((r) => {
-      drainResolve = r;
-    });
+  const waitForDrain = () => new Promise((r) => {
+    drainResolve = r;
+  });
   const signalDrain = () => {
     if (drainResolve) {
       const r = drainResolve;
@@ -5287,14 +4677,16 @@ function makeMainStream(serverSsr, appStream, opts) {
     state = MergeState.Done;
     try {
       controller?.close();
-    } catch {}
+    } catch {
+    }
   }
   function safeError(error) {
     if (isDone()) return;
     state = MergeState.Done;
     try {
       controller?.error(error);
-    } catch {}
+    } catch {
+    }
   }
   function cleanup(reason, cancelReader = true) {
     if (cleanedUp) return resolvedPromise;
@@ -5302,7 +4694,8 @@ function makeMainStream(serverSsr, appStream, opts) {
     try {
       stopListeningToInjectedHtml?.();
       stopListeningToSerializationFinished?.();
-    } catch {}
+    } catch {
+    }
     stopListeningToInjectedHtml = void 0;
     stopListeningToSerializationFinished = void 0;
     stopListeningToAbort?.();
@@ -5320,9 +4713,7 @@ function makeMainStream(serverSsr, appStream, opts) {
     pendingTail = "";
     clearPending();
     if (cancelReader) notifyAbort(reason);
-    const readerDone = cancelReader
-      ? readerState.cancel(reason)
-      : (readerState.release(), resolvedPromise);
+    const readerDone = cancelReader ? readerState.cancel(reason) : (readerState.release(), resolvedPromise);
     signalDrain();
     try {
       serverSsr.cleanup();
@@ -5361,7 +4752,7 @@ function makeMainStream(serverSsr, appStream, opts) {
     cancel(reason) {
       state = MergeState.Done;
       return cleanup(reason);
-    },
+    }
   });
   function drainRouterHtml() {
     if (cleanedUp || isDone()) return;
@@ -5405,8 +4796,7 @@ function makeMainStream(serverSsr, appStream, opts) {
   }
   function appendTail(chunk) {
     pendingTail += chunk;
-    if (pendingTail.length > MAX_TAIL_CHARS)
-      throw new Error("SSR stream tail exceeded maximum buffer");
+    if (pendingTail.length > MAX_TAIL_CHARS) throw new Error("SSR stream tail exceeded maximum buffer");
   }
   function waitForBackpressure() {
     return !!(controller && controller.desiredSize !== null && controller.desiredSize <= 0);
@@ -5469,9 +4859,7 @@ function makeMainStream(serverSsr, appStream, opts) {
   lifetimeTimeoutHandle = setTimeout(() => {
     if (!cleanedUp && !isDone()) {
       const err = /* @__PURE__ */ new Error("Stream lifetime exceeded");
-      console.warn(
-        `SSR stream transform exceeded maximum lifetime (${lifetimeMs}ms), forcing cleanup`,
-      );
+      console.warn(`SSR stream transform exceeded maximum lifetime (${lifetimeMs}ms), forcing cleanup`);
       safeError(err);
       cleanup(err);
     }
@@ -5506,8 +4894,7 @@ function makeMainStream(serverSsr, appStream, opts) {
         const { done, value } = await readerState.reader.read();
         if (done) break;
         if (cleanedUp || isDone()) return;
-        const text =
-          typeof value === "string" ? value : textDecoder.decode(value, { stream: true });
+        const text = typeof value === "string" ? value : textDecoder.decode(value, { stream: true });
         const chunkString = leftover ? leftover + text : text;
         if (state >= MergeState.HoldingTail) {
           appendTail(chunkString);
@@ -5559,10 +4946,10 @@ function makeMainStream(serverSsr, appStream, opts) {
     } catch (error) {
       if (cleanedUp) return;
       console.error("Error reading appStream:", error);
-      if (state < MergeState.AppDone)
-        try {
-          serverSsr.setRenderFinished();
-        } catch {}
+      if (state < MergeState.AppDone) try {
+        serverSsr.setRenderFinished();
+      } catch {
+      }
       safeError(error);
       cleanup(error);
     } finally {
@@ -5576,25 +4963,19 @@ function makeMainStream(serverSsr, appStream, opts) {
   });
   return stream;
 }
-var scroll_restoration_inline_default =
-  'function(a,f){let l;try{l=JSON.parse(sessionStorage.getItem(a)||"{}")}catch{return}const n=l?.[f||history.state?.__TSR_key];let c=!1;for(const t in n){const e=n[t],o=e?.scrollX,s=e?.scrollY;if(Number.isFinite(o)&&Number.isFinite(s)){if(t==="window")scrollTo(o,s),c=!0;else if(t)try{const r=document.querySelector(t);r&&(r.scrollLeft=o,r.scrollTop=s)}catch{}}}if(c)return;const i=location.hash.slice(1);if(i){const t=history.state?.__hashScrollIntoViewOptions??!0;if(t){const e=document.getElementById(i);e&&e.scrollIntoView(t)}return}scrollTo(0,0)}';
+var scroll_restoration_inline_default = 'function(a,f){let l;try{l=JSON.parse(sessionStorage.getItem(a)||"{}")}catch{return}const n=l?.[f||history.state?.__TSR_key];let c=!1;for(const t in n){const e=n[t],o=e?.scrollX,s=e?.scrollY;if(Number.isFinite(o)&&Number.isFinite(s)){if(t==="window")scrollTo(o,s),c=!0;else if(t)try{const r=document.querySelector(t);r&&(r.scrollLeft=o,r.scrollTop=s)}catch{}}}if(c)return;const i=location.hash.slice(1);if(i){const t=history.state?.__hashScrollIntoViewOptions??!0;if(t){const e=document.getElementById(i);e&&e.scrollIntoView(t)}return}scrollTo(0,0)}';
 const defaultInlineScrollRestorationScript = `(${scroll_restoration_inline_default})(${escapeHtml(JSON.stringify(storageKey))})`;
 function getScrollRestorationScript(key) {
   if (key === void 0) return defaultInlineScrollRestorationScript;
   return `(${scroll_restoration_inline_default})(${escapeHtml(JSON.stringify(storageKey))},${escapeHtml(JSON.stringify(key))})`;
 }
 function getScrollRestorationScriptForRouter(router) {
-  if (
-    typeof router.options.scrollRestoration === "function" &&
-    !router.options.scrollRestoration({ location: router.latestLocation })
-  )
-    return null;
+  if (typeof router.options.scrollRestoration === "function" && !router.options.scrollRestoration({ location: router.latestLocation })) return null;
   const getKey = router.options.getScrollRestorationKey;
   if (!getKey) return defaultInlineScrollRestorationScript;
   const location = router.latestLocation;
   const userKey = getKey(location);
-  if (userKey === defaultGetScrollRestorationKey(location))
-    return defaultInlineScrollRestorationScript;
+  if (userKey === defaultGetScrollRestorationKey(location)) return defaultInlineScrollRestorationScript;
   return getScrollRestorationScript(userKey);
 }
 export {
@@ -5646,5 +5027,5 @@ export {
   defineHandlerCallback as w,
   resolveManifestAssetLink as x,
   getNormalizedURL as y,
-  getOrigin as z,
+  getOrigin as z
 };

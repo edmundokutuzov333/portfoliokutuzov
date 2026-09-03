@@ -49,15 +49,15 @@ function renderErrorPage(message = "The application failed to render safely.") {
 function escapeHtml(value) {
   return value.replace(
     /[&<>"]/g,
-    (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[char],
+    (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[char]
   );
 }
 let serverEntryPromise;
 async function getServerEntry() {
   if (!serverEntryPromise) {
-    serverEntryPromise = import("./server-L5kFO_hB.mjs")
-      .then((n) => n.s)
-      .then((module) => module.default ?? module);
+    serverEntryPromise = import("./server-BjuWTvBY.mjs").then((n) => n.s).then(
+      (module) => module.default ?? module
+    );
   }
   return serverEntryPromise;
 }
@@ -73,12 +73,7 @@ function isExpectedPreviewDisconnect(error) {
   if (!(error instanceof Error)) return false;
   const code = "code" in error ? String(error.code) : "";
   const cause = "cause" in error ? error.cause : void 0;
-  return (
-    error.name === "AbortError" ||
-    error.message === "aborted" ||
-    code === "ECONNRESET" ||
-    isExpectedPreviewDisconnect(cause)
-  );
+  return error.name === "AbortError" || error.message === "aborted" || code === "ECONNRESET" || isExpectedPreviewDisconnect(cause);
 }
 function disconnectedResponse() {
   return new Response(null, { status: 499, statusText: "Client Closed Request" });
@@ -91,11 +86,11 @@ async function normalizeSsrResponse(request, response) {
   const body = await response.clone().text();
   if (!isH3SwallowedErrorBody(body)) return response;
   console.error(
-    consumeLastCapturedError() ?? new Error(`SSR error swallowed by renderer: ${body}`),
+    consumeLastCapturedError() ?? new Error(`SSR error swallowed by renderer: ${body}`)
   );
   return new Response(renderErrorPage(), {
     status: 500,
-    headers: { "content-type": "text/html; charset=utf-8" },
+    headers: { "content-type": "text/html; charset=utf-8" }
   });
 }
 const server = {
@@ -111,9 +106,12 @@ const server = {
       console.error(error);
       return new Response(renderErrorPage(), {
         status: 500,
-        headers: { "content-type": "text/html; charset=utf-8" },
+        headers: { "content-type": "text/html; charset=utf-8" }
       });
     }
-  },
+  }
 };
-export { server as default, renderErrorPage as r };
+export {
+  server as default,
+  renderErrorPage as r
+};

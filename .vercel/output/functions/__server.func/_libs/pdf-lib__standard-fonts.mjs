@@ -7,7 +7,7 @@ for (var i = 0; i < chars.length; i++) {
 var decodeFromBase64 = function(base64) {
   var bufferLength = base64.length * 0.75;
   var len = base64.length;
-  var i;
+  var i2;
   var p = 0;
   var encoded1;
   var encoded2;
@@ -20,11 +20,11 @@ var decodeFromBase64 = function(base64) {
     }
   }
   var bytes = new Uint8Array(bufferLength);
-  for (i = 0; i < len; i += 4) {
-    encoded1 = lookup[base64.charCodeAt(i)];
-    encoded2 = lookup[base64.charCodeAt(i + 1)];
-    encoded3 = lookup[base64.charCodeAt(i + 2)];
-    encoded4 = lookup[base64.charCodeAt(i + 3)];
+  for (i2 = 0; i2 < len; i2 += 4) {
+    encoded1 = lookup[base64.charCodeAt(i2)];
+    encoded2 = lookup[base64.charCodeAt(i2 + 1)];
+    encoded3 = lookup[base64.charCodeAt(i2 + 2)];
+    encoded4 = lookup[base64.charCodeAt(i2 + 3)];
     bytes[p++] = encoded1 << 2 | encoded2 >> 4;
     bytes[p++] = (encoded2 & 15) << 4 | encoded3 >> 2;
     bytes[p++] = (encoded3 & 3) << 6 | encoded4 & 63;
@@ -33,8 +33,8 @@ var decodeFromBase64 = function(base64) {
 };
 var arrayToString = function(array) {
   var str = "";
-  for (var i = 0; i < array.length; i++) {
-    str += String.fromCharCode(array[i]);
+  for (var i2 = 0; i2 < array.length; i2++) {
+    str += String.fromCharCode(array[i2]);
   }
   return str;
 };

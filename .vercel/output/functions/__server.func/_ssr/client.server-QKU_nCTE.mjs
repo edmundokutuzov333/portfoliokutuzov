@@ -9,25 +9,22 @@ import "tslib";
 import "../_libs/supabase__functions-js.mjs";
 function createSupabaseAdminClient() {
   const SUPABASE_URL = process.env.SUPABASE_URL || "https://placeholder-project.supabase.co";
-  const SUPABASE_SERVICE_ROLE_KEY =
-    process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.placeholder-admin";
+  const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.placeholder-admin";
   return createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
     auth: {
       storage: void 0,
       persistSession: false,
-      autoRefreshToken: false,
-    },
+      autoRefreshToken: false
+    }
   });
 }
 let _supabaseAdmin;
-const supabaseAdmin = new Proxy(
-  {},
-  {
-    get(_, prop, receiver) {
-      if (!_supabaseAdmin) _supabaseAdmin = createSupabaseAdminClient();
-      return Reflect.get(_supabaseAdmin, prop, receiver);
-    },
-  },
-);
-export { supabaseAdmin };
+const supabaseAdmin = new Proxy({}, {
+  get(_, prop, receiver) {
+    if (!_supabaseAdmin) _supabaseAdmin = createSupabaseAdminClient();
+    return Reflect.get(_supabaseAdmin, prop, receiver);
+  }
+});
+export {
+  supabaseAdmin
+};

@@ -11,4 +11,6 @@ function requireHasFlag() {
   };
   return hasFlag;
 }
-export { requireHasFlag as r };
+export {
+  requireHasFlag as r
+};

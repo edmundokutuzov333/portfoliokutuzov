@@ -6,9 +6,7 @@ var IcebergError = class extends Error {
     this.icebergType = opts.icebergType;
     this.icebergCode = opts.icebergCode;
     this.details = opts.details;
-    this.isCommitStateUnknown =
-      opts.icebergType === "CommitStateUnknownException" ||
-      ([500, 502, 504].includes(opts.status) && opts.icebergType?.includes("CommitState") === true);
+    this.isCommitStateUnknown = opts.icebergType === "CommitStateUnknownException" || [500, 502, 504].includes(opts.status) && opts.icebergType?.includes("CommitState") === true;
   }
   /**
    * Returns true if the error is a 404 Not Found error.
@@ -58,17 +56,23 @@ async function buildAuthHeaders(auth) {
 function createFetchClient(options) {
   const fetchFn = options.fetchImpl ?? globalThis.fetch;
   return {
-    async request({ method, path, query, body, headers }) {
+    async request({
+      method,
+      path,
+      query,
+      body,
+      headers
+    }) {
       const url = buildUrl(options.baseUrl, path, query);
       const authHeaders = await buildAuthHeaders(options.auth);
       const res = await fetchFn(url, {
         method,
         headers: {
-          ...(body ? { "Content-Type": "application/json" } : {}),
+          ...body ? { "Content-Type": "application/json" } : {},
           ...authHeaders,
-          ...headers,
+          ...headers
         },
-        body: body ? JSON.stringify(body) : void 0,
+        body: body ? JSON.stringify(body) : void 0
       });
       const text = await res.text();
       const isJson = (res.headers.get("content-type") || "").includes("application/json");
@@ -76,15 +80,18 @@ function createFetchClient(options) {
       if (!res.ok) {
         const errBody = isJson ? data : void 0;
         const errorDetail = errBody?.error;
-        throw new IcebergError(errorDetail?.message ?? `Request failed with status ${res.status}`, {
-          status: res.status,
-          icebergType: errorDetail?.type,
-          icebergCode: errorDetail?.code,
-          details: errBody,
-        });
+        throw new IcebergError(
+          errorDetail?.message ?? `Request failed with status ${res.status}`,
+          {
+            status: res.status,
+            icebergType: errorDetail?.type,
+            icebergCode: errorDetail?.code,
+            details: errBody
+          }
+        );
       }
       return { status: res.status, headers: res.headers, data };
-    },
+    }
   };
 }
 function namespaceToPath(namespace) {
@@ -100,42 +107,42 @@ var NamespaceOperations = class {
     const response = await this.client.request({
       method: "GET",
       path: `${this.prefix}/namespaces`,
-      query,
+      query
     });
     return response.data.namespaces.map((ns) => ({ namespace: ns }));
   }
   async createNamespace(id, metadata) {
     const request = {
       namespace: id.namespace,
-      properties: metadata?.properties,
+      properties: metadata?.properties
     };
     const response = await this.client.request({
       method: "POST",
       path: `${this.prefix}/namespaces`,
-      body: request,
+      body: request
     });
     return response.data;
   }
   async dropNamespace(id) {
     await this.client.request({
       method: "DELETE",
-      path: `${this.prefix}/namespaces/${namespaceToPath(id.namespace)}`,
+      path: `${this.prefix}/namespaces/${namespaceToPath(id.namespace)}`
     });
   }
   async loadNamespaceMetadata(id) {
     const response = await this.client.request({
       method: "GET",
-      path: `${this.prefix}/namespaces/${namespaceToPath(id.namespace)}`,
+      path: `${this.prefix}/namespaces/${namespaceToPath(id.namespace)}`
     });
     return {
-      properties: response.data.properties,
+      properties: response.data.properties
     };
   }
   async namespaceExists(id) {
     try {
       await this.client.request({
         method: "HEAD",
-        path: `${this.prefix}/namespaces/${namespaceToPath(id.namespace)}`,
+        path: `${this.prefix}/namespaces/${namespaceToPath(id.namespace)}`
       });
       return true;
     } catch (error) {
@@ -168,7 +175,7 @@ var TableOperations = class {
   async listTables(namespace) {
     const response = await this.client.request({
       method: "GET",
-      path: `${this.prefix}/namespaces/${namespaceToPath2(namespace.namespace)}/tables`,
+      path: `${this.prefix}/namespaces/${namespaceToPath2(namespace.namespace)}/tables`
     });
     return response.data.identifiers;
   }
@@ -181,7 +188,7 @@ var TableOperations = class {
       method: "POST",
       path: `${this.prefix}/namespaces/${namespaceToPath2(namespace.namespace)}/tables`,
       body: request,
-      headers,
+      headers
     });
     return response.data.metadata;
   }
@@ -189,18 +196,18 @@ var TableOperations = class {
     const response = await this.client.request({
       method: "POST",
       path: `${this.prefix}/namespaces/${namespaceToPath2(id.namespace)}/tables/${id.name}`,
-      body: request,
+      body: request
     });
     return {
       "metadata-location": response.data["metadata-location"],
-      metadata: response.data.metadata,
+      metadata: response.data.metadata
     };
   }
   async dropTable(id, options) {
     await this.client.request({
       method: "DELETE",
       path: `${this.prefix}/namespaces/${namespaceToPath2(id.namespace)}/tables/${id.name}`,
-      query: { purgeRequested: String(options?.purge ?? false) },
+      query: { purgeRequested: String(options?.purge ?? false) }
     });
   }
   async loadTable(id) {
@@ -211,7 +218,7 @@ var TableOperations = class {
     const response = await this.client.request({
       method: "GET",
       path: `${this.prefix}/namespaces/${namespaceToPath2(id.namespace)}/tables/${id.name}`,
-      headers,
+      headers
     });
     return response.data.metadata;
   }
@@ -224,7 +231,7 @@ var TableOperations = class {
       await this.client.request({
         method: "HEAD",
         path: `${this.prefix}/namespaces/${namespaceToPath2(id.namespace)}/tables/${id.name}`,
-        headers,
+        headers
       });
       return true;
     } catch (error) {
@@ -260,7 +267,7 @@ var IcebergRestCatalog = class {
     this.client = createFetchClient({
       baseUrl,
       auth: options.auth,
-      fetchImpl: options.fetch,
+      fetchImpl: options.fetch
     });
     this.accessDelegation = options.accessDelegation?.join(",");
     this.namespaceOps = new NamespaceOperations(this.client, prefix);
@@ -522,4 +529,6 @@ var IcebergRestCatalog = class {
     return this.tableOps.createTableIfNotExists(namespace, request);
   }
 };
-export { IcebergRestCatalog as I };
+export {
+  IcebergRestCatalog as I
+};
