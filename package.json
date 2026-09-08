@@ -14,7 +14,8 @@
     "start": "node .output/server/index.mjs",
     "preview": "vite preview",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "build:vercel": "vite build --config vite.static.config.js && node scripts/write-static-index.mjs"
   },
   "dependencies": {
     "@exodus/bytes": "^1.1.0",
