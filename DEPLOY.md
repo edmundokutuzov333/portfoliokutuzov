@@ -1,41 +1,33 @@
-# Cloudflare deployment
+# Deploy no Vercel
 
-The build targets Cloudflare and produces both deployment shapes from a single
-`npm run build`:
+Este projeto usa TanStack Start com Nitro e o preset `vercel`. O build de produção gera o Build Output API em `.vercel/output`, incluindo os assets estáticos e a função SSR.
 
-| Output                       | Path                                       | Used by                                                    |
-| ---------------------------- | ------------------------------------------ | ---------------------------------------------------------- |
-| Workers Static Assets bundle | `dist/server/` + `dist/client/`            | `wrangler deploy` (modern, recommended)                    |
-| Pages advanced `_worker.js`  | `dist/client/_worker.js/` + `_routes.json` | Cloudflare **Pages** (dashboard / `wrangler pages deploy`) |
+## Deploy pelo GitHub
 
-## Option A — Cloudflare Pages (dashboard)
+1. Importe `edmundokutuzov333/portfoliokutuzov` no Vercel.
+2. Use Node.js 22.x (o repositório já inclui `.nvmrc` e fixa a função SSR em `nodejs22.x`).
+3. Deixe os comandos definidos pelo repositório:
+   - Install: `npm ci`
+   - Build: `npm run build`
+   - Output directory: deixe vazio; o Nitro escreve diretamente em `.vercel/output`.
+4. Configure no Vercel as variáveis usadas pelas funcionalidades opcionais, conforme `.env.example`.
 
-1. Push the repo to GitHub.
-2. Cloudflare dashboard → **Workers & Pages → Create → Pages → Connect to Git**.
-3. Build settings:
-   - **Framework preset:** None
-   - **Install command:** `npm ci`
-   - **Build command:** `npm run build`
-   - **Build output directory:** `dist/client`
-   - **Node version:** `22` (env var `NODE_VERSION=22`)
-4. Add the same public/backend environment variables used locally under
-   **Settings → Environment variables** for both Production and Preview.
-5. Deploy. Pages will pick up `dist/client/_worker.js/index.js` automatically
-   and serve static assets (excluded in `_routes.json`) from the edge cache.
-
-## Option B — Cloudflare Pages (CLI)
+## Deploy pela CLI
 
 ```bash
+npm ci
 npm run build
-npx wrangler pages deploy dist/client --project-name tanstack-start-app
+npx vercel deploy --prebuilt --prod
 ```
 
-Or the shortcut: `npm run deploy:pages`.
+## Verificação local
 
-## Notes
+Antes de enviar alterações, execute:
 
-- Server functions read secrets via `process.env.*` inside `.handler()`; public
-  browser variables keep the `VITE_*` prefix.
-- Do not commit `bun.lock`, `bun.lockb`, `bunfig.toml`, `wrangler.json`, or
-  `wrangler.jsonc` for this Pages setup; `package-lock.json` is the single
-  dependency lockfile used by automatic deploys.
+```bash
+npm ci
+npm run build
+npm run diagnose
+```
+
+O diagnóstico confirma que os bundles CSS/JS, a função SSR, a árvore de rotas e os assets estão presentes no output do Vercel.

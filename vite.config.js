@@ -4,6 +4,13 @@ import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/tanstack/vite";
 export default defineConfig({
   nitro: {
     preset: "vercel",
+    // Keep the generated Vercel function on the stable Node 22 runtime.
+    // Nitro otherwise derives this from the Node version used by the builder.
+    vercel: {
+      functions: {
+        runtime: "nodejs22.x",
+      },
+    },
   },
   tanstackStart: {
     server: { entry: "server" },
