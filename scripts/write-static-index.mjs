@@ -14,7 +14,7 @@ if (!fs.existsSync(assetsDir)) {
 
 const assetFiles = fs.readdirSync(assetsDir);
 const entryCandidates = assetFiles
-  .filter((file) => /^index-.*\\.js$/.test(file))
+  .filter((file) => /^index-.*\.js$/.test(file))
   .map((file) => ({
     file,
     size: fs.statSync(path.join(assetsDir, file)).size,
@@ -22,14 +22,14 @@ const entryCandidates = assetFiles
   .sort((a, b) => b.size - a.size);
 
 const entry = entryCandidates[0]?.file;
-const stylesheet = assetFiles.find((file) => /^styles-.*\\.css$/.test(file));
+const stylesheet = assetFiles.find((file) => /^styles-.*\.css$/.test(file));
 
 if (!entry) {
   throw new Error("Could not identify the generated client entry bundle.");
 }
 
 const stylesheetTag = stylesheet
-  ? "\\n    <link rel=\"stylesheet\" href=\"/assets/" + stylesheet + "\" />"
+  ? "\n    <link rel=\"stylesheet\" href=\"/assets/" + stylesheet + "\" />"
   : "";
 
 const html = [
@@ -48,7 +48,7 @@ const html = [
   "  </body>",
   "</html>",
   "",
-].join("\\n");
+].join("\n");
 
 fs.writeFileSync(path.join(clientDir, "index.html"), html);
 console.log("Static Vercel entry generated: assets/" + entry + (stylesheet ? " + assets/" + stylesheet : ""));
