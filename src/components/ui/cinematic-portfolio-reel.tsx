@@ -1,18 +1,15 @@
 import * as React from "react";
 import {
-  animate,
   motion,
   useMotionValue,
-  useReducedMotion,
   useTransform,
-  type MotionValue,
+  animate,
+  useReducedMotion,
   type PanInfo,
+  type MotionValue,
 } from "framer-motion";
-import { Link } from "@tanstack/react-router";
 import { useProjects } from "@/hooks/useSiteData";
 import { type DbProject } from "@/lib/cms";
-import { projects as staticProjects } from "@/data/projects";
-import { toDeterministicUuid } from "@/lib/utils";
 
 interface CarouselConfig {
   distanceDivisor: number;
@@ -60,90 +57,34 @@ const getCarouselConfig = (width: number): CarouselConfig => {
   };
 };
 
-/**
- * The reel must have a useful first paint even when Supabase is not configured.
- * The static project data supplies the metadata and ProjectArtwork supplies a
- * deterministic visual cover until a CMS cover is available.
- */
-const FALLBACK_PROJECTS: DbProject[] = staticProjects.map((project) => ({
-  id: toDeterministicUuid("00000004", project.id),
-  slug: project.title.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-  title: project.title,
-  subtitle: project.subtitle,
-  category: project.category,
-  year: project.year,
-  description: project.description,
-  cover_url: project.coverUrl ?? null,
-  gallery: [],
-  tags: project.tags ?? [],
-  palette: project.palette,
-  span: project.span ?? null,
-  sort_order: project.id,
-  is_published: true,
-  featured: project.id <= 3,
-  featured_priority: 4 - project.id,
-  client_name: project.title,
-}));
-
-const ARTWORK_STYLES = [
-  {
-    background: "linear-gradient(145deg, #07122b 0%, #0a4d9b 45%, #02050c 100%)",
-    accent: "#57c7ff",
-    shape: "rounded-full",
-  },
-  {
-    background: "linear-gradient(145deg, #02050c 0%, #102e64 50%, #087fbd 100%)",
-    accent: "#38bdf8",
-    shape: "rounded-[42%]",
-  },
-  {
-    background: "linear-gradient(145deg, #05172b 0%, #087e9c 50%, #031018 100%)",
-    accent: "#8be9ff",
-    shape: "rounded-[30%]",
-  },
-  {
-    background: "linear-gradient(145deg, #17100a 0%, #713c14 44%, #050505 100%)",
-    accent: "#f6ba6d",
-    shape: "rounded-full",
-  },
-  {
-    background: "linear-gradient(145deg, #080516 0%, #3a1f7a 46%, #071a3d 100%)",
-    accent: "#b7a2ff",
-    shape: "rounded-[36%]",
-  },
-  {
-    background: "linear-gradient(145deg, #041c1b 0%, #0f766e 48%, #020b13 100%)",
-    accent: "#6ee7b7",
-    shape: "rounded-[24%]",
-  },
-] as const;
-
 export function CinematicPortfolioReel() {
   const { data: projectsData } = useProjects();
-
   const baseProjects = React.useMemo(() => {
-    const availableProjects = projectsData?.length ? projectsData : FALLBACK_PROJECTS;
-    return availableProjects.filter((project) => project.is_published !== false);
+    return (projectsData || []).filter((p) => p.cover_url);
   }, [projectsData]);
 
-  const slides = React.useMemo(() => {
-    if (baseProjects.length === 0) return [];
+  const [slides, setSlides] = React.useState<DbProject[]>([]);
 
-    // Repeat the available work so the stack remains cinematic with a small
-    // CMS dataset, while keeping the order stable between renders.
-    return Array.from({ length: Math.max(20, baseProjects.length * 3) }, (_, index) => {
-      return baseProjects[index % baseProjects.length];
-    });
+  React.useEffect(() => {
+    if (baseProjects.length > 0) {
+      // Shuffle on mount/refresh
+      const shuffled = [...baseProjects].sort(() => Math.random() - 0.5);
+      const newSlides: DbProject[] = [];
+      while (newSlides.length < 20) {
+        newSlides.push(...shuffled);
+      }
+      setSlides(newSlides);
+    }
   }, [baseProjects]);
 
+  if (slides.length === 0) {
+    return null;
+  }
+
   return (
-    <section
-      aria-labelledby="portfolio-reel-heading"
-      className="relative w-full overflow-hidden bg-[var(--color-bg)] pt-28 pb-8 md:pt-32 md:pb-12"
-    >
-      <div className="mx-auto flex w-full max-w-[var(--width-wide)] items-center justify-between gap-6 px-5 md:px-8">
+    <section className="relative w-full overflow-hidden bg-[var(--color-bg)] pt-28 pb-8 md:pt-32 md:pb-12">
+      <div className="w-full flex justify-center mb-10 px-4 relative z-10">
         <motion.p
-          id="portfolio-reel-heading"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
@@ -151,12 +92,8 @@ export function CinematicPortfolioReel() {
         >
           Selected Portfolio Reel
         </motion.p>
-        <p className="mono text-right text-[9px] uppercase tracking-[0.22em] text-sky-400/80 md:text-[10px] md:tracking-[0.3em]">
-          Drag to browse <span aria-hidden="true">·</span> Click to open case
-        </p>
       </div>
-
-      {slides.length > 0 && <CarouselStacked slides={slides} />}
+      <CarouselStacked slides={slides} />
     </section>
   );
 }
@@ -164,42 +101,41 @@ export function CinematicPortfolioReel() {
 const CarouselStacked = ({ slides }: { slides: DbProject[] }) => {
   const scrollProgress = useMotionValue(0);
   const startProgress = React.useRef(0);
-  const [windowWidth, setWindowWidth] = React.useState(
-    typeof window === "undefined" ? 1024 : window.innerWidth,
-  );
+  const [windowWidth, setWindowWidth] = React.useState(0);
   const total = slides.length;
   const prefersReducedMotion = useReducedMotion();
 
+  // Continuous Autoplay
   const animationRef = React.useRef<number | undefined>(undefined);
   const isDragging = React.useRef(false);
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;
 
+    setWindowWidth(window.innerWidth);
     const handleResize = () => setWindowWidth(window.innerWidth);
-    handleResize();
     window.addEventListener("resize", handleResize);
 
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   React.useEffect(() => {
-    if (prefersReducedMotion) return;
+    if (prefersReducedMotion) {
+      return; // Stop autoplay if user prefers reduced motion
+    }
 
     const play = () => {
       if (!isDragging.current) {
-        // One card takes several seconds to travel through the centre. This
-        // keeps the reel alive without racing past the artwork.
-        scrollProgress.set(scrollProgress.get() + 0.0025);
+        scrollProgress.set(scrollProgress.get() + 0.02); // Fast, fluid speed
       }
       animationRef.current = requestAnimationFrame(play);
     };
-
     animationRef.current = requestAnimationFrame(play);
+
     return () => {
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
     };
-  }, [prefersReducedMotion, scrollProgress]);
+  }, [scrollProgress, prefersReducedMotion]);
 
   const config = React.useMemo(() => getCarouselConfig(windowWidth), [windowWidth]);
 
@@ -208,11 +144,17 @@ const CarouselStacked = ({ slides }: { slides: DbProject[] }) => {
     startProgress.current = scrollProgress.get();
   };
 
-  const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+  const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     isDragging.current = false;
-    const distanceShift = -info.offset.x / config.distanceDivisor;
-    const velocityShift = -info.velocity.x / config.velocityDivisor;
-    const totalShift = Math.max(-3, Math.min(3, Math.round(distanceShift + velocityShift)));
+    const dragDistance = info.offset.x;
+    const velocity = info.velocity.x;
+
+    const distanceShift = -dragDistance / config.distanceDivisor;
+    const velocityShift = -velocity / config.velocityDivisor;
+
+    let totalShift = Math.round(distanceShift + velocityShift);
+    totalShift = Math.max(-3, Math.min(3, totalShift));
+
     const target = Math.round(startProgress.current) + totalShift;
 
     animate(scrollProgress, target, {
@@ -224,18 +166,20 @@ const CarouselStacked = ({ slides }: { slides: DbProject[] }) => {
   };
 
   return (
-    <div className="relative h-[50vh] w-full select-none overflow-hidden md:h-[60vh] lg:h-[70vh]">
-      <motion.div
-        drag="x"
-        dragConstraints={{ left: 0, right: 0 }}
-        onDragStart={handleDragStart}
-        onDrag={(_, info) => {
-          const delta = -info.delta.x / config.sensitivity;
-          scrollProgress.set(scrollProgress.get() + delta);
-        }}
-        onDragEnd={handleDragEnd}
-        className="absolute inset-0 z-10 flex h-full w-full cursor-grab items-center justify-center touch-pan-y active:cursor-grabbing"
-      >
+    <div className="relative w-full h-[50vh] md:h-[60vh] lg:h-[70vh] overflow-hidden select-none">
+      <div className="relative flex h-full w-full items-center justify-center">
+        <motion.div
+          drag="x"
+          dragConstraints={{ left: 0, right: 0 }}
+          onDragStart={handleDragStart}
+          onDrag={(_, info) => {
+            const delta = -info.delta.x / config.sensitivity;
+            scrollProgress.set(scrollProgress.get() + delta);
+          }}
+          onDragEnd={handleDragEnd}
+          className="absolute inset-0 z-50 cursor-grab active:cursor-grabbing touch-pan-y"
+        />
+
         {slides.map((slide, index) => (
           <CarouselCard
             key={`${slide.id}-${index}`}
@@ -246,7 +190,7 @@ const CarouselStacked = ({ slides }: { slides: DbProject[] }) => {
             config={config}
           />
         ))}
-      </motion.div>
+      </div>
     </div>
   );
 };
@@ -260,101 +204,78 @@ interface CarouselCardProps {
 }
 
 const CarouselCard = ({ slide, index, total, progress, config }: CarouselCardProps) => {
-  const offset = useTransform(progress, (value) => {
-    let diff = (index - value) % total;
+  const offset = useTransform(progress, (p) => {
+    let diff = (index - p) % total;
     if (diff > total / 2) diff -= total;
     if (diff < -total / 2) diff += total;
     return diff;
   });
 
   const x = useTransform(offset, (value) => value * config.xMultiplier);
+
   const y = useTransform(offset, (value) => {
-    const absoluteValue = Math.abs(value);
-    return absoluteValue < 0.05 ? 0 : absoluteValue * config.yMultiplier;
+    const abs = Math.abs(value);
+    if (abs < 0.05) return 0;
+    return abs * config.yMultiplier;
   });
-  const rotate = useTransform(offset, (value) =>
-    Math.abs(value) < 0.05 ? 0 : value * config.rotationMultiplier,
-  );
-  const scale = useTransform(offset, (value) => 1 - Math.abs(value) * config.scaleReduction);
+
+  const rotate = useTransform(offset, (value) => {
+    if (Math.abs(value) < 0.05) return 0;
+    return value * config.rotationMultiplier;
+  });
+
+  const scale = useTransform(offset, (value) => {
+    return 1 - Math.abs(value) * config.scaleReduction;
+  });
+
   const opacity = useTransform(
     offset,
     [-total / 2, -total / 2 + 0.5, 0, total / 2 - 0.5, total / 2],
     [0, 1, 1, 1, 0],
   );
-  const zIndex = useTransform(offset, (value) => Math.round(100 - Math.abs(value) * 10));
-  const slug = slide.slug || slide.id;
+
+  const zIndex = useTransform(offset, (value) => {
+    return Math.round(100 - Math.abs(value) * 10);
+  });
+
   const badge = slide.category + (slide.year ? ` · ${slide.year}` : "");
 
   return (
     <motion.div
       style={{ x, y, rotate, scale, opacity, zIndex }}
-      className="absolute h-[85%] w-auto aspect-[4/5] overflow-hidden rounded-xl border border-[var(--color-border-subtle)] bg-black shadow-2xl"
+      className="absolute h-[85%] w-auto aspect-[4/5] rounded-xl overflow-hidden shadow-2xl bg-black border border-[var(--color-border-subtle)]"
     >
-      <Link
-        to="/portfolio/$slug"
-        params={{ slug }}
-        aria-label={`Open ${slide.title} case`}
-        className="group relative block h-full w-full bg-[#050505] focus:outline-none"
-      >
-        <ProjectArtwork slide={slide} index={index} />
+      {/* 
+        Ensure a link handles the click but prevents dragging from triggering it.
+        We can do this by wrapping content or checking drag state, but we don't 
+        want the link to intercept the global drag div above.
+        Actually, since the drag area z-index is 50, standard links won't be clickable.
+        To make it clickable, pointer-events on the drag div can be problematic, 
+        but in this concept it's typical to have the drag layer covering it.
+        Let's allow pointer events to pass through, or just use the drag div to handle clicks.
+        Wait, the user's base code has the drag div covering everything. I'll stick to that 
+        and render visual only, since dragging is primary.
+      */}
+      <div className="relative w-full h-full bg-[#050505]">
         {slide.cover_url && (
           <img
             src={slide.cover_url}
-            alt=""
-            className="absolute inset-0 h-full w-full object-contain object-center transition duration-700 group-hover:scale-[1.025]"
+            alt={slide.title}
+            className="w-full h-full object-contain object-center"
             draggable={false}
-            onError={(event) => event.currentTarget.remove()}
           />
         )}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/95 via-black/45 to-transparent" />
-        <div className="pointer-events-none absolute bottom-6 left-6 right-6">
-          <div className="mono mb-2 text-[10px] uppercase tracking-[0.2em] text-white/70">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+        <div className="absolute bottom-6 left-6 right-6">
+          <div className="mono text-[10px] uppercase tracking-[0.2em] text-white/70 mb-2">
             {badge}
           </div>
-          <h3 className="display text-2xl font-medium leading-[1.1] tracking-[-0.02em] text-white md:text-3xl">
+          <h3 className="display text-2xl md:text-3xl text-white font-medium leading-[1.1] tracking-[-0.02em]">
             {slide.title}
           </h3>
-          {slide.subtitle && <div className="mt-1 text-sm text-white/80">{slide.subtitle}</div>}
+          {slide.subtitle && <div className="text-white/80 text-sm mt-1">{slide.subtitle}</div>}
         </div>
-      </Link>
+      </div>
     </motion.div>
   );
 };
-
-function ProjectArtwork({ slide, index }: { slide: DbProject; index: number }) {
-  const artwork = ARTWORK_STYLES[index % ARTWORK_STYLES.length];
-  const number = String((index % 99) + 1).padStart(2, "0");
-
-  return (
-    <div
-      className="absolute inset-0 overflow-hidden"
-      style={{ background: artwork.background }}
-      aria-hidden="true"
-    >
-      <div
-        className="absolute -right-[20%] -top-[12%] h-[62%] w-[82%] rotate-[18deg] border border-white/20"
-        style={{ borderColor: `${artwork.accent}55` }}
-      />
-      <div
-        className={`absolute -bottom-[16%] -left-[20%] h-[62%] w-[82%] ${artwork.shape} border border-white/15`}
-        style={{ borderColor: `${artwork.accent}66` }}
-      />
-      <div
-        className="absolute inset-5 rounded-lg border border-white/15"
-        style={{ boxShadow: `inset 0 0 80px ${artwork.accent}24` }}
-      />
-      <div className="absolute left-6 right-6 top-6 flex items-start justify-between gap-4">
-        <span className="mono text-[9px] tracking-[0.25em] text-white/65">{slide.category}</span>
-        <span className="mono text-[9px] tracking-[0.25em]" style={{ color: artwork.accent }}>
-          {number}
-        </span>
-      </div>
-      <div className="absolute left-6 right-6 top-1/2 -translate-y-1/2">
-        <div className="display max-w-[85%] text-4xl font-semibold uppercase leading-[0.9] tracking-[-0.04em] text-white/90 md:text-5xl">
-          {slide.title}
-        </div>
-        <div className="mt-4 h-px w-16" style={{ backgroundColor: artwork.accent }} />
-      </div>
-    </div>
-  );
-}
