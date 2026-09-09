@@ -21,6 +21,7 @@ import {
   recordRuntimeError,
 } from "@/lib/runtime-diagnostics";
 import { createSeo, SITE_ORIGIN, socialImageUrl } from "@/lib/seo";
+import appCss from "../styles.css?url";
 
 interface RouterContext {
   queryClient: QueryClient;
@@ -30,21 +31,15 @@ function NotFoundComponent() {
   return (
     <div className="relative z-10 min-h-screen grid place-items-center px-4 bg-[var(--color-bg)]">
       <div className="text-center max-w-lg mx-auto">
-        <p className="mono text-[10px] tracking-[0.3em] uppercase text-[var(--color-text-muted)] mb-8">
-          Error 404
-        </p>
+        <p className="mono text-[10px] tracking-[0.3em] uppercase text-[var(--color-text-muted)] mb-8">Error 404</p>
         <h1 className="display text-6xl sm:text-8xl leading-[0.95] tracking-[-0.03em] text-[var(--color-text-primary)]">
           Lost in <br className="hidden sm:block" />
           <span className="italic text-[var(--color-text-muted)]">the grid.</span>
         </h1>
         <p className="mt-8 text-[15px] text-[var(--color-text-secondary)] leading-relaxed max-w-sm mx-auto">
-          The page you are looking for has left the system. It might have been moved, renamed, or
-          never existed in the first place.
+          The page you are looking for has left the system. It might have been moved, renamed, or never existed in the first place.
         </p>
-        <a
-          href="/"
-          className="mt-12 inline-flex items-center rounded-full bg-[var(--color-text-primary)] text-[var(--color-bg)] px-8 py-3.5 text-[14px] font-semibold transition-colors hover:bg-[var(--color-text-secondary)]"
-        >
+        <a href="/" className="mt-12 inline-flex items-center rounded-full bg-[var(--color-text-primary)] text-[var(--color-bg)] px-8 py-3.5 text-[14px] font-semibold transition-colors hover:bg-[var(--color-text-secondary)]">
           Return to surface
         </a>
       </div>
@@ -100,39 +95,35 @@ const earlyRecoveryScript = `
   }, 3500);
 })();`;
 
-const siteStructuredData = JSON.stringify(
-  {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "Person",
-        "@id": `${SITE_ORIGIN}/#person`,
-        name: "Edmundo Kutuzov",
-        jobTitle: "Art Director",
-        url: SITE_ORIGIN,
-        image: socialImageUrl(),
-        address: { "@type": "PostalAddress", addressLocality: "Maputo", addressCountry: "MZ" },
-      },
-      {
-        "@type": "WebSite",
-        "@id": `${SITE_ORIGIN}/#website`,
-        url: SITE_ORIGIN,
-        name: "Edmundo Kutuzov",
-        description:
-          "Portfolio de direção de arte, identidades visuais, campanhas e experiências digitais.",
-        inLanguage: "pt-PT",
-        publisher: { "@id": `${SITE_ORIGIN}/#person` },
-      },
-    ],
-  },
-).replace(/</g, "\\u003c");
+const siteStructuredData = JSON.stringify({
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Person",
+      "@id": `${SITE_ORIGIN}/#person`,
+      name: "Edmundo Kutuzov",
+      jobTitle: "Art Director",
+      url: SITE_ORIGIN,
+      image: socialImageUrl(),
+      address: { "@type": "PostalAddress", addressLocality: "Maputo", addressCountry: "MZ" },
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${SITE_ORIGIN}/#website`,
+      url: SITE_ORIGIN,
+      name: "Edmundo Kutuzov",
+      description: "Portfolio de direção de arte, identidades visuais, campanhas e experiências digitais.",
+      inLanguage: "pt-PT",
+      publisher: { "@id": `${SITE_ORIGIN}/#person` },
+    },
+  ],
+}).replace(/</g, "\\u003c");
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   head: () => {
     const seo = createSeo({
       title: "Edmundo Kutuzov - Designer & Art Director",
-      description:
-        "Identidades visuais, direção de arte e experiências digitais construídas com clareza estratégica e precisão técnica.",
+      description: "Identidades visuais, direção de arte e experiências digitais construídas com clareza estratégica e precisão técnica.",
       path: "/",
     });
     return {
@@ -205,33 +196,17 @@ function RootComponent() {
             Skip to content
           </a>
         )}
-        {!isAdmin && (
-          <AppErrorBoundary label="interactive background" minimal>
-            <div className="fixed inset-0 z-0 bg-[var(--color-bg)]" aria-hidden="true" />
-          </AppErrorBoundary>
-        )}
+        {!isAdmin && <div className="fixed inset-0 z-0 bg-[var(--color-bg)]" aria-hidden="true" />}
         <div className="relative z-10">
-          {!isAdmin && (
-            <AppErrorBoundary label="navigation" minimal>
-              <Navbar />
-            </AppErrorBoundary>
-          )}
+          {!isAdmin && <Navbar />}
           <main id="main-content" data-ek-app-root="true">
             <AppErrorBoundary label="route content" minimal onReset={() => queryClient.clear()}>
               <Outlet />
             </AppErrorBoundary>
           </main>
-          {!isAdmin && (
-            <AppErrorBoundary label="footer" minimal>
-              <Footer />
-            </AppErrorBoundary>
-          )}
+          {!isAdmin && <Footer />}
         </div>
-        {!isAdmin && (
-          <AppErrorBoundary label="scroll control" minimal>
-            <ScrollToTop />
-          </AppErrorBoundary>
-        )}
+        {!isAdmin && <ScrollToTop />}
         <AppErrorBoundary label="notifications" minimal>
           <Toaster
             theme="dark"
