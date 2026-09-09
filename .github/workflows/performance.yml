@@ -33,5 +33,12 @@ jobs:
         env:
           LHCI_BUILD_CONTEXT__CURRENT_HASH: ${{ github.sha }}
       - if: always()
+        name: Upload Lighthouse reports
+        uses: actions/upload-artifact@v6
+        with:
+          name: lighthouse-reports
+          path: .lighthouseci
+          if-no-files-found: ignore
+      - if: always()
         name: Server log
         run: cat /tmp/portfolio-server.log || true
