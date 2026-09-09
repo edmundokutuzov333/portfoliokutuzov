@@ -1,228 +1,162 @@
 #!/usr/bin/env node
 
-import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const ROOT_DIR = path.resolve(__dirname, '..');
+const ROOT_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+let errors = 0;
+let warnings = 0;
 
-console.log('\n======================================================');
-console.log('🔍 PRODUCTION BUILD & HYDRATION DIAGNOSTIC SUITE');
-console.log('======================================================\n');
-
-let errorCount = 0;
-let warningCount = 0;
-
-function logSuccess(msg) {
-  console.log(`  ✅ [PASS] ${msg}`);
+function fileExists(relativePath) {
+  return fs.existsSync(path.join(ROOT_DIR, relativePath));
 }
 
-function logWarning(msg) {
-  console.log(`  ⚠️  [WARN] ${msg}`);
-  warningCount++;
+function read(relativePath) {
+  return fs.readFileSync(path.join(ROOT_DIR, relativePath), "utf8");
 }
 
-function logError(msg) {
-  console.log(`  ❌ [FAIL] ${msg}`);
-  errorCount++;
+function pass(message) {
+  console.log(`  [PASS] ${message}`);
 }
 
-function logSection(title) {
-  console.log(`\n▶ ${title}`);
+function warn(message) {
+  warnings += 1;
+  console.log(`  [WARN] ${message}`);
 }
 
-// ---------------------------------------------------------
-// 1. Environment Variable Diagnostics
-// ---------------------------------------------------------
-logSection('1. Environment Variables Check');
+function fail(message) {
+  errors += 1;
+  console.log(`  [FAIL] ${message}`);
+}
 
-const envKeys = [
-  { name: 'GEMINI_API_KEY', requiredFor: 'AI Assistant & Voice features' },
-  { name: 'SUPABASE_URL', requiredFor: 'Supabase Data Persistence & Auth' },
-  { name: 'SUPABASE_PUBLISHABLE_KEY', requiredFor: 'Supabase Client Operations' },
-  { name: 'SUPABASE_SERVICE_ROLE_KEY', requiredFor: 'Server-side Admin operations' },
-  { name: 'RESEND_API_KEY', requiredFor: 'Invoice & Briefing Email sending' },
-  { name: 'LOVABLE_API_KEY', requiredFor: 'Lovable backend integration (optional)' },
-  { name: 'SITE_URL', requiredFor: 'Invoice public links' },
+function section(title) {
+  console.log(`\n== ${title} ==`);
+}
+
+console.log("\nPRODUCTION ARCHITECTURE DIAGNOSTIC\n");
+
+section("Runtime and package contract");
+const packageJson = JSON.parse(read("package.json"));
+if (packageJson.engines?.node === "24.x") pass("package.json requires Node 24.x");
+else fail("package.json is not pinned to Node 24.x");
+if (read(".nvmrc").trim() === "24") pass(".nvmrc is aligned to Node 24");
+else fail(".nvmrc is not aligned to Node 24");
+if (packageJson.scripts?.test && packageJson.scripts?.diagnose && packageJson.scripts?.check) {
+  pass("verification scripts are registered");
+} else {
+  fail("verification scripts are incomplete");
+}
+
+section("TanStack Start SSR contract");
+const client = read("src/client.tsx");
+const root = read("src/routes/__root.tsx");
+const vercel = JSON.parse(read("vercel.json"));
+if (/StartClient/.test(client) && /hydrateRoot\(\s*document/.test(client)) pass("client entry hydrates TanStack Start through StartClient");
+else fail("client entry is not the expected TanStack Start hydration entry");
+if (/<html[^>]*>/.test(root) && /<head[^>]*>/.test(root) && /<body[^>]*>/.test(root) && /<HeadContent\s*\/>/.test(root) && /<Scripts\s*\/>/.test(root)) {
+  pass("root shell is a complete SSR document");
+} else {
+  fail("root shell is missing required SSR document elements");
+}
+if (vercel.framework === "tanstack-start") pass("Vercel framework is tanstack-start");
+else fail("Vercel framework is not tanstack-start");
+if (!fileExists("index.html") && !fileExists("src/main.tsx")) pass("legacy Vite SPA entry files are absent");
+else fail("legacy index.html/src/main.tsx entry remains");
+
+section("Configuration boundaries");
+const publicConfig = read("src/config/public.ts");
+const serverConfig = read("src/config/server.ts");
+const supabaseClient = read("src/integrations/supabase/client.ts");
+if (/@\/config\/public/.test(supabaseClient) && !/placeholder-project\.supabase\.co/.test(supabaseClient)) {
+  pass("Supabase client uses centralized public configuration");
+} else {
+  fail("Supabase configuration is duplicated or contains placeholder runtime configuration");
+}
+if (/VITE_SUPABASE_URL/.test(publicConfig) && /VITE_SUPABASE_PUBLISHABLE_KEY/.test(publicConfig)) pass("public environment mapping is centralized");
+else fail("public environment mapping is incomplete");
+if (/getAllowedCorsOrigins/.test(serverConfig) && /getCorsHeaders/.test(serverConfig)) pass("server policy configuration is centralized");
+else fail("server policy configuration is incomplete");
+
+section("Admin security");
+const adminAuth = read("src/hooks/useAdmin.ts");
+const adminRoute = read("src/routes/admin.tsx");
+if (/admin_users/.test(adminAuth) && /verifyAdmin/.test(adminAuth) && !/mock_admin_email/.test(adminAuth)) pass("admin authorization requires Supabase admin membership");
+else fail("admin authorization still permits mock/local access");
+if (/noindex, nofollow/.test(adminRoute)) pass("admin route is excluded from search indexing");
+else warn("admin route does not explicitly set noindex/nofollow");
+if (!fileExists("patch_login.cjs")) pass("legacy admin login patch script is absent");
+else fail("legacy admin login patch script still exists");
+
+// The old bypass was in a large route file. Keep a source-level tripwire so it
+// can never be accidentally reintroduced without failing diagnostics.
+const adminLazy = fileExists("src/routes/admin.lazy.tsx") ? read("src/routes/admin.lazy.tsx") : "";
+if (!/mock_admin_email|Admin123|admin123/.test(adminLazy)) pass("no hardcoded admin credential markers remain in the admin bundle");
+else fail("hardcoded admin credential markers remain in the admin route");
+
+section("AI API security");
+const chatApi = read("src/routes/api.chat.ts");
+if (!/isCorsOriginAllowed/.test(chatApi) || /Access-Control-Allow-Origin["']?\s*:\s*["']\*["']/.test(chatApi)) {
+  fail("chat API origin policy is unsafe");
+} else pass("chat API uses an origin allowlist");
+if (/RATE_LIMIT_WINDOW_MS/.test(chatApi) && /checkRateLimit/.test(chatApi)) pass("chat API has server-side rate limiting");
+else fail("chat API rate limiting is missing");
+if (/MAX_BODY_BYTES/.test(chatApi) && /hasAcceptableBodySize/.test(chatApi)) pass("chat API validates request size");
+else fail("chat API request-size validation is missing");
+
+section("Legacy architecture scan");
+const filesToScan = [
+  "src",
+  "scripts",
+  "vite.config.js",
+  "vercel.json",
 ];
-
-for (const { name, requiredFor } of envKeys) {
-  const val = process.env[name];
-  if (val) {
-    const masked = val.length > 8 ? `${val.substring(0, 4)}...${val.substring(val.length - 4)}` : '***';
-    logSuccess(`${name} is set (${masked})`);
-  } else {
-    logWarning(`${name} is not set in current shell environment (Used for: ${requiredFor})`);
-  }
-}
-
-// Check client-side direct process.env usages that could crash client bundles
-logSection('2. Client-Side process.env Safety Check');
-const srcDir = path.join(ROOT_DIR, 'src');
-
-function scanDirForDirectProcessEnv(dir) {
-  const unsafeHits = [];
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
-  for (const entry of entries) {
-    const fullPath = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      if (entry.name !== 'server' && entry.name !== 'node_modules') {
-        unsafeHits.push(...scanDirForDirectProcessEnv(fullPath));
-      }
-    } else if (/\.(tsx|ts|jsx|js)$/.test(entry.name) && !entry.name.includes('.server.')) {
-      const content = fs.readFileSync(fullPath, 'utf8');
-      // Look for bare process.env without typeof process check
-      const lines = content.split('\n');
-      lines.forEach((line, idx) => {
-        if (/process\.env\.[A-Z0-9_]+/i.test(line)) {
-          if (!line.includes('typeof process') && !line.includes('getEnvVar')) {
-            unsafeHits.push({ file: path.relative(ROOT_DIR, fullPath), line: idx + 1, content: line.trim() });
-          }
-        }
-      });
+let legacyHits = 0;
+function scan(target) {
+  const absolute = path.join(ROOT_DIR, target);
+  if (!fs.existsSync(absolute)) return;
+  const stat = fs.statSync(absolute);
+  if (stat.isDirectory()) {
+    for (const entry of fs.readdirSync(absolute)) {
+      scan(path.join(target, entry));
     }
+    return;
   }
-  return unsafeHits;
+  if (!/\.(ts|tsx|js|mjs|json)$/.test(target)) return;
+  const content = fs.readFileSync(absolute, "utf8");
+  for (const pattern of [/from ["']react-router-dom["']/g, /createRoot\(/g]) {
+    const matches = content.match(pattern);
+    legacyHits += matches?.length ?? 0;
+  }
+}
+for (const target of filesToScan) scan(target);
+if (legacyHits === 0) pass("no legacy react-router-dom/createRoot bootstrap remains");
+else fail(`legacy bootstrap patterns found (${legacyHits} hit(s))`);
+
+for (const stalePath of ["config.toml", "public/_headers", "MOBILE_README.md", "test-prod.mjs", "eslint-output.txt"]) {
+  if (fileExists(stalePath)) warn(`stale migration/tooling file remains: ${stalePath}`);
 }
 
-const unsafeEnvUsages = scanDirForDirectProcessEnv(srcDir);
-if (unsafeEnvUsages.length === 0) {
-  logSuccess('All process.env references in client-accessible code are guarded or abstracted safely.');
+section("Build output");
+const outputDir = path.join(ROOT_DIR, ".vercel", "output");
+if (!fs.existsSync(outputDir)) {
+  warn(".vercel/output is not present yet; build output checks will run after npm run build");
 } else {
-  for (const hit of unsafeEnvUsages) {
-    logWarning(`Unprotected process.env in ${hit.file}:${hit.line} -> "${hit.content}"`);
-  }
+  const assetsDir = path.join(outputDir, "static", "assets");
+  const serverDir = path.join(outputDir, "functions", "__server.func");
+  if (fs.existsSync(assetsDir)) pass("Vercel static asset output exists");
+  else fail("Vercel static asset output is missing");
+  if (fs.existsSync(serverDir)) pass("Vercel SSR function output exists");
+  else fail("Vercel SSR function output is missing");
 }
 
-// ---------------------------------------------------------
-// 3. Static Assets & CSS Output Verification
-// ---------------------------------------------------------
-logSection('3. Static Build Output & CSS Serving Verification');
+section("Diagnostic summary");
+console.log(`  Errors: ${errors}`);
+console.log(`  Warnings: ${warnings}`);
 
-const vercelOutputDir = path.join(ROOT_DIR, '.vercel', 'output');
-const staticAssetsDir = path.join(vercelOutputDir, 'static', 'assets');
-const serverFuncDir = path.join(vercelOutputDir, 'functions', '__server.func');
-
-if (!fs.existsSync(vercelOutputDir)) {
-  logWarning('.vercel/output does not exist yet. Run "npm run build" to generate the output directory.');
-} else {
-  if (fs.existsSync(staticAssetsDir)) {
-    const staticFiles = fs.readdirSync(staticAssetsDir);
-    const cssFiles = staticFiles.filter(f => f.endsWith('.css'));
-    const jsFiles = staticFiles.filter(f => f.endsWith('.js'));
-
-    if (cssFiles.length > 0) {
-      logSuccess(`CSS bundles correctly generated (${cssFiles.length} file(s)): ${cssFiles.join(', ')}`);
-      for (const css of cssFiles) {
-        const stats = fs.statSync(path.join(staticAssetsDir, css));
-        logSuccess(`  -> ${css} size: ${(stats.size / 1024).toFixed(2)} KB`);
-      }
-    } else {
-      logError('No CSS bundles found in .vercel/output/static/assets!');
-    }
-
-    if (jsFiles.length > 0) {
-      logSuccess(`JavaScript client bundles correctly generated (${jsFiles.length} file(s))`);
-    } else {
-      logError('No JavaScript bundles found in .vercel/output/static/assets!');
-    }
-  } else {
-    logError(`.vercel/output/static/assets directory not found!`);
-  }
-
-  if (fs.existsSync(serverFuncDir)) {
-    logSuccess('Server function __server.func exists for SSR and API handling.');
-    const ssrDir = path.join(serverFuncDir, '_ssr');
-    if (fs.existsSync(ssrDir)) {
-      logSuccess(`SSR bundle directory _ssr exists with ${fs.readdirSync(ssrDir).length} module(s).`);
-    }
-  } else {
-    logError('.vercel/output/functions/__server.func is missing!');
-  }
-}
-
-// ---------------------------------------------------------
-// 4. Hydration & Root Shell Alignment Check
-// ---------------------------------------------------------
-logSection('4. Hydration & Document Structure Verification');
-
-const rootRoutePath = path.join(ROOT_DIR, 'src', 'routes', '__root.tsx');
-if (fs.existsSync(rootRoutePath)) {
-  const rootContent = fs.readFileSync(rootRoutePath, 'utf8');
-
-  // Check 1: RootShell must render <html>, <head>, and <body> with <HeadContent /> and <Scripts />
-  const hasHtml = /<html[^>]*>/.test(rootContent);
-  const hasHead = /<head[^>]*>/.test(rootContent);
-  const hasBody = /<body[^>]*>/.test(rootContent);
-  const hasHeadContent = /<HeadContent\s*\/>/.test(rootContent);
-  const hasScripts = /<Scripts\s*\/>/.test(rootContent);
-  const hasHydrationWarning = /suppressHydrationWarning/.test(rootContent);
-
-  if (hasHtml && hasHead && hasBody && hasHeadContent && hasScripts) {
-    logSuccess('RootShell renders full document tree (<html lang="pt">, <head>, <body>) matching StartClient hydrateRoot(document).');
-  } else {
-    logError(`RootShell structure is incomplete: hasHtml=${hasHtml}, hasHead=${hasHead}, hasBody=${hasBody}, hasHeadContent=${hasHeadContent}, hasScripts=${hasScripts}`);
-  }
-
-  if (hasHydrationWarning) {
-    logSuccess('suppressHydrationWarning is properly configured on document roots.');
-  } else {
-    logWarning('suppressHydrationWarning missing on RootShell tags; could trigger hydration mismatch warnings.');
-  }
-
-  // Check 2: CSS stylesheet link in Route.head
-  if (/import\s+appCss\s+from\s+["']\.\.\/styles\.css\?url["']/.test(rootContent) && /href:\s*appCss/.test(rootContent)) {
-    logSuccess('Route.head links to styles.css via ?url import, ensuring CSS is injected into <head> during SSR.');
-  } else {
-    logWarning('styles.css?url not detected in Route.head; styles might not be preloaded in SSR.');
-  }
-} else {
-  logError(`src/routes/__root.tsx not found!`);
-}
-
-// ---------------------------------------------------------
-// 5. Asset References in index.html and public/
-// ---------------------------------------------------------
-logSection('5. Asset References & 404 Prevention');
-
-const indexPath = path.join(ROOT_DIR, 'index.html');
-const publicDir = path.join(ROOT_DIR, 'public');
-
-if (fs.existsSync(indexPath)) {
-  const indexContent = fs.readFileSync(indexPath, 'utf8');
-  
-  // Check for missing preload CSS files
-  if (indexContent.includes('/styles/tablet.css') || indexContent.includes('/styles/mobile.css')) {
-    logError('index.html contains references to /styles/tablet.css or /styles/mobile.css which do not exist in public/!');
-  } else {
-    logSuccess('index.html has no broken /styles/*.css preloads.');
-  }
-
-  // Check favicon
-  if (indexContent.includes('/logo-tm.webp') && !fs.existsSync(path.join(publicDir, 'logo-tm.webp'))) {
-    logError('index.html references non-existent /logo-tm.webp!');
-  } else {
-    logSuccess('Favicon and OpenGraph image references resolve correctly.');
-  }
-}
-
-// ---------------------------------------------------------
-// 6. Summary & Recommendations
-// ---------------------------------------------------------
-console.log('\n======================================================');
-console.log(`DIAGNOSTIC SUMMARY: ${errorCount} Error(s), ${warningCount} Warning(s)`);
-console.log('======================================================');
-
-if (errorCount === 0) {
-  console.log('\n✅ Pipeline checks passed. The root causes for the white screen have been identified and resolved:');
-  console.log('   1. Fixed RootShell in src/routes/__root.tsx to render <html><head><HeadContent/></head><body>...<Scripts/></body></html>, aligning with TanStack Start client hydration.');
-  console.log('   2. Removed broken CSS and image preload links from index.html that caused 404 network failures.');
-  console.log('   3. Verified static CSS bundles are properly generated and linked during SSR via ?url imports.');
-  console.log('   4. Verified environment variable access safety across client and server boundaries.\n');
-  process.exit(0);
-} else {
-  console.log('\n❌ Please resolve the reported errors before deploying to Vercel.\n');
+if (errors > 0) {
+  console.error("\nProduction architecture diagnostic failed.\n");
   process.exit(1);
 }
+
+console.log("\nProduction architecture diagnostic passed.\n");
