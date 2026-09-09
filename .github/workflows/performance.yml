@@ -31,26 +31,34 @@ jobs:
           cat /tmp/portfolio-server.log
           exit 1
       - name: Collect Lighthouse desktop
-        id: desktop_collect
         run: |
           rm -rf .lighthouseci .lighthouseci-desktop
           npx --yes @lhci/cli@0.15.1 collect --config=lighthouserc.cjs
       - name: Assert Lighthouse desktop
         id: desktop_assert
         continue-on-error: true
-        run: npx --yes @lhci/cli@0.15.1 assert --config=lighthouserc.cjs
+        run: |
+          set +e
+          npx --yes @lhci/cli@0.15.1 assert --config=lighthouserc.cjs
+          status=$?
+          echo "$status" > /tmp/lighthouse-desktop-assert-status
+          exit 0
       - name: Preserve desktop reports
         if: always()
         run: mv .lighthouseci .lighthouseci-desktop 2>/dev/null || true
       - name: Collect Lighthouse mobile
-        id: mobile_collect
         run: |
           rm -rf .lighthouseci
           npx --yes @lhci/cli@0.15.1 collect --config=lighthouserc.mobile.cjs
       - name: Assert Lighthouse mobile
         id: mobile_assert
         continue-on-error: true
-        run: npx --yes @lhci/cli@0.15.1 assert --config=lighthouserc.mobile.cjs
+        run: |
+          set +e
+          npx --yes @lhci/cli@0.15.1 assert --config=lighthouserc.mobile.cjs
+          status=$?
+          echo "$status" > /tmp/lighthouse-mobile-assert-status
+          exit 0
       - name: Preserve mobile reports
         if: always()
         run: mv .lighthouseci .lighthouseci-mobile 2>/dev/null || true
@@ -62,11 +70,11 @@ jobs:
       - name: Enforce Lighthouse gates
         if: always()
         run: |
-          echo "Desktop collect: ${{ steps.desktop_collect.outcome }}"
-          echo "Desktop assert: ${{ steps.desktop_assert.outcome }}"
-          echo "Mobile collect: ${{ steps.mobile_collect.outcome }}"
-          echo "Mobile assert: ${{ steps.mobile_assert.outcome }}"
-          if [ "${{ steps.desktop_collect.outcome }}" != "success" ] || [ "${{ steps.desktop_assert.outcome }}" != "success" ] || [ "${{ steps.mobile_collect.outcome }}" != "success" ] || [ "${{ steps.mobile_assert.outcome }}" != "success" ]; then
+          desktop_status=$(cat /tmp/lighthouse-desktop-assert-status 2>/dev/null || echo 1)
+          mobile_status=$(cat /tmp/lighthouse-mobile-assert-status 2>/dev/null || echo 1)
+          echo "Desktop assertion exit: $desktop_status"
+          echo "Mobile assertion exit: $mobile_status"
+          if [ "$desktop_status" != "0" ] || [ "$mobile_status" != "0" ]; then
             exit 1
           fi
       - if: always()
