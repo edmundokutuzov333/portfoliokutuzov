@@ -10,16 +10,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
 import { useEffect, type ReactNode } from "react";
 import { DeferredAiAssistant } from "@/components/DeferredAiAssistant";
+import { RouteTimingInstaller } from "@/components/RouteTimingInstaller";
 import { AppErrorBoundary, AppErrorFallback } from "@/components/AppErrorBoundary";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { resetKnownCorruptedState } from "@/lib/browser-safe";
-import {
-  installRuntimeDiagnostics,
-  markRenderHealthy,
-  recordRuntimeError,
-} from "@/lib/runtime-diagnostics";
+import { installRuntimeDiagnostics, markRenderHealthy, recordRuntimeError } from "@/lib/runtime-diagnostics";
 import { createSeo, SITE_ORIGIN, socialImageUrl } from "@/lib/seo";
 import appCss from "../styles.css?url";
 
@@ -140,10 +137,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
         { rel: "stylesheet", href: appCss },
         { rel: "preconnect", href: "https://fonts.googleapis.com" },
         { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-        {
-          rel: "stylesheet",
-          href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap",
-        },
+        { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" },
         { rel: "icon", type: "image/webp", href: "/favicon.webp" },
         { rel: "shortcut icon", type: "image/webp", href: "/favicon.webp" },
         { rel: "apple-touch-icon", href: "/favicon.webp" },
@@ -179,34 +173,46 @@ function RootComponent() {
 
   useEffect(() => {
     installRuntimeDiagnostics();
-    const frame = window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(markRenderHealthy);
-    });
+    const frame = window.requestAnimationFrame(() => window.requestAnimationFrame(markRenderHealthy));
     return () => window.cancelAnimationFrame(frame);
   }, []);
 
   return (
     <AppErrorBoundary onReset={() => queryClient.clear()}>
       <QueryClientProvider client={queryClient}>
+        <RouteTimingInstaller />
         {!isAdmin && (
-          <a
-            href="#main-content"
-            className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-[var(--color-text-primary)] focus:px-4 focus:py-3 focus:text-sm focus:font-semibold focus:text-[var(--color-bg)]"
-          >
+          <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-[var(--color-text-primary)] focus:px-4 focus:py-3 focus:text-sm focus:font-semibold focus:text-[var(--color-bg)]">
             Skip to content
           </a>
         )}
-        {!isAdmin && <div className="fixed inset-0 z-0 bg-[var(--color-bg)]" aria-hidden="true" />}
+        {!isAdmin && (
+          <AppErrorBoundary label="interactive background" minimal>
+            <div className="fixed inset-0 z-0 bg-[var(--color-bg)]" aria-hidden="true" />
+          </AppErrorBoundary>
+        )}
         <div className="relative z-10">
-          {!isAdmin && <Navbar />}
+          {!isAdmin && (
+            <AppErrorBoundary label="navigation" minimal>
+              <Navbar />
+            </AppErrorBoundary>
+          )}
           <main id="main-content" data-ek-app-root="true">
             <AppErrorBoundary label="route content" minimal onReset={() => queryClient.clear()}>
               <Outlet />
             </AppErrorBoundary>
           </main>
-          {!isAdmin && <Footer />}
+          {!isAdmin && (
+            <AppErrorBoundary label="footer" minimal>
+              <Footer />
+            </AppErrorBoundary>
+          )}
         </div>
-        {!isAdmin && <ScrollToTop />}
+        {!isAdmin && (
+          <AppErrorBoundary label="scroll control" minimal>
+            <ScrollToTop />
+          </AppErrorBoundary>
+        )}
         <AppErrorBoundary label="notifications" minimal>
           <Toaster
             theme="dark"
