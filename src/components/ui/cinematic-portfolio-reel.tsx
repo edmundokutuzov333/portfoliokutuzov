@@ -16,7 +16,7 @@ export function CinematicPortfolioReel(){
 }
 
 function CarouselStacked({projects}:{projects:DbProject[]}){
-  const progress=useMotionValue(0); const start=React.useRef(0); const [width,setWidth]=React.useState(0); const [paused,setPaused]=React.useState(false); const [visible,setVisible]=React.useState(true); const [active,setActive]=React.useState(true); const reduced=useReducedMotion(); const raf=React.useRef<number>(); const dragging=React.useRef(false); const ref=React.useRef<HTMLDivElement>(null); const config=React.useMemo(()=>getCarouselConfig(width),[width]);
+  const progress=useMotionValue(0); const start=React.useRef(0); const [width,setWidth]=React.useState(0); const [paused,setPaused]=React.useState(false); const [visible,setVisible]=React.useState(true); const [active,setActive]=React.useState(true); const reduced=useReducedMotion(); const raf=React.useRef<number | undefined>(undefined); const dragging=React.useRef(false); const ref=React.useRef<HTMLDivElement>(null); const config=React.useMemo(()=>getCarouselConfig(width),[width]);
   const count=width>0&&width<640?Math.min(10,Math.max(6,projects.length)):Math.min(16,Math.max(8,projects.length*2));
   const slides=React.useMemo(()=>Array.from({length:count},(_,i)=>projects[i%projects.length]),[count,projects]);
 
