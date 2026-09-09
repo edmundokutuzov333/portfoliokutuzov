@@ -1,18 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { createSeo } from "@/lib/seo";
 
 export const Route = createFileRoute("/contact")({
-  head: () => ({
-    meta: [
-      { title: "Contact - Edmundo Kutuzov" },
-      {
-        name: "description",
-        content:
-          "Smart project briefing for new collaborations with Edmundo Kutuzov, art director in Maputo.",
-      },
-      { property: "og:title", content: "Contact - Edmundo Kutuzov" },
-      { property: "og:description", content: "Smart project briefing for new collaborations." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
+  head: () =>
+    createSeo({
+      title: "Contact - Edmundo Kutuzov",
+      description:
+        "Smart project briefing for new collaborations with Edmundo Kutuzov, art director in Maputo.",
+      path: "/contact",
+    }),
 });
