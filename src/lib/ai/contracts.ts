@@ -68,10 +68,10 @@ export type StreamEvent =
       type: "action";
       action: string;
       projectSlug?: string | null;
-      payload?: Record<string, unknown>;
+      payload?: Record<string, JsonValue>;
     }
   | { type: "status"; message: string }
-  | { type: "session_update"; sessionId: string; contextSummary?: Record<string, unknown> }
+  | { type: "session_update"; sessionId: string; contextSummary?: Record<string, JsonValue> }
   | { type: "done"; modelUsed: string; latencyMs?: number }
   | { type: "error"; error: StreamError };
 
