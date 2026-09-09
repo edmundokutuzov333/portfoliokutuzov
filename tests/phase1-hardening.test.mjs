@@ -50,6 +50,12 @@ test("Admin auth cannot grant access from local mock state", () => {
   assert.match(auth, /verifyAdmin/);
 });
 
+test("Admin route boundary is isolated from the control-room implementation", () => {
+  const route = read("src/routes/admin.lazy.tsx");
+  assert.match(route, /@\/components\/admin\/AdminControlRoom/);
+  assert.equal(exists("src/components/admin/AdminControlRoom.tsx"), true);
+});
+
 test("Legacy login patch script is absent", () => {
   assert.equal(exists("patch_login.cjs"), false);
 });
