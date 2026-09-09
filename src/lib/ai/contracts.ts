@@ -36,11 +36,20 @@ export interface NormalizedProjectSummary {
   featured?: boolean;
 }
 
+export type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonValue[]
+  | { [key: string]: JsonValue };
+
 export interface ActionEvent {
   action: string;
   projectSlug?: string | null;
-  payload?: Record<string, unknown>;
+  payload?: Record<string, JsonValue>;
 }
+
 
 export interface StreamError {
   code: string;
