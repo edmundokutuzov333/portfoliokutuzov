@@ -17,15 +17,6 @@ export function useAdminAuth(): AdminAuthState {
     let alive = true;
     const timers = new Set<ReturnType<typeof setTimeout>>();
 
-    // Production authentication is exclusively Supabase Auth + RLS-backed
-    // admin_users membership. Any legacy local mock marker is cleared so a
-    // stale browser cannot establish an administrative session.
-    try {
-      localStorage.removeItem("mock_admin_email");
-    } catch {
-      // Ignore storage access failures.
-    }
-
     const applySession = async (nextSession: Session | null) => {
       if (!alive) return;
       setSession(nextSession);
