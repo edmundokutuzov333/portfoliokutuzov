@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = (f) => fs.readFileSync(path.join(ROOT, f), "utf8");
 
@@ -66,7 +67,7 @@ test("Route cache avoids aggressive refetching", () => {
   assert.match(router, /defaultPreloadStaleTime\s*:\s*30_000/);
 });
 
-test("Motion/accessibility system has semantic variants, reduced-motion and focus treatment", () => {
+test("Motion/accessibility system has semantic variants and reduced-motion", () => {
   const css = read("src/styles.css");
   const motion = read("src/lib/motion.ts");
   assert.match(css, /prefers-reduced-motion/);
@@ -78,7 +79,7 @@ test("Motion/accessibility system has semantic variants, reduced-motion and focu
   assert.match(motion, /pageTransition/);
 });
 
-test("Client logo system supports real dimensions, normalization and optional links", () => {
+test("Client logo system supports dimensions, normalization and optional links", () => {
   const logos = read("src/components/ui/cinematic-logo-cloud.tsx");
   assert.match(logos, /logo_width/);
   assert.match(logos, /logo_height/);
