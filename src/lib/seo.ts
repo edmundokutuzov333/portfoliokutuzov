@@ -7,23 +7,14 @@ export function canonicalUrl(path = "/") {
   return `${SITE_ORIGIN}${normalized}`;
 }
 
-export function createSeo({
-  title,
-  description,
-  path = "/",
-  image = SOCIAL_IMAGE,
-}: {
-  title: string;
-  description: string;
-  path?: string;
-  image?: string;
-}) {
+export function createSeo({ title, description, path = "/", image = SOCIAL_IMAGE }: { title:string; description:string; path?:string; image?:string }) {
   const url = canonicalUrl(path);
   return {
     meta: [
       { title },
       { name: "description", content: description },
       { name: "author", content: SITE_NAME },
+      { name: "robots", content: "index,follow,max-image-preview:large" },
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: SITE_NAME },
       { property: "og:title", content: title },
@@ -36,10 +27,8 @@ export function createSeo({
       { name: "twitter:description", content: description },
       { name: "twitter:image", content: image },
     ],
-    links: [{ rel: "canonical", href: url }],
+    links: [{ rel: "canonical", href: url }, { rel: "sitemap", type: "application/xml", href: `${SITE_ORIGIN}/sitemap.xml` }],
   };
 }
 
-export function socialImageUrl() {
-  return SOCIAL_IMAGE;
-}
+export function socialImageUrl() { return SOCIAL_IMAGE; }
