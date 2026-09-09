@@ -13,7 +13,6 @@ export default defineConfig({
     server: {
       host: "0.0.0.0",
       port: 3000,
-      allowedHosts: ["operations-remedy-congressional-hotels.trycloudflare.com"],
     },
     build: {
       chunkSizeWarningLimit: 1000,
