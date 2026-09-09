@@ -19,10 +19,9 @@ jobs:
           package-manager-cache: false
       - run: npm ci
       - run: npm run build
-      - name: Start production server
+      - name: Start application server
         run: |
-          npm run start > /tmp/portfolio-server.log 2>&1 &
-          echo $! > /tmp/portfolio-server.pid
+          npm run dev -- --host 127.0.0.1 --port 3000 > /tmp/portfolio-server.log 2>&1 &
           for i in {1..30}; do
             if curl -fsS http://127.0.0.1:3000/ > /dev/null; then exit 0; fi
             sleep 1
