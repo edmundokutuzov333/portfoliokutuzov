@@ -1,0 +1,12 @@
+.git
+.github
+.lovable
+.env
+.env.*
+!.env.example
+node_modules
+.vercel
+.output
+.nitro
+.vinxi
+.tanstack
