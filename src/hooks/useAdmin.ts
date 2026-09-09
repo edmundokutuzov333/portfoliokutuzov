@@ -15,51 +15,56 @@ export function useAdminAuth(): AdminAuthState {
 
   useEffect(() => {
     let alive = true;
-
-    // Check mock credentials first
-    const mockEmail =
-      typeof window !== "undefined" ? localStorage.getItem("mock_admin_email") : null;
-    if (mockEmail?.toLowerCase() === "contact@edmundokutuzov.art") {
-      setSession({
-        user: { email: "contact@edmundokutuzov.art", id: "mock-id" },
-      } as unknown as Session);
-      setIsAdmin(true);
-      setLoading(false);
-      return;
-    }
-
     const timers = new Set<ReturnType<typeof setTimeout>>();
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
+    const applySession = async (nextSession: Session | null) => {
       if (!alive) return;
-      setSession(s);
-      if (s?.user) {
-        // Defer the DB check so we don't block the listener.
+      setSession(nextSession);
+      setIsAdmin(false);
+
+      if (!nextSession?.user) {
+        setLoading(false);
+        return;
+      }
+
+      const ok = await verifyAdmin(nextSession.user.id);
+      if (!alive) return;
+      setIsAdmin(ok);
+      setLoading(false);
+    };
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      if (!alive) return;
+      setSession(nextSession);
+      setIsAdmin(false);
+
+      if (nextSession?.user) {
         const timer = setTimeout(() => {
           timers.delete(timer);
-          if (alive) void verifyAdmin(s.user.id).then((ok) => alive && setIsAdmin(ok));
+          void verifyAdmin(nextSession.user.id).then((ok) => {
+            if (alive) setIsAdmin(ok);
+          });
         }, 0);
         timers.add(timer);
-      } else {
-        setIsAdmin(false);
       }
     });
 
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!alive) return;
-      setSession(session);
-      if (session?.user) {
-        const ok = await verifyAdmin(session.user.id);
-        if (alive) setIsAdmin(ok);
-      }
-      if (alive) setLoading(false);
-    });
+    void supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => applySession(session))
+      .catch(() => {
+        if (alive) {
+          setSession(null);
+          setIsAdmin(false);
+          setLoading(false);
+        }
+      });
 
     return () => {
       alive = false;
       for (const timer of timers) clearTimeout(timer);
       timers.clear();
-      if (sub && sub.subscription) sub.subscription.unsubscribe();
+      sub.subscription.unsubscribe();
     };
   }, []);
 
@@ -73,6 +78,5 @@ async function verifyAdmin(userId: string): Promise<boolean> {
     .eq("user_id", userId)
     .maybeSingle();
 
-  if (error) return false;
-  return !!data;
+  return !error && !!data;
 }

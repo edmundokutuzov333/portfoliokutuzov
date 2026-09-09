@@ -1,216 +1,47 @@
-# 🔐 Security & Privacy Policy
+# Security Policy
 
-**Project:** Kutuzov Portfolio  
-**Stack:** React + Vite (Lovable)  
-**Last Updated:** 2025-12-02
+## Current architecture
 
-This document describes the security and privacy principles used in this project.  
-It is designed for static front-end environments like Lovable, where no server-side rendering (SSR) or Next.js features are available.
+The application is a dynamic TanStack Start project with SSR, server routes, Supabase Auth, Supabase RLS and server-side AI operations. Older documentation describing a static-only SPA is obsolete.
 
----
+## Authentication
 
-# 1. Supported Versions
+The public site is unauthenticated. The Control Room uses Supabase Auth and checks membership in the `admin_users` table through RLS-backed authorization.
 
-| Version | Status        |
-| ------- | ------------- |
-| ≥ 1.0.0 | Supported     |
-| < 1.0.0 | Not Supported |
+There is no supported production mock-admin flow and no local-storage flag is accepted as proof of administrator access.
 
----
+## Database security
 
-# 2. Security Architecture Overview
+Publicly visible content is readable by the anonymous publishable key. Administrative tables and write operations remain protected by Supabase Row Level Security.
 
-The project uses a minimal, static architecture with strong client-side protections.  
-There is **no public login**, only a private admin route:
+Automated RLS regression tests live in `tests/rls.test.ts`.
 
-- `/admin/login` → For Admin Only
-- Hidden from public navigation
-- Protected by firewall rules at the hosting platform (rate limit, bot protection)
+## AI API security
 
-Key principles adopted:
+`/api/chat` is a same-site/server API for text, opening messages, TTS and voice streaming. It applies:
 
-### ✔ Zero Public Attack Surface
+- origin allowlisting;
+- request-size limits;
+- message and audio count limits;
+- per-instance request rate limiting;
+- non-cacheable responses for dynamic data.
 
-Only static files are publicly available.
+Server AI credentials are never read from `VITE_*` browser variables.
 
-### ✔ Admin Area Protected
+## Deployment security
 
-The admin login is the only sensitive entry point, and it is protected by:
+Vercel applies baseline response security headers from `vercel.json` including:
 
-- Strong passwords
-- Limited login attempts
-- Private access
-- No exposure through links or menus
+- `Strict-Transport-Security`
+- `X-Content-Type-Options`
+- `X-Frame-Options`
+- `Referrer-Policy`
+- `Permissions-Policy`
 
-### ✔ Strong Front-end Security Headers
+## Secrets
 
-The deployment platform should apply:
+Never commit `.env` files or server credentials. Use Vercel environment variables for server secrets. Public browser configuration may use `VITE_*` variables, but service-role credentials must never use that prefix.
 
-- Content-Security-Policy (CSP)
-- HSTS
-- X-Frame-Options
-- X-Content-Type-Options
-- Referrer-Policy
+## Reporting
 
-(Full list included below.)
-
-### ✔ No Tracking
-
-No analytics, cookies, or personal-data collection.
-
----
-
-# 3. Reporting a Vulnerability
-
-If you discover a vulnerability, please send a detailed report to:
-
-📮 **security@kutuzov.dev**
-
-Your message should include:
-
-- Steps to reproduce
-- Description of the impact
-- Any screenshots or sample payloads
-
-We will:
-
-- Acknowledge within **24 hours**
-- Provide analysis within **72 hours**
-- Patch within **7 days** (or apply temporary protections immediately)
-
----
-
-# 4. Privacy Policy (Technical Summary)
-
-This project follows a strict minimal-data philosophy:
-
-### We DO NOT collect:
-
-- Personal information
-- Browser fingerprints
-- Behavioral analytics
-- Third-party cookies
-- Tracking identifiers
-
-### We ONLY collect:
-
-- Basic anonymized technical logs for security purposes
-- Admin login attempts (with hashed IP)
-
-All logs are:
-
-- Temporary
-- Encrypted on the server
-- Deleted after **7 days**
-
----
-
-# 5. Admin Area Security
-
-The admin login at `/admin/login` is protected by:
-
-### ✔ Strong password requirements
-
-### ✔ Limited login attempts
-
-### ✔ No informative error messages
-
-Errors do NOT reveal whether a username exists.
-
-### ✔ Optional Two-Factor Authentication (TOTP)
-
-If enabled on the backend.
-
-### ✔ Hidden route
-
-It cannot be found through the interface.
-
----
-
-# 6. Deployment Security (Hosting/CDN)
-
-The hosting platform (e.g., Cloudflare, Netlify, Vercel, Lovable infra) should apply:
-
-### 🔒 HTTPS only
-
-- TLS 1.3 preferred
-
-### 🛑 Rate Limit
-
-- `/admin/*` → very strict limit on login attempts
-
-### 🤖 Bot Protection
-
-Block scanners, crawlers, WP scanners, etc.
-
-### 🚫 Path Blocking
-
-Common malicious paths should be blocked:
-
-- `/wp-admin`
-- `/.env`
-- `/phpinfo`
-- `/server-status`
-
-These paths don’t exist but blocking reduces noise and attacks.
-
----
-
-# 7. Recommended Security Headers
-
-**No installation needed.**  
-Just configure these headers in your hosting panel (most allow copy-paste):
-Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
-Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; upgrade-insecure-requests
-X-Frame-Options: DENY
-X-Content-Type-Options: nosniff
-Referrer-Policy: strict-origin-when-cross-origin
-Permissions-Policy: geolocation=(), microphone=(), camera=(), autoplay=(), usb=()
-Cross-Origin-Opener-Policy: same-origin
-Cross-Origin-Embedder-Policy: require-corp
-Cross-Origin-Resource-Policy: same-origin
-These headers provide:
-
-- XSS protection
-- Clickjacking prevention
-- MITM protection
-- Secure resource loading
-- Full HTTPS enforcement
-
----
-
-# 8. Incident Response Workflow
-
-If a security issue occurs:
-
-### 1. Immediately restrict public access
-
-Temporarily disable the site or apply a firewall block.
-
-### 2. Collect technical logs
-
-Without collecting personal data.
-
-### 3. Identify the root cause
-
-JavaScript errors, compromised assets, admin login attempts, etc.
-
-### 4. Apply patch
-
-Release updated files and redeploy.
-
-### 5. Notify stakeholders if needed
-
----
-
-# 9. Commitment
-
-This project is committed to:
-
-- Strong privacy
-- Minimal data collection
-- Industry-standard security practices
-- Fast response to security issues
-- Continuous improvement
-
-If you have concerns or suggestions, please contact us at any time.
+For a security issue, provide a reproducible description, affected route or component, impact and any relevant logs without including live secrets.
