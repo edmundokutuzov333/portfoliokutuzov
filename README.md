@@ -16,3 +16,5 @@ Browser
   -> React Query + Supabase
   -> Server routes / AI services
 ```
+
+Phase 2 validation is intentionally gated through GitHub CI and Lighthouse before merge.
