@@ -3,17 +3,23 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "./types";
 import { brokeredPreviewStorage } from "./previewAuthStorage";
 
+const DEFAULT_SUPABASE_URL = "https://uqcuzsuqkutxjqkopary.supabase.co";
+const DEFAULT_SUPABASE_PUBLISHABLE_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVxY3V6c3Vxa3V0eGpxa29wYXJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4NTYzMDQsImV4cCI6MjA5MjQzMjMwNH0.hXgSunAJX4ZXi5mNG_JDvYal4EZ_XcQuoH-FNBaWpKQ";
+
 function createSupabaseClient() {
   // Use import.meta.env for client-side (Vite build-time replacement)
   // Fall back to process.env for SSR (server-side rendering)
+  // and finally to the production public Supabase configuration so the
+  // portfolio keeps using its real CMS data when Vercel env vars are absent.
   const SUPABASE_URL =
     import.meta.env.VITE_SUPABASE_URL ||
     (typeof process !== "undefined" ? process.env.SUPABASE_URL : undefined) ||
-    "https://placeholder-project.supabase.co";
+    DEFAULT_SUPABASE_URL;
   const SUPABASE_PUBLISHABLE_KEY =
     import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
     (typeof process !== "undefined" ? process.env.SUPABASE_PUBLISHABLE_KEY : undefined) ||
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.placeholder";
+    DEFAULT_SUPABASE_PUBLISHABLE_KEY;
 
   return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     auth: {
