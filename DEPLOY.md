@@ -68,6 +68,8 @@ The equivalent single command is:
 npm run check
 ```
 
+`npm ci` is intentionally used as a gate. It fails when `package.json` and `package-lock.json` drift, preventing non-reproducible production installs.
+
 ## Production rules
 
 Do not:
