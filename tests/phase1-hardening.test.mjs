@@ -62,6 +62,16 @@ test("Chat API does not use wildcard CORS", () => {
   assert.match(api, /MAX_BODY_BYTES/);
 });
 
+test("Package manifest and lockfile root dependencies are synchronized", () => {
+  const pkg = JSON.parse(read("package.json"));
+  const lock = JSON.parse(read("package-lock.json"));
+  const root = lock.packages?.[""];
+  assert.ok(root, "package-lock root package entry is missing");
+  assert.deepEqual(root.dependencies, pkg.dependencies);
+  assert.deepEqual(root.devDependencies, pkg.devDependencies);
+  assert.deepEqual(root.engines, pkg.engines);
+});
+
 test("Phase one verification commands exist", () => {
   const pkg = JSON.parse(read("package.json"));
   assert.equal(pkg.scripts?.test, "node --test tests/*.test.mjs");
