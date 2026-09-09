@@ -1,9 +1,9 @@
 import { createLazyFileRoute } from "@tanstack/react-router";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, type ComponentType } from "react";
 
 const ControlRoom = lazy(() =>
   import("@/components/admin/AdminControlRoom").then((module) => ({
-    default: module.ControlRoom,
+    default: module.Route.options.component as ComponentType,
   })),
 );
 
