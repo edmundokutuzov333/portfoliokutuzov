@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /i/
+
+Sitemap: https://portfoliokutuzov2026.lovable.app/sitemap.xml
