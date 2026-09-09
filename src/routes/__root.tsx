@@ -8,10 +8,8 @@ import {
 } from "@tanstack/react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
-import { AiAssistant } from "@/components/AiAssistant";
 import { useEffect, type ReactNode } from "react";
-
-import appCss from "../styles.css?url";
+import { DeferredAiAssistant } from "@/components/DeferredAiAssistant";
 import { AppErrorBoundary, AppErrorFallback } from "@/components/AppErrorBoundary";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -22,6 +20,7 @@ import {
   markRenderHealthy,
   recordRuntimeError,
 } from "@/lib/runtime-diagnostics";
+import { createSeo, SITE_ORIGIN, socialImageUrl } from "@/lib/seo";
 
 interface RouterContext {
   queryClient: QueryClient;
@@ -101,56 +100,65 @@ const earlyRecoveryScript = `
   }, 3500);
 })();`;
 
+const siteStructuredData = JSON.stringify(
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Person",
+        "@id": `${SITE_ORIGIN}/#person`,
+        name: "Edmundo Kutuzov",
+        jobTitle: "Art Director",
+        url: SITE_ORIGIN,
+        image: socialImageUrl(),
+        address: { "@type": "PostalAddress", addressLocality: "Maputo", addressCountry: "MZ" },
+      },
+      {
+        "@type": "WebSite",
+        "@id": `${SITE_ORIGIN}/#website`,
+        url: SITE_ORIGIN,
+        name: "Edmundo Kutuzov",
+        description:
+          "Portfolio de direção de arte, identidades visuais, campanhas e experiências digitais.",
+        inLanguage: "pt-PT",
+        publisher: { "@id": `${SITE_ORIGIN}/#person` },
+      },
+    ],
+  },
+).replace(/</g, "\\u003c");
+
 export const Route = createRootRouteWithContext<RouterContext>()({
-  head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Edmundo - Designer & Art Director" },
-      {
-        name: "description",
-        content:
-          "Identidades visuais, direção de arte e experiências digitais construídas com clareza estratégica e precisão técnica.",
-      },
-      { name: "author", content: "Edmundo" },
-      { property: "og:title", content: "Edmundo - Designer & Art Director" },
-      { name: "twitter:title", content: "Edmundo - Designer & Art Director" },
-      {
-        property: "og:description",
-        content:
-          "Dark blue editorial portfolio · brand identity · art direction · digital systems.",
-      },
-      {
-        name: "twitter:description",
-        content:
-          "Dark blue editorial portfolio · brand identity · art direction · digital systems.",
-      },
-      { name: "twitter:card", content: "summary_large_image" },
-      { property: "og:type", content: "website" },
-      {
-        property: "og:image",
-        content:
-          "https://storage.googleapis.com/gpt-engineer-file-uploads/pHZRYs3DGCdOPGZzeAdkZH1MMif2/social-images/social-1778488549600-EKLOGO.webp",
-      },
-      {
-        name: "twitter:image",
-        content:
-          "https://storage.googleapis.com/gpt-engineer-file-uploads/pHZRYs3DGCdOPGZzeAdkZH1MMif2/social-images/social-1778488549600-EKLOGO.webp",
-      },
-    ],
-    links: [
-      { rel: "stylesheet", href: appCss },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap",
-      },
-      { rel: "icon", type: "image/webp", href: "/favicon.webp" },
-      { rel: "shortcut icon", type: "image/webp", href: "/favicon.webp" },
-      { rel: "apple-touch-icon", href: "/favicon.webp" },
-    ],
-  }),
+  head: () => {
+    const seo = createSeo({
+      title: "Edmundo Kutuzov - Designer & Art Director",
+      description:
+        "Identidades visuais, direção de arte e experiências digitais construídas com clareza estratégica e precisão técnica.",
+      path: "/",
+    });
+    return {
+      meta: [
+        { charSet: "utf-8" },
+        { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
+        { name: "author", content: "Edmundo Kutuzov" },
+        { name: "theme-color", content: "#02050c" },
+        { name: "color-scheme", content: "dark" },
+        ...seo.meta,
+      ],
+      links: [
+        ...seo.links,
+        { rel: "stylesheet", href: appCss },
+        { rel: "preconnect", href: "https://fonts.googleapis.com" },
+        { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+        {
+          rel: "stylesheet",
+          href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap",
+        },
+        { rel: "icon", type: "image/webp", href: "/favicon.webp" },
+        { rel: "shortcut icon", type: "image/webp", href: "/favicon.webp" },
+        { rel: "apple-touch-icon", href: "/favicon.webp" },
+      ],
+    };
+  },
   shellComponent: RootShell,
   component: RootComponent,
   errorComponent: RootErrorComponent,
@@ -159,9 +167,10 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="pt" suppressHydrationWarning>
+    <html lang="pt-PT" suppressHydrationWarning>
       <head suppressHydrationWarning>
         <HeadContent />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: siteStructuredData }} />
       </head>
       <body suppressHydrationWarning>
         <script dangerouslySetInnerHTML={{ __html: earlyRecoveryScript }} />
@@ -189,8 +198,16 @@ function RootComponent() {
     <AppErrorBoundary onReset={() => queryClient.clear()}>
       <QueryClientProvider client={queryClient}>
         {!isAdmin && (
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-[var(--color-text-primary)] focus:px-4 focus:py-3 focus:text-sm focus:font-semibold focus:text-[var(--color-bg)]"
+          >
+            Skip to content
+          </a>
+        )}
+        {!isAdmin && (
           <AppErrorBoundary label="interactive background" minimal>
-            <div className="fixed inset-0 z-0 bg-[var(--color-bg)]" />
+            <div className="fixed inset-0 z-0 bg-[var(--color-bg)]" aria-hidden="true" />
           </AppErrorBoundary>
         )}
         <div className="relative z-10">
@@ -199,7 +216,7 @@ function RootComponent() {
               <Navbar />
             </AppErrorBoundary>
           )}
-          <main data-ek-app-root="true">
+          <main id="main-content" data-ek-app-root="true">
             <AppErrorBoundary label="route content" minimal onReset={() => queryClient.clear()}>
               <Outlet />
             </AppErrorBoundary>
@@ -228,7 +245,7 @@ function RootComponent() {
             }}
           />
         </AppErrorBoundary>
-        {!isAdmin && <AiAssistant />}
+        {!isAdmin && <DeferredAiAssistant />}
       </QueryClientProvider>
     </AppErrorBoundary>
   );
