@@ -7,15 +7,22 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-.output
-.vinxi
-.tanstack/**
-.nitro
+# Dependencies and build output
+node_modules/
+dist/
+dist-ssr/
+.output/
+.vercel/
+.vinxi/
+.tanstack/
+.nitro/
 *.tsbuildinfo
 *.local
+
+# Environment files and local secrets
+.env
+.env.*
+!.env.example
 
 # Wrangler / Cloudflare
 .wrangler/
@@ -26,16 +33,15 @@ wrangler.jsonc
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+# Package manager alternates
 bun.lock
 bun.lockb
 bunfig.toml
-
-# Vercel
-.vercel
