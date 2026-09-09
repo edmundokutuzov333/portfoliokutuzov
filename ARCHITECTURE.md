@@ -57,6 +57,8 @@ components/
   ui
 ```
 
+The admin route is intentionally thin and delegates its Control Room implementation to `src/components/admin/AdminControlRoom.tsx`.
+
 Framer Motion is part of the visual language. `prefers-reduced-motion` must remain respected.
 
 ## Deployment boundary
@@ -73,6 +75,7 @@ The minimum verification sequence is:
 npm ci
 npm test
 npm run diagnose
+npm run typecheck
 npm run lint
 npm run build
 ```
