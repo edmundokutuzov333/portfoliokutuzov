@@ -34,10 +34,16 @@ export function DeferredReel() {
     };
   }, []);
 
-  if (!ready) return null;
   return (
-    <Suspense fallback={null}>
-      <CinematicPortfolioReel />
-    </Suspense>
+    <section
+      aria-label="Selected portfolio reel"
+      className="min-h-[calc(50vh+9rem)] md:min-h-[calc(60vh+10rem)] lg:min-h-[calc(70vh+11rem)]"
+    >
+      {ready ? (
+        <Suspense fallback={null}>
+          <CinematicPortfolioReel />
+        </Suspense>
+      ) : null}
+    </section>
   );
 }
