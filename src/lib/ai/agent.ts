@@ -66,7 +66,7 @@ export async function processChatStream(
     type: "session_update",
     sessionId: activeSessionId,
     contextSummary: {
-      intent: session.profile.detectedIntent,
+      intent: session.profile.detectedIntent ?? null,
       viewedCount: session.profile.viewedProjects.length,
     },
   });
