@@ -69,8 +69,12 @@ export function CinematicLogoCloud({
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.2 }}
-          transition={{ duration: 0.55, delay: Math.min(index * 0.04, 0.3), ease: [0.16, 1, 0.3, 1] }}
-          className="group flex min-h-[68px] shrink-0 items-center justify-center rounded-xl border border-white/[0.05] bg-white/[0.015] px-5 py-3.5 md:min-h-[80px] md:px-8 md:py-5 backdrop-blur-sm transition-colors hover:border-white/[0.12] hover:bg-white/[0.04]"
+          transition={{
+            duration: 0.55,
+            delay: Math.min(index * 0.04, 0.3),
+            ease: [0.16, 1, 0.3, 1],
+          }}
+          className="group flex min-h-[68px] shrink-0 items-center justify-center rounded-xl border border-white/[0.05] bg-white/[0.015] px-5 py-3.5 backdrop-blur-sm transition-colors hover:border-white/[0.12] hover:bg-white/[0.04] md:min-h-[80px] md:px-8 md:py-5"
         >
           <ClientMark client={client} />
         </motion.div>
