@@ -35,14 +35,7 @@ jobs:
           rm -rf .lighthouseci .lighthouseci-desktop
           npx --yes @lhci/cli@0.15.1 collect --config=lighthouserc.cjs
       - name: Assert Lighthouse desktop
-        id: desktop_assert
-        continue-on-error: true
-        run: |
-          set +e
-          npx --yes @lhci/cli@0.15.1 assert --config=lighthouserc.cjs
-          status=$?
-          echo "$status" > /tmp/lighthouse-desktop-assert-status
-          exit 0
+        run: npx --yes @lhci/cli@0.15.1 assert --config=lighthouserc.cjs
       - name: Preserve desktop reports
         if: always()
         run: mv .lighthouseci .lighthouseci-desktop 2>/dev/null || true
@@ -51,14 +44,7 @@ jobs:
           rm -rf .lighthouseci
           npx --yes @lhci/cli@0.15.1 collect --config=lighthouserc.mobile.cjs
       - name: Assert Lighthouse mobile
-        id: mobile_assert
-        continue-on-error: true
-        run: |
-          set +e
-          npx --yes @lhci/cli@0.15.1 assert --config=lighthouserc.mobile.cjs
-          status=$?
-          echo "$status" > /tmp/lighthouse-mobile-assert-status
-          exit 0
+        run: npx --yes @lhci/cli@0.15.1 assert --config=lighthouserc.mobile.cjs
       - name: Preserve mobile reports
         if: always()
         run: mv .lighthouseci .lighthouseci-mobile 2>/dev/null || true
@@ -67,16 +53,6 @@ jobs:
         run: |
           node scripts/inspect-lighthouse.mjs .lighthouseci-desktop || true
           node scripts/inspect-lighthouse.mjs .lighthouseci-mobile || true
-      - name: Enforce Lighthouse gates
-        if: always()
-        run: |
-          desktop_status=$(cat /tmp/lighthouse-desktop-assert-status 2>/dev/null || echo 1)
-          mobile_status=$(cat /tmp/lighthouse-mobile-assert-status 2>/dev/null || echo 1)
-          echo "Desktop assertion exit: $desktop_status"
-          echo "Mobile assertion exit: $mobile_status"
-          if [ "$desktop_status" != "0" ] || [ "$mobile_status" != "0" ]; then
-            exit 1
-          fi
       - if: always()
         name: Upload Lighthouse reports
         uses: actions/upload-artifact@v6
