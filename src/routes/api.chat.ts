@@ -3,9 +3,10 @@ import { processChatStream, type ChatMessage, type ChatContext } from "../lib/ai
 import { generateOpeningMessage } from "../lib/ai/opening-message";
 import { generateTTSAudio, processVoiceTurnStream } from "../lib/voice/voice-server";
 import { PRIMARY_MODEL, FALLBACK_MODEL } from "../lib/ai/config";
+import { getCorsHeaders, isCorsOriginAllowed } from "@/config/server";
 
 interface ChatRequestBody {
-  action?: string;
+  action?: "opening_message" | "tts" | "voice_turn";
   sessionId?: string;
   messages?: ChatMessage[];
   context?: ChatContext;
@@ -13,23 +14,95 @@ interface ChatRequestBody {
   audioChunks?: string[];
 }
 
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+type RateLimitEntry = {
+  count: number;
+  resetAt: number;
 };
+
+const RATE_LIMIT_WINDOW_MS = 5 * 60 * 1000;
+const MAX_REQUESTS_PER_WINDOW = 30;
+const MAX_BODY_BYTES = 8 * 1024 * 1024;
+const MAX_MESSAGES = 50;
+const MAX_TEXT_LENGTH = 8_000;
+const MAX_AUDIO_CHUNKS = 1_200;
+
+const rateLimitStore = new Map<string, RateLimitEntry>();
+
+function getClientKey(request: Request) {
+  const forwarded = request.headers.get("x-forwarded-for");
+  const realIp = request.headers.get("x-real-ip");
+  const ip = (forwarded?.split(",")[0]?.trim() || realIp || "unknown").slice(0, 128);
+  return ip;
+}
+
+function checkRateLimit(key: string) {
+  const now = Date.now();
+  const current = rateLimitStore.get(key);
+
+  if (!current || current.resetAt <= now) {
+    rateLimitStore.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return { allowed: true, retryAfter: 0 };
+  }
+
+  if (current.count >= MAX_REQUESTS_PER_WINDOW) {
+    return {
+      allowed: false,
+      retryAfter: Math.max(1, Math.ceil((current.resetAt - now) / 1000)),
+    };
+  }
+
+  current.count += 1;
+  return { allowed: true, retryAfter: 0 };
+}
+
+function jsonError(
+  request: Request,
+  status: number,
+  code: string,
+  message: string,
+  extraHeaders: Record<string, string> = {},
+) {
+  return new Response(JSON.stringify({ error: { code, message } }), {
+    status,
+    headers: {
+      "Content-Type": "application/json",
+      ...getCorsHeaders(request),
+      ...extraHeaders,
+    },
+  });
+}
+
+function responseHeaders(request: Request, extra: Record<string, string> = {}) {
+  return {
+    ...getCorsHeaders(request),
+    ...extra,
+  };
+}
+
+function hasAcceptableBodySize(request: Request) {
+  const length = request.headers.get("content-length");
+  if (!length) return true;
+  const bytes = Number(length);
+  return Number.isFinite(bytes) && bytes >= 0 && bytes <= MAX_BODY_BYTES;
+}
 
 export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
-      OPTIONS: async () => {
+      OPTIONS: async ({ request }) => {
+        if (!isCorsOriginAllowed(request)) {
+          return new Response(null, { status: 403, headers: getCorsHeaders(request) });
+        }
         return new Response(null, {
           status: 204,
-          headers: CORS_HEADERS,
+          headers: responseHeaders(request),
         });
       },
 
-      GET: async () => {
+      GET: async ({ request }) => {
+        if (!isCorsOriginAllowed(request)) {
+          return jsonError(request, 403, "ORIGIN_NOT_ALLOWED", "This origin is not allowed.");
+        }
         return new Response(
           JSON.stringify({
             status: "healthy",
@@ -50,42 +123,59 @@ export const Route = createFileRoute("/api/chat")({
           }),
           {
             status: 200,
-            headers: {
-              "Content-Type": "application/json",
-              ...CORS_HEADERS,
-            },
+            headers: responseHeaders(request, { "Content-Type": "application/json", "Cache-Control": "no-store" }),
           },
         );
       },
 
       POST: async ({ request }) => {
+        if (!isCorsOriginAllowed(request)) {
+          return jsonError(request, 403, "ORIGIN_NOT_ALLOWED", "This origin is not allowed.");
+        }
+
+        if (!hasAcceptableBodySize(request)) {
+          return jsonError(request, 413, "REQUEST_TOO_LARGE", "The request payload is too large.");
+        }
+
+        const rate = checkRateLimit(getClientKey(request));
+        if (!rate.allowed) {
+          return jsonError(
+            request,
+            429,
+            "RATE_LIMITED",
+            "Too many requests. Please try again later.",
+            { "Retry-After": String(rate.retryAfter) },
+          );
+        }
+
         let body: ChatRequestBody = {};
         try {
           body = (await request.json()) as ChatRequestBody;
         } catch {
-          return new Response(
-            JSON.stringify({
-              error: {
-                code: "INVALID_JSON",
-                message: "The request payload could not be parsed as valid JSON.",
-              },
-            }),
-            {
-              status: 400,
-              headers: { "Content-Type": "application/json", ...CORS_HEADERS },
-            },
-          );
+          return jsonError(request, 400, "INVALID_JSON", "The request payload could not be parsed as valid JSON.");
         }
 
         const requestId = `req_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
 
-        // Dynamic Motivational Opening Message
+        if (body.messages && (!Array.isArray(body.messages) || body.messages.length > MAX_MESSAGES)) {
+          return jsonError(request, 413, "TOO_MANY_MESSAGES", `A maximum of ${MAX_MESSAGES} messages is allowed.`);
+        }
+
+        if (typeof body.text === "string" && body.text.length > MAX_TEXT_LENGTH) {
+          return jsonError(request, 413, "TEXT_TOO_LONG", `Text input exceeds the ${MAX_TEXT_LENGTH}-character limit.`);
+        }
+
+        if (body.audioChunks && (!Array.isArray(body.audioChunks) || body.audioChunks.length > MAX_AUDIO_CHUNKS)) {
+          return jsonError(request, 413, "TOO_MANY_AUDIO_CHUNKS", "The voice payload contains too many audio chunks.");
+        }
+
+        // Dynamic motivational opening message
         if (body.action === "opening_message") {
           try {
             const result = await generateOpeningMessage(body.sessionId, body.context);
             return new Response(JSON.stringify(result), {
               status: 200,
-              headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+              headers: responseHeaders(request, { "Content-Type": "application/json", "Cache-Control": "no-store" }),
             });
           } catch (err: unknown) {
             console.error("[Opening Message Error]", err);
@@ -96,36 +186,32 @@ export const Route = createFileRoute("/api/chat")({
               }),
               {
                 status: 200,
-                headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+                headers: responseHeaders(request, { "Content-Type": "application/json", "Cache-Control": "no-store" }),
               },
             );
           }
         }
 
-        // Text-to-Speech (TTS) for individual AI message playback
+        // Text-to-Speech for individual AI message playback
         if (body.action === "tts") {
           try {
             const ttsResult = await generateTTSAudio(body.text || "");
             return new Response(JSON.stringify(ttsResult), {
               status: 200,
-              headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+              headers: responseHeaders(request, { "Content-Type": "application/json", "Cache-Control": "no-store" }),
             });
           } catch (err: unknown) {
             console.error("[API TTS Error]", err);
-            return new Response(
-              JSON.stringify({
-                error: {
-                  code: "TTS_SYNTHESIS_FAILED",
-                  message: "TTS synthesis failed",
-                  details: err instanceof Error ? err.message : String(err),
-                },
-              }),
-              { status: 500, headers: { "Content-Type": "application/json", ...CORS_HEADERS } },
+            return jsonError(
+              request,
+              500,
+              "TTS_SYNTHESIS_FAILED",
+              "TTS synthesis failed.",
             );
           }
         }
 
-        // Real-Time Voice Turn Streaming (Live Voice conversation)
+        // Real-time voice turn streaming
         if (body.action === "voice_turn") {
           const stream = new ReadableStream({
             async start(controller) {
@@ -134,7 +220,7 @@ export const Route = createFileRoute("/api/chat")({
                 try {
                   controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
                 } catch {
-                  // Stream closed
+                  // Stream closed.
                 }
               };
 
@@ -160,39 +246,31 @@ export const Route = createFileRoute("/api/chat")({
                 try {
                   controller.close();
                 } catch {
-                  // closed
+                  // Stream already closed.
                 }
               }
             },
           });
 
           return new Response(stream, {
-            headers: {
+            headers: responseHeaders(request, {
               "Content-Type": "text/event-stream; charset=utf-8",
               "Cache-Control": "no-cache, no-transform",
               Connection: "keep-alive",
-              ...CORS_HEADERS,
-            },
+            }),
           });
         }
 
-        // Validate messages for standard chat stream
         if (!body.messages || !Array.isArray(body.messages) || body.messages.length === 0) {
-          return new Response(
-            JSON.stringify({
-              error: {
-                code: "MISSING_MESSAGES",
-                message: "A non-empty 'messages' array is required for chat streaming.",
-              },
-            }),
-            {
-              status: 400,
-              headers: { "Content-Type": "application/json", ...CORS_HEADERS },
-            },
+          return jsonError(
+            request,
+            400,
+            "MISSING_MESSAGES",
+            "A non-empty 'messages' array is required for chat streaming.",
           );
         }
 
-        // Default Text Chat Stream with Tools & Session Memory
+        // Default text chat stream with tools & session memory
         const stream = new ReadableStream({
           async start(controller) {
             const encoder = new TextEncoder();
@@ -200,7 +278,7 @@ export const Route = createFileRoute("/api/chat")({
               try {
                 controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
               } catch {
-                // Stream may have closed
+                // Stream may have closed.
               }
             };
 
@@ -208,7 +286,7 @@ export const Route = createFileRoute("/api/chat")({
               await processChatStream(
                 requestId,
                 body.sessionId,
-                body.messages || [],
+                body.messages,
                 body.context || {},
                 emit,
               );
@@ -225,19 +303,18 @@ export const Route = createFileRoute("/api/chat")({
               try {
                 controller.close();
               } catch {
-                // already closed
+                // Stream already closed.
               }
             }
           },
         });
 
         return new Response(stream, {
-          headers: {
+          headers: responseHeaders(request, {
             "Content-Type": "text/event-stream; charset=utf-8",
             "Cache-Control": "no-cache, no-transform",
             Connection: "keep-alive",
-            ...CORS_HEADERS,
-          },
+          }),
         });
       },
     },
