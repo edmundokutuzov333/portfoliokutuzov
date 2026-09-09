@@ -16,6 +16,13 @@ import { projects as staticProjects } from "@/data/projects";
 import { clients as staticClients } from "@/data/clients";
 import { toDeterministicUuid } from "@/lib/utils";
 
+const PUBLIC_READ_TIMEOUT_MS = 4_000;
+
+function boundedSignal(signal: AbortSignal) {
+  if (typeof AbortSignal.timeout !== "function") return signal;
+  return AbortSignal.any([signal, AbortSignal.timeout(PUBLIC_READ_TIMEOUT_MS)]);
+}
+
 const FALLBACK_PROJECTS: DbProject[] = staticProjects.map((p) => ({
   id: toDeterministicUuid("00000004", p.id),
   slug: p.title.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
@@ -47,33 +54,9 @@ const FALLBACK_CLIENTS: DbClient[] = staticClients.map((name, index) => ({
 }));
 
 const FALLBACK_STUDIOS: DbClient[] = [
-  {
-    id: toDeterministicUuid("00000002", 1),
-    name: "SPOT Comunicação",
-    logo_url: null,
-    website_url: null,
-    sort_order: 1,
-    is_active: true,
-    kind: "studio",
-  },
-  {
-    id: toDeterministicUuid("00000002", 2),
-    name: "Ikigai Moçambique",
-    logo_url: null,
-    website_url: null,
-    sort_order: 2,
-    is_active: true,
-    kind: "studio",
-  },
-  {
-    id: toDeterministicUuid("00000002", 3),
-    name: "Agência Creer",
-    logo_url: null,
-    website_url: null,
-    sort_order: 3,
-    is_active: true,
-    kind: "studio",
-  },
+  { id: toDeterministicUuid("00000002", 1), name: "SPOT Comunicação", logo_url: null, website_url: null, sort_order: 1, is_active: true, kind: "studio" },
+  { id: toDeterministicUuid("00000002", 2), name: "Ikigai Moçambique", logo_url: null, website_url: null, sort_order: 2, is_active: true, kind: "studio" },
+  { id: toDeterministicUuid("00000002", 3), name: "Agência Creer", logo_url: null, website_url: null, sort_order: 3, is_active: true, kind: "studio" },
 ];
 
 type RealtimeEntry = {
@@ -116,7 +99,7 @@ function subscribeToTable(table: string, listener: () => void) {
         try {
           void supabase.removeChannel(latest.channel);
         } catch {
-          // Ignore error on channel removal
+          // Ignore errors during channel removal.
         }
       }, 1_000);
     };
@@ -135,7 +118,6 @@ function useRealtimeInvalidate(table: string, queryKey: unknown[]) {
   }, [qc, table]);
 }
 
-// ---------- settings ----------
 export function useSiteSettings() {
   useRealtimeInvalidate("site_settings", ["site_settings"]);
   return useQuery({
@@ -145,24 +127,21 @@ export function useSiteSettings() {
         const { data, error } = await supabase
           .from("site_settings")
           .select("key,value")
-          .abortSignal(signal);
+          .abortSignal(boundedSignal(signal));
         if (error || !data || data.length === 0) return FALLBACK_SETTINGS;
         const out: SiteSettings = { ...FALLBACK_SETTINGS };
-        for (const row of data)
-          out[row.key] = {
-            ...(out[row.key] ?? {}),
-            ...((row.value as Record<string, unknown>) ?? {}),
-          };
+        for (const row of data) {
+          out[row.key] = { ...(out[row.key] ?? {}), ...((row.value as Record<string, unknown>) ?? {}) };
+        }
         return out;
       } catch {
         return FALLBACK_SETTINGS;
       }
     },
-    staleTime: 30_000,
+    staleTime: 120_000,
   });
 }
 
-// ---------- clients ----------
 export function useClients(includeInactive = false, kind: string = "client") {
   useRealtimeInvalidate("clients", ["clients"]);
   return useQuery({
@@ -171,10 +150,8 @@ export function useClients(includeInactive = false, kind: string = "client") {
       try {
         let q = supabase.from("clients").select("*").eq("kind", kind).order("sort_order");
         if (!includeInactive) q = q.eq("is_active", true);
-        const { data, error } = await q.abortSignal(signal);
-        if (error || !data || data.length === 0) {
-          return kind === "studio" ? FALLBACK_STUDIOS : FALLBACK_CLIENTS;
-        }
+        const { data, error } = await q.abortSignal(boundedSignal(signal));
+        if (error || !data || data.length === 0) return kind === "studio" ? FALLBACK_STUDIOS : FALLBACK_CLIENTS;
         return data as DbClient[];
       } catch {
         return kind === "studio" ? FALLBACK_STUDIOS : FALLBACK_CLIENTS;
@@ -183,12 +160,10 @@ export function useClients(includeInactive = false, kind: string = "client") {
   });
 }
 
-// ---------- studios (same table, kind='studio') ----------
 export function useStudios(includeInactive = false) {
   return useClients(includeInactive, "studio");
 }
 
-// ---------- projects ----------
 export function useProjects(includeUnpublished = false) {
   useRealtimeInvalidate("projects", ["projects"]);
   return useQuery({
@@ -197,27 +172,17 @@ export function useProjects(includeUnpublished = false) {
       try {
         let q = supabase.from("projects").select("*").order("sort_order");
         if (!includeUnpublished) q = q.eq("is_published", true);
-        const { data, error } = await q.abortSignal(signal);
-        if (error || !data || data.length === 0) {
-          return FALLBACK_PROJECTS;
-        }
+        const { data, error } = await q.abortSignal(boundedSignal(signal));
+        if (error || !data || data.length === 0) return FALLBACK_PROJECTS;
         return (data ?? []).map((p) => ({
           ...p,
           category: normalizeCategory(p.category),
           gallery: Array.isArray(p.gallery) ? (p.gallery as string[]) : [],
           tags: Array.isArray(p.tags) ? (p.tags as string[]) : [],
-          collaborators: Array.isArray((p as { collaborators?: unknown }).collaborators)
-            ? (p as { collaborators: string[] }).collaborators
-            : [],
-          tools_used: Array.isArray((p as { tools_used?: unknown }).tools_used)
-            ? (p as { tools_used: string[] }).tools_used
-            : [],
-          deliverables: Array.isArray((p as { deliverables?: unknown }).deliverables)
-            ? (p as { deliverables: string[] }).deliverables
-            : [],
-          gallery_meta: Array.isArray((p as { gallery_meta?: unknown }).gallery_meta)
-            ? (p as unknown as { gallery_meta: DbProject["gallery_meta"] }).gallery_meta
-            : [],
+          collaborators: Array.isArray((p as { collaborators?: unknown }).collaborators) ? (p as { collaborators: string[] }).collaborators : [],
+          tools_used: Array.isArray((p as { tools_used?: unknown }).tools_used) ? (p as { tools_used: string[] }).tools_used : [],
+          deliverables: Array.isArray((p as { deliverables?: unknown }).deliverables) ? (p as { deliverables: string[] }).deliverables : [],
+          gallery_meta: Array.isArray((p as { gallery_meta?: unknown }).gallery_meta) ? (p as unknown as { gallery_meta: DbProject["gallery_meta"] }).gallery_meta : [],
         })) as unknown as DbProject[];
       } catch {
         return FALLBACK_PROJECTS;
@@ -226,15 +191,14 @@ export function useProjects(includeUnpublished = false) {
   });
 }
 
-// ---------- services ----------
 export function useServices(includeInactive = false) {
   return useQuery({
     queryKey: ["services", includeInactive],
-    queryFn: async (): Promise<DbService[]> => {
+    queryFn: async ({ signal }): Promise<DbService[]> => {
       try {
         let q = supabase.from("services").select("*").order("sort_order");
         if (!includeInactive) q = q.eq("is_active", true);
-        const { data, error } = await q;
+        const { data, error } = await q.abortSignal(boundedSignal(signal));
         if (error || !data) return [];
         return data as DbService[];
       } catch {
@@ -244,15 +208,14 @@ export function useServices(includeInactive = false) {
   });
 }
 
-// ---------- stats ----------
 export function useStats(includeInactive = false) {
   return useQuery({
     queryKey: ["stats", includeInactive],
-    queryFn: async (): Promise<DbStat[]> => {
+    queryFn: async ({ signal }): Promise<DbStat[]> => {
       try {
         let q = supabase.from("stats").select("*").order("sort_order");
         if (!includeInactive) q = q.eq("is_active", true);
-        const { data, error } = await q;
+        const { data, error } = await q.abortSignal(boundedSignal(signal));
         if (error || !data) return [];
         return data as DbStat[];
       } catch {
@@ -262,15 +225,14 @@ export function useStats(includeInactive = false) {
   });
 }
 
-// ---------- about_method ----------
 export function useMethod(includeInactive = false) {
   return useQuery({
     queryKey: ["about_method", includeInactive],
-    queryFn: async (): Promise<DbMethod[]> => {
+    queryFn: async ({ signal }): Promise<DbMethod[]> => {
       try {
         let q = supabase.from("about_method").select("*").order("sort_order");
         if (!includeInactive) q = q.eq("is_active", true);
-        const { data, error } = await q;
+        const { data, error } = await q.abortSignal(boundedSignal(signal));
         if (error || !data) return [];
         return data as DbMethod[];
       } catch {
