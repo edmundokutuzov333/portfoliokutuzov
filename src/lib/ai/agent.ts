@@ -54,10 +54,11 @@ interface ToolCallLike {
 export async function processChatStream(
   requestId: string,
   sessionId: string | undefined,
-  messages: ChatMessage[],
+  messages: ChatMessage[] | undefined,
   context: ChatContext,
   emit: (event: StreamEvent) => void,
 ): Promise<void> {
+  messages = messages ?? [];
   const session = getOrCreateSession(sessionId, context);
   const activeSessionId = session.sessionId;
 
