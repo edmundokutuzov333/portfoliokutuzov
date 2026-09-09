@@ -1,0 +1,48 @@
+name: Performance
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [phase2-final-exec]
+permissions:
+  contents: read
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          package-manager-cache: false
+      - run: npm ci
+      - run: npm run build
+      - name: Start SSR development server
+        run: |
+          npm run dev -- --host 127.0.0.1 --port 3000 > /tmp/portfolio-server.log 2>&1 &
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:3000/ > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/portfolio-server.log
+          exit 1
+      - name: Lighthouse desktop gate
+        run: npx --yes @lhci/cli@0.15.1 autorun --config=lighthouserc.cjs
+        env:
+          LHCI_BUILD_CONTEXT__CURRENT_HASH: ${{ github.sha }}-desktop
+      - name: Lighthouse mobile gate
+        run: npx --yes @lhci/cli@0.15.1 autorun --config=lighthouserc.mobile.cjs
+        env:
+          LHCI_BUILD_CONTEXT__CURRENT_HASH: ${{ github.sha }}-mobile
+      - if: always()
+        name: Upload Lighthouse reports
+        uses: actions/upload-artifact@v6
+        with:
+          name: lighthouse-reports
+          path: .lighthouseci
+          if-no-files-found: ignore
+      - if: always()
+        name: Server log
+        run: cat /tmp/portfolio-server.log || true
