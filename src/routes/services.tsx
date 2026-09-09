@@ -18,7 +18,7 @@ export const Route = createFileRoute("/services")({
 function ServicesPage() {
   return (
     <div className="bg-[var(--color-bg)] min-h-screen">
-      <section className="relative px-4 md:px-8 pt-44 md:pt-48 pb-12 md:pb-16 overflow-hidden" aria-labelledby="services-title">
+      <section className="relative px-4 md:px-8 pt-44 md:pt-48 pb-12 md:pb-16 overflow-hidden">
         <div className="max-w-[var(--width-wide)] mx-auto relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 15 }}
@@ -31,7 +31,6 @@ function ServicesPage() {
           </motion.div>
 
           <motion.h1
-            id="services-title"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
@@ -46,7 +45,9 @@ function ServicesPage() {
             transition={{ duration: 0.8, delay: 0.25 }}
             className="mt-8 max-w-2xl text-[16px] md:text-lg text-[var(--color-text-secondary)] leading-relaxed"
           >
-            The core disciplines used to construct enduring brand identities, direct high-impact campaigns, and engineer modular digital systems. Hover each discipline to inspect relevant case studies.
+            The core disciplines used to construct enduring brand identities, direct high-impact
+            campaigns, and engineer modular digital systems. Hover each discipline to inspect
+            relevant case studies.
           </motion.p>
         </div>
       </section>
@@ -63,16 +64,21 @@ function ServicesPage() {
             className="text-center"
           >
             <h2 className="display text-4xl md:text-6xl mt-8 max-w-3xl mx-auto leading-[1.05] tracking-[-0.02em]">
-              <span className="text-[var(--color-text-primary)]">Tell me about your brand and </span>
+              <span className="text-[var(--color-text-primary)]">
+                Tell me about your brand and{" "}
+              </span>
               <span className="italic text-[var(--color-accent-hover)]">let's get to work.</span>
             </h2>
             <div className="mt-16 flex justify-center">
               <Link
                 to="/contact"
-                className="group flex min-h-14 items-center gap-3 rounded-full bg-[var(--color-text-primary)] px-8 text-[15px] font-semibold text-[var(--color-bg)] transition-all hover:bg-sky-300 hover:text-black focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent-hover)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg)]"
+                className="group flex h-14 items-center gap-3 rounded-full bg-[var(--color-text-primary)] px-8 text-[15px] font-semibold text-[var(--color-bg)] transition-all hover:bg-sky-300 hover:text-black focus:outline-none"
               >
-                Start a project
-                <ArrowUpRight size={16} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                Send a project brief
+                <ArrowUpRight
+                  size={18}
+                  className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                />
               </Link>
             </div>
           </motion.div>
