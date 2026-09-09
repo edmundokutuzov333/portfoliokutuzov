@@ -29,20 +29,49 @@ jobs:
           cat /tmp/portfolio-server.log
           exit 1
       - name: Lighthouse desktop gate
-        run: npx --yes @lhci/cli@0.15.1 autorun --config=lighthouserc.cjs
+        id: desktop
+        continue-on-error: true
+        run: |
+          mkdir -p .lighthouseci
+          set +e
+          npx --yes @lhci/cli@0.15.1 autorun --config=lighthouserc.cjs
+          status=$?
+          echo "$status" > .lighthouseci/desktop-status.txt
+          exit 0
         env:
           LHCI_BUILD_CONTEXT__CURRENT_HASH: ${{ github.sha }}-desktop
       - name: Lighthouse mobile gate
-        run: npx --yes @lhci/cli@0.15.1 autorun --config=lighthouserc.mobile.cjs
+        id: mobile
+        continue-on-error: true
+        run: |
+          mkdir -p .lighthouseci/mobile
+          set +e
+          npx --yes @lhci/cli@0.15.1 autorun --config=lighthouserc.mobile.cjs
+          status=$?
+          echo "$status" > .lighthouseci/mobile-status.txt
+          exit 0
         env:
           LHCI_BUILD_CONTEXT__CURRENT_HASH: ${{ github.sha }}-mobile
+      - name: Inspect Lighthouse reports
+        if: always()
+        run: node scripts/inspect-lighthouse.mjs .lighthouseci || true
+      - name: Enforce Lighthouse gates
+        if: always()
+        run: |
+          desktop_status=$(cat .lighthouseci/desktop-status.txt 2>/dev/null || echo 1)
+          mobile_status=$(cat .lighthouseci/mobile-status.txt 2>/dev/null || echo 1)
+          echo "Desktop Lighthouse exit: $desktop_status"
+          echo "Mobile Lighthouse exit: $mobile_status"
+          if [ "$desktop_status" != "0" ] || [ "$mobile_status" != "0" ]; then
+            exit 1
+          fi
       - if: always()
         name: Upload Lighthouse reports
         uses: actions/upload-artifact@v6
         with:
           name: lighthouse-reports
           path: .lighthouseci
-          if-no-files-found: ignore
+          if-no-files-found: warn
       - if: always()
         name: Server log
         run: cat /tmp/portfolio-server.log || true
