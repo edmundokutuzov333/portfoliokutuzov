@@ -1,106 +1,84 @@
-# Deploy no Vercel
+# Deployment Guide
 
-Este projecto usa TanStack Start com SSR e server functions, compilado por Vite + Nitro para Vercel. O Vercel suporta TanStack Start directamente através do Nitro e a configuração oficial usa a detecção explícita `framework: "tanstack-start"`. citeturn766857search0turn766857search8
+This project is a dynamic TanStack Start application with SSR and server functions. Vercel deploys the Nitro `vercel` preset output and must not be configured as a static export.
 
-## Configuração actual
+## Vercel settings
 
-`vercel.json` contém apenas a identificação do framework:
+- Framework: `TanStack Start`
+- Root Directory: `/`
+- Node.js: `24.x`
+- Install Command: `npm ci`
+- Build Command: `npm run build`
+- Output Directory: leave empty
 
-```json
-{
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": "tanstack-start"
-}
-```
+The repository also pins Node 24 through `package.json` and `.nvmrc`.
 
-O build é `npm run build`. Não configurar `outputDirectory` manualmente para uma pasta fictícia. O preset `vercel` do Nitro produz o artefacto de deploy adequado para Vercel. citeturn766857search0turn766857search3
+## Environment
 
-## Vercel Dashboard
-
-1. Importar `edmundokutuzov333/portfoliokutuzov`.
-2. Framework Preset: deixar `TanStack Start` quando detectado automaticamente.
-3. Root Directory: `/`.
-4. Node.js: `22.x`.
-5. Build Command: `npm run build`.
-6. Install Command: `npm install`.
-7. Output Directory: deixar vazio e permitir que o framework/Nitro faça a configuração.
-8. Adicionar as variáveis de ambiente necessárias em `Production` e `Preview`.
-
-O repositório mantém `.nvmrc` em Node 22 e `engines.node >=22`. fileciteturn9file0
-
-## Variáveis de ambiente
-
-As variáveis `VITE_*` são incorporadas no bundle do browser durante a build, portanto devem existir no Vercel antes de executar o build. Segredos de servidor não devem receber o prefixo `VITE_`. citeturn766857search0
-
-### Browser / build time
+Set the public Supabase variables for Production and Preview:
 
 ```text
-VITE_SUPABASE_URL=
-VITE_SUPABASE_PUBLISHABLE_KEY=
-VITE_SUPABASE_PROJECT_ID=
+VITE_SUPABASE_URL
+VITE_SUPABASE_PUBLISHABLE_KEY
+VITE_SUPABASE_PROJECT_ID
+VITE_PUBLIC_SITE_URL
+VITE_SITE_URL
 ```
 
-### Server runtime
+Set server-only variables where the corresponding feature is enabled:
 
 ```text
-GEMINI_API_KEY=
-AI_MODEL_PRIMARY=
-AI_MODEL_FALLBACK=
-GEMINI_MODEL_PRIMARY=
-GEMINI_MODEL_FALLBACK=
-GEMINI_LIVE_MODEL=
-GEMINI_TTS_MODEL=
-SUPABASE_PROJECT_ID=
-SUPABASE_URL=
-SUPABASE_SERVICE_ROLE_KEY=
-RESEND_API_KEY=
-RESEND_AUDIENCE_ID=
-BRIEFING_FROM=
-BRIEFING_ADMIN_EMAIL=
-ADMIN_EMAIL=
-NEWSLETTER_FROM=
-LOVABLE_API_KEY=
-PUBLIC_SITE_URL=
-SITE_URL=
+GEMINI_API_KEY
+AI_MODEL_PRIMARY
+AI_MODEL_FALLBACK
+GEMINI_MODEL_PRIMARY
+GEMINI_MODEL_FALLBACK
+GEMINI_LIVE_MODEL
+GEMINI_TTS_MODEL
+SUPABASE_PROJECT_ID
+SUPABASE_URL
+SUPABASE_SERVICE_ROLE_KEY
+RESEND_API_KEY
+RESEND_AUDIENCE_ID
+BRIEFING_FROM
+BRIEFING_ADMIN_EMAIL
+ADMIN_EMAIL
+NEWSLETTER_FROM
+LOVABLE_API_KEY
+PUBLIC_SITE_URL
+SITE_URL
+CORS_ALLOWED_ORIGINS
 ```
 
-Consulte `.env.example` para a lista completa sem valores secretos. fileciteturn26file0
+Never commit `.env` files or server secrets. `VITE_*` values are public by design and must never contain service-role keys.
 
-## Deploy por Git
-
-Depois de ligar o GitHub ao projecto Vercel, qualquer push para a branch configurada gera um novo deployment. O fluxo recomendado para este projecto é simplesmente:
+## Pre-deploy verification
 
 ```bash
-npm install
+npm ci
+npm test
+npm run diagnose
+npm run lint
 npm run build
 ```
 
-O Vercel executa o build no seu ambiente e publica o output do Nitro. TanStack Start no Vercel suporta SSR, server functions e deploys baseados em Git. citeturn766857search5turn766857search8
-
-## Deploy local pré-construído
-
-Para testar a build antes de enviar:
+The equivalent single command is:
 
 ```bash
-npm install
-npm run build
+npm run check
 ```
 
-O script `start` aponta para a função gerada pelo preset Vercel:
+## Production rules
 
-```bash
-npm run start
-```
+Do not:
 
-Importante: o comando `start` serve para inspecção local da saída gerada. No Vercel, a plataforma gere directamente as funções do artefacto.
+- convert the project to a static SPA;
+- add an arbitrary Vercel output directory;
+- commit `.vercel`, `.output` or environment files;
+- reintroduce legacy `index.html` or `src/main.tsx` bootstrapping;
+- bypass Supabase Auth for administrative access;
+- expose server-only keys with a `VITE_` prefix.
 
-## Regras para não voltar a quebrar o deploy
+## Runtime model
 
-- Não adicionar `outputDirectory` arbitrário ao `vercel.json`.
-- Não converter este projecto para SPA estática. O SSR é parte da arquitectura.
-- Não commitar `.vercel/`, porque é output de build local.
-- Não commitar `.env` nem segredos.
-- Manter `package-lock.json` sincronizado com `package.json`.
-- Não adicionar hosts temporários de Cloudflare Tunnel à configuração de produção.
-
-A configuração Vite actual mantém o preset Nitro `vercel`, o entry server do TanStack Start e remove o `allowedHosts` temporário específico de um túnel local. fileciteturn44file0
+The browser receives the SSR document and hydrates through `src/client.tsx` using TanStack Start's `StartClient`. Public portfolio content is read from Supabase through React Query with resilient fallbacks. AI and other sensitive operations stay on server routes.
