@@ -1,17 +1,31 @@
 module.exports = {
   ci: {
-    collect: {
-      url: [
-        "http://127.0.0.1:3000/",
-        "http://127.0.0.1:3000/portfolio",
-        "http://127.0.0.1:3000/services",
-      ],
-      numberOfRuns: 1,
-      settings: {
-        preset: "desktop",
-        onlyCategories: ["performance", "accessibility", "best-practices", "seo"],
+    collect: [
+      {
+        url: [
+          "http://127.0.0.1:3000/",
+          "http://127.0.0.1:3000/portfolio",
+          "http://127.0.0.1:3000/services",
+        ],
+        numberOfRuns: 1,
+        settings: {
+          preset: "desktop",
+          onlyCategories: ["performance", "accessibility", "best-practices", "seo"],
+        },
       },
-    },
+      {
+        url: [
+          "http://127.0.0.1:3000/",
+          "http://127.0.0.1:3000/portfolio",
+          "http://127.0.0.1:3000/services",
+        ],
+        numberOfRuns: 1,
+        settings: {
+          preset: "mobile",
+          onlyCategories: ["performance", "accessibility", "best-practices", "seo"],
+        },
+      },
+    ],
     assert: {
       assertions: {
         "categories:performance": ["error", { minScore: 0.9 }],
