@@ -113,7 +113,6 @@ function ControlRoom() {
         <div className="text-[11px] text-slate-500 mb-3 truncate">{session.user.email}</div>
         <button
           onClick={() => {
-            localStorage.removeItem("mock_admin_email");
             supabase.auth.signOut();
             window.location.reload();
           }}
@@ -155,19 +154,6 @@ function LoginForm({ hasSession }: { hasSession: boolean }) {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
-
-    const normalizedEmail = email.trim().toLowerCase();
-    const normalizedPassword = password.trim();
-
-    if (
-      normalizedEmail === "contact@edmundokutuzov.art" &&
-      (normalizedPassword === "Admin123" || normalizedPassword === "admin123")
-    ) {
-      localStorage.setItem("mock_admin_email", "contact@edmundokutuzov.art");
-      toast.success("Welcome.");
-      window.location.reload();
-      return;
-    }
 
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setBusy(false);
