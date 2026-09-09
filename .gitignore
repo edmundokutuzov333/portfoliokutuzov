@@ -36,3 +36,6 @@ wrangler.jsonc
 bun.lock
 bun.lockb
 bunfig.toml
+
+# Vercel
+.vercel

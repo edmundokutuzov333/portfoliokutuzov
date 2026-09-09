@@ -1,41 +1,64 @@
-# Cloudflare deployment
+# Deploy no Vercel
 
-The build targets Cloudflare and produces both deployment shapes from a single
-`npm run build`:
+Este projeto é TanStack Start (SSR + server functions). A build usa o preset
+Nitro `vercel` e produz a saída no formato oficial **Build Output API v3**:
 
-| Output                       | Path                                       | Used by                                                    |
-| ---------------------------- | ------------------------------------------ | ---------------------------------------------------------- |
-| Workers Static Assets bundle | `dist/server/` + `dist/client/`            | `wrangler deploy` (modern, recommended)                    |
-| Pages advanced `_worker.js`  | `dist/client/_worker.js/` + `_routes.json` | Cloudflare **Pages** (dashboard / `wrangler pages deploy`) |
-
-## Option A — Cloudflare Pages (dashboard)
-
-1. Push the repo to GitHub.
-2. Cloudflare dashboard → **Workers & Pages → Create → Pages → Connect to Git**.
-3. Build settings:
-   - **Framework preset:** None
-   - **Install command:** `npm ci`
-   - **Build command:** `npm run build`
-   - **Build output directory:** `dist/client`
-   - **Node version:** `22` (env var `NODE_VERSION=22`)
-4. Add the same public/backend environment variables used locally under
-   **Settings → Environment variables** for both Production and Preview.
-5. Deploy. Pages will pick up `dist/client/_worker.js/index.js` automatically
-   and serve static assets (excluded in `_routes.json`) from the edge cache.
-
-## Option B — Cloudflare Pages (CLI)
-
-```bash
-npm run build
-npx wrangler pages deploy dist/client --project-name tanstack-start-app
+```text
+.vercel/output/
+  config.json                      # rotas (assets imutáveis, filesystem, fallback SSR)
+  static/                          # ficheiros servidos pelo CDN
+  functions/__server.func/         # função SSR (runtime nodejs22.x)
 ```
 
-Or the shortcut: `npm run deploy:pages`.
+O Vercel deteta esta pasta automaticamente. **Não** definir
+`outputDirectory` no `vercel.json`.
 
-## Notes
+## Configuração no dashboard
 
-- Server functions read secrets via `process.env.*` inside `.handler()`; public
-  browser variables keep the `VITE_*` prefix.
-- Do not commit `bun.lock`, `bun.lockb`, `bunfig.toml`, `wrangler.json`, or
-  `wrangler.jsonc` for this Pages setup; `package-lock.json` is the single
-  dependency lockfile used by automatic deploys.
+1. Importar o repositório em vercel.com → New Project.
+2. Build settings (já vêm do `vercel.json`):
+   - Framework preset: **Other**
+   - Install command: `npm install`
+   - Build command: `npm run build`
+   - Output directory: (vazio)
+3. Node.js version: **22.x** (`.nvmrc` e `engines.node` já pedem 22).
+4. Adicionar as variáveis de ambiente (Production **e** Preview) — ver abaixo.
+5. Deploy.
+
+## Variáveis de ambiente
+
+Build time (substituídas no bundle do browser, têm de existir **antes** da build):
+
+| Variável                        | Uso                             |
+| ------------------------------- | ------------------------------- |
+| `VITE_SUPABASE_URL`             | cliente Supabase no browser     |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | chave pública do Supabase       |
+| `VITE_SUPABASE_PROJECT_ID`      | identificação do projeto        |
+
+Runtime (lidas dentro dos handlers do servidor):
+
+| Variável                                        | Uso                              |
+| ----------------------------------------------- | -------------------------------- |
+| `GEMINI_API_KEY`                                | assistente AI e voz              |
+| `RESEND_API_KEY`, `BRIEFING_FROM`, `ADMIN_EMAIL`, `NEWSLETTER_FROM` | emails de briefing/faturas/newsletter |
+| `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`     | operações privilegiadas          |
+| `SITE_URL`, `PUBLIC_SITE_URL`                   | links públicos (faturas, sitemap)|
+
+## CLI
+
+```bash
+npm install
+npm run build          # gera .vercel/output
+npx vercel deploy --prebuilt          # preview
+npx vercel deploy --prebuilt --prod   # produção
+```
+
+Pré-visualizar a saída localmente: `npm start`.
+
+## Notas
+
+- `.vercel/` está no `.gitignore`: nunca commitar a build — o Vercel constrói
+  sempre a versão nova.
+- `package-lock.json` é o único lockfile (nada de Bun); `npm ci` funciona.
+- SSR é necessário: formulários de contacto, faturação, área admin e
+  `/sitemap.xml` dependem de server functions. Não converter para site estático.
