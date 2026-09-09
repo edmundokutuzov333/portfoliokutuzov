@@ -14,15 +14,24 @@ export default defineConfig({
           if (
             warning.code === "MODULE_LEVEL_DIRECTIVE" ||
             warning.message?.includes("Module level directives cause errors when bundled")
-          ) return;
+          )
+            return;
           defaultHandler(warning);
         },
         output: {
           preserveModules: false,
           manualChunks(id) {
             if (id.includes("node_modules/framer-motion")) return "framer-motion";
-            if (id.includes("node_modules/@tanstack/react-router") || id.includes("node_modules/@tanstack/router-core")) return "tanstack-router";
-            if (id.includes("node_modules/@tanstack/react-query") || id.includes("node_modules/@tanstack/query-core")) return "tanstack-query";
+            if (
+              id.includes("node_modules/@tanstack/react-router") ||
+              id.includes("node_modules/@tanstack/router-core")
+            )
+              return "tanstack-router";
+            if (
+              id.includes("node_modules/@tanstack/react-query") ||
+              id.includes("node_modules/@tanstack/query-core")
+            )
+              return "tanstack-query";
             if (id.includes("node_modules/pdf-lib")) return "pdf-lib";
             if (id.includes("node_modules/@google/genai")) return "google-genai";
             if (id.includes("node_modules/recharts")) return "recharts";

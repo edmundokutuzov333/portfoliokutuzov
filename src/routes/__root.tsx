@@ -16,20 +16,39 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { resetKnownCorruptedState } from "@/lib/browser-safe";
-import { installRuntimeDiagnostics, markRenderHealthy, recordRuntimeError } from "@/lib/runtime-diagnostics";
+import {
+  installRuntimeDiagnostics,
+  markRenderHealthy,
+  recordRuntimeError,
+} from "@/lib/runtime-diagnostics";
 import { createSeo, SITE_ORIGIN, socialImageUrl } from "@/lib/seo";
 import appCss from "../styles.css?url";
 
-interface RouterContext { queryClient: QueryClient }
+interface RouterContext {
+  queryClient: QueryClient;
+}
 
 function NotFoundComponent() {
   return (
     <div className="relative z-10 min-h-screen grid place-items-center px-4 bg-[var(--color-bg)]">
       <div className="text-center max-w-lg mx-auto">
-        <p className="mono text-[10px] tracking-[0.3em] uppercase text-[var(--color-text-muted)] mb-8">Error 404</p>
-        <h1 className="display text-6xl sm:text-8xl leading-[0.95] tracking-[-0.03em] text-[var(--color-text-primary)]">Lost in <br className="hidden sm:block" /><span className="italic text-[var(--color-text-muted)]">the grid.</span></h1>
-        <p className="mt-8 text-[15px] text-[var(--color-text-secondary)] leading-relaxed max-w-sm mx-auto">The page you are looking for has left the system. It might have been moved, renamed, or never existed in the first place.</p>
-        <a href="/" className="mt-12 inline-flex items-center rounded-full bg-[var(--color-text-primary)] text-[var(--color-bg)] px-8 py-3.5 text-[14px] font-semibold">Return to surface</a>
+        <p className="mono text-[10px] tracking-[0.3em] uppercase text-[var(--color-text-muted)] mb-8">
+          Error 404
+        </p>
+        <h1 className="display text-6xl sm:text-8xl leading-[0.95] tracking-[-0.03em] text-[var(--color-text-primary)]">
+          Lost in <br className="hidden sm:block" />
+          <span className="italic text-[var(--color-text-muted)]">the grid.</span>
+        </h1>
+        <p className="mt-8 text-[15px] text-[var(--color-text-secondary)] leading-relaxed max-w-sm mx-auto">
+          The page you are looking for has left the system. It might have been moved, renamed, or
+          never existed in the first place.
+        </p>
+        <a
+          href="/"
+          className="mt-12 inline-flex items-center rounded-full bg-[var(--color-text-primary)] text-[var(--color-bg)] px-8 py-3.5 text-[14px] font-semibold"
+        >
+          Return to surface
+        </a>
       </div>
     </div>
   );
@@ -38,7 +57,9 @@ function NotFoundComponent() {
 function RootErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
   const { queryClient } = Route.useRouteContext();
-  useEffect(() => { recordRuntimeError("react", error); }, [error]);
+  useEffect(() => {
+    recordRuntimeError("react", error);
+  }, [error]);
   return (
     <AppErrorFallback
       error={error}
@@ -106,7 +127,8 @@ const structuredData = JSON.stringify({
       "@id": `${SITE_ORIGIN}/#website`,
       url: SITE_ORIGIN,
       name: "Edmundo Kutuzov",
-      description: "Portfolio de direção de arte, identidades visuais, campanhas e experiências digitais.",
+      description:
+        "Portfolio de direção de arte, identidades visuais, campanhas e experiências digitais.",
       inLanguage: "pt-PT",
       publisher: { "@id": `${SITE_ORIGIN}/#person` },
     },
@@ -117,7 +139,8 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   head: () => {
     const seo = createSeo({
       title: "Edmundo Kutuzov - Designer & Art Director",
-      description: "Identidades visuais, direção de arte e experiências digitais construídas com clareza estratégica e precisão técnica.",
+      description:
+        "Identidades visuais, direção de arte e experiências digitais construídas com clareza estratégica e precisão técnica.",
       path: "/",
     });
     return {
@@ -133,7 +156,10 @@ export const Route = createRootRouteWithContext<RouterContext>()({
         { rel: "stylesheet", href: appCss },
         { rel: "preconnect", href: "https://fonts.googleapis.com" },
         { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-        { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" },
+        {
+          rel: "stylesheet",
+          href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap",
+        },
         { rel: "icon", type: "image/webp", href: "/favicon.webp" },
         { rel: "apple-touch-icon", href: "/favicon.webp" },
       ],
@@ -179,7 +205,10 @@ function RootComponent() {
       <QueryClientProvider client={queryClient}>
         <RouteTimingInstaller />
         {!isAdmin && (
-          <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-[var(--color-text-primary)] focus:px-4 focus:py-3 focus:text-sm focus:font-semibold focus:text-[var(--color-bg)]">
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-[var(--color-text-primary)] focus:px-4 focus:py-3 focus:text-sm focus:font-semibold focus:text-[var(--color-bg)]"
+          >
             Skip to content
           </a>
         )}
@@ -195,7 +224,17 @@ function RootComponent() {
         </div>
         {!isAdmin && <ScrollToTop />}
         <AppErrorBoundary label="notifications" minimal>
-          <Toaster theme="dark" position="bottom-right" toastOptions={{ style: { background: "#06111f", border: "1px solid rgba(148,163,184,0.14)", color: "#f5f8ff" } }} />
+          <Toaster
+            theme="dark"
+            position="bottom-right"
+            toastOptions={{
+              style: {
+                background: "#06111f",
+                border: "1px solid rgba(148,163,184,0.14)",
+                color: "#f5f8ff",
+              },
+            }}
+          />
         </AppErrorBoundary>
         {!isAdmin && <DeferredAiAssistant />}
       </QueryClientProvider>

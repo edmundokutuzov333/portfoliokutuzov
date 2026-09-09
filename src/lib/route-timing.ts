@@ -19,7 +19,9 @@ function push(entry: RouteTiming) {
   list.unshift(entry);
   window.__EK_ROUTE_TIMINGS__ = list.slice(0, MAX);
   const log = entry.ms >= SLOW_MS ? console.warn : console.info;
-  log(`[route:${entry.kind}:${entry.ms >= SLOW_MS ? "slow" : "ok"}] ${entry.route} — ${entry.ms}ms`);
+  log(
+    `[route:${entry.kind}:${entry.ms >= SLOW_MS ? "slow" : "ok"}] ${entry.route} — ${entry.ms}ms`,
+  );
 }
 
 export function installRouteTiming(router: AnyRouter): () => void {
@@ -29,7 +31,8 @@ export function installRouteTiming(router: AnyRouter): () => void {
     [...(window.__EK_ROUTE_TIMINGS__ ?? [])].sort((a, b) => b.ms - a.ms);
 
   try {
-    const nav = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
+    const nav = performance.getEntriesByType("navigation")[0] as
+      PerformanceNavigationTiming | undefined;
     push({
       route: router.state.location.pathname,
       ms: Math.round(nav?.domContentLoadedEventEnd ?? performance.now()),
@@ -44,19 +47,25 @@ export function installRouteTiming(router: AnyRouter): () => void {
   let pending = "";
   const unsubStart = router.subscribe("onBeforeNavigate", (payload) => {
     startedAt = performance.now();
-    pending = (payload as { toLocation?: { pathname?: string } } | undefined)?.toLocation?.pathname ?? router.state.location.pathname;
+    pending =
+      (payload as { toLocation?: { pathname?: string } } | undefined)?.toLocation?.pathname ??
+      router.state.location.pathname;
   });
   const unsubEnd = router.subscribe("onResolved", () => {
     if (!startedAt) return;
     const route = pending || router.state.location.pathname;
     const started = startedAt;
     startedAt = 0;
-    requestAnimationFrame(() => requestAnimationFrame(() => push({
-      route,
-      ms: Math.round(performance.now() - started),
-      kind: "navigation",
-      at: new Date().toISOString(),
-    })));
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() =>
+        push({
+          route,
+          ms: Math.round(performance.now() - started),
+          kind: "navigation",
+          at: new Date().toISOString(),
+        }),
+      ),
+    );
   });
 
   const cleanup = () => {

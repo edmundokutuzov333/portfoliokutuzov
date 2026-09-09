@@ -123,7 +123,10 @@ export const Route = createFileRoute("/api/chat")({
           }),
           {
             status: 200,
-            headers: responseHeaders(request, { "Content-Type": "application/json", "Cache-Control": "no-store" }),
+            headers: responseHeaders(request, {
+              "Content-Type": "application/json",
+              "Cache-Control": "no-store",
+            }),
           },
         );
       },
@@ -152,21 +155,47 @@ export const Route = createFileRoute("/api/chat")({
         try {
           body = (await request.json()) as ChatRequestBody;
         } catch {
-          return jsonError(request, 400, "INVALID_JSON", "The request payload could not be parsed as valid JSON.");
+          return jsonError(
+            request,
+            400,
+            "INVALID_JSON",
+            "The request payload could not be parsed as valid JSON.",
+          );
         }
 
         const requestId = `req_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
 
-        if (body.messages && (!Array.isArray(body.messages) || body.messages.length > MAX_MESSAGES)) {
-          return jsonError(request, 413, "TOO_MANY_MESSAGES", `A maximum of ${MAX_MESSAGES} messages is allowed.`);
+        if (
+          body.messages &&
+          (!Array.isArray(body.messages) || body.messages.length > MAX_MESSAGES)
+        ) {
+          return jsonError(
+            request,
+            413,
+            "TOO_MANY_MESSAGES",
+            `A maximum of ${MAX_MESSAGES} messages is allowed.`,
+          );
         }
 
         if (typeof body.text === "string" && body.text.length > MAX_TEXT_LENGTH) {
-          return jsonError(request, 413, "TEXT_TOO_LONG", `Text input exceeds the ${MAX_TEXT_LENGTH}-character limit.`);
+          return jsonError(
+            request,
+            413,
+            "TEXT_TOO_LONG",
+            `Text input exceeds the ${MAX_TEXT_LENGTH}-character limit.`,
+          );
         }
 
-        if (body.audioChunks && (!Array.isArray(body.audioChunks) || body.audioChunks.length > MAX_AUDIO_CHUNKS)) {
-          return jsonError(request, 413, "TOO_MANY_AUDIO_CHUNKS", "The voice payload contains too many audio chunks.");
+        if (
+          body.audioChunks &&
+          (!Array.isArray(body.audioChunks) || body.audioChunks.length > MAX_AUDIO_CHUNKS)
+        ) {
+          return jsonError(
+            request,
+            413,
+            "TOO_MANY_AUDIO_CHUNKS",
+            "The voice payload contains too many audio chunks.",
+          );
         }
 
         // Dynamic motivational opening message
@@ -175,7 +204,10 @@ export const Route = createFileRoute("/api/chat")({
             const result = await generateOpeningMessage(body.sessionId, body.context);
             return new Response(JSON.stringify(result), {
               status: 200,
-              headers: responseHeaders(request, { "Content-Type": "application/json", "Cache-Control": "no-store" }),
+              headers: responseHeaders(request, {
+                "Content-Type": "application/json",
+                "Cache-Control": "no-store",
+              }),
             });
           } catch (err: unknown) {
             console.error("[Opening Message Error]", err);
@@ -186,7 +218,10 @@ export const Route = createFileRoute("/api/chat")({
               }),
               {
                 status: 200,
-                headers: responseHeaders(request, { "Content-Type": "application/json", "Cache-Control": "no-store" }),
+                headers: responseHeaders(request, {
+                  "Content-Type": "application/json",
+                  "Cache-Control": "no-store",
+                }),
               },
             );
           }
@@ -198,16 +233,14 @@ export const Route = createFileRoute("/api/chat")({
             const ttsResult = await generateTTSAudio(body.text || "");
             return new Response(JSON.stringify(ttsResult), {
               status: 200,
-              headers: responseHeaders(request, { "Content-Type": "application/json", "Cache-Control": "no-store" }),
+              headers: responseHeaders(request, {
+                "Content-Type": "application/json",
+                "Cache-Control": "no-store",
+              }),
             });
           } catch (err: unknown) {
             console.error("[API TTS Error]", err);
-            return jsonError(
-              request,
-              500,
-              "TTS_SYNTHESIS_FAILED",
-              "TTS synthesis failed.",
-            );
+            return jsonError(request, 500, "TTS_SYNTHESIS_FAILED", "TTS synthesis failed.");
           }
         }
 

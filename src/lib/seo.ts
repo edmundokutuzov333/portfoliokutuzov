@@ -1,13 +1,24 @@
 export const SITE_ORIGIN = "https://portfoliokutuzov-omega.vercel.app";
 export const SITE_NAME = "Edmundo Kutuzov";
-export const SOCIAL_IMAGE = "https://storage.googleapis.com/gpt-engineer-file-uploads/pHZRYs3DGCdOPGZzeAdkZH1MMif2/social-images/social-1778488549600-EKLOGO.webp";
+export const SOCIAL_IMAGE =
+  "https://storage.googleapis.com/gpt-engineer-file-uploads/pHZRYs3DGCdOPGZzeAdkZH1MMif2/social-images/social-1778488549600-EKLOGO.webp";
 
 export function canonicalUrl(path = "/") {
   const normalized = path === "/" ? "/" : `/${path.replace(/^\/+|\/+$/g, "")}`;
   return `${SITE_ORIGIN}${normalized}`;
 }
 
-export function createSeo({ title, description, path = "/", image = SOCIAL_IMAGE }: { title:string; description:string; path?:string; image?:string }) {
+export function createSeo({
+  title,
+  description,
+  path = "/",
+  image = SOCIAL_IMAGE,
+}: {
+  title: string;
+  description: string;
+  path?: string;
+  image?: string;
+}) {
   const url = canonicalUrl(path);
   return {
     meta: [
@@ -27,8 +38,13 @@ export function createSeo({ title, description, path = "/", image = SOCIAL_IMAGE
       { name: "twitter:description", content: description },
       { name: "twitter:image", content: image },
     ],
-    links: [{ rel: "canonical", href: url }, { rel: "sitemap", type: "application/xml", href: `${SITE_ORIGIN}/sitemap.xml` }],
+    links: [
+      { rel: "canonical", href: url },
+      { rel: "sitemap", type: "application/xml", href: `${SITE_ORIGIN}/sitemap.xml` },
+    ],
   };
 }
 
-export function socialImageUrl() { return SOCIAL_IMAGE; }
+export function socialImageUrl() {
+  return SOCIAL_IMAGE;
+}
