@@ -1,5 +1,5 @@
 // Privacy-conscious, lightweight first-party analytics.
-// The event vocabulary is intentionally small so product decisions remain legible.
+// The canonical event vocabulary is small, while legacy callers remain source-compatible.
 import { supabase } from "@/integrations/supabase/client";
 import { safeSessionStorageGet, safeSessionStorageSet } from "@/lib/browser-safe";
 
@@ -21,11 +21,12 @@ export const ANALYTICS_ACTIONS = [
 ] as const;
 
 export type AnalyticsAction = (typeof ANALYTICS_ACTIONS)[number];
+export type AnalyticsActionInput = AnalyticsAction | (string & {});
 
 export interface AnalyticsEvent {
   page?: string;
   element?: string;
-  action: AnalyticsAction;
+  action: AnalyticsActionInput;
   x?: number;
   y?: number;
   viewportWidth?: number;
@@ -82,7 +83,6 @@ function registerUnloadHandler() {
 export function trackEvent(event: AnalyticsEvent) {
   if (typeof window === "undefined") return;
   registerUnloadHandler();
-
   const width = window.innerWidth;
   const height = window.innerHeight;
   queue.push({
