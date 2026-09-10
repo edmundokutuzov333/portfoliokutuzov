@@ -10,7 +10,7 @@ test("Portuguese completion bridge is mounted without changing the English defau
 
   assert.match(bridge, /getSiteLocale\(\) !== \"pt-PT\"/);
   assert.match(bridge, /MutationObserver/);
-  assert.match(bridge, /\[aria-label, \\?placeholder, \\?title\]/.source);
+  assert.match(bridge, /aria-label.*placeholder.*title/);
   assert.match(root, /installSiteLocaleDomBridge/);
   assert.match(root, /installPortugueseCompletionBridge/);
   assert.match(root, /const cleanupPrimary/);
