@@ -30,14 +30,13 @@ function saveDraft(form: HTMLFormElement) {
     if (field instanceof HTMLInputElement && (input.type === "checkbox" || input.type === "radio")) {
       if (!input.checked) return;
     }
-    const value = field.value.slice(0, 4000);
-    fields.push({ name: field.name, value });
+    fields.push({ name: field.name, value: field.value.slice(0, 4000) });
   });
   if (!fields.length) return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ savedAt: Date.now(), fields } satisfies DraftPayload));
   } catch {
-    // Draft recovery is best effort and must never interrupt form usage.
+    // Best effort only.
   }
 }
 
@@ -45,18 +44,19 @@ function restoreDraft(form: HTMLFormElement) {
   const draft = readDraft();
   if (!draft) return;
   for (const field of draft.fields) {
-    const matches = form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(`[name="${CSS.escape(field.name)}"]`);
-    matches.forEach((element) => {
+    const selector = `[name="${CSS.escape(field.name)}"]`;
+    form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(selector).forEach((element) => {
       const input = element as HTMLInputElement;
       if (input.type === "checkbox" || input.type === "radio") {
-        input.checked = true;
+        const shouldCheck = input.value === field.value || field.value === "true";
+        input.checked = shouldCheck;
         input.dispatchEvent(new Event("change", { bubbles: true }));
-      } else {
-        const setter = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(element), "value")?.set;
-        setter?.call(element, field.value);
-        element.dispatchEvent(new Event("input", { bubbles: true }));
-        element.dispatchEvent(new Event("change", { bubbles: true }));
+        return;
       }
+      const setter = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(element), "value")?.set;
+      setter?.call(element, field.value);
+      element.dispatchEvent(new Event("input", { bubbles: true }));
+      element.dispatchEvent(new Event("change", { bubbles: true }));
     });
   }
 }
@@ -64,21 +64,37 @@ function restoreDraft(form: HTMLFormElement) {
 export function ContactDraftRecovery() {
   useEffect(() => {
     if (window.location.pathname !== "/contact") return;
-    const timer = window.setInterval(() => {
-      const form = document.querySelector("form");
-      if (form) {
-        restoreDraft(form);
-        window.clearInterval(timer);
-        const onInput = () => saveDraft(form);
-        form.addEventListener("input", onInput, { passive: true });
-        form.addEventListener("change", onInput, { passive: true });
-        return () => {
-          form.removeEventListener("input", onInput);
-          form.removeEventListener("change", onInput);
-        };
+    let attachedForm: HTMLFormElement | null = null;
+    let observer: MutationObserver | null = null;
+
+    const attach = () => {
+      if (attachedForm) return true;
+      const form = document.querySelector<HTMLFormElement>("form");
+      if (!form) return false;
+      attachedForm = form;
+      restoreDraft(form);
+      const save = () => saveDraft(form);
+      form.addEventListener("input", save, { passive: true });
+      form.addEventListener("change", save, { passive: true });
+      observer?.disconnect();
+      observer = null;
+      return true;
+    };
+
+    if (!attach()) {
+      observer = new MutationObserver(() => attach());
+      observer.observe(document.body, { childList: true, subtree: true });
+    }
+
+    return () => {
+      observer?.disconnect();
+      if (attachedForm) {
+        const form = attachedForm;
+        const save = () => saveDraft(form);
+        form.removeEventListener("input", save);
+        form.removeEventListener("change", save);
       }
-    }, 250);
-    return () => window.clearInterval(timer);
+    };
   }, []);
 
   return null;
