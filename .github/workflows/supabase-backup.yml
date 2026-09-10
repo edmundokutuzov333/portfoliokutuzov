@@ -1,0 +1,50 @@
+name: Supabase Backup
+
+on:
+  schedule:
+    - cron: "17 1 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PGSSLMODE: require
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Verify backup secrets exist
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          BACKUP_ENCRYPTION_KEY: ${{ secrets.BACKUP_ENCRYPTION_KEY }}
+        run: |
+          test -n "$SUPABASE_DB_URL" || (echo "Missing SUPABASE_DB_URL repository secret" && exit 1)
+          test -n "$BACKUP_ENCRYPTION_KEY" || (echo "Missing BACKUP_ENCRYPTION_KEY repository secret" && exit 1)
+
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Dump production database
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          umask 077
+          pg_dump --format=custom --no-owner --no-privileges "$SUPABASE_DB_URL" > supabase-backup.dump
+
+      - name: Encrypt backup
+        env:
+          BACKUP_ENCRYPTION_KEY: ${{ secrets.BACKUP_ENCRYPTION_KEY }}
+        run: |
+          umask 077
+          printf '%s' "$BACKUP_ENCRYPTION_KEY" | openssl enc -aes-256-cbc -pbkdf2 -salt -iter 200000 -pass stdin -in supabase-backup.dump -out supabase-backup.dump.enc
+          rm -f supabase-backup.dump
+
+      - name: Upload encrypted backup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: supabase-backup-${{ github.run_id }}
+          path: supabase-backup.dump.enc
+          retention-days: 30
