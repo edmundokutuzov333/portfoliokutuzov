@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
-
 const read = (path) => fs.readFileSync(path, "utf8");
 
 test("AI uses portfolio knowledge layer as authoritative grounding", () => {
@@ -9,7 +8,36 @@ test("AI uses portfolio knowledge layer as authoritative grounding", () => {
   assert.match(source, /getPortfolioKnowledgeSnapshot/);
   assert.match(source, /formatKnowledgeForModel/);
   assert.match(source, /NEVER invent/);
-  assert.match(source, /temperature: 0\.35/);
+  assert.match(source, /temperature: 0\.2/);
+  assert.match(source, /European Portuguese/);
+});
+
+test("realtime voice uses constrained ephemeral auth and a male-selected voice", () => {
+  const token = read("src/lib/voice/live-token.functions.ts");
+  const live = read("src/lib/voice/live.ts");
+  assert.match(token, /authTokens\.create/);
+  assert.match(token, /GenerativeService/i);
+  assert.match(token, /voiceName: LIVE_VOICE/);
+  assert.match(token, /Charon/);
+  assert.match(token, /includeAllProjects: true/);
+  assert.match(live, /BidiGenerateContentConstrained/);
+  assert.match(live, /access_token=/);
+  assert.match(live, /audio\/pcm;rate=16000/);
+  assert.match(live, /bufferSize: 1024/);
+  assert.match(live, /outputTranscription/);
+  assert.match(live, /inputTranscription/);
+});
+
+test("bilingual locale switcher is wired into navigation and uses European Portuguese", () => {
+  const locale = read("src/lib/site-locale.ts");
+  const switcher = read("src/components/layout/LanguageSwitcher.tsx");
+  const nav = read("src/components/layout/Navbar.tsx");
+  assert.match(locale, /"en" \| "pt-PT"/);
+  assert.match(locale, /DEFAULT_LOCALE.*"en"/);
+  assert.match(switcher, /pt-PT/);
+  assert.match(switcher, /setSiteLocale/);
+  assert.match(nav, /LanguageSwitcher/);
+  assert.match(nav, /Português|Iniciar um projecto/);
 });
 
 test("portfolio search is bounded and published-data based", () => {
@@ -54,6 +82,7 @@ test("browser QA covers all requested engines and mobile journeys", () => {
   assert.match(config, /chromium/);
   assert.match(config, /firefox/);
   assert.match(config, /webkit/);
+  assert.match(config, /edge/);
   assert.match(config, /iphone-safari/);
   assert.match(config, /android-chrome/);
   for (const token of ["home", "portfolio", "contact", "command palette", "AI assistant", "reduced motion"]) {
