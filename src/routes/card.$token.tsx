@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { createClient } from "@supabase/supabase-js";
 import { Download, Mail, Phone, Share2, Globe2 } from "lucide-react";
 import { useEffect } from "react";
 import { useSiteLocale } from "@/lib/site-locale";
@@ -9,16 +8,31 @@ import { buildVCard, normalizeWebsite, publicIdentityUrl } from "@/lib/studio/id
 import { safeClipboardWrite } from "@/lib/browser-safe";
 import { trackStudioClientEvent } from "@/lib/studio/analytics";
 
-const client = createClient(publicConfig.supabase.url, publicConfig.supabase.publishableKey, { auth: { persistSession: false, autoRefreshToken: false } });
 export const Route = createFileRoute("/card/$token")({ head: () => ({ meta: [{ title: "Digital Card - Edmundo Kutuzov" }, { name: "robots", content: "index,follow" }] }), component: PublicDigitalCard });
 
 function PublicDigitalCard() {
-  const { token } = Route.useParams(); const pt = useSiteLocale() === "pt-PT";
-  const q = useQuery({ queryKey: ["digital-card", token], queryFn: async () => { const result = await client.from("studio_cards").select("name,role,company,email,phone,website,design,public_enabled,status").eq("share_token", token).eq("status", "published").eq("public_enabled", true).maybeSingle(); if (result.error) throw result.error; return result.data as any; }, retry: false, refetchOnWindowFocus: false });
+  const { token } = Route.useParams();
+  const pt = useSiteLocale() === "pt-PT";
+  const q = useQuery({
+    queryKey: ["digital-card", token],
+    queryFn: async () => {
+      const response = await fetch(`/api/studio/public-card?token=${encodeURIComponent(token)}`, { headers: { Accept: "application/json" }, cache: "no-store" });
+      if (!response.ok) throw new Error("CARD_NOT_FOUND");
+      const payload = await response.json() as { card?: any };
+      if (!payload.card) throw new Error("CARD_NOT_FOUND");
+      return payload.card;
+    },
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
   useEffect(() => { if (q.data) trackStudioClientEvent({ eventName: "digital_card_view", shareToken: token }); }, [q.data, token]);
-  if (q.isLoading) return <div className="min-h-screen bg-[#02050c] grid place-items-center text-white/50">Loading digital card…</div>;
+  if (q.isLoading) return <div className="min-h-screen bg-[#02050c] grid place-items-center text-white/50">{pt ? "A carregar cartão digital…" : "Loading digital card…"}</div>;
   if (q.isError || !q.data) return <div className="min-h-screen bg-[#02050c] grid place-items-center px-6 text-center"><div><p className="mono text-[10px] uppercase tracking-[.25em] text-white/25">Kutuzov Studio</p><h1 className="display mt-3 text-4xl text-white">{pt ? "Cartão não encontrado" : "Card not found"}</h1><p className="mt-3 text-sm text-white/40">{pt ? "Este endereço pode ter sido desactivado." : "This public address may have been disabled."}</p></div></div>;
-  const card = q.data; const design = card.design as any; const url = publicIdentityUrl(publicConfig.siteUrl, token); const website = normalizeWebsite(card.website || ""); const vcard = buildVCard({ name: card.name, role: card.role, company: card.company, email: card.email, phone: card.phone, website, url });
+  const card = q.data;
+  const design = card.design as any;
+  const url = publicIdentityUrl(publicConfig.siteUrl, token);
+  const website = normalizeWebsite(card.website || "");
+  const vcard = buildVCard({ name: card.name, role: card.role, company: card.company, email: card.email, phone: card.phone, website, url });
   async function share() { const data = { title: card.name || card.company || "Digital card", text: [card.name, card.role, card.company].filter(Boolean).join(" · "), url }; try { if (navigator.share && navigator.canShare?.(data)) await navigator.share(data); else await safeClipboardWrite(url); trackStudioClientEvent({ eventName: "digital_card_share", shareToken: token }); } catch { /* cancelled by user */ } }
   function downloadVCard() {
     trackStudioClientEvent({ eventName: "export_started", exportFormat: "vcard", shareToken: token });
