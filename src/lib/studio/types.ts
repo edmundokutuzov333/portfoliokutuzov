@@ -21,8 +21,8 @@ export interface StudioDesignDocument {
   background: { type: "solid" | "gradient"; value: string; secondary?: string };
   elements: StudioElement[];
 }
-export interface StudioCardData { id?: string; sessionId: string; name: string; role: string; company: string; email: string; phone: string; website: string; design: StudioDesignDocument; }
-export interface StudioSavedDraft extends StudioCardData { id: string; createdAt: string; updatedAt: string; }
+export interface StudioCardData { id?: string; draftToken?: string; revision?: number; sessionId: string; name: string; role: string; company: string; email: string; phone: string; website: string; design: StudioDesignDocument; }
+export interface StudioSavedDraft extends StudioCardData { id: string; draftToken: string; revision: number; status?: "draft" | "saved" | "published" | "archived"; createdAt?: string; updatedAt?: string; }
 
 export const STUDIO_STYLES: Array<{ id: StudioStyle; label: string; description: string; bg: string; fg: string; accent: string }> = [
   { id: "editorial", label: "Editorial", description: "Asymmetric hierarchy with a refined graphic rhythm.", bg: "#f2eee7", fg: "#111111", accent: "#9a6b45" },
