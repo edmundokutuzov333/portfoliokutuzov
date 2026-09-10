@@ -1,7 +1,15 @@
 name: CI
 on:
   push:
-    branches: [main, phase1-hardening, phase2-final-exec, phase3-ai-intelligence, ai-realtime-i18n, feat/studio-identity-email, feat/studio-admin-phase-g]
+    branches:
+      - main
+      - phase1-hardening
+      - phase2-final-exec
+      - phase3-ai-intelligence
+      - ai-realtime-i18n
+      - feat/studio-identity-email
+      - feat/studio-admin-phase-g
+      - feat/studio-qa-final
   pull_request:
     branches: [main, phase3-ai-intelligence]
 permissions:
@@ -9,7 +17,7 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -25,7 +33,7 @@ jobs:
           node -e "const p=require('./package.json'); if(p.engines?.node!=='24.x') process.exit(1)"
       - name: Install
         run: npm ci
-      - name: Regression tests
+      - name: Regression tests A-H
         run: npm test
       - name: Diagnostics
         run: npm run diagnose

@@ -4,12 +4,12 @@ on:
   pull_request:
     branches: [main, phase3-ai-intelligence]
   push:
-    branches: [phase3-ai-intelligence, ai-realtime-i18n, main]
+    branches: [phase3-ai-intelligence, ai-realtime-i18n, main, feat/studio-qa-final]
 
 jobs:
   browser-qa:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
