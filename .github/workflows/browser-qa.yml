@@ -9,7 +9,7 @@ on:
 jobs:
   browser-qa:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -17,5 +17,6 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - run: npx --yes playwright install --with-deps chromium firefox webkit
-      - run: npx --yes playwright test
+      - run: npm install --no-save @playwright/test
+      - run: npx playwright install --with-deps chromium firefox webkit msedge
+      - run: npx playwright test
