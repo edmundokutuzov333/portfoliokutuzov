@@ -64,6 +64,17 @@ test.describe("Phase H editor QA", () => {
     await expect(undo).toBeEnabled();
   });
 
+  test("keyboard navigation does not hijack text input editing", async ({ page }) => {
+    await openStudio(page);
+    const firstInput = page.locator("input:not([type=file])").first();
+    await firstInput.fill("ABC");
+    await firstInput.press("ArrowLeft");
+    await firstInput.type("X");
+    await expect(firstInput).toHaveValue("ABXC");
+    await firstInput.press("Backspace");
+    await expect(firstInput).toHaveValue("ABC");
+  });
+
   test("SVG PNG JPEG and WebP assets are accepted without page instability", async ({ page }) => {
     await openStudio(page);
     const input = page.locator("input[type=file]");
@@ -86,15 +97,18 @@ test.describe("Phase H editor QA", () => {
     await expect(page.getByText(/2 MB/i)).toBeVisible();
   });
 
-  test("malicious SVG cannot inject script into the application", async ({ page }) => {
+  test("malicious SVG is sanitized and cannot inject script into the application", async ({ page }) => {
     await openStudio(page);
-    const malicious = `<svg xmlns="http://www.w3.org/2000/svg"><script>window.__pwned=true</script><rect width="10" height="10"/></svg>`;
+    const malicious = `<svg xmlns="http://www.w3.org/2000/svg"><script>window.__pwned=true</script><foreignObject><div>bad</div></foreignObject><rect width="10" height="10"/></svg>`;
     await page.locator("input[type=file]").setInputFiles({ name: "evil.svg", mimeType: "image/svg+xml", buffer: Buffer.from(malicious) });
     await expect(page.locator("script")).toHaveCount(0);
     expect(await page.evaluate(() => Boolean((window as Window & { __pwned?: boolean }).__pwned))).toBe(false);
+    const hrefs = await page.locator("image").evaluateAll((images) => images.map((image) => image.getAttribute("href") ?? ""));
+    expect(hrefs.join("\n")).not.toContain("<script>");
+    expect(hrefs.join("\n")).not.toContain("foreignObject");
   });
 
-  test("SVG PNG PDF exports are created with expected file signatures", async ({ page }) => {
+  test("SVG PNG PDF and print PDF exports are created with expected file signatures", async ({ page }) => {
     await openStudio(page);
     const svgPromise = page.waitForEvent("download");
     await page.getByRole("button", { name: /^SVG$/i }).click();
@@ -108,6 +122,12 @@ test.describe("Phase H editor QA", () => {
     const pdfPromise = page.waitForEvent("download");
     await page.getByRole("button", { name: /^PDF$/i }).click();
     await readDownloadMagic(await pdfPromise, "pdf");
+
+    const printPdfPromise = page.waitForEvent("download");
+    await page.getByRole("button", { name: /print pdf|pdf gráfica/i }).click();
+    const printPdf = await printPdfPromise;
+    expect(printPdf.suggestedFilename()).toMatch(/business-card-print\.pdf$/i);
+    await readDownloadMagic(printPdf, "pdf");
   });
 
   test("Portuguese and English Unicode stay intact in the editor", async ({ page }) => {
