@@ -25,6 +25,8 @@ import { Route as PortfolioSlugRouteImport } from './routes/portfolio.$slug'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as StudioRouteImport } from './routes/studio'
 import { Route as StudioBusinessCardRouteImport } from './routes/studio.business-card'
+import { Route as ApiStudioBackgroundRouteImport } from './routes/api.studio-background'
+import { Route as StudioBackgroundRouteImport } from './routes/studio.background'
 
 const IndexRoute = IndexRouteImport.update({ id: '/', path: '/', getParentRoute: () => rootRouteImport } as any)
 const AdminRoute = AdminRouteImport.update({ id: '/admin', path: '/admin', getParentRoute: () => rootRouteImport } as any).lazy(() => import('./routes/admin.lazy').then((d) => d.Route))
@@ -42,6 +44,8 @@ const PortfolioSlugRoute = PortfolioSlugRouteImport.update({ id: '/portfolio/$sl
 const Char91DotmcpChar93InvokeToolToolRoute = Char91DotmcpChar93InvokeToolToolRouteImport.update({ id: '/.mcp/invoke-tool/$tool', path: '/.mcp/invoke-tool/$tool', getParentRoute: () => rootRouteImport } as any)
 const StudioRoute = StudioRouteImport.update({ id: '/studio', path: '/studio', getParentRoute: () => rootRouteImport } as any)
 const StudioBusinessCardRoute = StudioBusinessCardRouteImport.update({ id: '/studio/business-card', path: '/studio/business-card', getParentRoute: () => rootRouteImport } as any)
+const ApiStudioBackgroundRoute = ApiStudioBackgroundRouteImport.update({ id: '/api/studio/background', path: '/api/studio/background', getParentRoute: () => rootRouteImport } as any)
+const StudioBackgroundRoute = StudioBackgroundRouteImport.update({ id: '/studio/background', path: '/studio/background', getParentRoute: () => rootRouteImport } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -60,6 +64,8 @@ export interface FileRoutesByFullPath {
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/studio': typeof StudioRoute
   '/studio/business-card': typeof StudioBusinessCardRoute
+  '/api/studio/background': typeof ApiStudioBackgroundRoute
+  '/studio/background': typeof StudioBackgroundRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -74,10 +80,11 @@ export interface FileRoutesByTo {
   '/api/chat': typeof ApiChatRoute
   '/i/$token': typeof ITokenRoute
   '/portfolio/$slug': typeof PortfolioSlugRoute
-  '/portfolio': typeof PortfolioIndexRoute
+  '/portfolio/': typeof PortfolioIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/studio': typeof StudioRoute
   '/studio/business-card': typeof StudioBusinessCardRoute
+  '/studio/background': typeof StudioBackgroundRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -97,6 +104,8 @@ export interface FileRoutesById {
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/studio': typeof StudioRoute
   '/studio/business-card': typeof StudioBusinessCardRoute
+  '/api/studio/background': typeof ApiStudioBackgroundRoute
+  '/studio/background': typeof StudioBackgroundRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -117,6 +126,8 @@ export interface FileRouteTypes {
     | '/.mcp/invoke-tool/$tool'
     | '/studio'
     | '/studio/business-card'
+    | '/api/studio/background'
+    | '/studio/background'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -135,6 +146,7 @@ export interface FileRouteTypes {
     | '/.mcp/invoke-tool/$tool'
     | '/studio'
     | '/studio/business-card'
+    | '/studio/background'
   id:
     | '__root__'
     | '/'
@@ -153,8 +165,11 @@ export interface FileRouteTypes {
     | '/.mcp/invoke-tool/$tool'
     | '/studio'
     | '/studio/business-card'
+    | '/api/studio/background'
+    | '/studio/background'
   fileRoutesById: FileRoutesById
 }
+
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
@@ -172,6 +187,8 @@ export interface RootRouteChildren {
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   StudioRoute: typeof StudioRoute
   StudioBusinessCardRoute: typeof StudioBusinessCardRoute
+  ApiStudioBackgroundRoute: typeof ApiStudioBackgroundRoute
+  StudioBackgroundRoute: typeof StudioBackgroundRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -192,6 +209,8 @@ declare module '@tanstack/react-router' {
     '/.mcp/invoke-tool/$tool': { id: '/.mcp/invoke-tool/$tool'; path: '/.mcp/invoke-tool/$tool'; fullPath: '/.mcp/invoke-tool/$tool'; preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport; parentRoute: typeof rootRouteImport }
     '/studio': { id: '/studio'; path: '/studio'; fullPath: '/studio'; preLoaderRoute: typeof StudioRouteImport; parentRoute: typeof rootRouteImport }
     '/studio/business-card': { id: '/studio/business-card'; path: '/studio/business-card'; fullPath: '/studio/business-card'; preLoaderRoute: typeof StudioBusinessCardRouteImport; parentRoute: typeof rootRouteImport }
+    '/api/studio/background': { id: '/api/studio/background'; path: '/api/studio/background'; fullPath: '/api/studio/background'; preLoaderRoute: typeof ApiStudioBackgroundRouteImport; parentRoute: typeof rootRouteImport }
+    '/studio/background': { id: '/studio/background'; path: '/studio/background'; fullPath: '/studio/background'; preLoaderRoute: typeof StudioBackgroundRouteImport; parentRoute: typeof rootRouteImport }
   }
 }
 
@@ -212,6 +231,8 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotmcpChar93InvokeToolToolRoute,
   StudioRoute,
   StudioBusinessCardRoute,
+  ApiStudioBackgroundRoute,
+  StudioBackgroundRoute,
 }
 
 export const routeTree = rootRouteImport
