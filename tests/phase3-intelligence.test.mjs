@@ -12,7 +12,7 @@ test("AI uses portfolio knowledge layer as authoritative grounding", () => {
   assert.match(source, /European Portuguese/);
 });
 
-test("realtime voice uses constrained ephemeral auth and a male-selected voice", () => {
+test("realtime voice uses constrained ephemeral auth and a selected voice", () => {
   const token = read("src/lib/voice/live-token.functions.ts");
   const live = read("src/lib/voice/live.ts");
   assert.match(token, /authTokens\.create/);
@@ -34,10 +34,26 @@ test("bilingual locale switcher is wired into navigation and uses European Portu
   const nav = read("src/components/layout/Navbar.tsx");
   assert.match(locale, /"en" \| "pt-PT"/);
   assert.match(locale, /DEFAULT_LOCALE.*"en"/);
+  assert.match(locale, /WeakMap/);
+  assert.match(locale, /MutationObserver/);
   assert.match(switcher, /pt-PT/);
   assert.match(switcher, /setSiteLocale/);
   assert.match(nav, /LanguageSwitcher/);
   assert.match(nav, /Português|Iniciar um projecto/);
+});
+
+test("production release gates are present and secret-free", () => {
+  const workflow = read(".github/workflows/production-gemini-e2e.yml");
+  const smoke = read("scripts/production-gemini-e2e.mjs");
+  const migration = read(".github/workflows/supabase-production-migration.yml");
+  assert.match(workflow, /workflow_dispatch/);
+  assert.match(smoke, /\/api\/chat/);
+  assert.match(smoke, /action: \"tts\"/);
+  assert.match(smoke, /body\.audio/);
+  assert.match(smoke, /sampleRate === 24000/);
+  assert.match(migration, /supabase db push/);
+  assert.match(migration, /secrets\.SUPABASE_ACCESS_TOKEN/);
+  assert.doesNotMatch(smoke, /GEMINI_API_KEY|AIza[0-9A-Za-z_-]{20,}/);
 });
 
 test("portfolio search is bounded and published-data based", () => {
