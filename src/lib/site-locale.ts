@@ -5,6 +5,8 @@ export type SiteLocale = "en" | "pt-PT";
 const STORAGE_KEY = "ek_locale_v2";
 const DEFAULT_LOCALE: SiteLocale = "en";
 const listeners = new Set<(locale: SiteLocale) => void>();
+const originalText = new WeakMap<Text, string>();
+const originalAttributes = new WeakMap<HTMLElement, Map<string, string>>();
 
 const PT_TRANSLATIONS: Record<string, string> = {
   "Home": "Início",
@@ -94,7 +96,6 @@ const PT_TRANSLATIONS: Record<string, string> = {
   "stay in memory,": "ficam na memória,",
   "and move people.": "e mobilizam pessoas.",
   "Building visual systems, digital products, and campaigns that establish authority on an international scale.": "Construo sistemas visuais, produtos digitais e campanhas que estabelecem autoridade à escala internacional.",
-  "Building visual systems, digital products, and campaigns that establish authority on an international scale.": "Construo sistemas visuais, produtos digitais e campanhas que estabelecem autoridade à escala internacional.",
   "Strategy, craft and a sharp": "Estratégia, execução e um ponto de vista",
   "point of view.": "distinto.",
   "The core disciplines used to construct enduring brand identities, direct high-impact campaigns, and engineer modular digital systems. Hover each discipline to inspect relevant case studies.": "As disciplinas centrais usadas para construir identidades de marca duradouras, dirigir campanhas de alto impacto e criar sistemas digitais modulares. Passe por cada disciplina para explorar os projectos relevantes.",
@@ -111,8 +112,6 @@ const PT_TRANSLATIONS: Record<string, string> = {
   "All": "Todos",
   "No projects found": "Nenhum projecto encontrado",
   "No projects found in category": "Nenhum projecto encontrado na categoria",
-  "Services": "Serviços",
-  "Art Direction": "Direcção de arte",
   "Building visual languages for campaigns, brands and digital products with consistent aesthetic, narrative intent and execution precision.": "Construção de linguagens visuais para campanhas, marcas e produtos digitais com estética consistente, intenção narrativa e precisão de execução.",
   "Concept": "Conceito",
   "Moodboards": "Moodboards",
@@ -130,6 +129,50 @@ const PT_TRANSLATIONS: Record<string, string> = {
   "UI systems": "Sistemas de UI",
   "Motion language": "Linguagem de motion",
   "Responsive layouts": "Layouts responsivos",
+  "Strategic brand marks, typography systems & identity architecture": "Marcas estratégicas, sistemas tipográficos e arquitectura de identidade",
+  "Transforming strategic brand intent into unmistakable visual form. Developing comprehensive visual grammar, logo systems, bespoke typographic pairings, colour scales, and rigorous brand guideline books built for permanence.": "Transformação da intenção estratégica da marca numa forma visual inequívoca. Desenvolvimento de gramática visual, sistemas de logótipo, combinações tipográficas próprias, escalas cromáticas e manuais de marca rigorosos pensados para perdurar.",
+  "Brand Architecture & Strategy": "Arquitectura e estratégia de marca",
+  "Logo Marks & Symbol Systems": "Logótipos e sistemas de símbolos",
+  "Custom Typographic Scales": "Escalas tipográficas personalizadas",
+  "Comprehensive Identity Guidelines": "Manual completo de identidade",
+  "Campaign conception, visual storytelling & photography direction": "Concepção de campanhas, storytelling visual e direcção fotográfica",
+  "Crafting the visual soul of campaigns and brand narratives. Directing photography, set styling, cinematic color grading, and commercial rollout systems that stop scrolling and demand attention across national and global markets.": "Construção da alma visual de campanhas e narrativas de marca. Direcção fotográfica, styling de cenários, color grading cinematográfico e sistemas de lançamento comercial que interrompem o scroll e exigem atenção nos mercados nacionais e globais.",
+  "Campaign Visual Concepts": "Conceitos visuais de campanha",
+  "Photography & Video Treatments": "Tratamentos de fotografia e vídeo",
+  "Master Key Visuals (KV)": "Key visuals principais (KV)",
+  "Multi-Channel Rollout Systems": "Sistemas de desdobramento multicanal",
+  "Tactile publications, large-format OOH & packaging design": "Publicações tácteis, OOH de grande formato e design de packaging",
+  "Bringing precision and rhythm to tangible media. Editorial compositions, annual reports, large-format outdoor billboards, product packaging, and tactile print production oversight engineered with uncompromising typographic restraint.": "Levar precisão e ritmo aos suportes físicos. Composições editoriais, relatórios anuais, outdoors de grande formato, packaging e acompanhamento de produção gráfica com rigor tipográfico.",
+  "Editorial Books & Publications": "Livros e publicações editoriais",
+  "Large-Format OOH & Billboards": "OOH e outdoors de grande formato",
+  "Packaging & Structural Design": "Packaging e design estrutural",
+  "Print Production & Finish Specs": "Produção gráfica e especificações de acabamento",
+  "Social-first content engines, motion assets & digital systems": "Sistemas de conteúdo social-first, motion assets e sistemas digitais",
+  "Designing modular digital ecosystems for continuous brand momentum. Social-first publication engines, UI/UX aesthetics, digital campaign kits, dynamic motion graphics, and interactive web interfaces optimized for high engagement.": "Concepção de ecossistemas digitais modulares para manter o impulso da marca. Sistemas de publicação social-first, estética UI/UX, kits de campanhas digitais, motion graphics dinâmicos e interfaces web interactivas optimizadas para elevado envolvimento.",
+  "Social-First Content Systems": "Sistemas de conteúdo social-first",
+  "Dynamic Motion Language": "Linguagem de motion dinâmica",
+  "Digital Design Systems": "Sistemas de design digital",
+  "Interactive Web Experiences": "Experiências web interactivas",
+  "Portfolio": "Portefólio",
+  "Start": "Iniciar",
+  "Back to portfolio": "Voltar ao portefólio",
+  "Next project": "Projecto seguinte",
+  "Previous project": "Projecto anterior",
+  "Related work": "Trabalho relacionado",
+  "Project overview": "Visão geral do projecto",
+  "The brief": "O briefing",
+  "The approach": "A abordagem",
+  "The outcome": "O resultado",
+  "Client": "Cliente",
+  "Role": "Função",
+  "Year": "Ano",
+  "Services delivered": "Serviços prestados",
+  "View case study": "Ver estudo de caso",
+  "View project": "Ver projecto",
+  "Close": "Fechar",
+  "Menu": "Menu",
+  "Open menu": "Abrir menu",
+  "Close menu": "Fechar menu",
 };
 
 export function translateSiteText(value: string, locale: SiteLocale): string {
@@ -137,21 +180,58 @@ export function translateSiteText(value: string, locale: SiteLocale): string {
   return PT_TRANSLATIONS[value] ?? value;
 }
 
-export function localizeArchiveYears(value: string, locale: SiteLocale): string {
-  return locale === "pt-PT" ? value : value;
-}
-
 export function getSiteLocale(): SiteLocale {
   if (typeof window === "undefined") return DEFAULT_LOCALE;
-  try { return window.localStorage.getItem(STORAGE_KEY) === "pt-PT" ? "pt-PT" : DEFAULT_LOCALE; } catch { return DEFAULT_LOCALE; }
+  try {
+    return window.localStorage.getItem(STORAGE_KEY) === "pt-PT" ? "pt-PT" : DEFAULT_LOCALE;
+  } catch {
+    return DEFAULT_LOCALE;
+  }
 }
 
 export function setSiteLocale(locale: SiteLocale): void {
   if (typeof window === "undefined") return;
-  try { window.localStorage.setItem(STORAGE_KEY, locale); } catch { /* best effort */ }
+  try {
+    window.localStorage.setItem(STORAGE_KEY, locale);
+  } catch {
+    // Persistence is best effort.
+  }
   document.documentElement.lang = locale;
   window.dispatchEvent(new CustomEvent("ek-locale-change", { detail: locale }));
   for (const listener of listeners) listener(locale);
+}
+
+function rememberText(node: Text, currentCore: string, locale: SiteLocale): string {
+  const remembered = originalText.get(node);
+  if (remembered === undefined) {
+    originalText.set(node, currentCore);
+    return currentCore;
+  }
+  const previouslyRendered = translateSiteText(remembered, locale);
+  if (currentCore !== remembered && currentCore !== previouslyRendered) {
+    originalText.set(node, currentCore);
+    return currentCore;
+  }
+  return remembered;
+}
+
+function rememberAttribute(element: HTMLElement, attribute: string, currentValue: string, locale: SiteLocale): string {
+  let attributes = originalAttributes.get(element);
+  if (!attributes) {
+    attributes = new Map();
+    originalAttributes.set(element, attributes);
+  }
+  const remembered = attributes.get(attribute);
+  if (remembered === undefined) {
+    attributes.set(attribute, currentValue);
+    return currentValue;
+  }
+  const previouslyRendered = translateSiteText(remembered, locale);
+  if (currentValue !== remembered && currentValue !== previouslyRendered) {
+    attributes.set(attribute, currentValue);
+    return currentValue;
+  }
+  return remembered;
 }
 
 function translateDom(locale: SiteLocale): void {
@@ -168,19 +248,19 @@ function translateDom(locale: SiteLocale): void {
     const leading = raw.match(/^\s*/)?.[0] ?? "";
     const trailing = raw.match(/\s*$/)?.[0] ?? "";
     const core = raw.trim();
-    const translated = translateSiteText(core, locale);
+    const base = rememberText(textNode, core, locale);
+    const translated = translateSiteText(base, locale);
     if (translated !== core) textNode.textContent = `${leading}${translated}${trailing}`;
   }
 
-  const attributes = ["aria-label", "placeholder", "title"];
   for (const selector of ["[aria-label]", "[placeholder]", "[title]"]) {
     document.querySelectorAll<HTMLElement>(selector).forEach((element) => {
-      for (const attribute of attributes) {
+      for (const attribute of ["aria-label", "placeholder", "title"]) {
         const value = element.getAttribute(attribute);
-        if (value) {
-          const translated = translateSiteText(value, locale);
-          if (translated !== value) element.setAttribute(attribute, translated);
-        }
+        if (!value) continue;
+        const base = rememberAttribute(element, attribute, value, locale);
+        const translated = translateSiteText(base, locale);
+        if (translated !== value) element.setAttribute(attribute, translated);
       }
     });
   }
@@ -188,7 +268,6 @@ function translateDom(locale: SiteLocale): void {
 
 export function installSiteLocaleDomBridge(): () => void {
   if (typeof window === "undefined" || typeof document === "undefined") return () => {};
-
   let scheduled = false;
   const apply = () => {
     scheduled = false;
@@ -199,11 +278,9 @@ export function installSiteLocaleDomBridge(): () => void {
     scheduled = true;
     window.requestAnimationFrame(apply);
   };
-
   const observer = new MutationObserver(schedule);
-  observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+  observer.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ["aria-label", "placeholder", "title"] });
   schedule();
-
   const onLocaleChange = () => schedule();
   window.addEventListener("ek-locale-change", onLocaleChange);
   return () => {
