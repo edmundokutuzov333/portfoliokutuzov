@@ -1,10 +1,5 @@
 export type ObservabilityEvent =
-  | "request_start"
-  | "request_end"
-  | "api_error"
-  | "dependency_error"
-  | "not_found"
-  | "client_error";
+  "request_start" | "request_end" | "api_error" | "dependency_error" | "not_found" | "client_error";
 
 export interface ObservabilityContext {
   requestId?: string;
@@ -39,6 +34,8 @@ export function logObservability(event: ObservabilityEvent, context: Observabili
 }
 
 export function getRequestId(request: Request) {
-  return request.headers.get("x-request-id")?.slice(0, 128) ||
-    `req_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  return (
+    request.headers.get("x-request-id")?.slice(0, 128) ||
+    `req_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+  );
 }

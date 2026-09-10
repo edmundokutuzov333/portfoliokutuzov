@@ -86,11 +86,14 @@ export function useVoiceSession(props: UseVoiceSessionProps) {
     else await startVoiceMode();
   }, [isVoiceModeActive, startVoiceMode, stopVoiceMode]);
 
-  const playMessageTTS = useCallback(async (messageId: string, text: string) => {
-    if (isVoiceModeActive) stopVoiceMode();
-    setPlayingMessageId(messageId);
-    await ttsRef.current?.play(messageId, text, locale);
-  }, [isVoiceModeActive, locale, stopVoiceMode]);
+  const playMessageTTS = useCallback(
+    async (messageId: string, text: string) => {
+      if (isVoiceModeActive) stopVoiceMode();
+      setPlayingMessageId(messageId);
+      await ttsRef.current?.play(messageId, text, locale);
+    },
+    [isVoiceModeActive, locale, stopVoiceMode],
+  );
 
   const stopTTS = useCallback(() => {
     ttsRef.current?.stop();
@@ -98,10 +101,13 @@ export function useVoiceSession(props: UseVoiceSessionProps) {
     setTtsState("idle");
   }, []);
 
-  useEffect(() => () => {
-    liveSessionRef.current?.cleanup();
-    ttsRef.current?.stop();
-  }, []);
+  useEffect(
+    () => () => {
+      liveSessionRef.current?.cleanup();
+      ttsRef.current?.stop();
+    },
+    [],
+  );
 
   return {
     voiceState,

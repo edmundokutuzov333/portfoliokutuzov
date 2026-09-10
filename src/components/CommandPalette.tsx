@@ -16,7 +16,15 @@ type SearchResult = {
   tags?: string[];
 };
 
-const quickFilters = ["Branding", "Digital", "Campaigns", "Art Direction", "Motion", "Technology", "Fashion"];
+const quickFilters = [
+  "Branding",
+  "Digital",
+  "Campaigns",
+  "Art Direction",
+  "Motion",
+  "Technology",
+  "Fashion",
+];
 
 export function CommandPalette() {
   const navigate = useNavigate();
@@ -52,20 +60,26 @@ export function CommandPalette() {
     const queryValue = query.trim();
     const controller = new AbortController();
     controllerRef.current = controller;
-    const timer = window.setTimeout(async () => {
-      try {
-        const response = await fetch(`/api/portfolio-search?q=${encodeURIComponent(queryValue)}`, {
-          signal: controller.signal,
-          headers: { Accept: "application/json" },
-        });
-        if (!response.ok) throw new Error("Search request failed");
-        const payload = (await response.json()) as { results?: SearchResult[] };
-        setResults(payload.results ?? []);
-        setActiveIndex(0);
-      } catch (error) {
-        if ((error as Error)?.name !== "AbortError") setResults([]);
-      }
-    }, queryValue ? 120 : 0);
+    const timer = window.setTimeout(
+      async () => {
+        try {
+          const response = await fetch(
+            `/api/portfolio-search?q=${encodeURIComponent(queryValue)}`,
+            {
+              signal: controller.signal,
+              headers: { Accept: "application/json" },
+            },
+          );
+          if (!response.ok) throw new Error("Search request failed");
+          const payload = (await response.json()) as { results?: SearchResult[] };
+          setResults(payload.results ?? []);
+          setActiveIndex(0);
+        } catch (error) {
+          if ((error as Error)?.name !== "AbortError") setResults([]);
+        }
+      },
+      queryValue ? 120 : 0,
+    );
     return () => {
       window.clearTimeout(timer);
       controller.abort();
@@ -116,7 +130,11 @@ export function CommandPalette() {
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-[100] bg-black/65 backdrop-blur-sm" role="presentation" onMouseDown={() => setOpen(false)}>
+        <div
+          className="fixed inset-0 z-[100] bg-black/65 backdrop-blur-sm"
+          role="presentation"
+          onMouseDown={() => setOpen(false)}
+        >
           <div
             role="dialog"
             aria-modal="true"
@@ -163,9 +181,15 @@ export function CommandPalette() {
             )}
 
             {query.trim() && (
-              <div className="max-h-[60vh] overflow-y-auto p-2" role="listbox" aria-label="Portfolio search results">
+              <div
+                className="max-h-[60vh] overflow-y-auto p-2"
+                role="listbox"
+                aria-label="Portfolio search results"
+              >
                 {items.length === 0 ? (
-                  <div className="px-4 py-8 text-sm text-[var(--color-text-muted)]">No projects found in the published portfolio records.</div>
+                  <div className="px-4 py-8 text-sm text-[var(--color-text-muted)]">
+                    No projects found in the published portfolio records.
+                  </div>
                 ) : (
                   items.map((item, index) => (
                     <button
@@ -178,16 +202,34 @@ export function CommandPalette() {
                       className={`flex w-full items-center gap-4 rounded-xl p-3 text-left transition ${index === activeIndex ? "bg-white/[0.06]" : "hover:bg-white/[0.04]"}`}
                     >
                       <div className="h-14 w-20 shrink-0 overflow-hidden rounded-lg border border-white/10 bg-[var(--color-bg)]">
-                        {item.thumbnail ? <img src={item.thumbnail} alt="" className="h-full w-full object-cover" loading="lazy" decoding="async" /> : null}
+                        {item.thumbnail ? (
+                          <img
+                            src={item.thumbnail}
+                            alt=""
+                            className="h-full w-full object-cover"
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        ) : null}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="text-sm font-medium text-[var(--color-text-primary)]">{item.client || item.title}</div>
-                        <div className="mt-1 text-xs text-[var(--color-text-secondary)]">{item.title}</div>
+                        <div className="text-sm font-medium text-[var(--color-text-primary)]">
+                          {item.client || item.title}
+                        </div>
+                        <div className="mt-1 text-xs text-[var(--color-text-secondary)]">
+                          {item.title}
+                        </div>
                         <div className="mono mt-1 text-[9px] tracking-[0.12em] uppercase text-[var(--color-text-muted)]">
                           {[item.year, item.category].filter(Boolean).join(" · ")}
                         </div>
                       </div>
-                      {index === activeIndex ? <Command size={15} className="text-[var(--color-accent-hover)]" aria-hidden="true" /> : null}
+                      {index === activeIndex ? (
+                        <Command
+                          size={15}
+                          className="text-[var(--color-accent-hover)]"
+                          aria-hidden="true"
+                        />
+                      ) : null}
                     </button>
                   ))
                 )}

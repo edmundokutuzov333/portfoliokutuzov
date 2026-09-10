@@ -28,36 +28,93 @@ export function getGeminiClient(): GoogleGenAI {
   if (!aiClient) {
     const key = getEnvVar("GEMINI_API_KEY");
     if (!key) throw new Error("GEMINI_API_KEY environment variable is missing.");
-    aiClient = new GoogleGenAI({ apiKey: key, httpOptions: { headers: { "User-Agent": "aistudio-build" } } });
+    aiClient = new GoogleGenAI({
+      apiKey: key,
+      httpOptions: { headers: { "User-Agent": "aistudio-build" } },
+    });
   }
   return aiClient;
 }
 
-export type ModelCallDiagnostics = { requestId: string; sessionId?: string; primaryModel: string; fallbackModel: string; modelUsed: string; fallbackTriggered: boolean; errorCategory?: string; latencyMs: number };
-export function logDiagnostics(diag: ModelCallDiagnostics) { console.log(JSON.stringify({ level: "info", type: "AI_DIAGNOSTICS", timestamp: new Date().toISOString(), ...diag })); }
-interface ErrorWithStatus { message?: string; status?: number | string; code?: number | string; error?: { code?: number | string; status?: string } }
+export type ModelCallDiagnostics = {
+  requestId: string;
+  sessionId?: string;
+  primaryModel: string;
+  fallbackModel: string;
+  modelUsed: string;
+  fallbackTriggered: boolean;
+  errorCategory?: string;
+  latencyMs: number;
+};
+export function logDiagnostics(diag: ModelCallDiagnostics) {
+  console.log(
+    JSON.stringify({
+      level: "info",
+      type: "AI_DIAGNOSTICS",
+      timestamp: new Date().toISOString(),
+      ...diag,
+    }),
+  );
+}
+interface ErrorWithStatus {
+  message?: string;
+  status?: number | string;
+  code?: number | string;
+  error?: { code?: number | string; status?: string };
+}
 function isQuotaOrRateLimitError(err: unknown): boolean {
   if (!err) return false;
   const e = err as ErrorWithStatus;
   const message = String(e.message || err);
   const status = e.status || e.code || (e.error && (e.error.code || e.error.status));
-  return status === 429 || status === "RESOURCE_EXHAUSTED" || message.includes("429") || message.includes("RESOURCE_EXHAUSTED") || message.toLowerCase().includes("quota") || message.toLowerCase().includes("rate limit") || message.toLowerCase().includes("temporarily unavailable");
+  return (
+    status === 429 ||
+    status === "RESOURCE_EXHAUSTED" ||
+    message.includes("429") ||
+    message.includes("RESOURCE_EXHAUSTED") ||
+    message.toLowerCase().includes("quota") ||
+    message.toLowerCase().includes("rate limit") ||
+    message.toLowerCase().includes("temporarily unavailable")
+  );
 }
-export async function executeWithModelFallback<T>(requestId: string, sessionId: string | undefined, operation: (ai: GoogleGenAI, modelName: string) => Promise<T>): Promise<{ result: T; diagnostics: ModelCallDiagnostics }> {
+export async function executeWithModelFallback<T>(
+  requestId: string,
+  sessionId: string | undefined,
+  operation: (ai: GoogleGenAI, modelName: string) => Promise<T>,
+): Promise<{ result: T; diagnostics: ModelCallDiagnostics }> {
   const startTime = Date.now();
   const ai = getGeminiClient();
   const primary = PRIMARY_MODEL;
   const fallback = FALLBACK_MODEL;
   try {
     const result = await operation(ai, primary);
-    const diagnostics = { requestId, sessionId, primaryModel: primary, fallbackModel: fallback, modelUsed: primary, fallbackTriggered: false, latencyMs: Date.now() - startTime };
+    const diagnostics = {
+      requestId,
+      sessionId,
+      primaryModel: primary,
+      fallbackModel: fallback,
+      modelUsed: primary,
+      fallbackTriggered: false,
+      latencyMs: Date.now() - startTime,
+    };
     logDiagnostics(diagnostics);
     return { result, diagnostics };
   } catch (error: unknown) {
     if (!isQuotaOrRateLimitError(error)) throw error;
-    console.warn(`[AI Fallback] Primary model ${primary} unavailable. Retrying with fallback model ${fallback}...`);
+    console.warn(
+      `[AI Fallback] Primary model ${primary} unavailable. Retrying with fallback model ${fallback}...`,
+    );
     const result = await operation(ai, fallback);
-    const diagnostics = { requestId, sessionId, primaryModel: primary, fallbackModel: fallback, modelUsed: fallback, fallbackTriggered: true, errorCategory: "RESOURCE_EXHAUSTED_PRIMARY_FALLBACK", latencyMs: Date.now() - startTime };
+    const diagnostics = {
+      requestId,
+      sessionId,
+      primaryModel: primary,
+      fallbackModel: fallback,
+      modelUsed: fallback,
+      fallbackTriggered: true,
+      errorCategory: "RESOURCE_EXHAUSTED_PRIMARY_FALLBACK",
+      latencyMs: Date.now() - startTime,
+    };
     logDiagnostics(diagnostics);
     return { result, diagnostics };
   }

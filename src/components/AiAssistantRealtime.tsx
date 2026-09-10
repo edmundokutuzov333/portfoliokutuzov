@@ -1,5 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowUpRight, Bot, Loader2, Maximize2, Mic, MicOff, Minimize2, Send, Volume2, VolumeX, X } from "lucide-react";
+import {
+  ArrowUpRight,
+  Bot,
+  Loader2,
+  Maximize2,
+  Mic,
+  MicOff,
+  Minimize2,
+  Send,
+  Volume2,
+  VolumeX,
+  X,
+} from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { LiveVoiceSession, type VoiceState } from "@/lib/voice/live";
 import { TTSController } from "@/lib/voice/tts";
@@ -157,7 +169,11 @@ export function AiAssistantRealtime() {
     if (!text || streaming) return;
     const user = { id: `u_${Date.now()}`, role: "user" as const, text };
     const assistantId = `a_${Date.now()}`;
-    setMessages((prev) => [...prev, user, { id: assistantId, role: "assistant", text: "", streaming: true }]);
+    setMessages((prev) => [
+      ...prev,
+      user,
+      { id: assistantId, role: "assistant", text: "", streaming: true },
+    ]);
     setInput("");
     setStreaming(true);
     trackEvent({ action: "ai_message", element: "realtime_assistant", meta: { mode: "text" } });
@@ -171,10 +187,12 @@ export function AiAssistantRealtime() {
         signal: controller.signal,
         body: JSON.stringify({
           sessionId: sessionIdRef.current,
-          messages: [...messages.filter((message) => message.id !== "welcome"), user].map((message) => ({
-            role: message.role,
-            text: message.text,
-          })),
+          messages: [...messages.filter((message) => message.id !== "welcome"), user].map(
+            (message) => ({
+              role: message.role,
+              text: message.text,
+            }),
+          ),
           context: context(),
         }),
       });
@@ -198,11 +216,19 @@ export function AiAssistantRealtime() {
             const event = JSON.parse(block.slice(6));
             if (event.type === "chunk" && event.text) {
               textAcc += event.text;
-              setMessages((prev) => prev.map((message) => (message.id === assistantId ? { ...message, text: textAcc } : message)));
+              setMessages((prev) =>
+                prev.map((message) =>
+                  message.id === assistantId ? { ...message, text: textAcc } : message,
+                ),
+              );
             }
             if (event.type === "projects" && Array.isArray(event.projects)) {
               projects = [...projects, ...event.projects];
-              setMessages((prev) => prev.map((message) => (message.id === assistantId ? { ...message, projects } : message)));
+              setMessages((prev) =>
+                prev.map((message) =>
+                  message.id === assistantId ? { ...message, projects } : message,
+                ),
+              );
             }
           } catch {
             // Ignore malformed stream frames without breaking the active conversation.
@@ -215,7 +241,11 @@ export function AiAssistantRealtime() {
           message.id === assistantId
             ? {
                 ...message,
-                text: textAcc || (locale === "pt-PT" ? "Estou pronto para a próxima pergunta." : "I am ready for the next question."),
+                text:
+                  textAcc ||
+                  (locale === "pt-PT"
+                    ? "Estou pronto para a próxima pergunta."
+                    : "I am ready for the next question."),
                 streaming: false,
               }
             : message,
@@ -228,7 +258,10 @@ export function AiAssistantRealtime() {
             message.id === assistantId
               ? {
                   ...message,
-                  text: locale === "pt-PT" ? "Não consegui concluir a resposta. Tenta novamente." : "I could not complete that response. Please try again.",
+                  text:
+                    locale === "pt-PT"
+                      ? "Não consegui concluir a resposta. Tenta novamente."
+                      : "I could not complete that response. Please try again.",
                   streaming: false,
                 }
               : message,
@@ -259,12 +292,18 @@ export function AiAssistantRealtime() {
       onTranscriptChunk: (text, isFinal, role) => {
         if (role === "user") {
           voiceUtteranceRef.current = text.trim();
-          const combined = [voiceInputBaseRef.current, voiceUtteranceRef.current].filter(Boolean).join(" ");
+          const combined = [voiceInputBaseRef.current, voiceUtteranceRef.current]
+            .filter(Boolean)
+            .join(" ");
           setInput(combined);
           if (isFinal) {
             voiceInputBaseRef.current = combined;
             voiceUtteranceRef.current = "";
-            if (text.trim()) setMessages((prev) => [...prev, { id: `vu_${Date.now()}`, role: "user", text: text.trim() }]);
+            if (text.trim())
+              setMessages((prev) => [
+                ...prev,
+                { id: `vu_${Date.now()}`, role: "user", text: text.trim() },
+              ]);
           }
           return;
         }
@@ -273,9 +312,15 @@ export function AiAssistantRealtime() {
           setMessages((prev) => {
             const last = prev[prev.length - 1];
             if (last?.role === "assistant" && (last.streaming || last.id.startsWith("va_"))) {
-              return [...prev.slice(0, -1), { ...last, text: last.text + text, streaming: !isFinal }];
+              return [
+                ...prev.slice(0, -1),
+                { ...last, text: last.text + text, streaming: !isFinal },
+              ];
             }
-            return [...prev, { id: `va_${Date.now()}`, role: "assistant", text, streaming: !isFinal }];
+            return [
+              ...prev,
+              { id: `va_${Date.now()}`, role: "assistant", text, streaming: !isFinal },
+            ];
           });
         }
       },
@@ -371,8 +416,17 @@ export function AiAssistantRealtime() {
               ))}
             </div>
           )}
-          <button type="button" onClick={() => setMinimized((value) => !value)} aria-label={minimized ? ui.max : ui.min} className="grid h-8 w-8 place-items-center rounded-full hover:bg-white/5">
-            {minimized ? <Maximize2 size={14} aria-hidden="true" /> : <Minimize2 size={14} aria-hidden="true" />}
+          <button
+            type="button"
+            onClick={() => setMinimized((value) => !value)}
+            aria-label={minimized ? ui.max : ui.min}
+            className="grid h-8 w-8 place-items-center rounded-full hover:bg-white/5"
+          >
+            {minimized ? (
+              <Maximize2 size={14} aria-hidden="true" />
+            ) : (
+              <Minimize2 size={14} aria-hidden="true" />
+            )}
           </button>
           <button
             type="button"
@@ -399,9 +453,15 @@ export function AiAssistantRealtime() {
                 >
                   {message.id === "welcome" ? (
                     <>
-                      <div className="mono text-[9px] uppercase tracking-[0.22em] text-sky-300">{ui.welcomeEyebrow}</div>
-                      <h2 className="mt-3 max-w-[22rem] text-[25px] font-medium leading-[1.05] tracking-[-0.035em] text-white">{ui.welcomeTitle}</h2>
-                      <p className="mt-4 max-w-[30rem] text-[14px] leading-6 text-slate-300">{message.text}</p>
+                      <div className="mono text-[9px] uppercase tracking-[0.22em] text-sky-300">
+                        {ui.welcomeEyebrow}
+                      </div>
+                      <h2 className="mt-3 max-w-[22rem] text-[25px] font-medium leading-[1.05] tracking-[-0.035em] text-white">
+                        {ui.welcomeTitle}
+                      </h2>
+                      <p className="mt-4 max-w-[30rem] text-[14px] leading-6 text-slate-300">
+                        {message.text}
+                      </p>
                       <div className="mt-5 grid gap-2 sm:grid-cols-2">
                         {(message.quickPrompts ?? []).map((prompt) => (
                           <button
@@ -412,7 +472,11 @@ export function AiAssistantRealtime() {
                             className="group flex min-h-12 items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.025] px-3.5 py-3 text-left text-[11px] font-medium text-slate-200 transition hover:border-sky-300/30 hover:bg-sky-300/[0.06] disabled:opacity-50"
                           >
                             <span>{prompt}</span>
-                            <ArrowUpRight size={13} className="shrink-0 text-sky-300 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden="true" />
+                            <ArrowUpRight
+                              size={13}
+                              className="shrink-0 text-sky-300 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                              aria-hidden="true"
+                            />
                           </button>
                         ))}
                       </div>
@@ -421,7 +485,9 @@ export function AiAssistantRealtime() {
                     <>
                       <div className="whitespace-pre-wrap text-[13px] leading-6 text-slate-200">
                         {message.text}
-                        {message.streaming ? <span className="ml-1 inline-block h-3 w-1 animate-pulse bg-sky-300" /> : null}
+                        {message.streaming ? (
+                          <span className="ml-1 inline-block h-3 w-1 animate-pulse bg-sky-300" />
+                        ) : null}
                       </div>
                       {message.projects?.length ? (
                         <div className="mt-3 space-y-2">
@@ -429,24 +495,52 @@ export function AiAssistantRealtime() {
                             <button
                               key={project.id}
                               type="button"
-                              onClick={() => navigate({ to: "/portfolio/$slug", params: { slug: project.slug } })}
+                              onClick={() =>
+                                navigate({ to: "/portfolio/$slug", params: { slug: project.slug } })
+                              }
                               className="flex w-full items-center gap-3 rounded-xl border border-white/8 bg-black/10 p-2 text-left hover:bg-white/5"
                             >
                               <div className="h-12 w-16 shrink-0 overflow-hidden rounded-lg bg-white/5">
-                                {project.thumbnail ? <img src={project.thumbnail} alt="" className="h-full w-full object-cover" loading="lazy" /> : null}
+                                {project.thumbnail ? (
+                                  <img
+                                    src={project.thumbnail}
+                                    alt=""
+                                    className="h-full w-full object-cover"
+                                    loading="lazy"
+                                  />
+                                ) : null}
                               </div>
                               <div className="min-w-0">
-                                <div className="truncate text-xs font-medium text-white">{project.client || project.title}</div>
-                                <div className="truncate text-[11px] text-slate-400">{project.title}</div>
+                                <div className="truncate text-xs font-medium text-white">
+                                  {project.client || project.title}
+                                </div>
+                                <div className="truncate text-[11px] text-slate-400">
+                                  {project.title}
+                                </div>
                               </div>
-                              <ArrowUpRight size={14} className="ml-auto shrink-0 text-slate-500" aria-hidden="true" />
+                              <ArrowUpRight
+                                size={14}
+                                className="ml-auto shrink-0 text-slate-500"
+                                aria-hidden="true"
+                              />
                             </button>
                           ))}
                         </div>
                       ) : null}
                       {message.role === "assistant" && message.text ? (
-                        <button type="button" onClick={() => speak(message.id, message.text)} aria-label={speakingId === message.id ? ui.stopSpeak : ui.speak} className="mt-2 inline-flex items-center gap-1.5 text-[10px] text-slate-500 hover:text-white">
-                          <span aria-hidden="true">{speakingId === message.id ? <VolumeX size={12} /> : <Volume2 size={12} />}</span>
+                        <button
+                          type="button"
+                          onClick={() => speak(message.id, message.text)}
+                          aria-label={speakingId === message.id ? ui.stopSpeak : ui.speak}
+                          className="mt-2 inline-flex items-center gap-1.5 text-[10px] text-slate-500 hover:text-white"
+                        >
+                          <span aria-hidden="true">
+                            {speakingId === message.id ? (
+                              <VolumeX size={12} />
+                            ) : (
+                              <Volume2 size={12} />
+                            )}
+                          </span>
                           {speakingId === message.id ? ui.stopSpeak : ui.speak}
                         </button>
                       ) : null}
@@ -460,7 +554,11 @@ export function AiAssistantRealtime() {
 
           <footer className="border-t border-white/10 p-3.5 sm:p-4">
             <div className="mb-2 flex items-center justify-between text-[10px] text-slate-500">
-              <span>{locale === "pt-PT" ? "Português (Portugal) · Inglês" : "English · European Portuguese"}</span>
+              <span>
+                {locale === "pt-PT"
+                  ? "Português (Portugal) · Inglês"
+                  : "English · European Portuguese"}
+              </span>
               {voiceState !== "idle" ? (
                 <span className="inline-flex items-center gap-1 text-sky-300">
                   <span className="h-1.5 w-1.5 rounded-full bg-sky-300" />
@@ -490,7 +588,13 @@ export function AiAssistantRealtime() {
                 aria-label={voiceState !== "idle" && voiceState !== "error" ? ui.voiceOn : ui.voice}
                 className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${voiceState !== "idle" && voiceState !== "error" ? "bg-sky-400 text-slate-950" : "bg-white/5 text-white hover:bg-white/10"}`}
               >
-                {voiceState === "connecting" ? <Loader2 size={16} className="animate-spin" /> : voiceState !== "idle" && voiceState !== "error" ? <MicOff size={16} /> : <Mic size={16} />}
+                {voiceState === "connecting" ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : voiceState !== "idle" && voiceState !== "error" ? (
+                  <MicOff size={16} />
+                ) : (
+                  <Mic size={16} />
+                )}
               </button>
               <button
                 type="button"

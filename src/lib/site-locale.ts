@@ -40,13 +40,15 @@ const PT_TRANSLATIONS: Record<string, string> = {
   PLAY: "REPRODUZIR",
   Archive: "Arquivo",
   "Selected Work.": "Trabalho seleccionado.",
-  "Showing": "A mostrar",
+  Showing: "A mostrar",
   "Methodology · Practice": "Metodologia · Prática",
   Capabilities: "Capacidades",
   "Visual capabilities &": "Capacidades visuais e",
   "disciplines.": "disciplinas.",
-  "Visual disciplines for brands that move with precision.": "Disciplinas visuais para marcas que avançam com precisão.",
-  "Brand Logic / Visual Systems / Digital Presence": "Lógica de marca / Sistemas visuais / Presença digital",
+  "Visual disciplines for brands that move with precision.":
+    "Disciplinas visuais para marcas que avançam com precisão.",
+  "Brand Logic / Visual Systems / Digital Presence":
+    "Lógica de marca / Sistemas visuais / Presença digital",
   "Core Disciplines & Capabilities": "Disciplinas centrais e capacidades",
   "Interactive Architecture": "Arquitectura interactiva",
   "Portfolio Reference": "Referência do portefólio",
@@ -80,7 +82,8 @@ const PT_TRANSLATIONS: Record<string, string> = {
   "Projects delivered": "Projectos entregues",
   "National and international brands": "Marcas nacionais e internacionais",
   Continents: "Continentes",
-  "Art direction, branding, strategy, AI, marketing": "Direcção de arte, branding, estratégia, IA, marketing",
+  "Art direction, branding, strategy, AI, marketing":
+    "Direcção de arte, branding, estratégia, IA, marketing",
   Years: "Anos",
   Projects: "Projectos",
   Brands: "Marcas",
@@ -89,32 +92,43 @@ const PT_TRANSLATIONS: Record<string, string> = {
   "Delivered across brand, digital & print": "Entregues em branding, digital e impressão",
   "National and international collaborations": "Colaborações nacionais e internacionais",
   "Global creative exposure & delivery": "Experiência e entrega criativa global",
-  "From high-level strategy to craft execution": "Da estratégia de alto nível à execução de detalhe",
-  "Strategy, craft and a sharp point of view.": "Estratégia, execução e um ponto de vista distinto.",
+  "From high-level strategy to craft execution":
+    "Da estratégia de alto nível à execução de detalhe",
+  "Strategy, craft and a sharp point of view.":
+    "Estratégia, execução e um ponto de vista distinto.",
   "I shape ideas that": "Dou forma a ideias que",
   "cut through noise,": "cortam o ruído,",
   "stay in memory,": "ficam na memória,",
   "and move people.": "e mobilizam pessoas.",
-  "Building visual systems, digital products, and campaigns that establish authority on an international scale.": "Construo sistemas visuais, produtos digitais e campanhas que estabelecem autoridade à escala internacional.",
+  "Building visual systems, digital products, and campaigns that establish authority on an international scale.":
+    "Construo sistemas visuais, produtos digitais e campanhas que estabelecem autoridade à escala internacional.",
   "Strategy, craft and a sharp": "Estratégia, execução e um ponto de vista",
   "point of view.": "distinto.",
-  "The core disciplines used to construct enduring brand identities, direct high-impact campaigns, and engineer modular digital systems. Hover each discipline to inspect relevant case studies.": "As disciplinas centrais usadas para construir identidades de marca duradouras, dirigir campanhas de alto impacto e criar sistemas digitais modulares. Passe por cada disciplina para explorar os projectos relevantes.",
+  "The core disciplines used to construct enduring brand identities, direct high-impact campaigns, and engineer modular digital systems. Hover each discipline to inspect relevant case studies.":
+    "As disciplinas centrais usadas para construir identidades de marca duradouras, dirigir campanhas de alto impacto e criar sistemas digitais modulares. Passe por cada disciplina para explorar os projectos relevantes.",
   "Tell me about your brand and": "Fale-me sobre a sua marca e",
   "let's get to work.": "vamos trabalhar.",
-  "I make ideas stop, take notice, and act. I design visual identities and communication pieces that capture attention and drive action — blending storytelling, visual hierarchy, and typographic craft.": "Faço as ideias parar, captar atenção e gerar acção. Desenvolvo identidades visuais e peças de comunicação que captam atenção e impulsionam resultados, combinando storytelling, hierarquia visual e rigor tipográfico.",
-  "I make ideas stop, take notice, and act. I design visual identities and communication pieces that capture attention and drive action - blending storytelling, visual hierarchy, and typographic craft.": "Faço as ideias parar, captar atenção e gerar acção. Desenvolvo identidades visuais e peças de comunicação que captam atenção e impulsionam resultados, combinando storytelling, hierarquia visual e rigor tipográfico.",
-  "I'm Edmundo Kutuzov, an art director deeply rooted in Mozambique's creative ecosystem. I lead projects ranging from ad campaigns and music videos to clothing collections and brand development.": "Sou Edmundo Kutuzov, director de arte profundamente ligado ao ecossistema criativo de Moçambique. Lidero projectos que vão de campanhas publicitárias e videoclipes a colecções de vestuário e desenvolvimento de marcas.",
-  "My focus is always on experiences that generate recognition and measurable results — every choice I make is designed to maximise impact, perception, and brand memory.": "O meu foco está sempre em experiências que geram reconhecimento e resultados mensuráveis. Cada decisão é pensada para maximizar impacto, percepção e memória de marca.",
-  "My focus is always on experiences that generate recognition and measurable results - every choice I make is designed to maximise impact and perception.": "O meu foco está sempre em experiências que geram reconhecimento e resultados mensuráveis. Cada decisão é pensada para maximizar impacto e percepção.",
+  "I make ideas stop, take notice, and act. I design visual identities and communication pieces that capture attention and drive action — blending storytelling, visual hierarchy, and typographic craft.":
+    "Faço as ideias parar, captar atenção e gerar acção. Desenvolvo identidades visuais e peças de comunicação que captam atenção e impulsionam resultados, combinando storytelling, hierarquia visual e rigor tipográfico.",
+  "I make ideas stop, take notice, and act. I design visual identities and communication pieces that capture attention and drive action - blending storytelling, visual hierarchy, and typographic craft.":
+    "Faço as ideias parar, captar atenção e gerar acção. Desenvolvo identidades visuais e peças de comunicação que captam atenção e impulsionam resultados, combinando storytelling, hierarquia visual e rigor tipográfico.",
+  "I'm Edmundo Kutuzov, an art director deeply rooted in Mozambique's creative ecosystem. I lead projects ranging from ad campaigns and music videos to clothing collections and brand development.":
+    "Sou Edmundo Kutuzov, director de arte profundamente ligado ao ecossistema criativo de Moçambique. Lidero projectos que vão de campanhas publicitárias e videoclipes a colecções de vestuário e desenvolvimento de marcas.",
+  "My focus is always on experiences that generate recognition and measurable results — every choice I make is designed to maximise impact, perception, and brand memory.":
+    "O meu foco está sempre em experiências que geram reconhecimento e resultados mensuráveis. Cada decisão é pensada para maximizar impacto, percepção e memória de marca.",
+  "My focus is always on experiences that generate recognition and measurable results - every choice I make is designed to maximise impact and perception.":
+    "O meu foco está sempre em experiências que geram reconhecimento e resultados mensuráveis. Cada decisão é pensada para maximizar impacto e percepção.",
   "Explore Capabilities": "Explorar capacidades",
-  "Chronological track record of agency and studio leadership across Mozambique.": "Percurso cronológico de liderança em agências e estúdios em Moçambique.",
+  "Chronological track record of agency and studio leadership across Mozambique.":
+    "Percurso cronológico de liderança em agências e estúdios em Moçambique.",
   "Brand Logic": "Lógica de marca",
   "Visual Systems": "Sistemas visuais",
   "Digital Presence": "Presença digital",
   All: "Todos",
   "No projects found": "Nenhum projecto encontrado",
   "No projects found in category": "Nenhum projecto encontrado na categoria",
-  "Building visual languages for campaigns, brands and digital products with consistent aesthetic, narrative intent and execution precision.": "Construção de linguagens visuais para campanhas, marcas e produtos digitais com estética consistente, intenção narrativa e precisão de execução.",
+  "Building visual languages for campaigns, brands and digital products with consistent aesthetic, narrative intent and execution precision.":
+    "Construção de linguagens visuais para campanhas, marcas e produtos digitais com estética consistente, intenção narrativa e precisão de execução.",
   Concept: "Conceito",
   Moodboards: "Moodboards",
   "Key visuals": "Key visuals",
@@ -131,26 +145,34 @@ const PT_TRANSLATIONS: Record<string, string> = {
   "UI systems": "Sistemas de UI",
   "Motion language": "Linguagem de motion",
   "Responsive layouts": "Layouts responsivos",
-  "Strategic brand marks, typography systems & identity architecture": "Marcas estratégicas, sistemas tipográficos e arquitectura de identidade",
-  "Transforming strategic brand intent into unmistakable visual form. Developing comprehensive visual grammar, logo systems, bespoke typographic pairings, colour scales, and rigorous brand guideline books built for permanence.": "Transformação da intenção estratégica da marca numa forma visual inequívoca. Desenvolvimento de gramática visual, sistemas de logótipo, combinações tipográficas próprias, escalas cromáticas e manuais de marca rigorosos pensados para perdurar.",
+  "Strategic brand marks, typography systems & identity architecture":
+    "Marcas estratégicas, sistemas tipográficos e arquitectura de identidade",
+  "Transforming strategic brand intent into unmistakable visual form. Developing comprehensive visual grammar, logo systems, bespoke typographic pairings, colour scales, and rigorous brand guideline books built for permanence.":
+    "Transformação da intenção estratégica da marca numa forma visual inequívoca. Desenvolvimento de gramática visual, sistemas de logótipo, combinações tipográficas próprias, escalas cromáticas e manuais de marca rigorosos pensados para perdurar.",
   "Brand Architecture & Strategy": "Arquitectura e estratégia de marca",
   "Logo Marks & Symbol Systems": "Logótipos e sistemas de símbolos",
   "Custom Typographic Scales": "Escalas tipográficas personalizadas",
   "Comprehensive Identity Guidelines": "Manual completo de identidade",
-  "Campaign conception, visual storytelling & photography direction": "Concepção de campanhas, storytelling visual e direcção fotográfica",
-  "Crafting the visual soul of campaigns and brand narratives. Directing photography, set styling, cinematic color grading, and commercial rollout systems that stop scrolling and demand attention across national and global markets.": "Construção da alma visual de campanhas e narrativas de marca. Direcção fotográfica, styling de cenários, color grading cinematográfico e sistemas de lançamento comercial que interrompem o scroll e exigem atenção nos mercados nacionais e globais.",
+  "Campaign conception, visual storytelling & photography direction":
+    "Concepção de campanhas, storytelling visual e direcção fotográfica",
+  "Crafting the visual soul of campaigns and brand narratives. Directing photography, set styling, cinematic color grading, and commercial rollout systems that stop scrolling and demand attention across national and global markets.":
+    "Construção da alma visual de campanhas e narrativas de marca. Direcção fotográfica, styling de cenários, color grading cinematográfico e sistemas de lançamento comercial que interrompem o scroll e exigem atenção nos mercados nacionais e globais.",
   "Campaign Visual Concepts": "Conceitos visuais de campanha",
   "Photography & Video Treatments": "Tratamentos de fotografia e vídeo",
   "Master Key Visuals (KV)": "Key visuals principais (KV)",
   "Multi-Channel Rollout Systems": "Sistemas de desdobramento multicanal",
-  "Tactile publications, large-format OOH & packaging design": "Publicações tácteis, OOH de grande formato e design de packaging",
-  "Bringing precision and rhythm to tangible media. Editorial compositions, annual reports, large-format outdoor billboards, product packaging, and tactile print production oversight engineered with uncompromising typographic restraint.": "Levar precisão e ritmo aos suportes físicos. Composições editoriais, relatórios anuais, outdoors de grande formato, packaging e acompanhamento de produção gráfica com rigor tipográfico.",
+  "Tactile publications, large-format OOH & packaging design":
+    "Publicações tácteis, OOH de grande formato e design de packaging",
+  "Bringing precision and rhythm to tangible media. Editorial compositions, annual reports, large-format outdoor billboards, product packaging, and tactile print production oversight engineered with uncompromising typographic restraint.":
+    "Levar precisão e ritmo aos suportes físicos. Composições editoriais, relatórios anuais, outdoors de grande formato, packaging e acompanhamento de produção gráfica com rigor tipográfico.",
   "Editorial Books & Publications": "Livros e publicações editoriais",
   "Large-Format OOH & Billboards": "OOH e outdoors de grande formato",
   "Packaging & Structural Design": "Packaging e design estrutural",
   "Print Production & Finish Specs": "Produção gráfica e especificações de acabamento",
-  "Social-first content engines, motion assets & digital systems": "Sistemas de conteúdo social-first, motion assets e sistemas digitais",
-  "Designing modular digital ecosystems for continuous brand momentum. Social-first publication engines, UI/UX aesthetics, digital campaign kits, dynamic motion graphics, and interactive web interfaces optimized for high engagement.": "Concepção de ecossistemas digitais modulares para manter o impulso da marca. Sistemas de publicação social-first, estética UI/UX, kits de campanhas digitais, motion graphics dinâmicos e interfaces web interactivas optimizadas para elevado envolvimento.",
+  "Social-first content engines, motion assets & digital systems":
+    "Sistemas de conteúdo social-first, motion assets e sistemas digitais",
+  "Designing modular digital ecosystems for continuous brand momentum. Social-first publication engines, UI/UX aesthetics, digital campaign kits, dynamic motion graphics, and interactive web interfaces optimized for high engagement.":
+    "Concepção de ecossistemas digitais modulares para manter o impulso da marca. Sistemas de publicação social-first, estética UI/UX, kits de campanhas digitais, motion graphics dinâmicos e interfaces web interactivas optimizadas para elevado envolvimento.",
   "Social-First Content Systems": "Sistemas de conteúdo social-first",
   "Dynamic Motion Language": "Linguagem de motion dinâmica",
   "Digital Design Systems": "Sistemas de design digital",
@@ -187,33 +209,36 @@ const PT_TRANSLATIONS: Record<string, string> = {
   "more space.": "mais espaço.",
   "It needs to occupy": "Precisa de ocupar",
   "memory.": "memória.",
-  "Manifesto": "Manifesto",
+  Manifesto: "Manifesto",
   "Selected work": "Trabalho seleccionado",
   "Selected projects.": "Projectos seleccionados.",
-  "A handful of recent pieces hand-picked from the studio.": "Uma selecção de trabalhos recentes escolhidos a partir do estúdio.",
+  "A handful of recent pieces hand-picked from the studio.":
+    "Uma selecção de trabalhos recentes escolhidos a partir do estúdio.",
   "Brands and teams": "Marcas e equipas",
   "I have worked with.": "com que trabalhei.",
-  "A selection of local and international brands I have collaborated with as art director, graphic designer and creative lead.": "Uma selecção de marcas nacionais e internacionais com as quais colaborei como director de arte, designer gráfico e responsável criativo.",
-  "I'm Edmundo Kutuzov, an art director rooted in Mozambique's creative ecosystem. I design visual identities and communication pieces that capture attention and drive action - blending storytelling, visual hierarchy, and typographic craft.": "Sou Edmundo Kutuzov, director de arte ligado ao ecossistema criativo de Moçambique. Desenvolvo identidades visuais e peças de comunicação que captam atenção e geram acção, combinando storytelling, hierarquia visual e rigor tipográfico.",
+  "A selection of local and international brands I have collaborated with as art director, graphic designer and creative lead.":
+    "Uma selecção de marcas nacionais e internacionais com as quais colaborei como director de arte, designer gráfico e responsável criativo.",
+  "I'm Edmundo Kutuzov, an art director rooted in Mozambique's creative ecosystem. I design visual identities and communication pieces that capture attention and drive action - blending storytelling, visual hierarchy, and typographic craft.":
+    "Sou Edmundo Kutuzov, director de arte ligado ao ecossistema criativo de Moçambique. Desenvolvo identidades visuais e peças de comunicação que captam atenção e geram acção, combinando storytelling, hierarquia visual e rigor tipográfico.",
   "less talk, more design.": "menos conversa, mais design.",
   "Open for 2026 projects": "Aberto a projectos em 2026",
-  "Magoanine \"C\", Maputo · Mozambique": "Magoanine \"C\", Maputo · Moçambique",
-  "Magoanine \"C\", Maputo, Mozambique": "Magoanine \"C\", Maputo, Moçambique",
-  "Submit": "Enviar",
+  'Magoanine "C", Maputo · Mozambique': 'Magoanine "C", Maputo · Moçambique',
+  'Magoanine "C", Maputo, Mozambique': 'Magoanine "C", Maputo, Moçambique',
+  Submit: "Enviar",
   "Send message": "Enviar mensagem",
   "Project type": "Tipo de projecto",
   "Your name": "O seu nome",
   "Your email": "O seu email",
-  "Company": "Empresa",
-  "Budget": "Orçamento",
-  "Timeline": "Prazo",
+  Company: "Empresa",
+  Budget: "Orçamento",
+  Timeline: "Prazo",
   "Tell me about the project": "Fale-me sobre o projecto",
   "Project briefing": "Briefing do projecto",
   Required: "Obrigatório",
-  "Optional": "Opcional",
-  "Loading": "A carregar",
+  Optional: "Opcional",
+  Loading: "A carregar",
   "Loading...": "A carregar...",
-  "Error": "Erro",
+  Error: "Erro",
   "Try again": "Tentar novamente",
   Retry: "Tentar novamente",
   "Something went wrong": "Ocorreu um erro",
@@ -221,9 +246,7 @@ const PT_TRANSLATIONS: Record<string, string> = {
   "Thank you for reaching out": "Obrigado por entrar em contacto",
 };
 
-const TRANSLATION_ENTRIES = Object.entries(PT_TRANSLATIONS).sort(
-  ([a], [b]) => b.length - a.length,
-);
+const TRANSLATION_ENTRIES = Object.entries(PT_TRANSLATIONS).sort(([a], [b]) => b.length - a.length);
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -328,15 +351,17 @@ function translateDom(locale: SiteLocale): void {
     if (next !== raw) textNode.textContent = next;
   }
 
-  document.querySelectorAll<HTMLElement>("[aria-label], [placeholder], [title]").forEach((element) => {
-    for (const attribute of ["aria-label", "placeholder", "title"] as const) {
-      const value = element.getAttribute(attribute);
-      if (!value) continue;
-      const base = rememberAttribute(element, attribute, value, locale);
-      const translated = translateSiteText(base, locale);
-      if (translated !== value) element.setAttribute(attribute, translated);
-    }
-  });
+  document
+    .querySelectorAll<HTMLElement>("[aria-label], [placeholder], [title]")
+    .forEach((element) => {
+      for (const attribute of ["aria-label", "placeholder", "title"] as const) {
+        const value = element.getAttribute(attribute);
+        if (!value) continue;
+        const base = rememberAttribute(element, attribute, value, locale);
+        const translated = translateSiteText(base, locale);
+        if (translated !== value) element.setAttribute(attribute, translated);
+      }
+    });
 }
 
 export function installSiteLocaleDomBridge(): () => void {
