@@ -1,18 +1,14 @@
+import { useEffect, useState } from "react";
+
 export type SiteLocale = "en" | "pt-PT";
 
 const STORAGE_KEY = "ek_locale_v2";
 const DEFAULT_LOCALE: SiteLocale = "en";
-
-type LocaleListener = (locale: SiteLocale) => void;
-const listeners = new Set<LocaleListener>();
+const listeners = new Set<(locale: SiteLocale) => void>();
 
 export function getSiteLocale(): SiteLocale {
   if (typeof window === "undefined") return DEFAULT_LOCALE;
-  try {
-    return window.localStorage.getItem(STORAGE_KEY) === "pt-PT" ? "pt-PT" : DEFAULT_LOCALE;
-  } catch {
-    return DEFAULT_LOCALE;
-  }
+  try { return window.localStorage.getItem(STORAGE_KEY) === "pt-PT" ? "pt-PT" : DEFAULT_LOCALE; } catch { return DEFAULT_LOCALE; }
 }
 
 export function setSiteLocale(locale: SiteLocale): void {
@@ -23,15 +19,14 @@ export function setSiteLocale(locale: SiteLocale): void {
   for (const listener of listeners) listener(locale);
 }
 
-export function subscribeSiteLocale(listener: LocaleListener): () => void {
+export function subscribeSiteLocale(listener: (locale: SiteLocale) => void): () => void {
   listeners.add(listener);
   return () => listeners.delete(listener);
 }
 
 export function useSiteLocale(): SiteLocale {
-  const React = require("react") as typeof import("react");
-  const [locale, setLocale] = React.useState<SiteLocale>(getSiteLocale);
-  React.useEffect(() => {
+  const [locale, setLocale] = useState<SiteLocale>(getSiteLocale);
+  useEffect(() => {
     document.documentElement.lang = locale;
     return subscribeSiteLocale(setLocale);
   }, [locale]);
