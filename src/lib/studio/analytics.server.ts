@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabaseAdmin } from "@/integrations/supabase/server/index.server";
 
 type StudioEventName =
@@ -63,9 +64,9 @@ export async function trackStudioEvent(input: StudioEventInput) {
       duration_ms: typeof input.durationMs === "number" && Number.isFinite(input.durationMs) ? Math.max(0, Math.min(Math.round(input.durationMs), 86_400_000)) : null,
       metadata: sanitizeMetadata(input.metadata),
     };
-    const { error } = await supabaseAdmin.from("studio_events").insert(row as never);
-    if (error) return false;
-    return true;
+    const analyticsDb = supabaseAdmin as any;
+    const { error } = await analyticsDb.from("studio_events").insert(row);
+    return !error;
   } catch {
     return false;
   }
