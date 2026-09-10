@@ -4,6 +4,7 @@ import { createLiveVoiceToken } from "./live-token.functions";
 import type { ChatContext, ChatMessage } from "../ai/agent";
 
 export type VoiceState = "idle" | "connecting" | "listening" | "processing" | "speaking" | "interrupted" | "paused" | "error";
+
 export interface LiveVoiceEvents {
   onStateChange?: (state: VoiceState) => void;
   onTranscriptChunk?: (text: string, isFinal: boolean, role: "user" | "assistant") => void;
@@ -11,8 +12,22 @@ export interface LiveVoiceEvents {
   onError?: (message: string) => void;
   locale?: "en" | "pt-PT";
 }
-type ServerMessage = { serverContent?: { interrupted?: boolean; turnComplete?: boolean; inputTranscription?: { text?: string; finished?: boolean }; outputTranscription?: { text?: string; finished?: boolean }; modelTurn?: { parts?: Array<{ inlineData?: { data?: string }; text?: string }> } }; error?: { message?: string } };
+
+type Transcript = { text?: string; finished?: boolean };
+type ServerMessage = {
+  serverContent?: {
+    interrupted?: boolean;
+    turnComplete?: boolean;
+    inputTranscription?: Transcript;
+    interimInputTranscription?: Transcript;
+    outputTranscription?: Transcript;
+    modelTurn?: { parts?: Array<{ inlineData?: { data?: string }; text?: string }> };
+  };
+  error?: { message?: string };
+  goAway?: { timeLeft?: string };
+};
 type TokenResult = { token: string; model: string };
+
 export class LiveVoiceSession {
   private state: VoiceState = "idle";
   private mic: MicrophoneManager | null = null;
@@ -41,7 +56,7 @@ export class LiveVoiceSession {
   }
 
   updateContext(context: ChatContext) { this.context = { ...this.context, ...context }; }
-  setHistory(history: ChatMessage[]) { this.history = [...history]; }
+  setHistory(history: ChatMessage[]) { this.history = [...history].slice(-20); }
   private setState(state: VoiceState) { if (this.state !== state) { this.state = state; this.events.onStateChange?.(state); } }
   private send(payload: unknown) { if (this.socket?.readyState === WebSocket.OPEN) this.socket.send(JSON.stringify(payload)); }
 
@@ -56,12 +71,30 @@ export class LiveVoiceSession {
       this.socket = socket;
       await new Promise<void>((resolve, reject) => {
         const timeout = window.setTimeout(() => reject(new Error("Voice connection timeout")), 10000);
-        socket.onopen = () => { window.clearTimeout(timeout); this.send({ setup: { model: `models/${token.model}`, generationConfig: { responseModalities: ["AUDIO"] } } }); resolve(); };
+        socket.onopen = () => {
+          window.clearTimeout(timeout);
+          this.send({ setup: { model: `models/${token.model}`, generationConfig: { responseModalities: ["AUDIO"] } } });
+          resolve();
+        };
         socket.onerror = () => { window.clearTimeout(timeout); reject(new Error("Voice websocket connection failed")); };
       });
+
       socket.onmessage = (event) => this.handleMessage(String(event.data));
-      socket.onclose = (event) => { if (this.state !== "idle" && event.code !== 1000) { this.setState("error"); this.events.onError?.("The real-time voice connection was interrupted."); } };
-      if (this.history.length) this.send({ clientContent: { turns: [{ role: "user", parts: [{ text: this.history.slice(-10).map((m) => `${m.role === "assistant" ? "Assistant" : "Visitor"}: ${m.text}`).join("\n") }] }], turnComplete: true } });
+      socket.onclose = (event) => {
+        if (this.state !== "idle" && event.code !== 1000) {
+          this.setState("error");
+          this.events.onError?.("The real-time voice connection was interrupted.");
+        }
+      };
+
+      if (this.history.length) {
+        const turns = this.history.slice(-10).map((message) => ({
+          role: message.role === "assistant" ? "model" : "user",
+          parts: [{ text: message.text }],
+        }));
+        this.send({ clientContent: { turns, turnComplete: true } });
+      }
+
       this.mic = new MicrophoneManager({
         sampleRate: 16000,
         bufferSize: 2048,
@@ -85,12 +118,27 @@ export class LiveVoiceSession {
     const content = message.serverContent;
     if (!content) return;
     if (content.interrupted) { this.player.stop(); this.assistantTranscript = ""; this.setState("interrupted"); }
-    if (content.inputTranscription?.text) { this.userTranscript += content.inputTranscription.text; this.events.onTranscriptChunk?.(content.inputTranscription.text, Boolean(content.inputTranscription.finished), "user"); }
-    if (content.outputTranscription?.text) { this.assistantTranscript += content.outputTranscription.text; this.events.onTranscriptChunk?.(content.outputTranscription.text, Boolean(content.outputTranscription.finished), "assistant"); }
+
+    const interim = content.interimInputTranscription?.text;
+    if (interim) {
+      this.userTranscript = interim;
+      this.events.onTranscriptChunk?.(interim, false, "user");
+    }
+    const finalInput = content.inputTranscription?.text;
+    if (finalInput) {
+      this.userTranscript = finalInput;
+      this.events.onTranscriptChunk?.(finalInput, true, "user");
+    }
+
+    if (content.outputTranscription?.text) {
+      this.assistantTranscript += content.outputTranscription.text;
+      this.events.onTranscriptChunk?.(content.outputTranscription.text, Boolean(content.outputTranscription.finished), "assistant");
+    }
     for (const part of content.modelTurn?.parts ?? []) {
       if (part.inlineData?.data) this.player.enqueuePCMChunk(part.inlineData.data, 24000);
       if (part.text) { this.assistantTranscript += part.text; this.events.onTranscriptChunk?.(part.text, false, "assistant"); }
     }
+    if (message.goAway) return;
     if (content.turnComplete) {
       const userText = this.userTranscript.trim();
       const assistantText = this.assistantTranscript.trim();
