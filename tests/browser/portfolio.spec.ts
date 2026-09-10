@@ -37,13 +37,27 @@ test.describe("portfolio critical journeys", () => {
     await expect(page.getByRole("button", { name: /voice|voz/i })).toBeVisible();
   });
 
-  test("language switcher changes the navigation to European Portuguese", async ({ page }) => {
+  test("language switcher translates the public experience and can switch back", async ({ page }) => {
     await page.goto("/");
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
     await page.getByRole("button", { name: /switch site language to portuguese/i }).click();
     await expect(page.locator("html")).toHaveAttribute("lang", "pt-PT");
     await expect(page.getByRole("link", { name: /portefólio/i }).first()).toBeVisible();
     await expect(page.getByRole("button", { name: /mudar idioma.*inglês/i })).toBeVisible();
+    await expect(page.locator("body")).toContainText(/Início|Serviços|Contacto|Disponível para projectos/);
+
+    await page.goto("/services");
+    await expect(page.locator("body")).toContainText(/Direcção de arte|Editorial e impressão|Design digital/i);
+
+    await page.goto("/credentials");
+    await expect(page.locator("body")).toContainText(/Percurso profissional|Experiência profissional|Disponível em 2026/i);
+
+    await page.goto("/contact");
+    await expect(page.locator("body")).toContainText(/Contacto|Iniciar um projecto/i);
+
+    await page.getByRole("button", { name: /mudar idioma.*inglês/i }).click();
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+    await expect(page.getByRole("link", { name: /portfolio/i }).first()).toBeVisible();
   });
 
   test("contact page validates the briefing before submit", async ({ page }) => {
