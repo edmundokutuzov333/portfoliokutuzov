@@ -94,6 +94,8 @@ function publicRecord(row: any) {
   };
 }
 
+const SELECT = "id,draft_token,session_id,name,role,company,email,phone,website,design_document,revision,status,created_at,updated_at";
+
 export const Route = createFileRoute("/api/studio/card")({
   server: {
     handlers: {
@@ -106,14 +108,9 @@ export const Route = createFileRoute("/api/studio/card")({
         if (!isCorsOriginAllowed(request)) return json(request, requestId, 403, { error: "ORIGIN_NOT_ALLOWED" });
         const rate = checkRateLimit(clientKey(request));
         if (!rate.allowed) return json(request, requestId, 429, { error: "RATE_LIMITED" }, { "Retry-After": String(rate.retryAfter) });
-        const url = new URL(request.url);
-        const token = text(url.searchParams.get("draftToken"), MAX_DRAFT_TOKEN);
+        const token = text(new URL(request.url).searchParams.get("draftToken"), MAX_DRAFT_TOKEN);
         if (!token) return json(request, requestId, 400, { error: "DRAFT_TOKEN_REQUIRED" });
-        const { data, error } = await (supabaseAdmin as any)
-          .from("studio_cards")
-          .select("id,draft_token,session_id,name,role,company,email,phone,website,design_document,revision,status,created_at,updated_at")
-          .eq("draft_token", token)
-          .maybeSingle();
+        const { data, error } = await (supabaseAdmin as any).from("studio_cards").select(SELECT).eq("draft_token", token).maybeSingle();
         if (error) {
           logObservability("dependency_error", { requestId, route: "/api/studio/card", dependency: "supabase", code: "STUDIO_CARD_READ_FAILED", message: error.message });
           return json(request, requestId, 502, { error: "CARD_READ_FAILED" });
@@ -130,11 +127,7 @@ export const Route = createFileRoute("/api/studio/card")({
         const rate = checkRateLimit(clientKey(request));
         if (!rate.allowed) return json(request, requestId, 429, { error: "RATE_LIMITED" }, { "Retry-After": String(rate.retryAfter) });
         let body: CardBody;
-        try {
-          body = (await request.json()) as CardBody;
-        } catch {
-          return json(request, requestId, 400, { error: "INVALID_JSON" });
-        }
+        try { body = (await request.json()) as CardBody; } catch { return json(request, requestId, 400, { error: "INVALID_JSON" }); }
 
         const sessionId = text(body.sessionId, MAX_SESSION_ID);
         const draftToken = text(body.draftToken, MAX_DRAFT_TOKEN);
@@ -145,11 +138,9 @@ export const Route = createFileRoute("/api/studio/card")({
         const email = text(body.email, 254);
         const phone = text(body.phone, 80);
         const website = text(body.website, MAX_WEBSITE);
-        const revision = body.revision === undefined || body.revision === null ? undefined : Number(body.revision);
+        const suppliedRevision = body.revision === undefined || body.revision === null || body.revision === "" ? undefined : Number(body.revision);
         if (sessionId.length < 20) return json(request, requestId, 400, { error: "INVALID_SESSION" });
-        if (!name && !role && !company && !email && !phone && !website) {
-          // Empty drafts are valid, but still require a real design document.
-        }
+        if (suppliedRevision !== undefined && (!Number.isInteger(suppliedRevision) || suppliedRevision < 1)) return json(request, requestId, 400, { error: "INVALID_REVISION" });
         if (!validEmail(email)) return json(request, requestId, 400, { error: "INVALID_EMAIL" });
         if (!validDesign(body.design)) return json(request, requestId, 400, { error: "INVALID_DESIGN_DOCUMENT" });
         const design = sanitizePublicIdentityDesign(body.design);
@@ -157,54 +148,47 @@ export const Route = createFileRoute("/api/studio/card")({
 
         if (!draftToken) {
           const newToken = createDraftToken();
-          const payload = {
-            session_id: sessionId,
-            draft_token: newToken,
-            name,
-            role,
-            company,
-            email,
-            phone,
-            website,
-            design_document: design,
-            revision: 1,
-            status: "draft",
-            last_saved_at: new Date().toISOString(),
-          };
-          const { data, error } = await db.from("studio_cards").insert(payload).select("id,draft_token,session_id,name,role,company,email,phone,website,design_document,revision,status,created_at,updated_at").single();
+          const payload = { session_id: sessionId, draft_token: newToken, name, role, company, email, phone, website, design_document: design, revision: 1, status: "draft", last_saved_at: new Date().toISOString() };
+          const { data, error } = await db.from("studio_cards").insert(payload).select(SELECT).single();
           if (error) {
             logObservability("dependency_error", { requestId, route: "/api/studio/card", dependency: "supabase", code: "STUDIO_CARD_CREATE_FAILED", message: error.message });
             return json(request, requestId, 502, { error: "CARD_SAVE_FAILED" });
           }
-          void trackStudioEvent({ eventName: "card_saved", sessionId, cardId: data.id, metadata: { mode: "create" } });
+          void trackStudioEvent({ eventName: "card_saved", sessionId, cardId: data.id, metadata: { mode: "create", revision: 1 } });
           logObservability("request_end", { requestId, route: "/api/studio/card", method: "POST", status: 200, latencyMs: Date.now() - startedAt, dependency: "supabase" });
           return json(request, requestId, 200, { card: publicRecord(data) });
         }
 
-        const nextRevision = Number.isInteger(revision) && revision! > 0 ? revision! + 1 : null;
-        if (id && !/^[0-9a-f-]{36}$/i.test(id)) return json(request, requestId, 400, { error: "INVALID_CARD_ID" });
+        const currentResult = await db.from("studio_cards").select(SELECT).eq("draft_token", draftToken).maybeSingle();
+        if (currentResult.error) {
+          logObservability("dependency_error", { requestId, route: "/api/studio/card", dependency: "supabase", code: "STUDIO_CARD_LOOKUP_FAILED", message: currentResult.error.message });
+          return json(request, requestId, 502, { error: "CARD_READ_FAILED" });
+        }
+        const current = currentResult.data;
+        if (!current) return json(request, requestId, 404, { error: "CARD_NOT_FOUND" });
+        if (id && id !== current.id) return json(request, requestId, 409, { error: "CARD_TOKEN_MISMATCH" });
+        if (current.session_id !== sessionId) return json(request, requestId, 403, { error: "SESSION_MISMATCH" });
+        const expectedRevision = suppliedRevision ?? Number(current.revision || 1);
+        const nextRevision = expectedRevision + 1;
 
-        let query = db
+        const { data, error } = await db
           .from("studio_cards")
-          .update({ name, role, company, email, phone, website, design_document: design, revision: nextRevision ?? 1, last_saved_at: new Date().toISOString(), updated_at: new Date().toISOString(), status: "saved" })
-          .eq("draft_token", draftToken);
-        if (id) query = query.eq("id", id);
-        if (nextRevision !== null) query = query.eq("revision", revision);
-        const { data, error } = await query.select("id,draft_token,session_id,name,role,company,email,phone,website,design_document,revision,status,created_at,updated_at").maybeSingle();
+          .update({ name, role, company, email, phone, website, design_document: design, revision: nextRevision, last_saved_at: new Date().toISOString(), status: current.status === "published" ? "published" : "saved" })
+          .eq("draft_token", draftToken)
+          .eq("session_id", sessionId)
+          .eq("revision", expectedRevision)
+          .select(SELECT)
+          .maybeSingle();
 
         if (error) {
           logObservability("dependency_error", { requestId, route: "/api/studio/card", dependency: "supabase", code: "STUDIO_CARD_UPDATE_FAILED", message: error.message });
           return json(request, requestId, 502, { error: "CARD_SAVE_FAILED" });
         }
         if (!data) {
-          const { data: latest } = await db
-            .from("studio_cards")
-            .select("id,draft_token,session_id,name,role,company,email,phone,website,design_document,revision,status,created_at,updated_at")
-            .eq("draft_token", draftToken)
-            .maybeSingle();
-          if (!latest) return json(request, requestId, 404, { error: "CARD_NOT_FOUND" });
-          void trackStudioEvent({ eventName: "card_save_conflict", sessionId, cardId: latest.id, metadata: { expected_revision: revision ?? null, actual_revision: latest.revision } });
-          return json(request, requestId, 409, { error: "REVISION_CONFLICT", card: publicRecord(latest) });
+          const latest = await db.from("studio_cards").select(SELECT).eq("draft_token", draftToken).maybeSingle();
+          if (!latest.data) return json(request, requestId, 404, { error: "CARD_NOT_FOUND" });
+          void trackStudioEvent({ eventName: "card_save_conflict", sessionId, cardId: latest.data.id, metadata: { expected_revision: expectedRevision, actual_revision: latest.data.revision } });
+          return json(request, requestId, 409, { error: "REVISION_CONFLICT", card: publicRecord(latest.data) });
         }
         void trackStudioEvent({ eventName: "card_saved", sessionId, cardId: data.id, metadata: { mode: "update", revision: data.revision } });
         logObservability("request_end", { requestId, route: "/api/studio/card", method: "POST", status: 200, latencyMs: Date.now() - startedAt, dependency: "supabase" });
