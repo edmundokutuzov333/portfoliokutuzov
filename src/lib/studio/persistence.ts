@@ -6,7 +6,7 @@ const supabase = createClient(publicConfig.supabase.url, publicConfig.supabase.p
   auth: { persistSession: false, autoRefreshToken: false },
 });
 
-export async function saveStudioCard(card: StudioCardData) {
+export async function createStudioCard(card: StudioCardData & { id: string }) {
   const payload = {
     id: card.id,
     session_id: card.sessionId,
@@ -17,10 +17,9 @@ export async function saveStudioCard(card: StudioCardData) {
     phone: card.phone.trim().slice(0, 80),
     website: card.website.trim().slice(0, 500),
     design_document: card.design,
-    status: "draft",
+    status: "draft" as const,
   };
 
-  const { data, error } = await supabase.from("studio_cards").upsert(payload, { onConflict: "id" }).select("id").single();
+  const { error } = await supabase.from("studio_cards").insert(payload);
   if (error) throw error;
-  return data;
 }
