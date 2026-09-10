@@ -31,14 +31,34 @@ export function DeferredAiAssistant() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!ready) return;
+    const onClick = (event: MouseEvent) => {
+      const target = event.target as Element | null;
+      if (target?.closest("#ai-assistant-fab")) {
+        trackEvent({ action: "ai_open", element: "ai_assistant" });
+      }
+    };
+    document.addEventListener("click", onClick, true);
+    return () => document.removeEventListener("click", onClick, true);
+  }, [ready]);
+
+  useEffect(() => {
+    if (!ready) return;
+    const onSubmit = (event: Event) => {
+      const target = event.target as Element | null;
+      if (target?.closest("#ai-assistant-container")) {
+        trackEvent({ action: "ai_message", element: "ai_assistant" });
+      }
+    };
+    document.addEventListener("submit", onSubmit, true);
+    return () => document.removeEventListener("submit", onSubmit, true);
+  }, [ready]);
+
   if (!ready) return null;
   return (
     <Suspense fallback={null}>
       <AiAssistant />
     </Suspense>
   );
-}
-
-export function trackAiOpen() {
-  trackEvent({ action: "ai_open", element: "ai_assistant" });
 }
