@@ -65,6 +65,7 @@ export function ContactDraftRecovery() {
   useEffect(() => {
     if (window.location.pathname !== "/contact") return;
     let attachedForm: HTMLFormElement | null = null;
+    let saveListener: (() => void) | null = null;
     let observer: MutationObserver | null = null;
 
     const attach = () => {
@@ -73,9 +74,9 @@ export function ContactDraftRecovery() {
       if (!form) return false;
       attachedForm = form;
       restoreDraft(form);
-      const save = () => saveDraft(form);
-      form.addEventListener("input", save, { passive: true });
-      form.addEventListener("change", save, { passive: true });
+      saveListener = () => saveDraft(form);
+      form.addEventListener("input", saveListener, { passive: true });
+      form.addEventListener("change", saveListener, { passive: true });
       observer?.disconnect();
       observer = null;
       return true;
@@ -88,11 +89,9 @@ export function ContactDraftRecovery() {
 
     return () => {
       observer?.disconnect();
-      if (attachedForm) {
-        const form = attachedForm;
-        const save = () => saveDraft(form);
-        form.removeEventListener("input", save);
-        form.removeEventListener("change", save);
+      if (attachedForm && saveListener) {
+        attachedForm.removeEventListener("input", saveListener);
+        attachedForm.removeEventListener("change", saveListener);
       }
     };
   }, []);
