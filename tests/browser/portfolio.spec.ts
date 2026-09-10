@@ -34,6 +34,16 @@ test.describe("portfolio critical journeys", () => {
     await expect(fab).toBeFocused();
     await fab.press("Enter");
     await expect(page.locator("#ai-assistant-container")).toBeVisible();
+    await expect(page.getByRole("button", { name: /voice|voz/i })).toBeVisible();
+  });
+
+  test("language switcher changes the navigation to European Portuguese", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+    await page.getByRole("button", { name: /switch site language to portuguese/i }).click();
+    await expect(page.locator("html")).toHaveAttribute("lang", "pt-PT");
+    await expect(page.getByRole("link", { name: /portefólio/i }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: /mudar idioma.*inglês/i })).toBeVisible();
   });
 
   test("contact page validates the briefing before submit", async ({ page }) => {
@@ -50,7 +60,7 @@ test.describe("portfolio critical journeys", () => {
     const page = await context.newPage();
     await page.goto("/");
     await expect(page.locator("main")).toBeVisible();
-    await expect(page.locator("html")).toHaveAttribute("lang", "pt-PT");
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
     await context.close();
   });
 });
