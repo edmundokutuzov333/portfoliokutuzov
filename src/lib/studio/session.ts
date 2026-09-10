@@ -2,7 +2,12 @@ const SESSION_KEY = "ek_studio_session_v1";
 
 function randomId() {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
-  return `studio_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+  if (typeof crypto !== "undefined" && "getRandomValues" in crypto) {
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    return `studio_${Array.from(bytes, (value) => value.toString(16).padStart(2, "0")).join("")}`;
+  }
+  return `studio_${Date.now()}`;
 }
 
 export function getStudioSessionId() {
