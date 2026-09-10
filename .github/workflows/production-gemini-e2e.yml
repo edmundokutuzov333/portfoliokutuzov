@@ -8,6 +8,8 @@ on:
         required: false
         default: https://portfoliokutuzov-omega.vercel.app
         type: string
+  push:
+    branches: [ai-realtime-i18n]
 
 permissions:
   contents: read
@@ -25,5 +27,5 @@ jobs:
       - run: npm ci
       - name: Exercise production Gemini endpoints
         env:
-          PRODUCTION_URL: ${{ inputs.production_url }}
+          PRODUCTION_URL: ${{ inputs.production_url || 'https://portfoliokutuzov-omega.vercel.app' }}
         run: node scripts/production-gemini-e2e.mjs
