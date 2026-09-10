@@ -17,7 +17,7 @@ test("SEO primitives expose canonical, Open Graph and Twitter metadata", () => {
 
 test("Root document is SSR-safe and structured-data aware", () => {
   const root = read("src/routes/__root.tsx");
-  assert.match(root, /lang=\"pt-PT\"/);
+  assert.match(root, /lang=\"en\"/);
   assert.match(root, /application\/ld\+json/);
   assert.match(root, /DeferredAiAssistant/);
 });
