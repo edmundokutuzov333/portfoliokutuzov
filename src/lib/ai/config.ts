@@ -22,6 +22,7 @@ export const FALLBACK_MODEL = resolveFallbackModel();
 export const GEMINI_LIVE_MODEL = getEnvVar("GEMINI_LIVE_MODEL") || "gemini-3.1-flash-live-preview";
 export const GEMINI_TTS_MODEL = getEnvVar("GEMINI_TTS_MODEL") || "gemini-3.1-flash-tts-preview";
 export const GEMINI_VOICE = getEnvVar("GEMINI_VOICE") || "Charon";
+export const GEMINI_FEMALE_VOICE = GEMINI_VOICE;
 
 let aiClient: GoogleGenAI | null = null;
 export function getGeminiClient(): GoogleGenAI {
@@ -33,21 +34,8 @@ export function getGeminiClient(): GoogleGenAI {
   return aiClient;
 }
 
-export type ModelCallDiagnostics = {
-  requestId: string;
-  sessionId?: string;
-  primaryModel: string;
-  fallbackModel: string;
-  modelUsed: string;
-  fallbackTriggered: boolean;
-  errorCategory?: string;
-  latencyMs: number;
-};
-
-export function logDiagnostics(diag: ModelCallDiagnostics) {
-  console.log(JSON.stringify({ level: "info", type: "AI_DIAGNOSTICS", timestamp: new Date().toISOString(), ...diag }));
-}
-
+export type ModelCallDiagnostics = { requestId: string; sessionId?: string; primaryModel: string; fallbackModel: string; modelUsed: string; fallbackTriggered: boolean; errorCategory?: string; latencyMs: number };
+export function logDiagnostics(diag: ModelCallDiagnostics) { console.log(JSON.stringify({ level: "info", type: "AI_DIAGNOSTICS", timestamp: new Date().toISOString(), ...diag })); }
 interface ErrorWithStatus { message?: string; status?: number | string; code?: number | string; error?: { code?: number | string; status?: string } }
 function isQuotaOrRateLimitError(err: unknown): boolean {
   if (!err) return false;
@@ -56,7 +44,6 @@ function isQuotaOrRateLimitError(err: unknown): boolean {
   const status = e.status || e.code || (e.error && (e.error.code || e.error.status));
   return status === 429 || status === "RESOURCE_EXHAUSTED" || message.includes("429") || message.includes("RESOURCE_EXHAUSTED") || message.toLowerCase().includes("quota") || message.toLowerCase().includes("rate limit") || message.toLowerCase().includes("temporarily unavailable");
 }
-
 export async function executeWithModelFallback<T>(requestId: string, sessionId: string | undefined, operation: (ai: GoogleGenAI, modelName: string) => Promise<T>): Promise<{ result: T; diagnostics: ModelCallDiagnostics }> {
   const startTime = Date.now();
   const ai = getGeminiClient();
