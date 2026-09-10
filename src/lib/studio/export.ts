@@ -42,9 +42,7 @@ async function svgToPngBytes(design: StudioDesignDocument): Promise<Uint8Array> 
     ctx.drawImage(image, 0, 0, width, height);
     const png = await new Promise<Blob>((resolve, reject) => canvas.toBlob((value) => value ? resolve(value) : reject(new Error("PNG encoding failed.")), "image/png"));
     return new Uint8Array(await png.arrayBuffer());
-  } finally {
-    URL.revokeObjectURL(url);
-  }
+  } finally { URL.revokeObjectURL(url); }
 }
 
 function blobPart(bytes: Uint8Array) {
@@ -53,12 +51,18 @@ function blobPart(bytes: Uint8Array) {
   return copy.buffer;
 }
 
-export async function exportPng(design: StudioDesignDocument) {
-  const png = await svgToPngBytes(design);
-  downloadBlob(new Blob([blobPart(png)], { type: "image/png" }), "business-card.png");
+function dataUrlFromBytes(bytes: Uint8Array, mime: string) {
+  let binary = "";
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+  return `data:${mime};base64,${btoa(binary)}`;
 }
 
-export async function exportPdf(design: StudioDesignDocument) {
+export async function createPngDataUrl(design: StudioDesignDocument) {
+  return dataUrlFromBytes(await svgToPngBytes(design), "image/png");
+}
+
+export async function createPdfDataUrl(design: StudioDesignDocument) {
   const png = await svgToPngBytes(design);
   const pdf = await PDFDocument.create();
   const width = design.widthMm / 25.4 * 72;
@@ -69,6 +73,16 @@ export async function exportPdf(design: StudioDesignDocument) {
   pdf.setTitle("Business Card");
   pdf.setSubject("Kutuzov Studio business card");
   pdf.setCreator("Kutuzov Studio");
-  const bytes = await pdf.save();
-  downloadBlob(new Blob([blobPart(bytes)], { type: "application/pdf" }), "business-card.pdf");
+  return dataUrlFromBytes(await pdf.save(), "application/pdf");
+}
+
+export async function exportPng(design: StudioDesignDocument) {
+  downloadBlob(new Blob([blobPart(await svgToPngBytes(design))], { type: "image/png" }), "business-card.png");
+}
+
+export async function exportPdf(design: StudioDesignDocument) {
+  const dataUrl = await createPdfDataUrl(design);
+  const [, base64 = ""] = dataUrl.split(",", 2);
+  const binary = Uint8Array.from(atob(base64), (char) => char.charCodeAt(0));
+  downloadBlob(new Blob([blobPart(binary)], { type: "application/pdf" }), "business-card.pdf");
 }
