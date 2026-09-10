@@ -37,7 +37,7 @@ export function DeferredReel() {
   return (
     <section
       aria-label="Selected portfolio reel"
-      className="min-h-[calc(50vh+9rem)] md:min-h-[calc(60vh+10rem)] lg:min-h-[calc(70vh+11rem)]"
+      className="deferred-reel min-h-[calc(50vh+9rem)] md:min-h-[calc(60vh+10rem)] lg:min-h-[calc(70vh+11rem)]"
     >
       {ready ? (
         <Suspense fallback={null}>
