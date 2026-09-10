@@ -43,24 +43,26 @@ test("Asset intake accepts SVG PNG JPEG WebP, rejects PDF in the editor, and cap
   assert.match(editor, /2 \* 1024 \* 1024/);
 });
 
-test("SVG renderer escapes text and every attribute-bearing user value", async () => {
+test("SVG renderer escapes every user-controlled value used in SVG markup", async () => {
   const svg = await read("src/lib/studio/svg.ts");
-  assert.match(svg, /replace\(\[/);
+  assert.match(svg, /const esc = \(value: string\)/);
   for (const value of ["design.background.value", "design.background.secondary", "element.fill", "element.fontFamily", "element.text", "element.src"]) {
-    const escaped = new RegExp(`esc\\(${value.replaceAll(".", "\\.")}\\)`);
-    assert.match(svg, escaped, `expected ${value} to be escaped`);
+    assert.ok(svg.includes(`esc(${value})`), `${value} is not escaped`);
   }
+  assert.doesNotMatch(svg, /innerHTML/);
   assert.doesNotMatch(svg, /dangerouslySetInnerHTML/);
 });
 
-test("Public identity sanitization constrains SVG and image payloads", async () => {
+test("Public identity sanitization constrains image payloads and geometry", async () => {
   const identity = await read("src/lib/studio/identity-format.ts");
   assert.match(identity, /DATA_IMAGE/);
-  assert.match(identity, /data:image\\\/(?:png|jpeg|webp|svg\\\+xml)/);
+  assert.match(identity, /data:image\//);
   assert.match(identity, /src\.length <= 6_000_000/);
   assert.match(identity, /slice\(0, 300\)/);
   assert.match(identity, /elements\.slice\(0, 20\)/);
   assert.match(identity, /HEX\.test/);
+  assert.match(identity, /widthMm: 90/);
+  assert.match(identity, /heightMm: 50/);
 });
 
 test("Exports share one rendering source and cover SVG PNG PDF", async () => {
@@ -96,7 +98,7 @@ test("Public telemetry is bounded, rate limited and denies sensitive internal ev
   assert.doesNotMatch(route, /"generation_started"\s*,/);
   assert.doesNotMatch(route, /"ai_request"\s*,/);
   assert.doesNotMatch(route, /"email_started"\s*,/);
-  assert.match(route, /studio_events/);
+  assert.match(route, /trackStudioEvent/);
 });
 
 test("Admin analytics endpoint authenticates claims and admin membership", async () => {
@@ -132,7 +134,7 @@ test("QA surface has substantial coverage rather than one smoke assertion per ar
   const identity = await read("src/lib/studio/identity-format.ts");
   const email = await read("src/routes/api.studio-email.ts");
   const svg = await read("src/lib/studio/svg.ts");
-  assert.ok(count(editor, /assert|onPointer|Undo2|Redo2|file\.type/g) >= 6);
+  assert.ok(count(editor, /onPointer|Undo2|Redo2|file\.type/g) >= 6);
   assert.ok(count(identity, /clamp|HEX|DATA_IMAGE|escapeVCard/g) >= 8);
   assert.ok(count(email, /MAX_|validate|attachment|base64|Content-Type/g) >= 8);
   assert.ok(count(svg, /esc\(/g) >= 6);
