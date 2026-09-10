@@ -22,7 +22,6 @@ export const FALLBACK_MODEL = resolveFallbackModel();
 export const GEMINI_LIVE_MODEL = getEnvVar("GEMINI_LIVE_MODEL") || "gemini-3.1-flash-live-preview";
 export const GEMINI_TTS_MODEL = getEnvVar("GEMINI_TTS_MODEL") || "gemini-3.1-flash-tts-preview";
 export const GEMINI_VOICE = getEnvVar("GEMINI_VOICE") || "Charon";
-export const GEMINI_FEMALE_VOICE = GEMINI_VOICE;
 
 let aiClient: GoogleGenAI | null = null;
 export function getGeminiClient(): GoogleGenAI {
