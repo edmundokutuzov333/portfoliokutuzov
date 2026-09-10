@@ -23,19 +23,20 @@ function DefaultErrorComponent({ error, reset }: { error: Error; reset: () => vo
         )}
         <div className="mt-6 flex items-center justify-center gap-3">
           <button
+            type="button"
             onClick={() => {
               resetKnownCorruptedState();
               router.options.context.queryClient.clear();
               router.invalidate();
               reset();
             }}
-            className="inline-flex items-center justify-center rounded-full bg-[var(--color-acc-blue)] px-4 py-2 text-sm font-medium text-black"
+            className="inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--color-acc-blue)] px-4 py-2 text-sm font-medium text-black focus-visible:outline-2 focus-visible:outline-[var(--color-accent-hover)]"
           >
             Try again
           </button>
           <a
             href="/"
-            className="inline-flex items-center justify-center rounded-full border border-white/15 px-4 py-2 text-sm hover:border-white/40"
+            className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/15 px-4 py-2 text-sm hover:border-white/40 focus-visible:outline-2 focus-visible:outline-[var(--color-accent-hover)]"
           >
             Go home
           </a>
@@ -49,25 +50,23 @@ export const getRouter = () => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 30_000,
+        staleTime: 120_000,
+        gcTime: 15 * 60_000,
         retry: 1,
         refetchOnWindowFocus: false,
+        refetchOnReconnect: true,
         throwOnError: false,
       },
-      mutations: {
-        retry: 0,
-        throwOnError: false,
-      },
+      mutations: { retry: 0, throwOnError: false },
     },
   });
-  const router = createRouter({
+  return createRouter({
     routeTree,
     context: { queryClient },
     scrollRestoration: true,
-    defaultPreloadStaleTime: 0,
+    defaultPreloadStaleTime: 30_000,
     defaultErrorComponent: DefaultErrorComponent,
   });
-  return router;
 };
 
 declare module "@tanstack/react-router" {

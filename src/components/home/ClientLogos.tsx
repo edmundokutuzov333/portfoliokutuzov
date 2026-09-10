@@ -1,4 +1,3 @@
-import * as React from "react";
 import { motion } from "framer-motion";
 import { useClients, useSiteSettings } from "@/hooks/useSiteData";
 import { readSetting } from "@/lib/cms";
@@ -11,7 +10,10 @@ export function ClientLogos() {
   const title = r("title", "Brands and teams\nI have worked with.");
 
   return (
-    <section className="relative px-5 md:px-8 py-24 bg-[var(--color-bg)]">
+    <section
+      aria-labelledby="clients-title"
+      className="relative px-5 md:px-8 py-24 bg-[var(--color-bg)]"
+    >
       <div className="max-w-[1240px] mx-auto">
         <div className="grid grid-cols-12 gap-6 mb-12">
           <div className="col-span-12 md:col-span-5">
@@ -19,11 +21,12 @@ export function ClientLogos() {
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="mono text-[10px] tracking-[0.28em] text-sky-300/75 uppercase"
+              className="eyebrow text-sky-300/75"
             >
               {r("eyebrow", "Selected Clients")}
             </motion.p>
             <motion.h2
+              id="clients-title"
               initial={{ opacity: 0, y: 15 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -46,7 +49,6 @@ export function ClientLogos() {
           </div>
         </div>
 
-        {/* 2 Horizontal Rows Animated Continuous Marquee */}
         <CinematicLogoCloud clients={clients} className="mt-8 md:mt-12" />
       </div>
     </section>

@@ -2,22 +2,17 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowUpRight } from "lucide-react";
 import { ServicesInteractive } from "@/components/services/ServicesInteractive";
 import { motion } from "framer-motion";
-
+import { createSeo } from "@/lib/seo";
 export const Route = createFileRoute("/services")({
-  head: () => ({
-    meta: [
-      { title: "Capabilities - Edmundo Kutuzov" },
-      {
-        name: "description",
-        content:
-          "Capabilities and visual disciplines: art direction, brand identity, campaign design, and digital systems by Edmundo Kutuzov.",
-      },
-      { property: "og:title", content: "Capabilities - Edmundo Kutuzov" },
-    ],
-  }),
+  head: () =>
+    createSeo({
+      title: "Capabilities - Edmundo Kutuzov",
+      description:
+        "Capabilities and visual disciplines: art direction, brand identity, campaign design, and digital systems by Edmundo Kutuzov.",
+      path: "/services",
+    }),
   component: ServicesPage,
 });
-
 function ServicesPage() {
   return (
     <div className="bg-[var(--color-bg)] min-h-screen">
@@ -27,22 +22,20 @@ function ServicesPage() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="flex items-start justify-between mono text-[10px] tracking-[0.28em] text-sky-300/75 uppercase mb-12"
+            className="flex items-start justify-between mono text-[10px] tracking-[.28em] text-sky-300/75 uppercase mb-12"
           >
             <div>Methodology · Practice</div>
             <div>Capabilities</div>
           </motion.div>
-
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-            className="display text-[clamp(2.75rem,7vw+1rem,7.5rem)] leading-[0.96] tracking-[-0.025em] text-[var(--color-text-primary)] max-w-5xl"
+            className="display text-[clamp(2.75rem,7vw+1rem,7.5rem)] leading-[.96] tracking-[-.025em] text-[var(--color-text-primary)] max-w-5xl"
           >
             Visual capabilities &amp;{" "}
             <span className="italic text-sky-300 font-normal">disciplines.</span>
           </motion.h1>
-
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -55,9 +48,7 @@ function ServicesPage() {
           </motion.p>
         </div>
       </section>
-
       <ServicesInteractive />
-
       <section className="relative px-4 md:px-8 py-32 border-t border-[var(--color-border-subtle)]">
         <div className="max-w-[var(--width-standard)] mx-auto">
           <motion.div
@@ -67,7 +58,7 @@ function ServicesPage() {
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="text-center"
           >
-            <h2 className="display text-4xl md:text-6xl mt-8 max-w-3xl mx-auto leading-[1.05] tracking-[-0.02em]">
+            <h2 className="display text-4xl md:text-6xl mt-8 max-w-3xl mx-auto leading-[1.05]">
               <span className="text-[var(--color-text-primary)]">
                 Tell me about your brand and{" "}
               </span>
@@ -76,7 +67,7 @@ function ServicesPage() {
             <div className="mt-16 flex justify-center">
               <Link
                 to="/contact"
-                className="group flex h-14 items-center gap-3 rounded-full bg-[var(--color-text-primary)] px-8 text-[15px] font-semibold text-[var(--color-bg)] transition-all hover:bg-sky-300 hover:text-black focus:outline-none"
+                className="group flex h-14 items-center gap-3 rounded-full bg-[var(--color-text-primary)] px-8 text-[15px] font-semibold text-[var(--color-bg)] transition-all hover:bg-sky-300 hover:text-black focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent-hover)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg)]"
               >
                 Send a project brief
                 <ArrowUpRight

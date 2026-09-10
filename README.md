@@ -4,6 +4,8 @@ Dynamic production portfolio for Edmundo Kutuzov. The application uses TanStack 
 
 Phase 1 establishes the production baseline for runtime consistency, SSR entrypoints, admin authorization, API hardening, security headers, regression checks, CI validation and deployment documentation.
 
+Phase 2 establishes the premium product baseline for performance, deferred heavy UI, deterministic portfolio motion, responsive image behavior, accessibility primitives, technical SEO, route timing instrumentation and Lighthouse regression gates.
+
 ## Architecture
 
 ```text
@@ -14,3 +16,5 @@ Browser
   -> React Query + Supabase
   -> Server routes / AI services
 ```
+
+Phase 2 validation is intentionally gated through GitHub CI and Lighthouse before merge.

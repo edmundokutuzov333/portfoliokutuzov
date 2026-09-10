@@ -1,6 +1,8 @@
 User-agent: *
 Allow: /
+Disallow: /edmundo-control-room
 Disallow: /admin
 Disallow: /i/
+Disallow: /api/
 
-Sitemap: https://portfoliokutuzov2026.lovable.app/sitemap.xml
+Sitemap: https://portfoliokutuzov-omega.vercel.app/sitemap.xml

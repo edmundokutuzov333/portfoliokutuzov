@@ -1,14 +1,11 @@
 name: CI
-
 on:
   push:
-    branches: [main, phase1-hardening]
+    branches: [main, phase1-hardening, phase2-final-exec]
   pull_request:
     branches: [main]
-
 permissions:
   contents: read
-
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -16,33 +13,25 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
-
       - name: Setup Node
         uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: npm
           package-manager-cache: false
-
       - name: Verify runtime declaration
         run: |
           test "$(cat .nvmrc | tr -d '\n\r')" = "24"
           node -e "const p=require('./package.json'); if(p.engines?.node!=='24.x') process.exit(1)"
-
       - name: Install
         run: npm ci
-
       - name: Regression tests
         run: npm test
-
       - name: Diagnostics
         run: npm run diagnose
-
       - name: Typecheck
         run: npm run typecheck
-
       - name: Lint
         run: npm run lint
-
       - name: Production build
         run: npm run build

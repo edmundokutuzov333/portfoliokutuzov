@@ -16,6 +16,12 @@ import { projects as staticProjects } from "@/data/projects";
 import { clients as staticClients } from "@/data/clients";
 import { toDeterministicUuid } from "@/lib/utils";
 
+const PUBLIC_READ_TIMEOUT_MS = 4_000;
+function boundedSignal(signal: AbortSignal) {
+  if (typeof AbortSignal.timeout !== "function") return signal;
+  return AbortSignal.any([signal, AbortSignal.timeout(PUBLIC_READ_TIMEOUT_MS)]);
+}
+
 const FALLBACK_PROJECTS: DbProject[] = staticProjects.map((p) => ({
   id: toDeterministicUuid("00000004", p.id),
   slug: p.title.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
@@ -35,7 +41,6 @@ const FALLBACK_PROJECTS: DbProject[] = staticProjects.map((p) => ({
   featured_priority: 4 - p.id,
   client_name: p.title,
 }));
-
 const FALLBACK_CLIENTS: DbClient[] = staticClients.map((name, index) => ({
   id: toDeterministicUuid("00000003", index + 1),
   name,
@@ -45,7 +50,6 @@ const FALLBACK_CLIENTS: DbClient[] = staticClients.map((name, index) => ({
   is_active: true,
   kind: "client",
 }));
-
 const FALLBACK_STUDIOS: DbClient[] = [
   {
     id: toDeterministicUuid("00000002", 1),
@@ -75,16 +79,13 @@ const FALLBACK_STUDIOS: DbClient[] = [
     kind: "studio",
   },
 ];
-
 type RealtimeEntry = {
   channel: RealtimeChannel;
   listeners: Set<() => void>;
   references: number;
   removalTimer?: ReturnType<typeof setTimeout>;
 };
-
 const realtimeEntries = new Map<string, RealtimeEntry>();
-
 function subscribeToTable(table: string, listener: () => void) {
   try {
     let entry = realtimeEntries.get(table);
@@ -92,9 +93,9 @@ function subscribeToTable(table: string, listener: () => void) {
       const listeners = new Set<() => void>();
       const channel = supabase
         .channel(`public-${table}`)
-        .on("postgres_changes", { event: "*", schema: "public", table }, () => {
-          listeners.forEach((notify) => notify());
-        })
+        .on("postgres_changes", { event: "*", schema: "public", table }, () =>
+          listeners.forEach((notify) => notify()),
+        )
         .subscribe();
       entry = { channel, listeners, references: 0 };
       realtimeEntries.set(table, entry);
@@ -102,7 +103,6 @@ function subscribeToTable(table: string, listener: () => void) {
     if (entry.removalTimer) clearTimeout(entry.removalTimer);
     entry.references += 1;
     entry.listeners.add(listener);
-
     return () => {
       const current = realtimeEntries.get(table);
       if (!current) return;
@@ -115,27 +115,24 @@ function subscribeToTable(table: string, listener: () => void) {
         realtimeEntries.delete(table);
         try {
           void supabase.removeChannel(latest.channel);
-        } catch {
-          // Ignore error on channel removal
+        } catch (_error) {
+          void _error;
         }
-      }, 1_000);
+      }, 1000);
     };
-  } catch {
+  } catch (_error) {
+    void _error;
     return () => {};
   }
 }
-
 function useRealtimeInvalidate(table: string, queryKey: unknown[]) {
   const qc = useQueryClient();
-  useEffect(() => {
-    return subscribeToTable(table, () => {
-      void qc.invalidateQueries({ queryKey });
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [qc, table]);
+  useEffect(
+    () => subscribeToTable(table, () => void qc.invalidateQueries({ queryKey })),
+    [qc, table],
+  );
 }
 
-// ---------- settings ----------
 export function useSiteSettings() {
   useRealtimeInvalidate("site_settings", ["site_settings"]);
   return useQuery({
@@ -145,8 +142,8 @@ export function useSiteSettings() {
         const { data, error } = await supabase
           .from("site_settings")
           .select("key,value")
-          .abortSignal(signal);
-        if (error || !data || data.length === 0) return FALLBACK_SETTINGS;
+          .abortSignal(boundedSignal(signal));
+        if (error || !data?.length) return FALLBACK_SETTINGS;
         const out: SiteSettings = { ...FALLBACK_SETTINGS };
         for (const row of data)
           out[row.key] = {
@@ -154,16 +151,15 @@ export function useSiteSettings() {
             ...((row.value as Record<string, unknown>) ?? {}),
           };
         return out;
-      } catch {
+      } catch (_error) {
+        void _error;
         return FALLBACK_SETTINGS;
       }
     },
-    staleTime: 30_000,
+    staleTime: 120_000,
   });
 }
-
-// ---------- clients ----------
-export function useClients(includeInactive = false, kind: string = "client") {
+export function useClients(includeInactive = false, kind = "client") {
   useRealtimeInvalidate("clients", ["clients"]);
   return useQuery({
     queryKey: ["clients", includeInactive, kind],
@@ -171,24 +167,19 @@ export function useClients(includeInactive = false, kind: string = "client") {
       try {
         let q = supabase.from("clients").select("*").eq("kind", kind).order("sort_order");
         if (!includeInactive) q = q.eq("is_active", true);
-        const { data, error } = await q.abortSignal(signal);
-        if (error || !data || data.length === 0) {
-          return kind === "studio" ? FALLBACK_STUDIOS : FALLBACK_CLIENTS;
-        }
+        const { data, error } = await q.abortSignal(boundedSignal(signal));
+        if (error || !data?.length) return kind === "studio" ? FALLBACK_STUDIOS : FALLBACK_CLIENTS;
         return data as DbClient[];
-      } catch {
+      } catch (_error) {
+        void _error;
         return kind === "studio" ? FALLBACK_STUDIOS : FALLBACK_CLIENTS;
       }
     },
   });
 }
-
-// ---------- studios (same table, kind='studio') ----------
 export function useStudios(includeInactive = false) {
   return useClients(includeInactive, "studio");
 }
-
-// ---------- projects ----------
 export function useProjects(includeUnpublished = false) {
   useRealtimeInvalidate("projects", ["projects"]);
   return useQuery({
@@ -197,11 +188,9 @@ export function useProjects(includeUnpublished = false) {
       try {
         let q = supabase.from("projects").select("*").order("sort_order");
         if (!includeUnpublished) q = q.eq("is_published", true);
-        const { data, error } = await q.abortSignal(signal);
-        if (error || !data || data.length === 0) {
-          return FALLBACK_PROJECTS;
-        }
-        return (data ?? []).map((p) => ({
+        const { data, error } = await q.abortSignal(boundedSignal(signal));
+        if (error || !data?.length) return FALLBACK_PROJECTS;
+        return data.map((p) => ({
           ...p,
           category: normalizeCategory(p.category),
           gallery: Array.isArray(p.gallery) ? (p.gallery as string[]) : [],
@@ -219,61 +208,56 @@ export function useProjects(includeUnpublished = false) {
             ? (p as unknown as { gallery_meta: DbProject["gallery_meta"] }).gallery_meta
             : [],
         })) as unknown as DbProject[];
-      } catch {
+      } catch (_error) {
+        void _error;
         return FALLBACK_PROJECTS;
       }
     },
   });
 }
-
-// ---------- services ----------
 export function useServices(includeInactive = false) {
   return useQuery({
     queryKey: ["services", includeInactive],
-    queryFn: async (): Promise<DbService[]> => {
+    queryFn: async ({ signal }): Promise<DbService[]> => {
       try {
         let q = supabase.from("services").select("*").order("sort_order");
         if (!includeInactive) q = q.eq("is_active", true);
-        const { data, error } = await q;
-        if (error || !data) return [];
-        return data as DbService[];
-      } catch {
+        const { data, error } = await q.abortSignal(boundedSignal(signal));
+        return error || !data ? [] : (data as DbService[]);
+      } catch (_error) {
+        void _error;
         return [];
       }
     },
   });
 }
-
-// ---------- stats ----------
 export function useStats(includeInactive = false) {
   return useQuery({
     queryKey: ["stats", includeInactive],
-    queryFn: async (): Promise<DbStat[]> => {
+    queryFn: async ({ signal }): Promise<DbStat[]> => {
       try {
         let q = supabase.from("stats").select("*").order("sort_order");
         if (!includeInactive) q = q.eq("is_active", true);
-        const { data, error } = await q;
-        if (error || !data) return [];
-        return data as DbStat[];
-      } catch {
+        const { data, error } = await q.abortSignal(boundedSignal(signal));
+        return error || !data ? [] : (data as DbStat[]);
+      } catch (_error) {
+        void _error;
         return [];
       }
     },
   });
 }
-
-// ---------- about_method ----------
 export function useMethod(includeInactive = false) {
   return useQuery({
     queryKey: ["about_method", includeInactive],
-    queryFn: async (): Promise<DbMethod[]> => {
+    queryFn: async ({ signal }): Promise<DbMethod[]> => {
       try {
         let q = supabase.from("about_method").select("*").order("sort_order");
         if (!includeInactive) q = q.eq("is_active", true);
-        const { data, error } = await q;
-        if (error || !data) return [];
-        return data as DbMethod[];
-      } catch {
+        const { data, error } = await q.abortSignal(boundedSignal(signal));
+        return error || !data ? [] : (data as DbMethod[]);
+      } catch (_error) {
+        void _error;
         return [];
       }
     },

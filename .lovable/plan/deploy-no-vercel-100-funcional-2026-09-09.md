@@ -52,7 +52,7 @@ precisa.
 ## Detalhes técnicos
 
 - `vercel.json` final: `{ "$schema": ..., "framework": null, "buildCommand":
-  "npm run build", "installCommand": "npm install", "devCommand": "npm run dev" }`.
+"npm run build", "installCommand": "npm install", "devCommand": "npm run dev" }`.
   Nada de `outputDirectory` — o preset Nitro `vercel` já emite
   `.vercel/output/config.json` com as rotas (`/assets/*` imutável, filesystem,
   fallback para `/__server`).

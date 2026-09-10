@@ -13,38 +13,32 @@ function parseOrigins(value?: string) {
 }
 
 export function resolvePublicSiteUrl() {
-  return firstNonEmpty(process.env.PUBLIC_SITE_URL, process.env.SITE_URL) ?? DEFAULT_PUBLIC_SITE_URL;
+  return (
+    firstNonEmpty(process.env.PUBLIC_SITE_URL, process.env.SITE_URL) ?? DEFAULT_PUBLIC_SITE_URL
+  );
 }
 
 export function getAllowedCorsOrigins() {
   const configured = parseOrigins(process.env.CORS_ALLOWED_ORIGINS);
   const siteUrl = resolvePublicSiteUrl().replace(/\/$/, "");
   const defaults = [siteUrl, DEFAULT_PUBLIC_SITE_URL];
-
-  if (process.env.NODE_ENV !== "production") {
+  if (process.env.NODE_ENV !== "production")
     defaults.push("http://localhost:3000", "http://127.0.0.1:3000");
-  }
-
   return new Set([...configured, ...defaults].filter(Boolean));
 }
 
-export function getCorsHeaders(request: Request) {
+export function getCorsHeaders(request: Request): Record<string, string> {
   const origin = request.headers.get("origin");
   const allowed = getAllowedCorsOrigins();
-
-  if (origin && allowed.has(origin.replace(/\/$/, ""))) {
-    return {
-      "Access-Control-Allow-Origin": origin,
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      "Vary": "Origin",
-    };
-  }
-
-  return {
+  const headers: Record<string, string> = {
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
   };
+  if (origin && allowed.has(origin.replace(/\/$/, ""))) {
+    headers["Access-Control-Allow-Origin"] = origin;
+    headers.Vary = "Origin";
+  }
+  return headers;
 }
 
 export function isCorsOriginAllowed(request: Request) {
