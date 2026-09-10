@@ -5,169 +5,52 @@ import { generateTTSAudio, processVoiceTurnStream } from "../lib/voice/voice-ser
 import { PRIMARY_MODEL, FALLBACK_MODEL } from "../lib/ai/config";
 import { getCorsHeaders, isCorsOriginAllowed } from "@/config/server";
 import { getRequestId, logObservability } from "@/lib/observability";
+import { trackStudioEvent } from "@/lib/studio/analytics.server";
 
-interface ChatRequestBody {
-  action?: "opening_message" | "tts" | "voice_turn";
-  sessionId?: string;
-  messages?: ChatMessage[];
-  context?: ChatContext;
-  text?: string;
-  audioChunks?: string[];
-}
-
+interface ChatRequestBody { action?: "opening_message" | "tts" | "voice_turn"; sessionId?: string; messages?: ChatMessage[]; context?: ChatContext; text?: string; audioChunks?: string[]; }
 type RateLimitEntry = { count: number; resetAt: number };
-
-const RATE_LIMIT_WINDOW_MS = 5 * 60 * 1000;
-const MAX_REQUESTS_PER_WINDOW = 30;
-const MAX_BODY_BYTES = 8 * 1024 * 1024;
-const MAX_MESSAGES = 50;
-const MAX_TEXT_LENGTH = 8_000;
-const MAX_AUDIO_CHUNKS = 1_200;
+const RATE_LIMIT_WINDOW_MS = 5 * 60 * 1000; const MAX_REQUESTS_PER_WINDOW = 30; const MAX_BODY_BYTES = 8 * 1024 * 1024; const MAX_MESSAGES = 50; const MAX_TEXT_LENGTH = 8_000; const MAX_AUDIO_CHUNKS = 1_200;
 const rateLimitStore = new Map<string, RateLimitEntry>();
-
-function getClientKey(request: Request) {
-  const forwarded = request.headers.get("x-forwarded-for");
-  const realIp = request.headers.get("x-real-ip");
-  return (forwarded?.split(",")[0]?.trim() || realIp || "unknown").slice(0, 128);
-}
-
-function checkRateLimit(key: string) {
-  const now = Date.now();
-  const current = rateLimitStore.get(key);
-  if (!current || current.resetAt <= now) {
-    rateLimitStore.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-    return { allowed: true, retryAfter: 0 };
-  }
-  if (current.count >= MAX_REQUESTS_PER_WINDOW) {
-    return { allowed: false, retryAfter: Math.max(1, Math.ceil((current.resetAt - now) / 1000)) };
-  }
-  current.count += 1;
-  return { allowed: true, retryAfter: 0 };
-}
-
-function jsonError(request: Request, requestId: string, status: number, code: string, message: string, extraHeaders: Record<string, string> = {}) {
-  logObservability("api_error", { requestId, route: "/api/chat", method: request.method, status, code, message });
-  return new Response(JSON.stringify({ error: { code, message }, requestId }), {
-    status,
-    headers: { "Content-Type": "application/json", "X-Request-Id": requestId, ...getCorsHeaders(request), ...extraHeaders },
-  });
-}
-
-function responseHeaders(request: Request, requestId: string, extra: Record<string, string> = {}) {
-  return { ...getCorsHeaders(request), "X-Request-Id": requestId, ...extra };
-}
-
-function hasAcceptableBodySize(request: Request) {
-  const length = request.headers.get("content-length");
-  if (!length) return true;
-  const bytes = Number(length);
-  return Number.isFinite(bytes) && bytes >= 0 && bytes <= MAX_BODY_BYTES;
-}
+function getClientKey(request: Request) { const forwarded = request.headers.get("x-forwarded-for"); const realIp = request.headers.get("x-real-ip"); return (forwarded?.split(",")[0]?.trim() || realIp || "unknown").slice(0, 128); }
+function checkRateLimit(key: string) { const now = Date.now(); const current = rateLimitStore.get(key); if (!current || current.resetAt <= now) { rateLimitStore.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS }); return { allowed: true, retryAfter: 0 }; } if (current.count >= MAX_REQUESTS_PER_WINDOW) return { allowed: false, retryAfter: Math.max(1, Math.ceil((current.resetAt - now) / 1000)) }; current.count += 1; return { allowed: true, retryAfter: 0 }; }
+function jsonError(request: Request, requestId: string, status: number, code: string, message: string, extraHeaders: Record<string, string> = {}) { logObservability("api_error", { requestId, route: "/api/chat", method: request.method, status, code, message }); return new Response(JSON.stringify({ error: { code, message }, requestId }), { status, headers: { "Content-Type": "application/json", "X-Request-Id": requestId, ...getCorsHeaders(request), ...extraHeaders } }); }
+function responseHeaders(request: Request, requestId: string, extra: Record<string, string> = {}) { return { ...getCorsHeaders(request), "X-Request-Id": requestId, ...extra }; }
+function hasAcceptableBodySize(request: Request) { const length = request.headers.get("content-length"); if (!length) return true; const bytes = Number(length); return Number.isFinite(bytes) && bytes >= 0 && bytes <= MAX_BODY_BYTES; }
 
 export const Route = createFileRoute("/api/chat")({
-  server: {
-    handlers: {
-      OPTIONS: async ({ request }) => {
-        const requestId = getRequestId(request);
-        if (!isCorsOriginAllowed(request)) return new Response(null, { status: 403, headers: responseHeaders(request, requestId) });
-        return new Response(null, { status: 204, headers: responseHeaders(request, requestId) });
-      },
+  server: { handlers: {
+    OPTIONS: async ({ request }) => { const requestId = getRequestId(request); if (!isCorsOriginAllowed(request)) return new Response(null, { status: 403, headers: responseHeaders(request, requestId) }); return new Response(null, { status: 204, headers: responseHeaders(request, requestId) }); },
+    GET: async ({ request }) => { const requestId = getRequestId(request); if (!isCorsOriginAllowed(request)) return jsonError(request, requestId, 403, "ORIGIN_NOT_ALLOWED", "This origin is not allowed."); return new Response(JSON.stringify({ status: "healthy", endpoint: "/api/chat", capabilities: ["streaming_chat", "tool_calling", "session_memory", "opening_message", "tts", "voice_turn"], models: { primary: PRIMARY_MODEL, fallback: FALLBACK_MODEL }, timestamp: new Date().toISOString(), requestId }), { status: 200, headers: responseHeaders(request, requestId, { "Content-Type": "application/json", "Cache-Control": "no-store" }) }); },
+    POST: async ({ request }) => {
+      const requestId = getRequestId(request); const startedAt = Date.now();
+      logObservability("request_start", { requestId, route: "/api/chat", method: "POST" });
+      if (!isCorsOriginAllowed(request)) return jsonError(request, requestId, 403, "ORIGIN_NOT_ALLOWED", "This origin is not allowed.");
+      if (!hasAcceptableBodySize(request)) return jsonError(request, requestId, 413, "REQUEST_TOO_LARGE", "The request payload is too large.");
+      const rate = checkRateLimit(getClientKey(request)); if (!rate.allowed) return jsonError(request, requestId, 429, "RATE_LIMITED", "Too many requests. Please try again later.", { "Retry-After": String(rate.retryAfter) });
+      let body: ChatRequestBody = {}; try { body = (await request.json()) as ChatRequestBody; } catch { return jsonError(request, requestId, 400, "INVALID_JSON", "The request payload could not be parsed as valid JSON."); }
+      if (body.messages && (!Array.isArray(body.messages) || body.messages.length > MAX_MESSAGES)) return jsonError(request, requestId, 413, "TOO_MANY_MESSAGES", `A maximum of ${MAX_MESSAGES} messages is allowed.`);
+      if (typeof body.text === "string" && body.text.length > MAX_TEXT_LENGTH) return jsonError(request, requestId, 413, "TEXT_TOO_LONG", `Text input exceeds the ${MAX_TEXT_LENGTH}-character limit.`);
+      if (body.audioChunks && (!Array.isArray(body.audioChunks) || body.audioChunks.length > MAX_AUDIO_CHUNKS)) return jsonError(request, requestId, 413, "TOO_MANY_AUDIO_CHUNKS", "The voice payload contains too many audio chunks.");
+      void trackStudioEvent({ eventName: "ai_request", provider: body.action === "voice_turn" ? "gemini-live" : body.action === "tts" ? "gemini-tts" : "gemini", sessionId: body.sessionId ?? null, metadata: { surface: "assistant", action: body.action ?? "chat" } });
 
-      GET: async ({ request }) => {
-        const requestId = getRequestId(request);
-        if (!isCorsOriginAllowed(request)) return jsonError(request, requestId, 403, "ORIGIN_NOT_ALLOWED", "This origin is not allowed.");
-        return new Response(JSON.stringify({ status: "healthy", endpoint: "/api/chat", capabilities: ["streaming_chat", "tool_calling", "session_memory", "opening_message", "tts", "voice_turn"], models: { primary: PRIMARY_MODEL, fallback: FALLBACK_MODEL }, timestamp: new Date().toISOString(), requestId }), {
-          status: 200,
-          headers: responseHeaders(request, requestId, { "Content-Type": "application/json", "Cache-Control": "no-store" }),
-        });
-      },
+      if (body.action === "opening_message") {
+        try { const result = await generateOpeningMessage(body.sessionId, body.context); void trackStudioEvent({ eventName: "ai_success", provider: "gemini", sessionId: body.sessionId ?? null, durationMs: Date.now() - startedAt, metadata: { surface: "assistant", action: "opening_message" } }); logObservability("request_end", { requestId, route: "/api/chat", method: "POST", status: 200, latencyMs: Date.now() - startedAt, dependency: "gemini" }); return new Response(JSON.stringify(result), { status: 200, headers: responseHeaders(request, requestId, { "Content-Type": "application/json", "Cache-Control": "no-store" }) }); }
+        catch (err: unknown) { void trackStudioEvent({ eventName: "ai_failed", provider: "gemini", sessionId: body.sessionId ?? null, durationMs: Date.now() - startedAt, metadata: { surface: "assistant", action: "opening_message" } }); logObservability("dependency_error", { requestId, route: "/api/chat", dependency: "gemini", code: "OPENING_MESSAGE_FAILED", message: err instanceof Error ? err.message : "unknown" }); return new Response(JSON.stringify({ message: "Direction is the discipline that turns raw ambition into enduring form.", isFresh: false, requestId }), { status: 200, headers: responseHeaders(request, requestId, { "Content-Type": "application/json", "Cache-Control": "no-store" }) }); }
+      }
 
-      POST: async ({ request }) => {
-        const requestId = getRequestId(request);
-        const startedAt = Date.now();
-        logObservability("request_start", { requestId, route: "/api/chat", method: "POST" });
+      if (body.action === "tts") {
+        try { const ttsResult = await generateTTSAudio(body.text || ""); void trackStudioEvent({ eventName: "ai_success", provider: "gemini-tts", sessionId: body.sessionId ?? null, durationMs: Date.now() - startedAt, metadata: { surface: "assistant", action: "tts" } }); logObservability("request_end", { requestId, route: "/api/chat", method: "POST", status: 200, latencyMs: Date.now() - startedAt, dependency: "gemini-tts" }); return new Response(JSON.stringify(ttsResult), { status: 200, headers: responseHeaders(request, requestId, { "Content-Type": "application/json", "Cache-Control": "no-store" }) }); }
+        catch (err: unknown) { void trackStudioEvent({ eventName: "ai_failed", provider: "gemini-tts", sessionId: body.sessionId ?? null, durationMs: Date.now() - startedAt, metadata: { surface: "assistant", action: "tts" } }); logObservability("dependency_error", { requestId, route: "/api/chat", dependency: "gemini-tts", code: "TTS_SYNTHESIS_FAILED", message: err instanceof Error ? err.message : "unknown" }); return jsonError(request, requestId, 500, "TTS_SYNTHESIS_FAILED", "TTS synthesis failed."); }
+      }
 
-        if (!isCorsOriginAllowed(request)) return jsonError(request, requestId, 403, "ORIGIN_NOT_ALLOWED", "This origin is not allowed.");
-        if (!hasAcceptableBodySize(request)) return jsonError(request, requestId, 413, "REQUEST_TOO_LARGE", "The request payload is too large.");
-
-        const rate = checkRateLimit(getClientKey(request));
-        if (!rate.allowed) return jsonError(request, requestId, 429, "RATE_LIMITED", "Too many requests. Please try again later.", { "Retry-After": String(rate.retryAfter) });
-
-        let body: ChatRequestBody = {};
-        try {
-          body = (await request.json()) as ChatRequestBody;
-        } catch {
-          return jsonError(request, requestId, 400, "INVALID_JSON", "The request payload could not be parsed as valid JSON.");
-        }
-
-        if (body.messages && (!Array.isArray(body.messages) || body.messages.length > MAX_MESSAGES)) return jsonError(request, requestId, 413, "TOO_MANY_MESSAGES", `A maximum of ${MAX_MESSAGES} messages is allowed.`);
-        if (typeof body.text === "string" && body.text.length > MAX_TEXT_LENGTH) return jsonError(request, requestId, 413, "TEXT_TOO_LONG", `Text input exceeds the ${MAX_TEXT_LENGTH}-character limit.`);
-        if (body.audioChunks && (!Array.isArray(body.audioChunks) || body.audioChunks.length > MAX_AUDIO_CHUNKS)) return jsonError(request, requestId, 413, "TOO_MANY_AUDIO_CHUNKS", "The voice payload contains too many audio chunks.");
-
-        if (body.action === "opening_message") {
-          try {
-            const result = await generateOpeningMessage(body.sessionId, body.context);
-            logObservability("request_end", { requestId, route: "/api/chat", method: "POST", status: 200, latencyMs: Date.now() - startedAt, dependency: "gemini" });
-            return new Response(JSON.stringify(result), { status: 200, headers: responseHeaders(request, requestId, { "Content-Type": "application/json", "Cache-Control": "no-store" }) });
-          } catch (err: unknown) {
-            logObservability("dependency_error", { requestId, route: "/api/chat", dependency: "gemini", code: "OPENING_MESSAGE_FAILED", message: err instanceof Error ? err.message : "unknown" });
-            return new Response(JSON.stringify({ message: "Direction is the discipline that turns raw ambition into enduring form.", isFresh: false, requestId }), { status: 200, headers: responseHeaders(request, requestId, { "Content-Type": "application/json", "Cache-Control": "no-store" }) });
-          }
-        }
-
-        if (body.action === "tts") {
-          try {
-            const ttsResult = await generateTTSAudio(body.text || "");
-            logObservability("request_end", { requestId, route: "/api/chat", method: "POST", status: 200, latencyMs: Date.now() - startedAt, dependency: "gemini-tts" });
-            return new Response(JSON.stringify(ttsResult), { status: 200, headers: responseHeaders(request, requestId, { "Content-Type": "application/json", "Cache-Control": "no-store" }) });
-          } catch (err: unknown) {
-            logObservability("dependency_error", { requestId, route: "/api/chat", dependency: "gemini-tts", code: "TTS_SYNTHESIS_FAILED", message: err instanceof Error ? err.message : "unknown" });
-            return jsonError(request, requestId, 500, "TTS_SYNTHESIS_FAILED", "TTS synthesis failed.");
-          }
-        }
-
-        if (body.action === "voice_turn") {
-          const stream = new ReadableStream({
-            async start(controller) {
-              const encoder = new TextEncoder();
-              const emit = (event: unknown) => {
-                try { controller.enqueue(encoder.encode(`data: ${JSON.stringify({ ...((event || {}) as object), requestId })}\n\n`)); } catch { /* stream closed */ }
-              };
-              try {
-                await processVoiceTurnStream(requestId, body.sessionId, body.audioChunks || [], body.messages || [], body.context || {}, emit);
-                logObservability("request_end", { requestId, route: "/api/chat", method: "POST", status: 200, latencyMs: Date.now() - startedAt, dependency: "gemini-live" });
-              } catch (voiceErr: unknown) {
-                logObservability("dependency_error", { requestId, route: "/api/chat", dependency: "gemini-live", code: "VOICE_STREAM_ERROR", message: voiceErr instanceof Error ? voiceErr.message : "unknown" });
-                emit({ type: "error", error: { code: "VOICE_STREAM_ERROR", message: "Voice streaming encountered an error." } });
-              } finally {
-                try { controller.close(); } catch { /* stream already closed */ }
-              }
-            },
-          });
-          return new Response(stream, { headers: responseHeaders(request, requestId, { "Content-Type": "text/event-stream; charset=utf-8", "Cache-Control": "no-cache, no-transform", Connection: "keep-alive" }) });
-        }
-
-        if (!body.messages || !Array.isArray(body.messages) || body.messages.length === 0) return jsonError(request, requestId, 400, "MISSING_MESSAGES", "A non-empty 'messages' array is required for chat streaming.");
-
-        const stream = new ReadableStream({
-          async start(controller) {
-            const encoder = new TextEncoder();
-            const emit = (event: unknown) => {
-              try { controller.enqueue(encoder.encode(`data: ${JSON.stringify({ ...((event || {}) as object), requestId })}\n\n`)); } catch { /* stream closed */ }
-            };
-            try {
-              await processChatStream(requestId, body.sessionId, body.messages, body.context || {}, emit);
-              logObservability("request_end", { requestId, route: "/api/chat", method: "POST", status: 200, latencyMs: Date.now() - startedAt, dependency: "gemini" });
-            } catch (err: unknown) {
-              logObservability("dependency_error", { requestId, route: "/api/chat", dependency: "gemini", code: "STREAM_ERROR", message: err instanceof Error ? err.message : "unknown" });
-              emit({ type: "error", error: { code: "STREAM_ERROR", message: "Streaming encountered an unexpected issue." } });
-            } finally {
-              try { controller.close(); } catch { /* stream already closed */ }
-            }
-          },
-        });
+      if (body.action === "voice_turn") {
+        const stream = new ReadableStream({ async start(controller) { const encoder = new TextEncoder(); const emit = (event: unknown) => { try { controller.enqueue(encoder.encode(`data: ${JSON.stringify({ ...((event || {}) as object), requestId })}\n\n`)); } catch { /* stream closed */ } }; try { await processVoiceTurnStream(requestId, body.sessionId, body.audioChunks || [], body.messages || [], body.context || {}, emit); void trackStudioEvent({ eventName: "ai_success", provider: "gemini-live", sessionId: body.sessionId ?? null, durationMs: Date.now() - startedAt, metadata: { surface: "assistant", action: "voice_turn" } }); logObservability("request_end", { requestId, route: "/api/chat", method: "POST", status: 200, latencyMs: Date.now() - startedAt, dependency: "gemini-live" }); } catch (voiceErr: unknown) { void trackStudioEvent({ eventName: "ai_failed", provider: "gemini-live", sessionId: body.sessionId ?? null, durationMs: Date.now() - startedAt, metadata: { surface: "assistant", action: "voice_turn" } }); logObservability("dependency_error", { requestId, route: "/api/chat", dependency: "gemini-live", code: "VOICE_STREAM_ERROR", message: voiceErr instanceof Error ? voiceErr.message : "unknown" }); emit({ type: "error", error: { code: "VOICE_STREAM_ERROR", message: "Voice streaming encountered an error." } }); } finally { try { controller.close(); } catch { /* stream already closed */ } } } });
         return new Response(stream, { headers: responseHeaders(request, requestId, { "Content-Type": "text/event-stream; charset=utf-8", "Cache-Control": "no-cache, no-transform", Connection: "keep-alive" }) });
-      },
+      }
+
+      if (!body.messages || !Array.isArray(body.messages) || body.messages.length === 0) return jsonError(request, requestId, 400, "MISSING_MESSAGES", "A non-empty 'messages' array is required for chat streaming.");
+      const stream = new ReadableStream({ async start(controller) { const encoder = new TextEncoder(); const emit = (event: unknown) => { try { controller.enqueue(encoder.encode(`data: ${JSON.stringify({ ...((event || {}) as object), requestId })}\n\n`)); } catch { /* stream closed */ } }; try { await processChatStream(requestId, body.sessionId, body.messages, body.context || {}, emit); void trackStudioEvent({ eventName: "ai_success", provider: "gemini", sessionId: body.sessionId ?? null, durationMs: Date.now() - startedAt, metadata: { surface: "assistant", action: "chat" } }); logObservability("request_end", { requestId, route: "/api/chat", method: "POST", status: 200, latencyMs: Date.now() - startedAt, dependency: "gemini" }); } catch (err: unknown) { void trackStudioEvent({ eventName: "ai_failed", provider: "gemini", sessionId: body.sessionId ?? null, durationMs: Date.now() - startedAt, metadata: { surface: "assistant", action: "chat" } }); logObservability("dependency_error", { requestId, route: "/api/chat", dependency: "gemini", code: "STREAM_ERROR", message: err instanceof Error ? err.message : "unknown" }); emit({ type: "error", error: { code: "STREAM_ERROR", message: "Streaming encountered an unexpected issue." } }); } finally { try { controller.close(); } catch { /* stream already closed */ } } } });
+      return new Response(stream, { headers: responseHeaders(request, requestId, { "Content-Type": "text/event-stream; charset=utf-8", "Cache-Control": "no-cache, no-transform", Connection: "keep-alive" }) });
     },
-  },
+  } },
 });

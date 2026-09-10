@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getCorsHeaders, isCorsOriginAllowed } from "@/config/server";
 import { getRequestId, logObservability } from "@/lib/observability";
+import { trackStudioEvent } from "@/lib/studio/analytics.server";
 
 const WINDOW_MS = 5 * 60 * 1000;
 const MAX_REQUESTS = 5;
@@ -21,6 +22,7 @@ function jsonResponse(request: Request, requestId: string, status: number, body:
 export const Route = createFileRoute("/api/studio/email")({
   server: { handlers: { POST: async ({ request }) => {
     const requestId = getRequestId(request);
+    const startedAt = Date.now();
     if (!isCorsOriginAllowed(request)) return jsonResponse(request, requestId, 403, { error: "ORIGIN_NOT_ALLOWED" });
     const length = Number(request.headers.get("content-length") || 0);
     if (!Number.isFinite(length) || length < 0 || length > MAX_BODY_BYTES) return jsonResponse(request, requestId, 413, { error: "REQUEST_TOO_LARGE" });
@@ -33,6 +35,7 @@ export const Route = createFileRoute("/api/studio/email")({
     try { body = await request.json(); } catch { return jsonResponse(request, requestId, 400, { error: "INVALID_JSON" }); }
     const to = cleanText(body.to, 254); const digitalUrl = cleanText(body.digitalUrl, 2000); const name = cleanText(body.name, 160) || "Digital business card"; const vcard = cleanText(body.vcard, 12000);
     if (!isEmail(to) || !/^https?:\/\//i.test(digitalUrl) || !vcard.startsWith("BEGIN:VCARD") || !vcard.endsWith("END:VCARD\r\n")) return jsonResponse(request, requestId, 400, { error: "INVALID_EMAIL_PAYLOAD" });
+    void trackStudioEvent({ eventName: "email_started", metadata: { has_png: Boolean(body.pngDataUrl), has_pdf: Boolean(body.pdfDataUrl) } });
     const filename = safeFilename(name);
     const attachments: Array<{ filename: string; content: string; content_type: string }> = [{ filename: `${filename}.vcf`, content: Buffer.from(vcard, "utf8").toString("base64"), content_type: "text/vcard" }];
     const png = typeof body.pngDataUrl === "string" ? decodeDataUrl(body.pngDataUrl, "image/png") : null; const pdf = typeof body.pdfDataUrl === "string" ? decodeDataUrl(body.pdfDataUrl, "application/pdf") : null;
@@ -42,7 +45,8 @@ export const Route = createFileRoute("/api/studio/email")({
     const html = `<div style="font-family:Inter,Arial,sans-serif;max-width:620px;margin:0 auto;color:#111"><p style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#64748b">Kutuzov Studio / Digital Identity</p><h1 style="font-size:28px;margin:16px 0 8px">${displayName}</h1><p style="color:#475569">Your digital business card is ready.</p><p><a href="${safeUrl}" style="display:inline-block;padding:12px 18px;border-radius:999px;background:#0284c7;color:#fff;text-decoration:none;font-weight:700">Open digital card</a></p><p style="font-size:12px;color:#64748b">The email includes your vCard plus the available PNG and PDF exports.</p></div>`;
     const text = `Kutuzov Studio / Digital Identity\n\n${name}\n\nOpen your digital card: ${digitalUrl}\n\nAttachments: vCard${png ? ", PNG" : ""}${pdf ? ", PDF" : ""}.`;
     const res = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ from, to: [to], subject: `${name} · Digital business card`, html, text, attachments }) });
-    if (!res.ok) { const detail = await res.text().catch(() => ""); logObservability("dependency_error", { requestId, route: "/api/studio/email", dependency: "resend", code: "STUDIO_EMAIL_FAILED", message: detail.slice(0, 300) }); return jsonResponse(request, requestId, 502, { error: "EMAIL_DELIVERY_FAILED" }); }
-    logObservability("request_end", { requestId, route: "/api/studio/email", method: "POST", status: 200, dependency: "resend" }); return jsonResponse(request, requestId, 200, { sent: true });
+    if (!res.ok) { const detail = await res.text().catch(() => ""); void trackStudioEvent({ eventName: "email_failed", durationMs: Date.now() - startedAt, metadata: { provider: "resend" } }); logObservability("dependency_error", { requestId, route: "/api/studio/email", dependency: "resend", code: "STUDIO_EMAIL_FAILED", message: detail.slice(0, 300) }); return jsonResponse(request, requestId, 502, { error: "EMAIL_DELIVERY_FAILED" }); }
+    void trackStudioEvent({ eventName: "email_sent", durationMs: Date.now() - startedAt, metadata: { provider: "resend", attachment_count: attachments.length } });
+    logObservability("request_end", { requestId, route: "/api/studio/email", method: "POST", status: 200, dependency: "resend", latencyMs: Date.now() - startedAt }); return jsonResponse(request, requestId, 200, { sent: true });
   } } },
 });

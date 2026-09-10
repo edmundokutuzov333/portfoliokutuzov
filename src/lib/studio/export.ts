@@ -1,6 +1,7 @@
 import { PDFDocument } from "pdf-lib";
 import { designToSvg } from "./svg";
 import type { StudioDesignDocument } from "./types";
+import { trackStudioClientEvent } from "./analytics";
 
 const RASTER_SCALE = 4;
 
@@ -17,8 +18,15 @@ export function downloadBlob(blob: Blob, filename: string) {
 }
 
 export function exportSvg(design: StudioDesignDocument) {
-  const svg = designToSvg(design);
-  downloadBlob(new Blob([svg], { type: "image/svg+xml;charset=utf-8" }), "business-card.svg");
+  trackStudioClientEvent({ eventName: "export_started", exportFormat: "svg" });
+  try {
+    const svg = designToSvg(design);
+    downloadBlob(new Blob([svg], { type: "image/svg+xml;charset=utf-8" }), "business-card.svg");
+    trackStudioClientEvent({ eventName: "export_completed", exportFormat: "svg" });
+  } catch (error) {
+    trackStudioClientEvent({ eventName: "export_failed", exportFormat: "svg", metadata: { reason: error instanceof Error ? error.name : "unknown" } });
+    throw error;
+  }
 }
 
 async function svgToPngBytes(design: StudioDesignDocument): Promise<Uint8Array> {
@@ -59,25 +67,44 @@ function dataUrlFromBytes(bytes: Uint8Array, mime: string) {
 }
 
 export async function createPngDataUrl(design: StudioDesignDocument) {
-  return dataUrlFromBytes(await svgToPngBytes(design), "image/png");
+  trackStudioClientEvent({ eventName: "export_started", exportFormat: "png" });
+  try {
+    const result = dataUrlFromBytes(await svgToPngBytes(design), "image/png");
+    trackStudioClientEvent({ eventName: "export_completed", exportFormat: "png" });
+    return result;
+  } catch (error) {
+    trackStudioClientEvent({ eventName: "export_failed", exportFormat: "png", metadata: { reason: error instanceof Error ? error.name : "unknown" } });
+    throw error;
+  }
 }
 
 export async function createPdfDataUrl(design: StudioDesignDocument) {
-  const png = await svgToPngBytes(design);
-  const pdf = await PDFDocument.create();
-  const width = design.widthMm / 25.4 * 72;
-  const height = design.heightMm / 25.4 * 72;
-  const page = pdf.addPage([width, height]);
-  const image = await pdf.embedPng(png);
-  page.drawImage(image, { x: 0, y: 0, width, height });
-  pdf.setTitle("Business Card");
-  pdf.setSubject("Kutuzov Studio business card");
-  pdf.setCreator("Kutuzov Studio");
-  return dataUrlFromBytes(await pdf.save(), "application/pdf");
+  trackStudioClientEvent({ eventName: "export_started", exportFormat: "pdf" });
+  try {
+    const png = await svgToPngBytes(design);
+    const pdf = await PDFDocument.create();
+    const width = design.widthMm / 25.4 * 72;
+    const height = design.heightMm / 25.4 * 72;
+    const page = pdf.addPage([width, height]);
+    const image = await pdf.embedPng(png);
+    page.drawImage(image, { x: 0, y: 0, width, height });
+    pdf.setTitle("Business Card");
+    pdf.setSubject("Kutuzov Studio business card");
+    pdf.setCreator("Kutuzov Studio");
+    const result = dataUrlFromBytes(await pdf.save(), "application/pdf");
+    trackStudioClientEvent({ eventName: "export_completed", exportFormat: "pdf" });
+    return result;
+  } catch (error) {
+    trackStudioClientEvent({ eventName: "export_failed", exportFormat: "pdf", metadata: { reason: error instanceof Error ? error.name : "unknown" } });
+    throw error;
+  }
 }
 
 export async function exportPng(design: StudioDesignDocument) {
-  downloadBlob(new Blob([blobPart(await svgToPngBytes(design))], { type: "image/png" }), "business-card.png");
+  const dataUrl = await createPngDataUrl(design);
+  const [, base64 = ""] = dataUrl.split(",", 2);
+  const binary = Uint8Array.from(atob(base64), (char) => char.charCodeAt(0));
+  downloadBlob(new Blob([blobPart(binary)], { type: "image/png" }), "business-card.png");
 }
 
 export async function exportPdf(design: StudioDesignDocument) {
