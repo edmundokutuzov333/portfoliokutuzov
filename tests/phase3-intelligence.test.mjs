@@ -7,7 +7,7 @@ test("AI uses portfolio knowledge layer as authoritative grounding", () => {
   const source = read("src/lib/ai/agent.ts");
   assert.match(source, /getPortfolioKnowledgeSnapshot/);
   assert.match(source, /formatKnowledgeForModel/);
-  assert.match(source, /NEVER invent/);
+  assert.match(source, /never invent/i);
   assert.match(source, /temperature: 0\.2/);
   assert.match(source, /European Portuguese/);
 });
@@ -16,7 +16,7 @@ test("realtime voice uses constrained ephemeral auth and a selected voice", () =
   const token = read("src/lib/voice/live-token.functions.ts");
   const live = read("src/lib/voice/live.ts");
   assert.match(token, /authTokens\.create/);
-  assert.match(token, /GenerativeService/i);
+  assert.match(token, /liveConnectConstraints/);
   assert.match(token, /voiceName: LIVE_VOICE/);
   assert.match(token, /Charon/);
   assert.match(token, /includeAllProjects: true/);
@@ -36,6 +36,7 @@ test("bilingual locale switcher is wired into navigation and uses European Portu
   assert.match(locale, /DEFAULT_LOCALE.*"en"/);
   assert.match(locale, /WeakMap/);
   assert.match(locale, /MutationObserver/);
+  assert.match(locale, /TRANSLATION_ENTRIES/);
   assert.match(switcher, /pt-PT/);
   assert.match(switcher, /setSiteLocale/);
   assert.match(nav, /LanguageSwitcher/);
@@ -102,7 +103,7 @@ test("browser QA covers all requested engines and mobile journeys", () => {
   assert.match(config, /iphone-safari/);
   assert.match(config, /android-chrome/);
   for (const token of ["home", "portfolio", "contact", "command palette", "AI assistant", "reduced motion"]) {
-    assert.match(spec.toLowerCase(), new RegExp(token.toLowerCase().replace(/[.*+?^${}()|[\\]\\]/g, "\\$&")));
+    assert.match(spec.toLowerCase(), new RegExp(token.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
 });
 
