@@ -20,6 +20,7 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const locale = useSiteLocale();
+  const studioActive = pathname === "/studio" || pathname.startsWith("/studio/");
 
   useEffect(() => {
     setOpen(false);
@@ -53,25 +54,25 @@ export function Navbar() {
                 const active = pathname === link.to || (link.to !== "/" && pathname.startsWith(link.to));
                 return (
                   <li key={link.to}>
-                    <Link
-                      to={link.to}
-                      className={clsx(
-                        "relative flex items-center px-3 py-1.5 text-[13px] font-medium transition-colors duration-300 focus:outline-none",
-                        active ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]",
-                      )}
-                    >
-                      {active && (
-                        <motion.span
-                          layoutId="navActiveIndicator"
-                          transition={{ type: "spring", bounce: 0.15, duration: 0.6 }}
-                          className="absolute -bottom-1 left-1/2 h-[2px] w-4 -translate-x-1/2 rounded-full bg-[var(--color-accent-base)] opacity-80"
-                        />
-                      )}
+                    <Link to={link.to} className={clsx("relative flex items-center px-3 py-1.5 text-[13px] font-medium transition-colors duration-300 focus:outline-none", active ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]")}>
+                      {active && <motion.span layoutId="navActiveIndicator" transition={{ type: "spring", bounce: 0.15, duration: 0.6 }} className="absolute -bottom-1 left-1/2 h-[2px] w-4 -translate-x-1/2 rounded-full bg-[var(--color-accent-base)] opacity-80" />}
                       <span className="relative z-10">{locale === "pt-PT" ? link.pt : link.label}</span>
                     </Link>
                   </li>
                 );
               })}
+              <li>
+                <Link
+                  to="/studio"
+                  className={clsx(
+                    "relative ml-1 flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[13px] font-semibold transition",
+                    studioActive ? "border-[var(--color-accent-base)] bg-[var(--color-accent-subtle)] text-[var(--color-text-primary)]" : "border-[var(--color-accent-base)]/40 bg-[var(--color-accent-base)]/[0.07] text-[var(--color-text-primary)] hover:bg-[var(--color-accent-base)]/[0.12]",
+                  )}
+                >
+                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-accent-base)]" aria-hidden="true" />
+                  Kutuzov Studio
+                </Link>
+              </li>
             </ul>
           </LayoutGroup>
           <div className="flex items-center gap-2">
@@ -80,39 +81,19 @@ export function Navbar() {
               {locale === "pt-PT" ? "Iniciar um projecto" : "Start a project"}
               <ArrowUpRight size={14} strokeWidth={2} />
             </ShinyButton>
-            <button
-              type="button"
-              onClick={() => setOpen((value) => !value)}
-              className="grid h-9 w-9 place-items-center rounded-full border border-[var(--color-border-base)] bg-white/[0.02] text-[var(--color-text-primary)] transition hover:border-[var(--color-accent-hover)] hover:bg-[var(--color-accent-subtle)] focus:outline-none md:hidden"
-              aria-label={open ? (locale === "pt-PT" ? "Fechar menu" : "Close menu") : (locale === "pt-PT" ? "Abrir menu" : "Open menu")}
-              aria-expanded={open}
-              aria-controls="mobile-navigation"
-            >
+            <button type="button" onClick={() => setOpen((value) => !value)} className="grid h-9 w-9 place-items-center rounded-full border border-[var(--color-border-base)] bg-white/[0.02] text-[var(--color-text-primary)] transition hover:border-[var(--color-accent-hover)] hover:bg-[var(--color-accent-subtle)] focus:outline-none md:hidden" aria-label={open ? (locale === "pt-PT" ? "Fechar menu" : "Close menu") : (locale === "pt-PT" ? "Abrir menu" : "Open menu")} aria-expanded={open} aria-controls="mobile-navigation">
               {open ? <X size={16} strokeWidth={1.8} /> : <Menu size={16} strokeWidth={1.8} />}
             </button>
           </div>
         </nav>
         {open && (
-          <div
-            id="mobile-navigation"
-            className="relative z-[1000] mt-2 overflow-hidden rounded-3xl border border-[var(--color-border-subtle)] bg-[var(--color-surface-elevated)]/95 p-3 shadow-2xl backdrop-blur-xl md:hidden"
-          >
+          <div id="mobile-navigation" className="relative z-[1000] mt-2 overflow-hidden rounded-3xl border border-[var(--color-border-subtle)] bg-[var(--color-surface-elevated)]/95 p-3 shadow-2xl backdrop-blur-xl md:hidden">
             <div className="flex flex-col gap-1">
               {links.map((link) => {
                 const active = pathname === link.to || (link.to !== "/" && pathname.startsWith(link.to));
-                return (
-                  <Link
-                    key={link.to}
-                    to={link.to}
-                    className={clsx(
-                      "rounded-2xl px-4 py-3 text-[15px] font-medium transition",
-                      active ? "bg-[var(--color-accent-subtle)] text-[var(--color-text-primary)]" : "text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-highlight)] hover:text-[var(--color-text-primary)]",
-                    )}
-                  >
-                    {locale === "pt-PT" ? link.pt : link.label}
-                  </Link>
-                );
+                return <Link key={link.to} to={link.to} className={clsx("rounded-2xl px-4 py-3 text-[15px] font-medium transition", active ? "bg-[var(--color-accent-subtle)] text-[var(--color-text-primary)]" : "text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-highlight)] hover:text-[var(--color-text-primary)]")}>{locale === "pt-PT" ? link.pt : link.label}</Link>;
               })}
+              <Link to="/studio" className={clsx("mt-1 flex items-center justify-between rounded-2xl border px-4 py-3 text-[15px] font-semibold", studioActive ? "border-[var(--color-accent-base)] bg-[var(--color-accent-subtle)] text-[var(--color-text-primary)]" : "border-[var(--color-accent-base)]/40 bg-[var(--color-accent-base)]/[0.06] text-[var(--color-text-primary)]")}><span>Kutuzov Studio</span><span className="h-1.5 w-1.5 rounded-full bg-[var(--color-accent-base)]" /></Link>
             </div>
           </div>
         )}
