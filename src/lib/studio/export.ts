@@ -149,7 +149,7 @@ export async function createPrintPdfDataUrl(design: StudioDesignDocument) {
     const image = await pdf.embedPng(png);
     page.drawImage(image, { x: 0, y: 0, width: pageWidthMm * MM_TO_PT, height: pageHeightMm * MM_TO_PT });
     pdf.setTitle("Business Card · Print PDF");
-    pdf.setSubject(`90 × 50 mm card · ${BLEED_MM} mm bleed · crop marks · ${PRINT_DPI} DPI raster");
+    pdf.setSubject(`90 × 50 mm card · ${BLEED_MM} mm bleed · crop marks · ${PRINT_DPI} DPI raster`);
     pdf.setCreator("Kutuzov Studio");
     pdf.setKeywords(["business card", "print", "300 dpi", "3 mm bleed", "crop marks"]);
     const result = dataUrlFromBytes(await pdf.save(), "application/pdf");
