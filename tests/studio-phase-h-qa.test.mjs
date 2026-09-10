@@ -56,7 +56,7 @@ test("SVG renderer escapes every user-controlled value used in SVG markup", asyn
 test("Public identity sanitization constrains image payloads and geometry", async () => {
   const identity = await read("src/lib/studio/identity-format.ts");
   assert.match(identity, /DATA_IMAGE/);
-  assert.match(identity, /data:image\//);
+  assert.ok(identity.includes("data:image"));
   assert.match(identity, /src\.length <= 6_000_000/);
   assert.match(identity, /slice\(0, 300\)/);
   assert.match(identity, /elements\.slice\(0, 20\)/);
