@@ -37,3 +37,19 @@ test("Portuguese completion catalogue covers the visible gaps from the public pa
     assert.match(bridge, new RegExp(target.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
 });
+
+test("Portuguese completion covers portfolio categories and dynamic counters", () => {
+  const bridge = read("src/lib/site-locale-completion.ts");
+  for (const pair of [
+    ["Ad Campaigns", "Campanhas publicitárias"],
+    ["Offline Actions", "Acções offline"],
+    ["Clothes Design", "Design de vestuário"],
+    ["Videos", "Vídeos"],
+    ["Digital Design", "Design digital"],
+  ]) {
+    assert.match(bridge, new RegExp(pair[0].replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+    assert.match(bridge, new RegExp(pair[1].replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  }
+  assert.match(bridge, /Showing\\s\+\(\\d\\+\\)\\s\+of\\s\+\(\\d\\+\\\)/);
+  assert.match(bridge, /A mostrar \\$1 de \\$2/);
+});
