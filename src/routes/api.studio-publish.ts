@@ -56,6 +56,7 @@ export const Route = createFileRoute("/api/studio/publish")({ server: { handlers
     if (!body?.design || body.design?.version !== 1 || body.design?.widthMm !== 90 || body.design?.heightMm !== 50 || !Array.isArray(body.design?.elements) || body.design.elements.length > 20) return response(request, requestId, 400, { error: "INVALID_DESIGN_DOCUMENT" });
 
     const shareToken = createShareToken();
+    const now = new Date().toISOString();
     const row = {
       session_id: sessionId,
       name,
@@ -68,26 +69,27 @@ export const Route = createFileRoute("/api/studio/publish")({ server: { handlers
       status: "published",
       share_token: shareToken,
       public_enabled: true,
-      published_at: new Date().toISOString(),
-      last_saved_at: new Date().toISOString(),
+      published_at: now,
+      last_saved_at: now,
     };
     const db = supabaseAdmin as any;
     let created: any = null;
     let error: any = null;
 
     if (draftToken) {
-      let query = db.from("studio_cards").update({ ...row, revision: db.rpc ? undefined : 1 }).eq("draft_token", draftToken);
-      if (cardId && /^[0-9a-f-]{36}$/i.test(cardId)) query = query.eq("id", cardId);
-      const result = await query.select("id").maybeSingle();
+      const current = await db.from("studio_cards").select("id,revision").eq("draft_token", draftToken).maybeSingle();
+      if (current.error) {
+        logObservability("dependency_error", { requestId, route: "/api/studio/publish", dependency: "supabase", code: "STUDIO_DRAFT_LOOKUP_FAILED", message: current.error.message });
+        return response(request, requestId, 502, { error: "PUBLISH_FAILED" });
+      }
+      if (!current.data) return response(request, requestId, 404, { error: "DRAFT_NOT_FOUND" });
+      if (cardId && cardId !== current.data.id) return response(request, requestId, 409, { error: "DRAFT_CARD_MISMATCH" });
+      const nextRevision = Number(current.data.revision || 1) + 1;
+      const result = await db.from("studio_cards").update({ ...row, revision: nextRevision }).eq("draft_token", draftToken).eq("revision", current.data.revision).select("id").maybeSingle();
       created = result.data;
       error = result.error;
-    }
-
-    if (!created && !error && draftToken) {
-      return response(request, requestId, 404, { error: "DRAFT_NOT_FOUND" });
-    }
-
-    if (!created && !draftToken) {
+      if (!created && !error) return response(request, requestId, 409, { error: "REVISION_CONFLICT" });
+    } else {
       const result = await db.from("studio_cards").insert({ ...row, revision: 1, draft_token: null }).select("id").single();
       created = result.data;
       error = result.error;
