@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Check, Download, Mail, QrCode, Share2 } from "lucide-react";
+import { Download, Mail, QrCode, Share2 } from "lucide-react";
 import { publicConfig } from "@/config/public";
 import { safeClipboardWrite } from "@/lib/browser-safe";
 import { buildVCard, publicIdentityUrl } from "@/lib/studio/identity-format";
@@ -50,8 +50,8 @@ export function DigitalIdentityPanel({ design, values, sessionId, pt }: Props) {
       if (!response.ok || !payload.token) throw new Error(payload.error || "PUBLISH_FAILED");
       setToken(payload.token); window.sessionStorage.setItem("ek_studio_public_token_v1", payload.token);
       const nextUrl = publicIdentityUrl(publicConfig.siteUrl, payload.token); const nextVCard = buildVCard({ ...identity, url: nextUrl });
-      setStatus(pt ? "Cartão público publicado." : "Public card published.");
-      if (autoSend && recipient) void sendEmail(nextUrl, nextVCard);
+      if (autoSend && recipient) await sendEmail(nextUrl, nextVCard);
+      else setStatus(pt ? "Cartão público publicado." : "Public card published.");
     } catch (error) { setStatus(error instanceof Error ? error.message : (pt ? "Falha ao publicar." : "Publishing failed.")); }
     finally { setBusy(null); }
   }
@@ -64,10 +64,13 @@ export function DigitalIdentityPanel({ design, values, sessionId, pt }: Props) {
 
   function downloadVCard() {
     if (!token) return;
-    const a = document.createElement("a");
-    a.href = `/api/studio/vcard?token=${encodeURIComponent(token)}`;
-    a.rel = "noopener";
-    a.click();
+    const anchor = document.createElement("a");
+    anchor.href = `/api/studio/vcard?token=${encodeURIComponent(token)}`;
+    anchor.download = `${(identity.name || identity.company || "contact").replace(/[^a-z0-9-_]+/gi, "-").toLowerCase()}.vcf`;
+    anchor.rel = "noopener";
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
   }
 
   return <section className="border-t border-white/10 pt-5">
