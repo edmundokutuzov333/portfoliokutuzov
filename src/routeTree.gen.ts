@@ -23,80 +23,25 @@ import { Route as ITokenRouteImport } from './routes/i.$token'
 import { Route as PortfolioIndexRouteImport } from './routes/portfolio.index'
 import { Route as PortfolioSlugRouteImport } from './routes/portfolio.$slug'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
+import { Route as StudioRouteImport } from './routes/studio'
+import { Route as StudioBusinessCardRouteImport } from './routes/studio.business-card'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminRoute = AdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() => import('./routes/admin.lazy').then((d) => d.Route))
-const ContactRoute = ContactRouteImport.update({
-  id: '/contact',
-  path: '/contact',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() => import('./routes/contact.lazy').then((d) => d.Route))
-const CredentialsRoute = CredentialsRouteImport.update({
-  id: '/credentials',
-  path: '/credentials',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const McpRoute = McpRouteImport.update({
-  id: '/mcp',
-  path: '/mcp',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ServicesRoute = ServicesRouteImport.update({
-  id: '/services',
-  path: '/services',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const Char91DotmcpChar93ListToolsRoute =
-  Char91DotmcpChar93ListToolsRouteImport.update({
-    id: '/.mcp/list-tools',
-    path: '/.mcp/list-tools',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const Char91DotwellKnownChar93OauthProtectedResourceRoute =
-  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
-    id: '/.well-known/oauth-protected-resource',
-    path: '/.well-known/oauth-protected-resource',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiChatRoute = ApiChatRouteImport.update({
-  id: '/api/chat',
-  path: '/api/chat',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ITokenRoute = ITokenRouteImport.update({
-  id: '/i/$token',
-  path: '/i/$token',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PortfolioIndexRoute = PortfolioIndexRouteImport.update({
-  id: '/portfolio/',
-  path: '/portfolio/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PortfolioSlugRoute = PortfolioSlugRouteImport.update({
-  id: '/portfolio/$slug',
-  path: '/portfolio/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const Char91DotmcpChar93InvokeToolToolRoute =
-  Char91DotmcpChar93InvokeToolToolRouteImport.update({
-    id: '/.mcp/invoke-tool/$tool',
-    path: '/.mcp/invoke-tool/$tool',
-    getParentRoute: () => rootRouteImport,
-  } as any)
+const IndexRoute = IndexRouteImport.update({ id: '/', path: '/', getParentRoute: () => rootRouteImport } as any)
+const AdminRoute = AdminRouteImport.update({ id: '/admin', path: '/admin', getParentRoute: () => rootRouteImport } as any).lazy(() => import('./routes/admin.lazy').then((d) => d.Route))
+const ContactRoute = ContactRouteImport.update({ id: '/contact', path: '/contact', getParentRoute: () => rootRouteImport } as any).lazy(() => import('./routes/contact.lazy').then((d) => d.Route))
+const CredentialsRoute = CredentialsRouteImport.update({ id: '/credentials', path: '/credentials', getParentRoute: () => rootRouteImport } as any)
+const McpRoute = McpRouteImport.update({ id: '/mcp', path: '/mcp', getParentRoute: () => rootRouteImport } as any)
+const ServicesRoute = ServicesRouteImport.update({ id: '/services', path: '/services', getParentRoute: () => rootRouteImport } as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({ id: '/sitemap.xml', path: '/sitemap.xml', getParentRoute: () => rootRouteImport } as any)
+const Char91DotmcpChar93ListToolsRoute = Char91DotmcpChar93ListToolsRouteImport.update({ id: '/.mcp/list-tools', path: '/.mcp/list-tools', getParentRoute: () => rootRouteImport } as any)
+const Char91DotwellKnownChar93OauthProtectedResourceRoute = Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({ id: '/.well-known/oauth-protected-resource', path: '/.well-known/oauth-protected-resource', getParentRoute: () => rootRouteImport } as any)
+const ApiChatRoute = ApiChatRouteImport.update({ id: '/api/chat', path: '/api/chat', getParentRoute: () => rootRouteImport } as any)
+const ITokenRoute = ITokenRouteImport.update({ id: '/i/$token', path: '/i/$token', getParentRoute: () => rootRouteImport } as any)
+const PortfolioIndexRoute = PortfolioIndexRouteImport.update({ id: '/portfolio/', path: '/portfolio/', getParentRoute: () => rootRouteImport } as any)
+const PortfolioSlugRoute = PortfolioSlugRouteImport.update({ id: '/portfolio/$slug', path: '/portfolio/$slug', getParentRoute: () => rootRouteImport } as any)
+const Char91DotmcpChar93InvokeToolToolRoute = Char91DotmcpChar93InvokeToolToolRouteImport.update({ id: '/.mcp/invoke-tool/$tool', path: '/.mcp/invoke-tool/$tool', getParentRoute: () => rootRouteImport } as any)
+const StudioRoute = StudioRouteImport.update({ id: '/studio', path: '/studio', getParentRoute: () => rootRouteImport } as any)
+const StudioBusinessCardRoute = StudioBusinessCardRouteImport.update({ id: '/studio/business-card', path: '/studio/business-card', getParentRoute: () => rootRouteImport } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -113,6 +58,8 @@ export interface FileRoutesByFullPath {
   '/portfolio/$slug': typeof PortfolioSlugRoute
   '/portfolio/': typeof PortfolioIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/studio': typeof StudioRoute
+  '/studio/business-card': typeof StudioBusinessCardRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -129,6 +76,8 @@ export interface FileRoutesByTo {
   '/portfolio/$slug': typeof PortfolioSlugRoute
   '/portfolio': typeof PortfolioIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/studio': typeof StudioRoute
+  '/studio/business-card': typeof StudioBusinessCardRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -146,6 +95,8 @@ export interface FileRoutesById {
   '/portfolio/$slug': typeof PortfolioSlugRoute
   '/portfolio/': typeof PortfolioIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/studio': typeof StudioRoute
+  '/studio/business-card': typeof StudioBusinessCardRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -164,6 +115,8 @@ export interface FileRouteTypes {
     | '/portfolio/$slug'
     | '/portfolio/'
     | '/.mcp/invoke-tool/$tool'
+    | '/studio'
+    | '/studio/business-card'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -180,6 +133,8 @@ export interface FileRouteTypes {
     | '/portfolio/$slug'
     | '/portfolio'
     | '/.mcp/invoke-tool/$tool'
+    | '/studio'
+    | '/studio/business-card'
   id:
     | '__root__'
     | '/'
@@ -196,6 +151,8 @@ export interface FileRouteTypes {
     | '/portfolio/$slug'
     | '/portfolio/'
     | '/.mcp/invoke-tool/$tool'
+    | '/studio'
+    | '/studio/business-card'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -213,128 +170,50 @@ export interface RootRouteChildren {
   PortfolioSlugRoute: typeof PortfolioSlugRoute
   PortfolioIndexRoute: typeof PortfolioIndexRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
+  StudioRoute: typeof StudioRoute
+  StudioBusinessCardRoute: typeof StudioBusinessCardRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/contact': {
-      id: '/contact'
-      path: '/contact'
-      fullPath: '/contact'
-      preLoaderRoute: typeof ContactRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/credentials': {
-      id: '/credentials'
-      path: '/credentials'
-      fullPath: '/credentials'
-      preLoaderRoute: typeof CredentialsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/mcp': {
-      id: '/mcp'
-      path: '/mcp'
-      fullPath: '/mcp'
-      preLoaderRoute: typeof McpRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/services': {
-      id: '/services'
-      path: '/services'
-      fullPath: '/services'
-      preLoaderRoute: typeof ServicesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/.mcp/list-tools': {
-      id: '/.mcp/list-tools'
-      path: '/.mcp/list-tools'
-      fullPath: '/.mcp/list-tools'
-      preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/.well-known/oauth-protected-resource': {
-      id: '/.well-known/oauth-protected-resource'
-      path: '/.well-known/oauth-protected-resource'
-      fullPath: '/.well-known/oauth-protected-resource'
-      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/chat': {
-      id: '/api/chat'
-      path: '/api/chat'
-      fullPath: '/api/chat'
-      preLoaderRoute: typeof ApiChatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/i/$token': {
-      id: '/i/$token'
-      path: '/i/$token'
-      fullPath: '/i/$token'
-      preLoaderRoute: typeof ITokenRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/portfolio/': {
-      id: '/portfolio/'
-      path: '/portfolio'
-      fullPath: '/portfolio/'
-      preLoaderRoute: typeof PortfolioIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/portfolio/$slug': {
-      id: '/portfolio/$slug'
-      path: '/portfolio/$slug'
-      fullPath: '/portfolio/$slug'
-      preLoaderRoute: typeof PortfolioSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/.mcp/invoke-tool/$tool': {
-      id: '/.mcp/invoke-tool/$tool'
-      path: '/.mcp/invoke-tool/$tool'
-      fullPath: '/.mcp/invoke-tool/$tool'
-      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+    '/': { id: '/'; path: '/'; fullPath: '/'; preLoaderRoute: typeof IndexRouteImport; parentRoute: typeof rootRouteImport }
+    '/admin': { id: '/admin'; path: '/admin'; fullPath: '/admin'; preLoaderRoute: typeof AdminRouteImport; parentRoute: typeof rootRouteImport }
+    '/contact': { id: '/contact'; path: '/contact'; fullPath: '/contact'; preLoaderRoute: typeof ContactRouteImport; parentRoute: typeof rootRouteImport }
+    '/credentials': { id: '/credentials'; path: '/credentials'; fullPath: '/credentials'; preLoaderRoute: typeof CredentialsRouteImport; parentRoute: typeof rootRouteImport }
+    '/mcp': { id: '/mcp'; path: '/mcp'; fullPath: '/mcp'; preLoaderRoute: typeof McpRouteImport; parentRoute: typeof rootRouteImport }
+    '/services': { id: '/services'; path: '/services'; fullPath: '/services'; preLoaderRoute: typeof ServicesRouteImport; parentRoute: typeof rootRouteImport }
+    '/sitemap.xml': { id: '/sitemap.xml'; path: '/sitemap.xml'; fullPath: '/sitemap.xml'; preLoaderRoute: typeof SitemapDotxmlRouteImport; parentRoute: typeof rootRouteImport }
+    '/.mcp/list-tools': { id: '/.mcp/list-tools'; path: '/.mcp/list-tools'; fullPath: '/.mcp/list-tools'; preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport; parentRoute: typeof rootRouteImport }
+    '/.well-known/oauth-protected-resource': { id: '/.well-known/oauth-protected-resource'; path: '/.well-known/oauth-protected-resource'; fullPath: '/.well-known/oauth-protected-resource'; preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport; parentRoute: typeof rootRouteImport }
+    '/api/chat': { id: '/api/chat'; path: '/api/chat'; fullPath: '/api/chat'; preLoaderRoute: typeof ApiChatRouteImport; parentRoute: typeof rootRouteImport }
+    '/i/$token': { id: '/i/$token'; path: '/i/$token'; fullPath: '/i/$token'; preLoaderRoute: typeof ITokenRouteImport; parentRoute: typeof rootRouteImport }
+    '/portfolio/': { id: '/portfolio/'; path: '/portfolio'; fullPath: '/portfolio/'; preLoaderRoute: typeof PortfolioIndexRouteImport; parentRoute: typeof rootRouteImport }
+    '/portfolio/$slug': { id: '/portfolio/$slug'; path: '/portfolio/$slug'; fullPath: '/portfolio/$slug'; preLoaderRoute: typeof PortfolioSlugRouteImport; parentRoute: typeof rootRouteImport }
+    '/.mcp/invoke-tool/$tool': { id: '/.mcp/invoke-tool/$tool'; path: '/.mcp/invoke-tool/$tool'; fullPath: '/.mcp/invoke-tool/$tool'; preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport; parentRoute: typeof rootRouteImport }
+    '/studio': { id: '/studio'; path: '/studio'; fullPath: '/studio'; preLoaderRoute: typeof StudioRouteImport; parentRoute: typeof rootRouteImport }
+    '/studio/business-card': { id: '/studio/business-card'; path: '/studio/business-card'; fullPath: '/studio/business-card'; preLoaderRoute: typeof StudioBusinessCardRouteImport; parentRoute: typeof rootRouteImport }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  AdminRoute: AdminRoute,
-  ContactRoute: ContactRoute,
-  CredentialsRoute: CredentialsRoute,
-  McpRoute: McpRoute,
-  ServicesRoute: ServicesRoute,
-  SitemapDotxmlRoute: SitemapDotxmlRoute,
-  Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
-  Char91DotwellKnownChar93OauthProtectedResourceRoute:
-    Char91DotwellKnownChar93OauthProtectedResourceRoute,
-  ApiChatRoute: ApiChatRoute,
-  ITokenRoute: ITokenRoute,
-  PortfolioSlugRoute: PortfolioSlugRoute,
-  PortfolioIndexRoute: PortfolioIndexRoute,
-  Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
+  IndexRoute,
+  AdminRoute,
+  ContactRoute,
+  CredentialsRoute,
+  McpRoute,
+  ServicesRoute,
+  SitemapDotxmlRoute,
+  Char91DotmcpChar93ListToolsRoute,
+  Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  ApiChatRoute,
+  ITokenRoute,
+  PortfolioSlugRoute,
+  PortfolioIndexRoute,
+  Char91DotmcpChar93InvokeToolToolRoute,
+  StudioRoute,
+  StudioBusinessCardRoute,
 }
+
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
