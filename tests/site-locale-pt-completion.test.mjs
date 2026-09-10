@@ -50,6 +50,5 @@ test("Portuguese completion covers portfolio categories and dynamic counters", (
     assert.match(bridge, new RegExp(pair[0].replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
     assert.match(bridge, new RegExp(pair[1].replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
-  assert.match(bridge, /Showing/);
-  assert.match(bridge, /A mostrar \\\$1 de \\\$2/);
+  assert.ok(bridge.includes('next = next.replace(/^Showing\\s+(\\d+)\\s+of\\s+(\\d+)$/i, "A mostrar $1 de $2")'));
 });
