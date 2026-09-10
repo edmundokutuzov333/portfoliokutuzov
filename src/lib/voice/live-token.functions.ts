@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { Modality, ThinkingLevel } from "@google/genai";
 import { getGeminiClient } from "@/lib/ai/config";
 import { getPortfolioKnowledgeSnapshot, formatKnowledgeForModel } from "@/lib/ai/knowledge-layer";
 import type { ChatContext } from "@/lib/ai/contracts";
@@ -6,7 +7,10 @@ import type { ChatContext } from "@/lib/ai/contracts";
 const LIVE_MODEL = "gemini-3.1-flash-live-preview";
 const LIVE_VOICE = "Charon";
 type Input = { context?: ChatContext; locale?: "en" | "pt-PT" };
-function parseInput(value: unknown) { const input = (value ?? {}) as Input; return { context: input.context ?? {}, locale: input.locale === "pt-PT" ? "pt-PT" : "en" } as const; }
+function parseInput(value: unknown) {
+  const input = (value ?? {}) as Input;
+  return { context: input.context ?? {}, locale: input.locale === "pt-PT" ? "pt-PT" : "en" } as const;
+}
 
 export const createLiveVoiceToken = createServerFn({ method: "POST" }).inputValidator((input: unknown) => parseInput(input)).handler(async ({ data }) => {
   const knowledge = await getPortfolioKnowledgeSnapshot("voice conversation", data.context);
@@ -25,6 +29,23 @@ export const createLiveVoiceToken = createServerFn({ method: "POST" }).inputVali
     `FULL PORTFOLIO KNOWLEDGE:\n${formatKnowledgeForModel(knowledge, { includeAllProjects: true })}`,
   ].join("\n\n");
 
-  const token = await getGeminiClient().authTokens.create({ config: { uses: 1, expireTime: new Date(Date.now() + 30 * 60 * 1000).toISOString(), liveConnectConstraints: { model: LIVE_MODEL, config: { responseModalities: ["AUDIO"], thinkingConfig: { thinkingLevel: "minimal" }, speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: LIVE_VOICE } } }, inputAudioTranscription: {}, outputAudioTranscription: {}, systemInstruction: { parts: [{ text: systemInstruction }] } } } } });
+  const token = await getGeminiClient().authTokens.create({
+    config: {
+      uses: 1,
+      expireTime: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+      liveConnectConstraints: {
+        model: LIVE_MODEL,
+        config: {
+          responseModalities: [Modality.AUDIO],
+          thinkingConfig: { thinkingLevel: ThinkingLevel.MINIMAL },
+          speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: LIVE_VOICE } } },
+          inputAudioTranscription: {},
+          outputAudioTranscription: {},
+          systemInstruction: { parts: [{ text: systemInstruction }] },
+        },
+      },
+    },
+  });
+
   return { token: token.name, model: LIVE_MODEL, voice: LIVE_VOICE, language: data.locale };
 });
