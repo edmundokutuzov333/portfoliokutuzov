@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from "react";
+import { trackEvent } from "@/lib/analytics";
 
 const AiAssistant = lazy(() =>
   import("@/components/AiAssistant").then((module) => ({ default: module.AiAssistant })),
@@ -36,4 +37,8 @@ export function DeferredAiAssistant() {
       <AiAssistant />
     </Suspense>
   );
+}
+
+export function trackAiOpen() {
+  trackEvent({ action: "ai_open", element: "ai_assistant" });
 }
