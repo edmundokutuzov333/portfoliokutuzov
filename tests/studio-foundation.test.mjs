@@ -6,8 +6,8 @@ const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("Kutuzov Studio routes are registered", async () => {
   const routeTree = await read("src/routeTree.gen.ts");
-  assert.match(routeTree, /\/studio\/);
-  assert.match(routeTree, /\/studio\/business-card/);
+  assert.ok(routeTree.includes("'/studio'"));
+  assert.ok(routeTree.includes("'/studio/business-card'"));
 });
 
 test("Studio navigation entry exists in desktop and mobile navigation", async () => {
