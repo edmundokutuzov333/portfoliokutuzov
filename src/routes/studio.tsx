@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, ImagePlus, Sparkles } from "lucide-react";
+import { ArrowRight, ImagePlus, Sparkles, QrCode } from "lucide-react";
 import { useSiteLocale } from "@/lib/site-locale";
 import { STUDIO_STYLES } from "@/lib/studio/types";
 
@@ -26,6 +26,7 @@ function StudioLanding() {
           <div className="mt-8 flex flex-wrap gap-3">
             <Link to="/studio/business-card" className="inline-flex items-center gap-2 rounded-full bg-[var(--color-text-primary)] px-6 py-3 text-sm font-semibold text-[var(--color-bg)] transition hover:translate-y-[-1px]">{pt ? "Criar o meu cartão" : "Create my card"}<ArrowRight size={16} /></Link>
             <Link to="/studio/background" className="inline-flex items-center gap-2 rounded-full border border-white/10 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/[.04]"><ImagePlus size={16} />{pt ? "Criar fundo com Magnific" : "Create background with Magnific"}</Link>
+            <Link to="/studio/identity" className="inline-flex items-center gap-2 rounded-full border border-white/10 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/[.04]"><QrCode size={16} />{pt ? "Identidade digital" : "Digital identity"}</Link>
           </div>
         </div>
 
