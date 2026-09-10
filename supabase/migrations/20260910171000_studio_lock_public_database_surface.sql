@@ -5,7 +5,7 @@
 drop policy if exists "studio cards anon insert" on public.studio_cards;
 drop policy if exists "studio cards public published read" on public.studio_cards;
 
-after alter table public.studio_cards enable row level security;
+alter table public.studio_cards enable row level security;
 
 -- Authenticated access remains intentionally ownership-bound.
 -- Public cards are served by server routes using the privileged client,
