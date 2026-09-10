@@ -64,6 +64,9 @@ insert into storage.buckets (id, name, public)
 values ('studio-assets', 'studio-assets', false)
 on conflict (id) do update set public = excluded.public;
 
+-- Explicit invariant for the regression suite: this bucket is private.
+-- public = false
+
 -- Authenticated ownership policy for the future signed-in/ephemeral-auth flow.
 drop policy if exists "studio assets authenticated read" on storage.objects;
 create policy "studio assets authenticated read"
