@@ -8,13 +8,26 @@ const MAX_REQUESTS = 5;
 const MAX_BODY_BYTES = 18 * 1024 * 1024;
 const MAX_ATTACHMENT_BYTES = 6 * 1024 * 1024;
 const MAX_PROVIDER_ATTEMPTS = 3;
+const MAX_RATE_LIMIT_KEYS = 10_000;
 const rateLimits = new Map<string, { count: number; resetAt: number }>();
 
 function env(name: string) { return process.env[name]?.trim(); }
 function isEmail(value: string) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value); }
 function cleanText(value: unknown, max: number) { return typeof value === "string" ? value.trim().slice(0, max) : ""; }
 function clientKey(request: Request) { return (request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown").slice(0, 128); }
-function checkRateLimit(key: string) { const now = Date.now(); const current = rateLimits.get(key); if (!current || current.resetAt <= now) { rateLimits.set(key, { count: 1, resetAt: now + WINDOW_MS }); return { allowed: true, retryAfter: 0 }; } if (current.count >= MAX_REQUESTS) return { allowed: false, retryAfter: Math.max(1, Math.ceil((current.resetAt - now) / 1000)) }; current.count += 1; return { allowed: true, retryAfter: 0 }; }
+function checkRateLimit(key: string) {
+  const now = Date.now();
+  for (const [entryKey, entry] of rateLimits) if (entry.resetAt <= now) rateLimits.delete(entryKey);
+  const current = rateLimits.get(key);
+  if (!current || current.resetAt <= now) {
+    if (!rateLimits.has(key) && rateLimits.size >= MAX_RATE_LIMIT_KEYS) rateLimits.delete(rateLimits.keys().next().value!);
+    rateLimits.set(key, { count: 1, resetAt: now + WINDOW_MS });
+    return { allowed: true, retryAfter: 0 };
+  }
+  if (current.count >= MAX_REQUESTS) return { allowed: false, retryAfter: Math.max(1, Math.ceil((current.resetAt - now) / 1000)) };
+  current.count += 1;
+  return { allowed: true, retryAfter: 0 };
+}
 function decodeDataUrl(value: string, mime: string) {
   const match = value.match(/^data:([^;]+);base64,([A-Za-z0-9+/]+={0,2})$/s);
   if (!match || match[1].toLowerCase() !== mime.toLowerCase()) return null;
@@ -29,11 +42,15 @@ function safeHtmlText(value: string) { return value.replace(/[<>&"']/g, (char) =
 function safeFilename(value: string) { return (value.replace(/[^a-z0-9-_]+/gi, "-").replace(/^-+|-+$/g, "") || "contact").slice(0, 80).toLowerCase(); }
 function jsonResponse(request: Request, requestId: string, status: number, body: unknown, extra: Record<string, string> = {}) { return new Response(JSON.stringify(body), { status, headers: { ...getCorsHeaders(request), "X-Request-Id": requestId, "Content-Type": "application/json", "Cache-Control": "no-store", ...extra } }); }
 
-async function sendWithRetry(apiKey: string, payload: Record<string, unknown>) {
+async function sendWithRetry(apiKey: string, payload: Record<string, unknown>, idempotencyKey: string) {
   let lastResponse: Response | null = null;
   for (let attempt = 1; attempt <= MAX_PROVIDER_ATTEMPTS; attempt += 1) {
     try {
-      const response = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      const response = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json", "Idempotency-Key": idempotencyKey },
+        body: JSON.stringify(payload),
+      });
       lastResponse = response;
       if (response.ok) return response;
       if (response.status < 500 && response.status !== 429) return response;
@@ -74,7 +91,7 @@ export const Route = createFileRoute("/api/studio/email")({
     const html = `<div style="font-family:Inter,Arial,sans-serif;max-width:620px;margin:0 auto;color:#111"><p style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#64748b">Kutuzov Studio / Digital Identity</p><h1 style="font-size:28px;margin:16px 0 8px">${displayName}</h1><p style="color:#475569">Your digital business card is ready.</p><p><a href="${safeUrl}" style="display:inline-block;padding:12px 18px;border-radius:999px;background:#0284c7;color:#fff;text-decoration:none;font-weight:700">Open digital card</a></p><p style="font-size:12px;color:#64748b">The email includes your vCard plus the available PNG and PDF exports.</p></div>`;
     const text = `Kutuzov Studio / Digital Identity\n\n${name}\n\nOpen your digital card: ${digitalUrl}\n\nAttachments: vCard${png ? ", PNG" : ""}${pdf ? ", PDF" : ""}.`;
     const providerPayload = { from, to: [to], subject: `${name} · Digital business card`, html, text, attachments };
-    const res = await sendWithRetry(apiKey, providerPayload);
+    const res = await sendWithRetry(apiKey, providerPayload, `studio-email/${requestId}`);
     if (!res?.ok) {
       const detail = res ? await res.text().catch(() => "") : "network_error";
       void trackStudioEvent({ eventName: "email_failed", durationMs: Date.now() - startedAt, metadata: { provider: "resend" } });
