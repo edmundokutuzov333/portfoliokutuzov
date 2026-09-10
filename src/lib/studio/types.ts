@@ -2,6 +2,7 @@ export const STUDIO_CARD_WIDTH_MM = 90;
 export const STUDIO_CARD_HEIGHT_MM = 50;
 export const STUDIO_BLEED_MM = 3;
 export const STUDIO_SAFE_MM = 4;
+export const STUDIO_CARD_SAFE_MM = STUDIO_SAFE_MM;
 
 export type StudioStyle = "editorial" | "minimal" | "corporate" | "bold" | "creative" | "executive";
 export type StudioElementType = "text" | "logo" | "line";
