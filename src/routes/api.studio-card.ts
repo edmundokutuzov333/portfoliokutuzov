@@ -10,11 +10,12 @@ import { trackStudioEvent } from "@/lib/studio/analytics.server";
 const WINDOW_MS = 5 * 60 * 1000;
 const MAX_REQUESTS = 60;
 const MAX_RATE_LIMIT_KEYS = 10_000;
-const MAX_BODY_BYTES = 2 * 1024 * 1024;
+const MAX_BODY_BYTES = 8 * 1024 * 1024;
 const MAX_TEXT = 160;
 const MAX_WEBSITE = 500;
 const MAX_SESSION_ID = 128;
 const MAX_DRAFT_TOKEN = 128;
+const MAX_ELEMENTS = 20;
 const rateLimits = new Map<string, { count: number; resetAt: number }>();
 
 type CardBody = {
@@ -68,7 +69,8 @@ function validEmail(value: string) {
 function validDesign(value: unknown) {
   if (!value || typeof value !== "object") return false;
   const design = value as Record<string, unknown>;
-  return design.version === 1 && design.widthMm === 90 && design.heightMm === 50 && Array.isArray(design.elements) && design.elements.length <= 20;
+  if (design.version !== 1 || design.widthMm !== 90 || design.heightMm !== 50 || !Array.isArray(design.elements) || design.elements.length > MAX_ELEMENTS) return false;
+  return JSON.stringify(design).length <= 7 * 1024 * 1024;
 }
 
 function createDraftToken() {
