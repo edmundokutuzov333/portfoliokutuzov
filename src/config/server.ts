@@ -14,7 +14,8 @@ function parseOrigins(value?: string) {
 
 export function resolvePublicSiteUrl() {
   return (
-    firstNonEmpty(process.env.PUBLIC_SITE_URL, process.env.SITE_URL) ?? DEFAULT_PUBLIC_SITE_URL
+    firstNonEmpty(process.env.PUBLIC_SITE_URL, process.env.SITE_URL) ??
+    DEFAULT_PUBLIC_SITE_URL
   );
 }
 
@@ -22,8 +23,14 @@ export function getAllowedCorsOrigins() {
   const configured = parseOrigins(process.env.CORS_ALLOWED_ORIGINS);
   const siteUrl = resolvePublicSiteUrl().replace(/\/$/, "");
   const defaults = [siteUrl, DEFAULT_PUBLIC_SITE_URL];
-  if (process.env.NODE_ENV !== "production")
-    defaults.push("http://localhost:3000", "http://127.0.0.1:3000");
+  if (process.env.NODE_ENV !== "production") {
+    defaults.push(
+      "http://localhost:3000",
+      "http://127.0.0.1:3000",
+      "http://localhost:4173",
+      "http://127.0.0.1:4173",
+    );
+  }
   return new Set([...configured, ...defaults].filter(Boolean));
 }
 

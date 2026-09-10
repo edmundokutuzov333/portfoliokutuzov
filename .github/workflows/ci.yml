@@ -1,9 +1,9 @@
 name: CI
 on:
   push:
-    branches: [main, phase1-hardening, phase2-final-exec]
+    branches: [main, phase1-hardening, phase2-final-exec, phase3-ai-intelligence, ai-realtime-i18n]
   pull_request:
-    branches: [main]
+    branches: [main, phase3-ai-intelligence]
 permissions:
   contents: read
 jobs:

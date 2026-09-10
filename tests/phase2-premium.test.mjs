@@ -17,7 +17,7 @@ test("SEO primitives expose canonical, Open Graph and Twitter metadata", () => {
 
 test("Root document is SSR-safe and structured-data aware", () => {
   const root = read("src/routes/__root.tsx");
-  assert.match(root, /lang=\"pt-PT\"/);
+  assert.match(root, /lang=\"en\"/);
   assert.match(root, /application\/ld\+json/);
   assert.match(root, /DeferredAiAssistant/);
 });
@@ -26,7 +26,7 @@ test("AI assistant is not part of the critical shell", () => {
   const file = read("src/components/DeferredAiAssistant.tsx");
   assert.match(file, /lazy\(/);
   assert.match(file, /requestIdleCallback/);
-  assert.match(file, /timeout\s*:\s*2500/);
+  assert.match(file, /timeout\s*:\s*1800/);
 });
 
 test("Heavy reel is deferred until the browser is idle without abandoning layout stability", () => {

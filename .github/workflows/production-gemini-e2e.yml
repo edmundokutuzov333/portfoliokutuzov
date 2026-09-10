@@ -1,0 +1,31 @@
+name: Production Gemini E2E
+
+on:
+  workflow_dispatch:
+    inputs:
+      production_url:
+        description: Production site origin
+        required: false
+        default: https://portfoliokutuzov-omega.vercel.app
+        type: string
+  push:
+    branches: [ai-realtime-i18n]
+
+permissions:
+  contents: read
+
+jobs:
+  gemini-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Exercise production Gemini endpoints
+        env:
+          PRODUCTION_URL: ${{ inputs.production_url || 'https://portfoliokutuzov-omega.vercel.app' }}
+        run: node scripts/production-gemini-e2e.mjs

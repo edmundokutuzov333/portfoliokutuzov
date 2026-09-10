@@ -1,0 +1,22 @@
+name: Browser QA
+
+on:
+  pull_request:
+    branches: [main, phase3-ai-intelligence]
+  push:
+    branches: [phase3-ai-intelligence, ai-realtime-i18n, main]
+
+jobs:
+  browser-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm install --no-save @playwright/test
+      - run: npx playwright install --with-deps chromium firefox webkit msedge
+      - run: npx playwright test
