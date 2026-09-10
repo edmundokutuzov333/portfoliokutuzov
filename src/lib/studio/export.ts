@@ -47,9 +47,15 @@ async function svgToPngBytes(design: StudioDesignDocument): Promise<Uint8Array> 
   }
 }
 
+function blobPart(bytes: Uint8Array) {
+  const copy = new Uint8Array(bytes.byteLength);
+  copy.set(bytes);
+  return copy.buffer;
+}
+
 export async function exportPng(design: StudioDesignDocument) {
   const png = await svgToPngBytes(design);
-  downloadBlob(new Blob([png], { type: "image/png" }), "business-card.png");
+  downloadBlob(new Blob([blobPart(png)], { type: "image/png" }), "business-card.png");
 }
 
 export async function exportPdf(design: StudioDesignDocument) {
@@ -64,5 +70,5 @@ export async function exportPdf(design: StudioDesignDocument) {
   pdf.setSubject("Kutuzov Studio business card");
   pdf.setCreator("Kutuzov Studio");
   const bytes = await pdf.save();
-  downloadBlob(new Blob([bytes], { type: "application/pdf" }), "business-card.pdf");
+  downloadBlob(new Blob([blobPart(bytes)], { type: "application/pdf" }), "business-card.pdf");
 }
