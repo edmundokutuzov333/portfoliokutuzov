@@ -26,7 +26,7 @@ test("AI assistant is not part of the critical shell", () => {
   const file = read("src/components/DeferredAiAssistant.tsx");
   assert.match(file, /lazy\(/);
   assert.match(file, /requestIdleCallback/);
-  assert.match(file, /timeout\s*:\s*2500/);
+  assert.match(file, /timeout\s*:\s*1800/);
 });
 
 test("Heavy reel is deferred until the browser is idle without abandoning layout stability", () => {
