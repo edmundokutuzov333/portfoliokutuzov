@@ -4,15 +4,9 @@ import { scoreLead } from "@/lib/lead-intelligence";
 
 const RESEND_GATEWAY = "https://connector-gateway.lovable.dev/resend";
 
-const Input = z.object({
-  briefing_id: z.string().uuid(),
-});
+const Input = z.object({ briefing_id: z.string().uuid() });
 
-const esc = (s: unknown) =>
-  String(s ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+const esc = (s: unknown) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 function shell(inner: string) {
   return `<div style="font-family:-apple-system,Segoe UI,Inter,sans-serif;background:#01040A;color:#e2e8f0;padding:32px">${inner}<p style="font-size:12px;color:#64748b;margin:32px 0 0">— Edmundo Kutuzov — Art Director</p></div>`;
@@ -25,11 +19,7 @@ async function send(from: string, to: string[], subject: string, html: string) {
   try {
     await fetch(`${RESEND_GATEWAY}/emails`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${lovableKey}`,
-        "X-Connection-Api-Key": resendKey,
-      },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${lovableKey}`, "X-Connection-Api-Key": resendKey },
       body: JSON.stringify({ from, to, subject, html }),
     });
   } catch {
@@ -46,9 +36,7 @@ export const sendBriefingEmails = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: brief, error } = await supabaseAdmin
       .from("briefing_submissions")
-      .select(
-        "id, full_name, email, company_name, project_type, urgency, deadline, currency, budget_range, exact_amount, message, preferred_contact_method, phone, country, reference_links, attachments, confirmation_sent_at, landing_page, source_case_slug",
-      )
+      .select("id, full_name, email, company_name, project_type, urgency, deadline, currency, budget_range, exact_amount, message, preferred_contact_method, phone, country, reference_links, attachments, confirmation_sent_at")
       .eq("id", data.briefing_id)
       .maybeSingle();
 
@@ -68,12 +56,11 @@ export const sendBriefingEmails = createServerFn({ method: "POST" })
 
     await supabaseAdmin
       .from("briefing_submissions")
-      .update({ lead_score: lead.score, lead_tier: lead.tier, lead_signals: lead.signals })
+      .update({ lead_score: lead.score, lead_tier: lead.tier, lead_signals: lead.signals } as never)
       .eq("id", brief.id);
 
     const FROM = process.env.BRIEFING_FROM ?? "Edmundo Kutuzov <onboarding@resend.dev>";
-    const ADMIN =
-      process.env.BRIEFING_ADMIN_EMAIL ?? process.env.ADMIN_EMAIL ?? "contact@edmundokutuzov.art";
+    const ADMIN = process.env.BRIEFING_ADMIN_EMAIL ?? process.env.ADMIN_EMAIL ?? "contact@edmundokutuzov.art";
     const firstName = (brief.full_name ?? "").split(" ")[0] || "there";
     const refLinks = (Array.isArray(brief.reference_links) ? brief.reference_links : []) as RefLink[];
     const attachments = (Array.isArray(brief.attachments) ? brief.attachments : []) as Attachment[];
@@ -93,9 +80,7 @@ export const sendBriefingEmails = createServerFn({ method: "POST" })
     await send(FROM, [brief.email], "Brief received — Edmundo Kutuzov", clientHtml);
 
     const refs = refLinks.map((l) => esc(l.url)).join("<br>");
-    const atts = attachments
-      .map((a) => `<a href="${esc(a.url)}" style="color:#7dd3fc">${esc(a.name)}</a>`)
-      .join("<br>");
+    const atts = attachments.map((a) => `<a href="${esc(a.url)}" style="color:#7dd3fc">${esc(a.name)}</a>`).join("<br>");
     const adminHtml = shell(`
       <p style="font-family:monospace;letter-spacing:.18em;color:#7dd3fc;font-size:11px;margin:0 0 16px">NEW BRIEFING · ${esc(lead.tier.toUpperCase())}</p>
       <h1 style="font-size:24px;line-height:1.15;margin:0 0 18px;color:#f5f8ff">${esc(brief.full_name)}${brief.company_name ? ` — ${esc(brief.company_name)}` : ""}</h1>
@@ -117,10 +102,6 @@ export const sendBriefingEmails = createServerFn({ method: "POST" })
     `);
     await send(FROM, [ADMIN], `New brief · ${brief.full_name} · ${lead.tier}`, adminHtml);
 
-    await supabaseAdmin
-      .from("briefing_submissions")
-      .update({ confirmation_sent_at: new Date().toISOString() })
-      .eq("id", brief.id);
-
+    await supabaseAdmin.from("briefing_submissions").update({ confirmation_sent_at: new Date().toISOString() }).eq("id", brief.id);
     return { ok: true, lead };
   });
