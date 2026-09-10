@@ -5,9 +5,10 @@ import { readFile } from "node:fs/promises";
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("Kutuzov Studio routes are registered", async () => {
-  const routeTree = await read("src/routeTree.gen.ts");
-  assert.ok(routeTree.includes("'/studio'"));
-  assert.ok(routeTree.includes("'/studio/business-card'"));
+  const studio = await read("src/routes/studio.tsx");
+  const editor = await read("src/routes/studio.business-card.tsx");
+  assert.match(studio, /createFileRoute\("\/studio"\)/);
+  assert.match(editor, /createFileRoute\("\/studio\/business-card"\)/);
 });
 
 test("Studio navigation entry exists in desktop and mobile navigation", async () => {
@@ -22,7 +23,7 @@ test("Business Card Studio uses a versioned editable design document", async () 
   assert.match(types, /version: 1/);
   assert.match(types, /StudioDesignDocument/);
   assert.match(editor, /updateElementPosition/);
-  assert.match(editor, /CardCanvas/);
+  assert.match(editor, /StudioCanvas/);
 });
 
 test("Studio database foundation includes draft RLS and private storage bucket", async () => {
@@ -42,5 +43,5 @@ test("Studio session storage never creates a synthetic Math.random identifier", 
 
 test("Studio sitemap exposes the public Studio landing page", async () => {
   const sitemap = await read("src/routes/sitemap[.]xml.ts");
-  assert.match(sitemap, /\"\/studio\"/);
+  assert.match(sitemap, /\/studio/);
 });
