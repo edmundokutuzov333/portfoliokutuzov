@@ -1,17 +1,18 @@
 import { useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
-import { Check, ChevronDown, ChevronLeft, ChevronUp, Download, FileImage, FileText, GripVertical, Layers3, Redo2, Save, Undo2, Upload } from "lucide-react";
+import { Check, ChevronDown, ChevronLeft, ChevronUp, Download, FileImage, FileText, GripVertical, Layers3, Printer, Redo2, Save, Undo2, Upload } from "lucide-react";
 import clsx from "clsx";
 import { useSiteLocale } from "@/lib/site-locale";
 import { getStudioSessionId } from "@/lib/studio/session";
 import { alignElement, createStudioDesign, loadDraftLocally, reorderElement, saveDraftLocally, updateBackground, updateElementPosition, updateElementSize, updateTextElement } from "@/lib/studio/design-document";
 import { saveStudioCard } from "@/lib/studio/persistence";
-import { exportPdf, exportPng, exportSvg } from "@/lib/studio/export";
+import { exportPdf, exportPng, exportPrintPdf, exportSvg } from "@/lib/studio/export";
 import { STUDIO_CARD_HEIGHT_MM, STUDIO_CARD_SAFE_MM, STUDIO_CARD_WIDTH_MM, STUDIO_STYLES, type StudioDesignDocument, type StudioElement, type StudioStyle, type StudioTextRole } from "@/lib/studio/types";
 import { CreativeEnginePanel } from "./CreativeEnginePanel";
 import { applyCreativeRecommendation } from "@/lib/studio/ai/creative-apply";
 import type { StudioCreativeRecommendation } from "@/lib/studio/ai/creative-types";
 
 type FieldKey = StudioTextRole;
+type ExportKind = "svg" | "png" | "pdf" | "print-pdf";
 type Interaction = { mode: "drag" | "resize"; id: string; before: StudioDesignDocument; startX: number; startY: number; startW: number; startH: number };
 
 const fields: Array<{ key: FieldKey; en: string; pt: string; placeholder: string; type?: string }> = [
@@ -37,6 +38,22 @@ function readAsDataUrl(file: File) {
     reader.onerror = () => reject(reader.error);
     reader.readAsDataURL(file);
   });
+}
+
+function sanitizeSvg(svg: string) {
+  if (svg.length > 1_500_000) throw new Error("SVG payload is too large.");
+  const document = new DOMParser().parseFromString(svg, "image/svg+xml");
+  if (document.querySelector("parsererror")) throw new Error("Invalid SVG file.");
+  document.querySelectorAll("script,foreignObject,iframe,object,embed,link,style").forEach((node) => node.remove());
+  document.querySelectorAll("*").forEach((node) => {
+    for (const attribute of Array.from(node.attributes)) {
+      const name = attribute.name.toLowerCase();
+      const value = attribute.value.trim();
+      if (name.startsWith("on") || name === "style") node.removeAttribute(attribute.name);
+      if ((name === "href" || name === "xlink:href" || name === "src") && !value.startsWith("#")) node.removeAttribute(attribute.name);
+    }
+  });
+  return new XMLSerializer().serializeToString(document.documentElement);
 }
 
 function elementLabel(element: StudioElement, pt: boolean) {
@@ -161,7 +178,7 @@ export function BusinessCardEditor() {
   const [past, setPast] = useState<StudioDesignDocument[]>([]);
   const [future, setFuture] = useState<StudioDesignDocument[]>([]);
   const [saveState, setSaveState] = useState<"idle"|"saving"|"saved">("idle");
-  const [busy, setBusy] = useState<"png"|"pdf"|"svg"|null>(null);
+  const [busy, setBusy] = useState<ExportKind | null>(null);
   const [notice, setNotice] = useState("");
   const designRef = useRef(design);
   useEffect(() => { designRef.current = design; }, [design]);
@@ -179,6 +196,9 @@ export function BusinessCardEditor() {
 
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const isEditable = !!target && (target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName));
+      if (isEditable) return;
       const meta = event.metaKey || event.ctrlKey;
       if (meta && event.key.toLowerCase() === "z") { event.preventDefault(); event.shiftKey ? redo() : undo(); return; }
       if (meta && event.key.toLowerCase() === "y") { event.preventDefault(); redo(); return; }
@@ -212,15 +232,17 @@ export function BusinessCardEditor() {
 
   async function uploadLogo(file?: File) {
     if (!file) return;
-    if (file.type === "application/pdf") { setNotice(pt ? "Nesta fase, o editor usa SVG ou imagens. O PDF fica reservado ao pipeline de assets." : "This phase uses SVG or images. PDF stays reserved for the asset pipeline."); return; }
+    if (file.type === "application/pdf") { setNotice(pt ? "O editor usa SVG ou imagens; PDF está disponível apenas no pipeline de exportação." : "The editor uses SVG or images; PDF is available only in the export pipeline."); return; }
     if (!["image/svg+xml","image/png","image/jpeg","image/webp"].includes(file.type)) { setNotice(pt ? "Formato não suportado." : "Unsupported format."); return; }
     if (file.size > 2 * 1024 * 1024) { setNotice(pt ? "Use um logótipo até 2 MB nesta fase." : "Use a logo up to 2 MB in this phase."); return; }
     try {
-      const src = await readAsDataUrl(file);
+      const src = file.type === "image/svg+xml"
+        ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(sanitizeSvg(await file.text()))}`
+        : await readAsDataUrl(file);
       commit({ ...designRef.current, elements: [...designRef.current.elements.filter((item) => item.type !== "logo"), { id: "logo", type: "logo", x: 64, y: 7, width: 20, height: 10, fit: "contain", opacity: .98, src }] });
       setSelectedId("logo");
       setNotice(pt ? "Logótipo adicionado." : "Logo added.");
-    } catch { setNotice(pt ? "Não foi possível ler o logótipo." : "Could not read the logo."); }
+    } catch (error) { setNotice(error instanceof Error ? error.message : (pt ? "Não foi possível ler o logótipo." : "Could not read the logo.")); }
   }
 
   async function save() {
@@ -231,10 +253,15 @@ export function BusinessCardEditor() {
     setTimeout(() => setSaveState("idle"), 1800);
   }
 
-  async function doExport(kind: "svg"|"png"|"pdf") {
+  async function doExport(kind: ExportKind) {
     setBusy(kind); setNotice("");
-    try { const current = designRef.current; if (kind === "svg") exportSvg(current); else if (kind === "png") await exportPng(current); else await exportPdf(current); }
-    catch (error) { setNotice(error instanceof Error ? error.message : (pt ? "Falha na exportação." : "Export failed.")); }
+    try {
+      const current = designRef.current;
+      if (kind === "svg") exportSvg(current);
+      else if (kind === "png") await exportPng(current);
+      else if (kind === "pdf") await exportPdf(current);
+      else await exportPrintPdf(current);
+    } catch (error) { setNotice(error instanceof Error ? error.message : (pt ? "Falha na exportação." : "Export failed.")); }
     finally { setBusy(null); }
   }
 
@@ -244,8 +271,8 @@ export function BusinessCardEditor() {
     <div className="mb-7 flex flex-wrap items-center justify-between gap-3"><a href="/studio" className="inline-flex items-center gap-2 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"><ChevronLeft size={16}/>{pt ? "Voltar ao Studio" : "Back to Studio"}</a><div className="flex items-center gap-2"><button type="button" onClick={undo} disabled={!past.length} className="grid h-9 w-9 place-items-center rounded-full border border-white/10 text-white disabled:opacity-30" aria-label={pt ? "Desfazer" : "Undo"}><Undo2 size={15}/></button><button type="button" onClick={redo} disabled={!future.length} className="grid h-9 w-9 place-items-center rounded-full border border-white/10 text-white disabled:opacity-30" aria-label={pt ? "Refazer" : "Redo"}><Redo2 size={15}/></button><button type="button" onClick={save} disabled={saveState === "saving"} className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[.05] px-4 py-2 text-sm font-semibold text-white hover:bg-white/[.09]"><Save size={15}/>{saveState === "saved" ? <>{pt ? "Guardado" : "Saved"} <Check size={14}/></> : pt ? "Guardar" : "Save"}</button></div></div>
     <header className="mb-8"><p className="mono mb-3 text-[10px] uppercase tracking-[.3em] text-[var(--color-accent-base)]">Kutuzov Studio / Business Card Studio</p><h1 className="display text-4xl font-semibold tracking-[-.04em] text-[var(--color-text-primary)] sm:text-6xl">{pt ? "Editor vectorial de cartão de visita." : "Vector business card editor."}</h1><p className="mt-4 max-w-2xl text-sm leading-relaxed text-[var(--color-text-secondary)]">{pt ? "O cartão é um documento editável. Arraste, dimensione, alinhe e organize camadas. A exportação nasce do mesmo documento." : "The card is an editable document. Drag, resize, align and reorder layers. Exports are derived from the same document."}</p></header>
     <div className="grid gap-5 xl:grid-cols-[300px_minmax(0,1fr)_290px]">
-      <aside className="space-y-5 rounded-[24px] border border-white/10 bg-white/[.025] p-5"><section><h2 className="mb-4 text-sm font-semibold text-white">{pt ? "Conteúdo" : "Content"}</h2><div className="space-y-3">{fields.map((field) => <label key={field.key} className="block"><span className="mono mb-1.5 block text-[9px] uppercase tracking-[.18em] text-white/35">{pt ? field.pt : field.en}</span><input value={values[field.key]} onChange={(e) => fieldChange(field.key, e.target.value)} type={field.type ?? "text"} placeholder={field.placeholder} className="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2.5 text-sm text-white outline-none placeholder:text-white/20 focus:border-[var(--color-accent-base)]" /></label>)}</div></section><section className="border-t border-white/10 pt-5"><h2 className="mb-3 text-sm font-semibold text-white">{pt ? "Logótipo" : "Logo"}</h2><label className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-white/15 bg-black/15 px-4 py-6 text-center"><Upload size={18} className="mb-2 text-white/50"/><span className="text-sm font-medium text-white">{pt ? "Carregar logótipo" : "Upload logo"}</span><span className="mt-1 text-[10px] text-white/35">SVG · PNG · JPEG · WEBP</span><input type="file" className="hidden" accept="image/svg+xml,image/png,image/jpeg,image/webp,application/pdf" onChange={(e) => uploadLogo(e.target.files?.[0])}/></label>{notice&&<p className="mt-2 text-xs leading-relaxed text-white/45">{notice}</p>}</section><section className="border-t border-white/10 pt-5"><h2 className="mb-3 text-sm font-semibold text-white">{pt ? "Direcção visual" : "Design direction"}</h2><div className="grid grid-cols-2 gap-2">{STUDIO_STYLES.map((item) => <button key={item.id} type="button" onClick={() => changeStyle(item.id)} className={clsx("rounded-xl border px-3 py-3 text-left transition", style === item.id ? "border-[var(--color-accent-base)] bg-[var(--color-accent-subtle)]" : "border-white/10 hover:bg-white/[.04]")}><span className="block text-xs font-semibold text-white">{item.label}</span><span className="mt-1 block text-[9px] leading-relaxed text-white/40">{item.description}</span></button>)}</div></section><CreativeEnginePanel design={design} values={values} pt={pt} onApply={applyRecommendation} /></aside>
-      <section className="min-w-0 rounded-[24px] border border-white/10 bg-white/[.025] p-4 sm:p-6"><div className="mb-4 flex flex-wrap items-center justify-between gap-3"><div><p className="mono text-[9px] uppercase tracking-[.2em] text-white/35">Canvas</p><p className="mt-1 text-xs text-white/35">{STUDIO_CARD_WIDTH_MM} × {STUDIO_CARD_HEIGHT_MM} mm · {STUDIO_CARD_SAFE_MM} mm safe area</p></div><div className="flex items-center gap-2"><button type="button" onClick={() => doExport("svg")} disabled={!!busy} className="inline-flex items-center gap-1.5 rounded-full border border-white/10 px-3 py-2 text-xs text-white disabled:opacity-50"><FileText size={14}/>SVG</button><button type="button" onClick={() => doExport("png")} disabled={!!busy} className="inline-flex items-center gap-1.5 rounded-full border border-white/10 px-3 py-2 text-xs text-white disabled:opacity-50"><FileImage size={14}/>{busy === "png" ? "…" : "PNG"}</button><button type="button" onClick={() => doExport("pdf")} disabled={!!busy} className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-2 text-xs font-semibold text-black disabled:opacity-50"><Download size={14}/>{busy === "pdf" ? "…" : "PDF"}</button></div></div><StudioCanvas design={design} selectedId={selectedId} onSelect={setSelectedId} onChange={direct} onInteractionStart={() => {}} onInteractionEnd={(interaction) => { if (!sameDocument(interaction.before, designRef.current)) { setPast((items) => [...items.slice(-39), clone(interaction.before)]); setFuture([]); } }}/><div className="mt-4 text-xs text-white/35">{pt ? "Elemento seleccionado" : "Selected element"}: <span className="text-white/65">{selected ? elementLabel(selected, pt) : pt ? "nenhum" : "none"}</span></div></section>
+      <aside className="space-y-5 rounded-[24px] border border-white/10 bg-white/[.025] p-5"><section><h2 className="mb-4 text-sm font-semibold text-white">{pt ? "Conteúdo" : "Content"}</h2><div className="space-y-3">{fields.map((field) => <label key={field.key} className="block"><span className="mono mb-1.5 block text-[9px] uppercase tracking-[.18em] text-white/35">{pt ? field.pt : field.en}</span><input value={values[field.key]} onChange={(e) => fieldChange(field.key, e.target.value)} type={field.type ?? "text"} placeholder={field.placeholder} className="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2.5 text-sm text-white outline-none placeholder:text-white/20 focus:border-[var(--color-accent-base)]" /></label>)}</div></section><section className="border-t border-white/10 pt-5"><h2 className="mb-3 text-sm font-semibold text-white">{pt ? "Logótipo" : "Logo"}</h2><label className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-white/15 bg-black/15 px-4 py-6 text-center"><Upload size={18} className="mb-2 text-white/50"/><span className="text-sm font-medium text-white">{pt ? "Carregar logótipo" : "Upload logo"}</span><span className="mt-1 text-[10px] text-white/35">SVG · PNG · JPEG · WEBP</span><input type="file" className="hidden" accept="image/svg+xml,image/png,image/jpeg,image/webp" onChange={(e) => uploadLogo(e.target.files?.[0])}/></label>{notice&&<p className="mt-2 text-xs leading-relaxed text-white/45">{notice}</p>}</section><section className="border-t border-white/10 pt-5"><h2 className="mb-3 text-sm font-semibold text-white">{pt ? "Direcção visual" : "Design direction"}</h2><div className="grid grid-cols-2 gap-2">{STUDIO_STYLES.map((item) => <button key={item.id} type="button" onClick={() => changeStyle(item.id)} className={clsx("rounded-xl border px-3 py-3 text-left transition", style === item.id ? "border-[var(--color-accent-base)] bg-[var(--color-accent-subtle)]" : "border-white/10 hover:bg-white/[.04]")}><span className="block text-xs font-semibold text-white">{item.label}</span><span className="mt-1 block text-[9px] leading-relaxed text-white/40">{item.description}</span></button>)}</div></section><CreativeEnginePanel design={design} values={values} pt={pt} onApply={applyRecommendation} /></aside>
+      <section className="min-w-0 rounded-[24px] border border-white/10 bg-white/[.025] p-4 sm:p-6"><div className="mb-4 flex flex-wrap items-center justify-between gap-3"><div><p className="mono text-[9px] uppercase tracking-[.2em] text-white/35">Canvas</p><p className="mt-1 text-xs text-white/35">{STUDIO_CARD_WIDTH_MM} × {STUDIO_CARD_HEIGHT_MM} mm · {STUDIO_CARD_SAFE_MM} mm safe area</p></div><div className="flex flex-wrap items-center gap-2"><button type="button" onClick={() => doExport("svg")} disabled={!!busy} className="inline-flex items-center gap-1.5 rounded-full border border-white/10 px-3 py-2 text-xs text-white disabled:opacity-50"><FileText size={14}/>SVG</button><button type="button" onClick={() => doExport("png")} disabled={!!busy} className="inline-flex items-center gap-1.5 rounded-full border border-white/10 px-3 py-2 text-xs text-white disabled:opacity-50"><FileImage size={14}/>{busy === "png" ? "…" : "PNG"}</button><button type="button" onClick={() => doExport("pdf")} disabled={!!busy} className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-2 text-xs font-semibold text-black disabled:opacity-50"><Download size={14}/>{busy === "pdf" ? "…" : "PDF"}</button><button type="button" onClick={() => doExport("print-pdf")} disabled={!!busy} className="inline-flex items-center gap-1.5 rounded-full border border-white/10 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"><Printer size={14}/>{busy === "print-pdf" ? "…" : (pt ? "PDF gráfica" : "Print PDF")}</button></div></div><StudioCanvas design={design} selectedId={selectedId} onSelect={setSelectedId} onChange={direct} onInteractionStart={() => {}} onInteractionEnd={(interaction) => { if (!sameDocument(interaction.before, designRef.current)) { setPast((items) => [...items.slice(-39), clone(interaction.before)]); setFuture([]); } }}/><div className="mt-4 text-xs text-white/35">{pt ? "Elemento seleccionado" : "Selected element"}: <span className="text-white/65">{selected ? elementLabel(selected, pt) : pt ? "nenhum" : "none"}</span></div></section>
       <aside className="space-y-5 rounded-[24px] border border-white/10 bg-white/[.025] p-5"><section><div className="mb-3 flex items-center gap-2"><Layers3 size={15} className="text-white/45"/><h2 className="text-sm font-semibold text-white">{pt ? "Camadas" : "Layers"}</h2></div><div className="space-y-1.5">{[...design.elements].reverse().map((element) => <button type="button" key={element.id} onClick={() => setSelectedId(element.id)} className={clsx("flex w-full items-center justify-between rounded-xl border px-3 py-2 text-left text-xs transition",selectedId===element.id?"border-[var(--color-accent-base)] bg-[var(--color-accent-subtle)] text-white":"border-white/5 bg-black/10 text-white/55 hover:bg-white/[.04]")}><span className="flex items-center gap-2"><GripVertical size={13} className="text-white/25"/>{elementLabel(element,pt)}</span><span className="mono text-[8px] uppercase text-white/20">{element.type}</span></button>)}</div></section>{selected&&<><section className="border-t border-white/10 pt-5"><h2 className="mb-3 text-sm font-semibold text-white">{pt ? "Alinhar" : "Align"}</h2><div className="grid grid-cols-3 gap-2">{(["left","center","right","top","middle","bottom"] as const).map((value)=><button type="button" key={value} onClick={() => align(value)} className="rounded-xl border border-white/10 px-2 py-2 text-[10px] text-white/60 hover:bg-white/[.04]">{value}</button>)}</div></section><section className="border-t border-white/10 pt-5"><h2 className="mb-3 text-sm font-semibold text-white">{pt ? "Ordem" : "Layer order"}</h2><div className="flex gap-2"><button type="button" onClick={() => layer("up")} className="inline-flex flex-1 items-center justify-center gap-1 rounded-xl border border-white/10 py-2 text-xs text-white"><ChevronUp size={14}/>{pt ? "Subir" : "Up"}</button><button type="button" onClick={() => layer("down")} className="inline-flex flex-1 items-center justify-center gap-1 rounded-xl border border-white/10 py-2 text-xs text-white"><ChevronDown size={14}/>{pt ? "Descer" : "Down"}</button></div></section><section className="border-t border-white/10 pt-5"><h2 className="mb-3 text-sm font-semibold text-white">{pt ? "Fundo" : "Background"}</h2><div className="flex items-center gap-2"><input aria-label={pt ? "Cor de fundo" : "Background colour"} type="color" value={design.background.value} onChange={(e) => commit(updateBackground(designRef.current,e.target.value))} className="h-9 w-12 cursor-pointer rounded-lg border border-white/10 bg-transparent"/><button type="button" onClick={() => commit(updateBackground(designRef.current,designRef.current.background.value,designRef.current.background.secondary?undefined:"#1d9bff"))} className="rounded-xl border border-white/10 px-3 py-2 text-xs text-white">{design.background.secondary ? (pt ? "Sólido" : "Solid") : (pt ? "Gradiente" : "Gradient")}</button></div></section></>}</aside>
     </div>
   </div></div>;
