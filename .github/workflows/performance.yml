@@ -1,9 +1,9 @@
 name: Performance
 on:
   pull_request:
-    branches: [main]
+    branches: [main, phase3-ai-intelligence]
   push:
-    branches: [phase2-final-exec]
+    branches: [phase2-final-exec, phase3-ai-intelligence, ai-realtime-i18n]
 permissions:
   contents: read
 jobs:
@@ -38,7 +38,7 @@ jobs:
         run: npx --yes @lhci/cli@0.15.1 assert --config=lighthouserc.cjs
       - name: Preserve desktop reports
         if: always()
-        run: mv .lighthouseci .lighthouseci-desktop 2>/dev/null || true
+        run: cp -R .lighthouseci .lighthouseci-desktop || true
       - name: Collect Lighthouse mobile
         run: |
           rm -rf .lighthouseci
@@ -47,20 +47,18 @@ jobs:
         run: npx --yes @lhci/cli@0.15.1 assert --config=lighthouserc.mobile.cjs
       - name: Preserve mobile reports
         if: always()
-        run: mv .lighthouseci .lighthouseci-mobile 2>/dev/null || true
+        run: cp -R .lighthouseci .lighthouseci-mobile || true
       - name: Inspect Lighthouse reports
         if: always()
-        run: |
-          node scripts/inspect-lighthouse.mjs .lighthouseci-desktop || true
-          node scripts/inspect-lighthouse.mjs .lighthouseci-mobile || true
-      - if: always()
-        name: Upload Lighthouse reports
-        uses: actions/upload-artifact@v6
+        run: node scripts/inspect-lighthouse.mjs .lighthouseci-desktop .lighthouseci-mobile
+      - name: Upload Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
           name: lighthouse-reports
-          path: .lighthouseci-*
-          if-no-files-found: warn
-          retention-days: 14
-      - if: always()
-        name: Server log
+          path: |
+            .lighthouseci-desktop
+            .lighthouseci-mobile
+      - name: Server log
+        if: always()
         run: cat /tmp/portfolio-server.log || true
