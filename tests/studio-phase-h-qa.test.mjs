@@ -33,13 +33,14 @@ test("Editor history has bounded undo depth and clears redo after a new commit",
   assert.match(editor, /setFuture\(\(items\) => \[clone\(designRef\.current\), \.\.\.items\]\)/);
 });
 
-test("Asset intake accepts SVG PNG JPEG WebP, rejects PDF in the editor, and caps files", async () => {
+test("Asset intake accepts SVG PNG JPEG WebP, keeps PDF outside the visual editor, and caps files", async () => {
   const editor = await read("src/components/studio/BusinessCardEditor.tsx");
   assert.match(editor, /image\/svg\+xml/);
   assert.match(editor, /image\/png/);
   assert.match(editor, /image\/jpeg/);
   assert.match(editor, /image\/webp/);
-  assert.match(editor, /application\/pdf/);
+  assert.doesNotMatch(editor, /accept="[^"]*application\/pdf/);
+  assert.match(editor, /file\.type === "application\/pdf"/);
   assert.match(editor, /2 \* 1024 \* 1024/);
 });
 
@@ -65,13 +66,18 @@ test("Public identity sanitization constrains image payloads and geometry", asyn
   assert.match(identity, /heightMm: 50/);
 });
 
-test("Exports share one rendering source and cover SVG PNG PDF", async () => {
+test("Exports share one rendering source and cover SVG PNG PDF plus print PDF", async () => {
   const exporter = await read("src/lib/studio/export.ts");
   assert.match(exporter, /designToSvg/);
   assert.match(exporter, /createPngDataUrl/);
   assert.match(exporter, /createPdfDataUrl/);
+  assert.match(exporter, /createPrintPdfDataUrl/);
+  assert.match(exporter, /exportPrintPdf/);
   assert.match(exporter, /PDFDocument/);
   assert.match(exporter, /RASTER_SCALE = 4/);
+  assert.match(exporter, /PRINT_DPI = 300/);
+  assert.match(exporter, /BLEED_MM = 3/);
+  assert.match(exporter, /CROP_MARK_MM = 5/);
   assert.match(exporter, /image\/png/);
   assert.match(exporter, /application\/pdf/);
 });
@@ -87,6 +93,7 @@ test("Email pipeline validates attachments and keeps PDF PNG vCard and digital U
   assert.match(route, /digitalUrl/);
   assert.match(route, /api\.resend\.com\/emails/);
   assert.match(route, /attachments/);
+  assert.match(route, /Idempotency-Key/);
 });
 
 test("Public telemetry is bounded, rate limited and denies sensitive internal event types", async () => {
