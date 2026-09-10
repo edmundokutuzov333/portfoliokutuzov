@@ -16,7 +16,6 @@ test.describe("portfolio critical journeys", () => {
 
   test("command palette opens with keyboard and can search", async ({ page }) => {
     await page.goto("/");
-    await page.keyboard.press("Meta+k").catch(() => {});
     await page.keyboard.press("Control+k");
     const dialog = page.getByRole("dialog", { name: /search portfolio/i });
     await expect(dialog).toBeVisible();
