@@ -29,7 +29,10 @@ export function getGeminiClient(): GoogleGenAI {
   if (!aiClient) {
     const key = getEnvVar("GEMINI_API_KEY");
     if (!key) throw new Error("GEMINI_API_KEY environment variable is missing.");
-    aiClient = new GoogleGenAI({ apiKey: key, httpOptions: { headers: { "User-Agent": "aistudio-build" } });
+    aiClient = new GoogleGenAI({
+      apiKey: key,
+      httpOptions: { headers: { "User-Agent": "aistudio-build" } },
+    });
   }
   return aiClient;
 }
@@ -49,7 +52,12 @@ export function logDiagnostics(diag: ModelCallDiagnostics) {
   console.log(JSON.stringify({ level: "info", type: "AI_DIAGNOSTICS", timestamp: new Date().toISOString(), ...diag }));
 }
 
-interface ErrorWithStatus { message?: string; status?: number | string; code?: number | string; error?: { code?: number | string; status?: string } }
+interface ErrorWithStatus {
+  message?: string;
+  status?: number | string;
+  code?: number | string;
+  error?: { code?: number | string; status?: string };
+}
 
 function isQuotaOrRateLimitError(err: unknown): boolean {
   if (!err) return false;
