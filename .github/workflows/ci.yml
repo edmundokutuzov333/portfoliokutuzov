@@ -1,7 +1,7 @@
 name: CI
 on:
   push:
-    branches: [main, phase1-hardening, phase2-final-exec, phase3-ai-intelligence, ai-realtime-i18n]
+    branches: [main, phase1-hardening, phase2-final-exec, phase3-ai-intelligence, ai-realtime-i18n, feat/studio-identity-email]
   pull_request:
     branches: [main, phase3-ai-intelligence]
 permissions:
