@@ -6,9 +6,13 @@ const supabase = createClient(publicConfig.supabase.url, publicConfig.supabase.p
   auth: { persistSession: false, autoRefreshToken: false },
 });
 
-export async function createStudioCard(card: StudioCardData & { id: string }) {
+const DB_SAVE_KEY = "ek_studio_db_draft_v1";
+
+export async function saveStudioCard(card: StudioCardData) {
+  if (typeof window !== "undefined" && window.sessionStorage.getItem(DB_SAVE_KEY)) return;
+  const id = card.id ?? (typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `studio_${Date.now()}`);
   const payload = {
-    id: card.id,
+    id,
     session_id: card.sessionId,
     name: card.name.trim().slice(0, 160),
     role: card.role.trim().slice(0, 160),
@@ -22,4 +26,5 @@ export async function createStudioCard(card: StudioCardData & { id: string }) {
 
   const { error } = await supabase.from("studio_cards").insert(payload);
   if (error) throw error;
+  if (typeof window !== "undefined") window.sessionStorage.setItem(DB_SAVE_KEY, id);
 }
