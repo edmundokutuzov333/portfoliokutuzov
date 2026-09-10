@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Check, Copy, Download, Mail, QrCode, Send, Share2 } from "lucide-react";
+import { Check, Download, Mail, QrCode, Share2 } from "lucide-react";
 import { publicConfig } from "@/config/public";
 import { safeClipboardWrite } from "@/lib/browser-safe";
 import { buildVCard, publicIdentityUrl } from "@/lib/studio/identity-format";
@@ -8,32 +8,30 @@ import { createPdfDataUrl, createPngDataUrl } from "@/lib/studio/export";
 import type { StudioDesignDocument } from "@/lib/studio/types";
 
 interface Props { design: StudioDesignDocument; values: Record<string, string>; sessionId: string; pt: boolean; }
-
+type IdentityValues = { name: string; role: string; company: string; email: string; phone: string; website: string };
 type PublishResponse = { token?: string; error?: string };
+const getIdentity = (values: Record<string, string>): IdentityValues => ({ name: values.name || "", role: values.role || "", company: values.company || "", email: values.email || "", phone: values.phone || "", website: values.website || "" });
 
 export function DigitalIdentityPanel({ design, values, sessionId, pt }: Props) {
+  const identity = useMemo(() => getIdentity(values), [values]);
   const [token, setToken] = useState("");
   const [recipient, setRecipient] = useState("");
   const [autoSend, setAutoSend] = useState(true);
   const [busy, setBusy] = useState<"publish" | "email" | null>(null);
   const [copied, setCopied] = useState(false);
   const [status, setStatus] = useState("");
-
   const digitalUrl = useMemo(() => token ? publicIdentityUrl(publicConfig.siteUrl, token) : "", [token]);
-  const vcard = useMemo(() => token ? buildVCard({ ...values, url: digitalUrl }) : "", [token, digitalUrl, values]);
+  const vcard = useMemo(() => token ? buildVCard({ ...identity, url: digitalUrl }) : "", [token, digitalUrl, identity]);
   const qr = useMemo(() => digitalUrl ? qrDataUrl(digitalUrl, 5) : "", [digitalUrl]);
 
-  useEffect(() => {
-    const saved = typeof window !== "undefined" ? window.sessionStorage.getItem("ek_studio_public_token_v1") : null;
-    if (saved) setToken(saved);
-  }, []);
+  useEffect(() => { const saved = typeof window !== "undefined" ? window.sessionStorage.getItem("ek_studio_public_token_v1") : null; if (saved) setToken(saved); }, []);
 
   async function sendEmail(nextUrl = digitalUrl, nextVCard = vcard) {
     if (!recipient || !nextUrl || !nextVCard) return;
     setBusy("email"); setStatus("");
     try {
       const [pngDataUrl, pdfDataUrl] = await Promise.all([createPngDataUrl(design), createPdfDataUrl(design)]);
-      const response = await fetch("/api/studio/email", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ to: recipient, name: values.name || values.company, digitalUrl: nextUrl, vcard: nextVCard, pngDataUrl, pdfDataUrl }) });
+      const response = await fetch("/api/studio/email", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ to: recipient, name: identity.name || identity.company, digitalUrl: nextUrl, vcard: nextVCard, pngDataUrl, pdfDataUrl }) });
       const payload = await response.json() as { sent?: boolean; error?: string };
       if (!response.ok || !payload.sent) throw new Error(payload.error || "EMAIL_DELIVERY_FAILED");
       setStatus(pt ? "Email enviado." : "Email sent.");
@@ -44,13 +42,11 @@ export function DigitalIdentityPanel({ design, values, sessionId, pt }: Props) {
   async function publish() {
     setBusy("publish"); setStatus("");
     try {
-      const response = await fetch("/api/studio/publish", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sessionId, ...values, design }) });
+      const response = await fetch("/api/studio/publish", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sessionId, ...identity, design }) });
       const payload = await response.json() as PublishResponse;
       if (!response.ok || !payload.token) throw new Error(payload.error || "PUBLISH_FAILED");
-      setToken(payload.token);
-      window.sessionStorage.setItem("ek_studio_public_token_v1", payload.token);
-      const nextUrl = publicIdentityUrl(publicConfig.siteUrl, payload.token);
-      const nextVCard = buildVCard({ ...values, url: nextUrl });
+      setToken(payload.token); window.sessionStorage.setItem("ek_studio_public_token_v1", payload.token);
+      const nextUrl = publicIdentityUrl(publicConfig.siteUrl, payload.token); const nextVCard = buildVCard({ ...identity, url: nextUrl });
       setStatus(pt ? "Cartão público publicado." : "Public card published.");
       if (autoSend && recipient) void sendEmail(nextUrl, nextVCard);
     } catch (error) { setStatus(error instanceof Error ? error.message : (pt ? "Falha ao publicar." : "Publishing failed.")); }
@@ -59,16 +55,12 @@ export function DigitalIdentityPanel({ design, values, sessionId, pt }: Props) {
 
   async function share() {
     if (!digitalUrl) return;
-    const data = { title: values.name || values.company || "Digital card", text: [values.name, values.role, values.company].filter(Boolean).join(" · "), url: digitalUrl };
-    try {
-      if (navigator.share && navigator.canShare?.(data)) await navigator.share(data);
-      else { await safeClipboardWrite(digitalUrl); setCopied(true); setTimeout(() => setCopied(false), 1600); }
-    } catch { /* user cancellation is intentionally silent */ }
+    const data = { title: identity.name || identity.company || "Digital card", text: [identity.name, identity.role, identity.company].filter(Boolean).join(" · "), url: digitalUrl };
+    try { if (navigator.share && navigator.canShare?.(data)) await navigator.share(data); else { await safeClipboardWrite(digitalUrl); setCopied(true); setTimeout(() => setCopied(false), 1600); } } catch { /* user cancellation is intentionally silent */ }
   }
 
   function downloadVCard() {
-    const blob = new Blob([vcard], { type: "text/vcard;charset=utf-8" });
-    const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = `${(values.name || values.company || "contact").replace(/[^a-z0-9-_]+/gi, "-").toLowerCase()}.vcf`; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+    const blob = new Blob([vcard], { type: "text/vcard;charset=utf-8" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = `${(identity.name || identity.company || "contact").replace(/[^a-z0-9-_]+/gi, "-").toLowerCase()}.vcf`; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
   return <section className="border-t border-white/10 pt-5">
