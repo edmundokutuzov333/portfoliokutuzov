@@ -21,8 +21,8 @@ const RecommendationSchema = z.object({
   }),
   spacing: z.object({ outerMarginMm: z.number().finite(), blockGapMm: z.number().finite(), contactGapMm: z.number().finite(), baselineMm: z.number().finite() }),
   composition: z.object({ hierarchy: z.array(z.string()).min(3).max(6), balance: z.enum(["asymmetric", "centered", "structured"]), contrast: z.enum(["low", "medium", "high"]), whitespace: z.enum(["restrained", "generous", "dramatic"]) }),
-  colour: z.object({ background: hex, foreground: hex, accent: hex, secondary: hex.optional(), usage: z.string().min(1).max(800) }),
-  elementPositions: z.array(z.object({ id: z.string().min(1).max(80), x: z.number().finite(), y: z.number().finite(), width: z.number().finite().optional(), height: z.number().finite().optional() })).max(20),
+  colour: z.object({ background: hex, foreground: hex, accent: hex, secondary: hex.nullable(), usage: z.string().min(1).max(800) }),
+  elementPositions: z.array(z.object({ id: z.string().min(1).max(80), x: z.number().finite(), y: z.number().finite(), width: z.number().finite().nullable(), height: z.number().finite().nullable() })).max(20),
 });
 
 export const CREATIVE_OUTPUT_SCHEMA = creativeJsonSchema;
@@ -69,8 +69,9 @@ export function parseAndSanitizeRecommendation(raw: unknown, design: StudioDesig
   const style = STUDIO_STYLES.some((candidate) => candidate.id === parsed.style) ? parsed.style : design.style;
   if (style !== parsed.style) appliedSafety.push("style-fallback");
 
+  const secondary = parsed.colour.secondary ?? undefined;
   return {
-    recommendation: { ...parsed, style, typography, spacing, elementPositions },
+    recommendation: { ...parsed, style, colour: { ...parsed.colour, secondary }, typography, spacing, elementPositions },
     appliedSafety,
   };
 }
