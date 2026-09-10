@@ -10,7 +10,9 @@ export function ProjectEntitySchema() {
   const schema = useMemo(() => {
     if (!pathname.startsWith("/portfolio/") || pathname === "/portfolio/") return null;
     const slug = pathname.replace(/^\/portfolio\//, "").split("/")[0];
-    const project = projects.find((item) => (item.slug || item.id) === slug && item.is_published !== false);
+    const project = projects.find(
+      (item) => (item.slug || item.id) === slug && item.is_published !== false,
+    );
     if (!project) return null;
 
     const image = project.cover_url || socialImageUrl();
@@ -33,5 +35,10 @@ export function ProjectEntitySchema() {
   }, [pathname, projects]);
 
   if (!schema) return null;
-  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, "\\u003c") }} />;
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, "\\u003c") }}
+    />
+  );
 }

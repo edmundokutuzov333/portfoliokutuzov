@@ -6,7 +6,10 @@ test.describe("portfolio critical journeys", () => {
     await expect(page.locator("main")).toBeVisible();
     await expect(page.getByRole("link", { name: /portfolio/i }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: /contact/i }).first()).toBeVisible();
-    await expect(page.locator("main > section").first()).toHaveAttribute("aria-label", "Selected portfolio reel");
+    await expect(page.locator("main > section").first()).toHaveAttribute(
+      "aria-label",
+      "Selected portfolio reel",
+    );
     await expect(page.locator("header")).toHaveCSS("z-index", "1000");
   });
 
@@ -38,7 +41,12 @@ test.describe("portfolio critical journeys", () => {
     const assistant = page.locator("#ai-assistant-container");
     await expect(assistant).toBeVisible();
     await expect(assistant).toContainText(/creative desk|digital creative desk/i);
-    await expect(assistant.getByRole("button").filter({ hasText: /selected work|services/i }).first()).toBeVisible();
+    await expect(
+      assistant
+        .getByRole("button")
+        .filter({ hasText: /selected work|services/i })
+        .first(),
+    ).toBeVisible();
     await expect(page.getByRole("button", { name: /voice|voz/i })).toBeVisible();
   });
 
@@ -47,21 +55,33 @@ test.describe("portfolio critical journeys", () => {
     await expect(page.locator("main")).toBeVisible();
   });
 
-  test("language switcher translates the public experience and can switch back", async ({ page }) => {
+  test("language switcher translates the public experience and can switch back", async ({
+    page,
+  }) => {
     await page.goto("/");
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
     await page.getByRole("button", { name: /switch site language to portuguese/i }).click();
     await expect(page.locator("html")).toHaveAttribute("lang", "pt-PT");
     await expect(page.getByRole("link", { name: /portefólio/i }).first()).toBeVisible();
-    await expect(page.locator("body")).toContainText(/Início|Serviços|Contacto|Disponível para projectos/);
-    await expect(page.locator("body")).toContainText(/cortam o ruído|ficam na memória|mobilizam pessoas/i);
-    await expect(page.locator("body")).toContainText(/Selecção de portefólio|Trabalho seleccionado/i);
+    await expect(page.locator("body")).toContainText(
+      /Início|Serviços|Contacto|Disponível para projectos/,
+    );
+    await expect(page.locator("body")).toContainText(
+      /cortam o ruído|ficam na memória|mobilizam pessoas/i,
+    );
+    await expect(page.locator("body")).toContainText(
+      /Selecção de portefólio|Trabalho seleccionado/i,
+    );
 
     await page.goto("/services");
-    await expect(page.locator("body")).toContainText(/Direcção de arte|Editorial e impressão|Design digital/i);
+    await expect(page.locator("body")).toContainText(
+      /Direcção de arte|Editorial e impressão|Design digital/i,
+    );
 
     await page.goto("/credentials");
-    await expect(page.locator("body")).toContainText(/Percurso profissional|Experiência profissional|Disponível em 2026/i);
+    await expect(page.locator("body")).toContainText(
+      /Percurso profissional|Experiência profissional|Disponível em 2026/i,
+    );
 
     await page.goto("/contact");
     await expect(page.locator("body")).toContainText(/Contacto|Iniciar um projecto/i);
@@ -76,7 +96,11 @@ test.describe("portfolio critical journeys", () => {
     await expect(page.locator("main")).toBeVisible();
     const form = page.locator("form").first();
     await expect(form).toBeVisible();
-    await form.locator("button[type=submit]").last().click().catch(() => {});
+    await form
+      .locator("button[type=submit]")
+      .last()
+      .click()
+      .catch(() => {});
     await expect(page.locator("body")).toContainText(/required|project briefing|collaborate/i);
   });
 

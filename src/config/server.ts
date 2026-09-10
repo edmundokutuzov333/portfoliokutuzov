@@ -14,8 +14,7 @@ function parseOrigins(value?: string) {
 
 export function resolvePublicSiteUrl() {
   return (
-    firstNonEmpty(process.env.PUBLIC_SITE_URL, process.env.SITE_URL) ??
-    DEFAULT_PUBLIC_SITE_URL
+    firstNonEmpty(process.env.PUBLIC_SITE_URL, process.env.SITE_URL) ?? DEFAULT_PUBLIC_SITE_URL
   );
 }
 

@@ -17,19 +17,39 @@ export class TTSController {
     this.onStateChange = options.onStateChange;
     this.onError = options.onError;
     this.player = new AudioQueuePlayer({
-      onStateChange: (state) => { if (!this.isSynthesizing) this.onStateChange?.(state); },
-      onEnded: () => { this.currentMessageId = null; this.onStateChange?.("idle"); },
+      onStateChange: (state) => {
+        if (!this.isSynthesizing) this.onStateChange?.(state);
+      },
+      onEnded: () => {
+        this.currentMessageId = null;
+        this.onStateChange?.("idle");
+      },
     });
   }
 
   public sanitizeSpokenText(text: string): string {
-    return text.replace(/\*/g, "").replace(/https?:\/\/[^\s]+/g, "").replace(/[`_~#[\]()]/g, "").replace(/\n+/g, " ").trim();
+    return text
+      .replace(/\*/g, "")
+      .replace(/https?:\/\/[^\s]+/g, "")
+      .replace(/[`_~#[\]()]/g, "")
+      .replace(/\n+/g, " ")
+      .trim();
   }
 
-  public async play(messageId: string, rawText: string, locale: "en" | "pt-PT" = "en"): Promise<void> {
+  public async play(
+    messageId: string,
+    rawText: string,
+    locale: "en" | "pt-PT" = "en",
+  ): Promise<void> {
     if (this.currentMessageId === messageId) {
-      if (this.player.getIsPlaying()) { this.player.pause(); return; }
-      if (this.player.getIsPaused()) { this.player.resume(); return; }
+      if (this.player.getIsPlaying()) {
+        this.player.pause();
+        return;
+      }
+      if (this.player.getIsPaused()) {
+        this.player.resume();
+        return;
+      }
     }
     this.stop();
     const spokenText = this.sanitizeSpokenText(rawText);
@@ -60,8 +80,12 @@ export class TTSController {
     }
   }
 
-  public pause() { this.player.pause(); }
-  public resume() { this.player.resume(); }
+  public pause() {
+    this.player.pause();
+  }
+  public resume() {
+    this.player.resume();
+  }
   public stop() {
     this.abortController?.abort();
     this.abortController = null;
@@ -70,8 +94,16 @@ export class TTSController {
     this.player.stop();
     this.onStateChange?.("idle");
   }
-  public getCurrentMessageId() { return this.currentMessageId; }
-  public getIsPlaying() { return this.player.getIsPlaying(); }
-  public getIsPaused() { return this.player.getIsPaused(); }
-  public getIsSynthesizing() { return this.isSynthesizing; }
+  public getCurrentMessageId() {
+    return this.currentMessageId;
+  }
+  public getIsPlaying() {
+    return this.player.getIsPlaying();
+  }
+  public getIsPaused() {
+    return this.player.getIsPaused();
+  }
+  public getIsSynthesizing() {
+    return this.isSynthesizing;
+  }
 }

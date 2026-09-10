@@ -38,26 +38,43 @@ export function Navbar() {
           className="relative z-[1000] flex items-center justify-between rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-surface)]/70 py-2 pl-4 pr-2 shadow-[0_8px_32px_rgba(0,0,0,0.24)] backdrop-blur-xl transition duration-500 hover:bg-[var(--color-surface)]/90"
           aria-label={locale === "pt-PT" ? "Navegação principal" : "Main navigation"}
         >
-          <Link to="/" className="group flex items-center gap-3 pl-1 focus:outline-none" aria-label="Edmundo Kutuzov - home">
+          <Link
+            to="/"
+            className="group flex items-center gap-3 pl-1 focus:outline-none"
+            aria-label="Edmundo Kutuzov - home"
+          >
             <span className="grid h-8 w-8 place-items-center overflow-hidden rounded-full border border-[var(--color-border-base)] bg-white/[0.02] transition duration-300 group-hover:border-[var(--color-accent-subtle)] group-hover:bg-[var(--color-accent-subtle)]">
-              <img src={logoUrl} alt="Edmundo Kutuzov logo" width={24} height={24} className="h-6 w-6 object-contain" />
+              <img
+                src={logoUrl}
+                alt="Edmundo Kutuzov logo"
+                width={24}
+                height={24}
+                className="h-6 w-6 object-contain"
+              />
             </span>
             <span className="hidden flex-col leading-none sm:flex">
-              <span className="display text-[13px] font-semibold tracking-[-0.01em] text-[var(--color-text-primary)]">Edmundo Kutuzov</span>
-              <span className="mono mt-1 text-[9px] tracking-[0.2em] text-[var(--color-text-muted)] transition group-hover:text-[var(--color-accent-hover)]">Art Director</span>
+              <span className="display text-[13px] font-semibold tracking-[-0.01em] text-[var(--color-text-primary)]">
+                Edmundo Kutuzov
+              </span>
+              <span className="mono mt-1 text-[9px] tracking-[0.2em] text-[var(--color-text-muted)] transition group-hover:text-[var(--color-accent-hover)]">
+                Art Director
+              </span>
             </span>
           </Link>
           <LayoutGroup>
             <ul className="hidden items-center gap-1.5 pr-4 md:flex">
               {links.map((link) => {
-                const active = pathname === link.to || (link.to !== "/" && pathname.startsWith(link.to));
+                const active =
+                  pathname === link.to || (link.to !== "/" && pathname.startsWith(link.to));
                 return (
                   <li key={link.to}>
                     <Link
                       to={link.to}
                       className={clsx(
                         "relative flex items-center px-3 py-1.5 text-[13px] font-medium transition-colors duration-300 focus:outline-none",
-                        active ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]",
+                        active
+                          ? "text-[var(--color-text-primary)]"
+                          : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]",
                       )}
                     >
                       {active && (
@@ -67,7 +84,9 @@ export function Navbar() {
                           className="absolute -bottom-1 left-1/2 h-[2px] w-4 -translate-x-1/2 rounded-full bg-[var(--color-accent-base)] opacity-80"
                         />
                       )}
-                      <span className="relative z-10">{locale === "pt-PT" ? link.pt : link.label}</span>
+                      <span className="relative z-10">
+                        {locale === "pt-PT" ? link.pt : link.label}
+                      </span>
                     </Link>
                   </li>
                 );
@@ -84,7 +103,15 @@ export function Navbar() {
               type="button"
               onClick={() => setOpen((value) => !value)}
               className="grid h-9 w-9 place-items-center rounded-full border border-[var(--color-border-base)] bg-white/[0.02] text-[var(--color-text-primary)] transition hover:border-[var(--color-accent-hover)] hover:bg-[var(--color-accent-subtle)] focus:outline-none md:hidden"
-              aria-label={open ? (locale === "pt-PT" ? "Fechar menu" : "Close menu") : (locale === "pt-PT" ? "Abrir menu" : "Open menu")}
+              aria-label={
+                open
+                  ? locale === "pt-PT"
+                    ? "Fechar menu"
+                    : "Close menu"
+                  : locale === "pt-PT"
+                    ? "Abrir menu"
+                    : "Open menu"
+              }
               aria-expanded={open}
               aria-controls="mobile-navigation"
             >
@@ -99,14 +126,17 @@ export function Navbar() {
           >
             <div className="flex flex-col gap-1">
               {links.map((link) => {
-                const active = pathname === link.to || (link.to !== "/" && pathname.startsWith(link.to));
+                const active =
+                  pathname === link.to || (link.to !== "/" && pathname.startsWith(link.to));
                 return (
                   <Link
                     key={link.to}
                     to={link.to}
                     className={clsx(
                       "rounded-2xl px-4 py-3 text-[15px] font-medium transition",
-                      active ? "bg-[var(--color-accent-subtle)] text-[var(--color-text-primary)]" : "text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-highlight)] hover:text-[var(--color-text-primary)]",
+                      active
+                        ? "bg-[var(--color-accent-subtle)] text-[var(--color-text-primary)]"
+                        : "text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-highlight)] hover:text-[var(--color-text-primary)]",
                     )}
                   >
                     {locale === "pt-PT" ? link.pt : link.label}

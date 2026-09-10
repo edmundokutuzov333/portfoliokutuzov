@@ -128,20 +128,33 @@ export async function transcribeAudioChunks(audioChunks: string[]): Promise<stri
 
   const parts = [
     { inlineData: { mimeType: "audio/wav", data: base64Wav } },
-    { text: "Transcribe this audio precisely in its original language (English or European Portuguese). Return ONLY the transcription text, with no additional explanation or commentary." },
+    {
+      text: "Transcribe this audio precisely in its original language (English or European Portuguese). Return ONLY the transcription text, with no additional explanation or commentary.",
+    },
   ];
 
   try {
-    const response = await ai.models.generateContent({ model: "gemini-3.5-transcribe", contents: { parts } });
+    const response = await ai.models.generateContent({
+      model: "gemini-3.5-transcribe",
+      contents: { parts },
+    });
     return (response.text || "").trim().replace(/\*/g, "");
   } catch (err) {
     console.warn("[Voice Server] transcription model failed, using fallback:", err);
-    const fallbackResponse = await ai.models.generateContent({ model: PRIMARY_MODEL, contents: { parts } });
+    const fallbackResponse = await ai.models.generateContent({
+      model: PRIMARY_MODEL,
+      contents: { parts },
+    });
     return (fallbackResponse.text || "").trim().replace(/\*/g, "");
   }
 }
 
-function createWavHeader(dataLength: number, sampleRate: number, numChannels: number, bitsPerSample: number): ArrayBuffer {
+function createWavHeader(
+  dataLength: number,
+  sampleRate: number,
+  numChannels: number,
+  bitsPerSample: number,
+): ArrayBuffer {
   const buffer = new ArrayBuffer(44);
   const view = new DataView(buffer);
   const byteRate = (sampleRate * numChannels * bitsPerSample) / 8;
@@ -162,20 +175,39 @@ function createWavHeader(dataLength: number, sampleRate: number, numChannels: nu
   return buffer;
 }
 
-interface ToolCallLike { name: string; id?: string; args?: Record<string, unknown>; }
+interface ToolCallLike {
+  name: string;
+  id?: string;
+  args?: Record<string, unknown>;
+}
 
-export async function processVoiceTurnStream(requestId: string, sessionId: string | undefined, audioChunks: string[], messages: ChatMessage[], context: ChatContext, emit: (event: VoiceStreamEvent) => void): Promise<void> {
+export async function processVoiceTurnStream(
+  requestId: string,
+  sessionId: string | undefined,
+  audioChunks: string[],
+  messages: ChatMessage[],
+  context: ChatContext,
+  emit: (event: VoiceStreamEvent) => void,
+): Promise<void> {
   const startTime = Date.now();
   const ai = getGeminiClient();
 
   try {
     emit({ type: "status", text: "Listening & transcribing..." });
     let transcript = "";
-    try { transcript = await transcribeAudioChunks(audioChunks); } catch (err) { console.warn("[Voice Server] Direct transcription fallback:", err); transcript = "Tell me about Edmundo's creative projects."; }
+    try {
+      transcript = await transcribeAudioChunks(audioChunks);
+    } catch (err) {
+      console.warn("[Voice Server] Direct transcription fallback:", err);
+      transcript = "Tell me about Edmundo's creative projects.";
+    }
     if (!transcript) transcript = "Hello";
     emit({ type: "user_transcript", text: transcript });
 
-    const contents: Content[] = messages.map((m) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.text }] }));
+    const contents: Content[] = messages.map((m) => ({
+      role: m.role === "assistant" ? "model" : "user",
+      parts: [{ text: m.text }],
+    }));
     contents.push({ role: "user", parts: [{ text: transcript }] });
 
     let completeResponseText = "";
@@ -190,19 +222,30 @@ export async function processVoiceTurnStream(requestId: string, sessionId: strin
 
       while (iterations < maxIterations) {
         iterations++;
-        const responseStream = await ai.models.generateContentStream({ model: activeModel, contents: activeContents, config: { systemInstruction: buildVoiceSystemPrompt(context), tools: [{ functionDeclarations: allTools }], toolConfig: { includeServerSideToolInvocations: true }, temperature: 0.6 } });
+        const responseStream = await ai.models.generateContentStream({
+          model: activeModel,
+          contents: activeContents,
+          config: {
+            systemInstruction: buildVoiceSystemPrompt(context),
+            tools: [{ functionDeclarations: allTools }],
+            toolConfig: { includeServerSideToolInvocations: true },
+            temperature: 0.6,
+          },
+        });
         const toolCalls: ToolCallLike[] = [];
         let finalCandidates: Array<{ content?: Content }> = [];
 
         for await (const chunk of responseStream) {
-          if (chunk.functionCalls?.length) toolCalls.push(...(chunk.functionCalls as unknown as ToolCallLike[]));
+          if (chunk.functionCalls?.length)
+            toolCalls.push(...(chunk.functionCalls as unknown as ToolCallLike[]));
           const rawText = chunk.text;
           if (rawText && toolCalls.length === 0) {
             const sanitizedText = rawText.replace(/\*/g, "");
             turnResponseText += sanitizedText;
             emit({ type: "chunk", text: sanitizedText });
           }
-          if (chunk.candidates?.length) finalCandidates = chunk.candidates as Array<{ content?: Content }>;
+          if (chunk.candidates?.length)
+            finalCandidates = chunk.candidates as Array<{ content?: Content }>;
         }
 
         if (!toolCalls.length) break;
@@ -215,32 +258,77 @@ export async function processVoiceTurnStream(requestId: string, sessionId: strin
           if (handler) {
             try {
               toolResult = await handler(call.args || {});
-              if (["searchProjects", "getRelatedProjects", "filterProjects"].includes(call.name) && Array.isArray(toolResult.results) && toolResult.results.length) emit({ type: "projects", projects: toolResult.results as NormalizedProjectSummary[] });
-              else if (call.name === "getProject" && toolResult.project) emit({ type: "project_detail", project: toolResult.project as Record<string, unknown> });
-              else if (call.name === "navigateAction") emit({ type: "action", action: String(call.args?.action || ""), projectSlug: (call.args?.projectSlug as string) || null });
+              if (
+                ["searchProjects", "getRelatedProjects", "filterProjects"].includes(call.name) &&
+                Array.isArray(toolResult.results) &&
+                toolResult.results.length
+              )
+                emit({
+                  type: "projects",
+                  projects: toolResult.results as NormalizedProjectSummary[],
+                });
+              else if (call.name === "getProject" && toolResult.project)
+                emit({
+                  type: "project_detail",
+                  project: toolResult.project as Record<string, unknown>,
+                });
+              else if (call.name === "navigateAction")
+                emit({
+                  type: "action",
+                  action: String(call.args?.action || ""),
+                  projectSlug: (call.args?.projectSlug as string) || null,
+                });
               else if (call.name === "startBrief") emit({ type: "action", action: "start_brief" });
-            } catch (err: unknown) { toolResult = { error: err instanceof Error ? err.message : "Tool execution failed" }; }
+            } catch (err: unknown) {
+              toolResult = { error: err instanceof Error ? err.message : "Tool execution failed" };
+            }
           } else toolResult = { error: `Tool ${call.name} is not available.` };
-          responseParts.push({ functionResponse: { name: call.name, id: call.id, response: toolResult } });
+          responseParts.push({
+            functionResponse: { name: call.name, id: call.id, response: toolResult },
+          });
         }
         activeContents.push({ role: "user", parts: responseParts });
       }
       return turnResponseText;
     };
 
-    try { completeResponseText = await runModelTurn(PRIMARY_MODEL); }
-    catch (primaryErr) { console.warn("[Voice Server] Primary model failed, trying fallback:", primaryErr); fallbackTriggered = true; modelUsed = FALLBACK_MODEL; completeResponseText = await runModelTurn(FALLBACK_MODEL); }
+    try {
+      completeResponseText = await runModelTurn(PRIMARY_MODEL);
+    } catch (primaryErr) {
+      console.warn("[Voice Server] Primary model failed, trying fallback:", primaryErr);
+      fallbackTriggered = true;
+      modelUsed = FALLBACK_MODEL;
+      completeResponseText = await runModelTurn(FALLBACK_MODEL);
+    }
 
     emit({ type: "assistant_done", text: completeResponseText });
     if (completeResponseText) {
-      try { const ttsResult = await generateTTSAudio(completeResponseText); emit({ type: "audio_chunk", audio: ttsResult.audio }); }
-      catch (ttsErr) { console.error("[Voice Server] TTS synthesis error:", ttsErr); }
+      try {
+        const ttsResult = await generateTTSAudio(completeResponseText);
+        emit({ type: "audio_chunk", audio: ttsResult.audio });
+      } catch (ttsErr) {
+        console.error("[Voice Server] TTS synthesis error:", ttsErr);
+      }
     }
 
-    logDiagnostics({ requestId, sessionId, primaryModel: PRIMARY_MODEL, fallbackModel: FALLBACK_MODEL, modelUsed, fallbackTriggered, latencyMs: Date.now() - startTime });
+    logDiagnostics({
+      requestId,
+      sessionId,
+      primaryModel: PRIMARY_MODEL,
+      fallbackModel: FALLBACK_MODEL,
+      modelUsed,
+      fallbackTriggered,
+      latencyMs: Date.now() - startTime,
+    });
     emit({ type: "done" });
   } catch (err: unknown) {
     console.error("[Voice Server Error]", err);
-    emit({ type: "error", error: { code: "VOICE_PROCESSING_FAILED", message: "The voice assistant could not complete your request. Please try again." } });
+    emit({
+      type: "error",
+      error: {
+        code: "VOICE_PROCESSING_FAILED",
+        message: "The voice assistant could not complete your request. Please try again.",
+      },
+    });
   }
 }

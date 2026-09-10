@@ -102,8 +102,18 @@ test("browser QA covers all requested engines and mobile journeys", () => {
   assert.match(config, /edge/);
   assert.match(config, /iphone-safari/);
   assert.match(config, /android-chrome/);
-  for (const token of ["home", "portfolio", "contact", "command palette", "AI assistant", "reduced motion"]) {
-    assert.match(spec.toLowerCase(), new RegExp(token.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  for (const token of [
+    "home",
+    "portfolio",
+    "contact",
+    "command palette",
+    "AI assistant",
+    "reduced motion",
+  ]) {
+    assert.match(
+      spec.toLowerCase(),
+      new RegExp(token.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")),
+    );
   }
 });
 
