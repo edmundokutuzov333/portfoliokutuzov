@@ -1,7 +1,20 @@
 import { getProductionProjects, SITE_INFO, SERVICES_KNOWLEDGE, EXPERIENCE_KNOWLEDGE, CREATIVE_PROCESS, type NormalizedProject } from "./knowledge";
 import type { ChatContext } from "./contracts";
 
-export interface KnowledgeProject { slug: string; title: string; client: string; year: string; category: string; discipline: string; description: string; tags: string[]; role: string; services: string[]; featured: boolean; thumbnail: string; }
+export interface KnowledgeProject {
+  slug: string;
+  title: string;
+  client: string;
+  year: string;
+  category: string;
+  discipline: string;
+  description: string;
+  tags: string[];
+  role: string;
+  services: string[];
+  featured: boolean;
+  thumbnail: string;
+}
 export interface PortfolioKnowledgeSnapshot {
   source: "portfolio-records";
   generatedAt: string;
@@ -31,10 +44,11 @@ function scoreProject(project: NormalizedProject, query: string): number {
   return score;
 }
 function asKnowledgeProject(project: NormalizedProject): KnowledgeProject { return { slug: project.slug, title: project.title, client: project.client, year: project.year, category: project.category, discipline: project.discipline, description: project.description, tags: project.tags, role: project.role, services: project.services, featured: project.featured, thumbnail: project.thumbnail }; }
+function asCompactProject(project: NormalizedProject) { return { slug: project.slug, title: project.title, client: project.client, year: project.year, category: project.category, discipline: project.discipline, tags: project.tags, services: project.services, role: project.role, featured: project.featured }; }
 
 let projectsCache: { expiresAt: number; projects: NormalizedProject[] } | null = null;
 let projectsPromise: Promise<NormalizedProject[]> | null = null;
-const PROJECT_CACHE_TTL_MS = 30_000;
+const PROJECT_CACHE_TTL_MS = 5 * 60 * 1000;
 async function getCachedProjects(): Promise<NormalizedProject[]> {
   if (projectsCache && projectsCache.expiresAt > Date.now()) return projectsCache.projects;
   if (!projectsPromise) projectsPromise = getProductionProjects().then((projects) => { projectsCache = { projects, expiresAt: Date.now() + PROJECT_CACHE_TTL_MS }; return projects; }).finally(() => { projectsPromise = null; });
@@ -63,7 +77,7 @@ export function formatKnowledgeForModel(snapshot: PortfolioKnowledgeSnapshot, op
     process: CREATIVE_PROCESS,
     currentProject: snapshot.currentProject ?? null,
     matchingProjects: snapshot.matchingProjects,
-    allProjects: options.includeAllProjects ? snapshot.allProjects : undefined,
+    allProjects: options.includeAllProjects ? snapshot.allProjects.map((project) => asCompactProject({ ...project } as unknown as NormalizedProject)) : undefined,
     taxonomy: snapshot.taxonomy,
     platform: snapshot.platform,
   }, null, 2);
