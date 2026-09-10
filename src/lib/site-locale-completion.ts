@@ -65,18 +65,17 @@ const PT_COMPLETION: TranslationMap = {
   "Content Creation": "Criação de conteúdo",
   "Product Launch Design": "Design de lançamento de produto",
   "Visual Systems": "Sistemas visuais",
-  "Low - exploring": "Baixa · em exploração",
-  Normal: "Normal",
-  High: "Alta",
-  Urgent: "Urgente",
-  Euro: "Euro",
-  Dollar: "Dólar",
-  Metical: "Metical",
-  Pounds: "Libras",
-  Reais: "Reais",
+  "Ad Campaigns": "Campanhas publicitárias",
+  "Offline Actions": "Acções offline",
+  "Clothes Design": "Design de vestuário",
+  Videos: "Vídeos",
+  "Digital Design": "Design digital",
+  "VIEW PROJECT": "VER PROJECTO",
+  VIEW: "VER",
+  Explore: "Explorar",
 
   // Contact / briefing experience
-  "Project Briefing Experience": "Experiência de briefing de projecto",
+  "Project Briefing Experience": "Experiência de briefing do projecto",
   "Open for 2026 Collaborations": "Aberto a colaborações em 2026",
   "Let's collaborate.": "Vamos colaborar.",
   "Direct Channels": "Canais directos",
@@ -85,6 +84,7 @@ const PT_COMPLETION: TranslationMap = {
   "Quick voice or chat exchange": "Conversa rápida por voz ou chat",
   "Open Chat": "Abrir conversa",
   "Formal Email": "Email formal",
+  Formal: "Formal",
   Compose: "Redigir",
   "Schedule 30-Min Call": "Marcar chamada de 30 min",
   Discovery: "Descoberta",
@@ -189,7 +189,7 @@ const PT_COMPLETION: TranslationMap = {
   "View Full Portfolio": "Ver portefólio completo",
   "Português (Portugal) · Inglês": "Português · Inglês",
   "English · European Portuguese": "Inglês · Português europeu",
-  "English / Português": "português",
+  "English / Português": "Português",
 };
 
 const PT_COMPLETION_ENTRIES = Object.entries(PT_COMPLETION).sort(
@@ -228,6 +228,8 @@ function translateDynamic(value: string): string {
   let next = value;
   next = next.replace(/^STEP\s+(\d+)\s+OF\s+(\d+)$/i, "PASSO $1 DE $2");
   next = next.replace(/^(\d+)%\s+Complete$/i, "$1% concluído");
+  next = next.replace(/^Showing\s+(\d+)\s+of\s+(\d+)$/i, "A mostrar $1 de $2");
+  next = next.replace(/^A mostrar\s+(\d+)\s+of\s+(\d+)$/i, "A mostrar $1 de $2");
   next = next.replace(/^Maximum\s+(\d+)\s+reference files allowed$/i, "É permitido um máximo de $1 ficheiros de referência");
   next = next.replace(/^(.*?)\s+exceeds\s+8 MB limit$/i, "$1 excede o limite de 8 MB");
   next = next.replace(/^Brief received,\s+(.+)\.$/i, "Briefing recebido, $1.");
