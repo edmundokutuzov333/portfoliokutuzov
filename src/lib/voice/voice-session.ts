@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { LiveVoiceSession, type VoiceState } from "./live";
 import { TTSController } from "./tts";
-import type { ChatContext, ChatMessage } from "../ai/agent";
+import type { ChatContext, ChatMessage, NormalizedProjectSummary } from "../ai/agent";
 import { useSiteLocale } from "../site-locale";
 
 export interface UseVoiceSessionProps {
@@ -12,6 +12,7 @@ export interface UseVoiceSessionProps {
   onUserTranscript?: (text: string, isFinal: boolean) => void;
   onAssistantMessageChunk?: (text: string) => void;
   onAssistantMessageFinal?: (text: string) => void;
+  onProjects?: (projects: NormalizedProjectSummary[]) => void;
   onAction?: (action: string, projectSlug?: string | null) => void;
   onError?: (error: string) => void;
 }
