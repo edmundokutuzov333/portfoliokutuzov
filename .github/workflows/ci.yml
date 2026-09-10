@@ -1,7 +1,7 @@
 name: CI
 on:
   push:
-    branches: [main, phase1-hardening, phase2-final-exec]
+    branches: [main, phase1-hardening, phase2-final-exec, phase3-ai-intelligence]
   pull_request:
     branches: [main]
 permissions:
