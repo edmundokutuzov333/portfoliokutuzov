@@ -1,31 +1,24 @@
 import { GoogleGenAI } from "@google/genai";
 
 function getEnvVar(name: string): string | undefined {
-  if (typeof process !== "undefined" && process.env) {
-    return process.env[name];
-  }
+  if (typeof process !== "undefined" && process.env) return process.env[name];
   return undefined;
 }
 
 function resolvePrimaryModel(): string {
   const envModel = getEnvVar("AI_MODEL_PRIMARY") || getEnvVar("GEMINI_MODEL_PRIMARY");
-  if (envModel && envModel !== "gemini-3.1-pro-preview" && envModel !== "gemini-3-flash-preview") {
-    return envModel;
-  }
-  return "gemini-3.7-flash";
+  if (envModel && !envModel.endsWith("-preview")) return envModel;
+  return "gemini-3.8-flash";
 }
 
 function resolveFallbackModel(): string {
   const envModel = getEnvVar("AI_MODEL_FALLBACK") || getEnvVar("GEMINI_MODEL_FALLBACK");
-  if (envModel && envModel !== "gemini-3-flash-preview" && envModel !== "gemini-3.1-pro-preview") {
-    return envModel;
-  }
-  return "gemini-2.5-flash";
+  if (envModel && !envModel.endsWith("-preview")) return envModel;
+  return "gemini-3.7-flash";
 }
 
 export const PRIMARY_MODEL = resolvePrimaryModel();
 export const FALLBACK_MODEL = resolveFallbackModel();
-
 export const GEMINI_LIVE_MODEL = getEnvVar("GEMINI_LIVE_MODEL") || "gemini-3.1-flash-live-preview";
 export const GEMINI_TTS_MODEL = getEnvVar("GEMINI_TTS_MODEL") || "gemini-3.1-flash-tts-preview";
 export const GEMINI_FEMALE_VOICE = "Aoede";
@@ -35,17 +28,8 @@ let aiClient: GoogleGenAI | null = null;
 export function getGeminiClient(): GoogleGenAI {
   if (!aiClient) {
     const key = getEnvVar("GEMINI_API_KEY");
-    if (!key) {
-      throw new Error("GEMINI_API_KEY environment variable is missing.");
-    }
-    aiClient = new GoogleGenAI({
-      apiKey: key,
-      httpOptions: {
-        headers: {
-          "User-Agent": "aistudio-build",
-        },
-      },
-    });
+    if (!key) throw new Error("GEMINI_API_KEY environment variable is missing.");
+    aiClient = new GoogleGenAI({ apiKey: key, httpOptions: { headers: { "User-Agent": "aistudio-build" } });
   }
   return aiClient;
 }
@@ -62,39 +46,17 @@ export type ModelCallDiagnostics = {
 };
 
 export function logDiagnostics(diag: ModelCallDiagnostics) {
-  console.log(
-    JSON.stringify({
-      level: "info",
-      type: "AI_DIAGNOSTICS",
-      timestamp: new Date().toISOString(),
-      ...diag,
-    }),
-  );
+  console.log(JSON.stringify({ level: "info", type: "AI_DIAGNOSTICS", timestamp: new Date().toISOString(), ...diag }));
 }
 
-interface ErrorWithStatus {
-  message?: string;
-  status?: number | string;
-  code?: number | string;
-  error?: { code?: number | string; status?: string };
-}
+interface ErrorWithStatus { message?: string; status?: number | string; code?: number | string; error?: { code?: number | string; status?: string } }
 
 function isQuotaOrRateLimitError(err: unknown): boolean {
   if (!err) return false;
   const e = err as ErrorWithStatus;
   const message = String(e.message || err);
   const status = e.status || e.code || (e.error && (e.error.code || e.error.status));
-
-  return (
-    status === 429 ||
-    status === "RESOURCE_EXHAUSTED" ||
-    message.includes("429") ||
-    message.includes("RESOURCE_EXHAUSTED") ||
-    message.includes("quota") ||
-    message.includes("rate limit") ||
-    message.includes("temporarily unavailable") ||
-    message.includes("exceeded your current quota")
-  );
+  return status === 429 || status === "RESOURCE_EXHAUSTED" || message.includes("429") || message.includes("RESOURCE_EXHAUSTED") || message.includes("quota") || message.includes("rate limit") || message.includes("temporarily unavailable") || message.includes("exceeded your current quota");
 }
 
 export async function executeWithModelFallback<T>(
@@ -104,49 +66,19 @@ export async function executeWithModelFallback<T>(
 ): Promise<{ result: T; diagnostics: ModelCallDiagnostics }> {
   const startTime = Date.now();
   const ai = getGeminiClient();
-
   const primary = PRIMARY_MODEL;
   const fallback = FALLBACK_MODEL;
-
   try {
     const result = await operation(ai, primary);
-    const diag: ModelCallDiagnostics = {
-      requestId,
-      sessionId,
-      primaryModel: primary,
-      fallbackModel: fallback,
-      modelUsed: primary,
-      fallbackTriggered: false,
-      latencyMs: Date.now() - startTime,
-    };
-    logDiagnostics(diag);
-    return { result, diagnostics: diag };
+    const diagnostics: ModelCallDiagnostics = { requestId, sessionId, primaryModel: primary, fallbackModel: fallback, modelUsed: primary, fallbackTriggered: false, latencyMs: Date.now() - startTime };
+    logDiagnostics(diagnostics);
+    return { result, diagnostics };
   } catch (error: unknown) {
-    if (isQuotaOrRateLimitError(error)) {
-      console.warn(
-        `[AI Fallback] Primary model ${primary} unavailable due to rate limit/quota. Retrying with fallback model ${fallback}...`,
-      );
-      try {
-        const result = await operation(ai, fallback);
-        const diag: ModelCallDiagnostics = {
-          requestId,
-          sessionId,
-          primaryModel: primary,
-          fallbackModel: fallback,
-          modelUsed: fallback,
-          fallbackTriggered: true,
-          errorCategory: "RESOURCE_EXHAUSTED_PRIMARY_FALLBACK",
-          latencyMs: Date.now() - startTime,
-        };
-        logDiagnostics(diag);
-        return { result, diagnostics: diag };
-      } catch (fallbackError: unknown) {
-        console.error(`[AI Fallback] Fallback model ${fallback} also failed:`, fallbackError);
-        throw fallbackError;
-      }
-    }
-
-    console.error(`[AI Error] Operation failed with non-quota error:`, error);
-    throw error;
+    if (!isQuotaOrRateLimitError(error)) throw error;
+    console.warn(`[AI Fallback] Primary model ${primary} unavailable. Retrying with fallback model ${fallback}...`);
+    const result = await operation(ai, fallback);
+    const diagnostics: ModelCallDiagnostics = { requestId, sessionId, primaryModel: primary, fallbackModel: fallback, modelUsed: fallback, fallbackTriggered: true, errorCategory: "RESOURCE_EXHAUSTED_PRIMARY_FALLBACK", latencyMs: Date.now() - startTime };
+    logDiagnostics(diagnostics);
+    return { result, diagnostics };
   }
 }
