@@ -17,6 +17,7 @@ import { installRuntimeDiagnostics, markRenderHealthy, recordRuntimeError } from
 import { createSeo, SITE_ORIGIN, socialImageUrl } from "@/lib/seo";
 import { trackPageView } from "@/lib/analytics";
 import { installSiteLocaleDomBridge } from "@/lib/site-locale";
+import { installPortugueseCompletionBridge } from "@/lib/site-locale-completion";
 import appCss from "../styles.css?url";
 
 interface RouterContext {
@@ -76,6 +77,13 @@ function RootComponent() {
   useEffect(() => {
     if (!isAdmin) trackPageView(pathname);
   }, [isAdmin, pathname]);
-  useEffect(() => installSiteLocaleDomBridge(), []);
+  useEffect(() => {
+    const cleanupPrimary = installSiteLocaleDomBridge();
+    const cleanupPortuguese = installPortugueseCompletionBridge();
+    return () => {
+      cleanupPortuguese();
+      cleanupPrimary();
+    };
+  }, []);
   return <AppErrorBoundary onReset={() => queryClient.clear()}><QueryClientProvider client={queryClient}><RouteTimingInstaller />{!isAdmin && <ProjectEntitySchema />}{!isAdmin && <ContactDraftRecovery />}{!isAdmin && <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-[var(--color-text-primary)] focus:px-4 focus:py-3 focus:text-sm focus:font-semibold focus:text-[var(--color-bg)]">Skip to content</a>}{!isAdmin && <div className="fixed inset-0 z-0 bg-[var(--color-bg)]" aria-hidden="true" />}<div className="relative z-10">{!isAdmin && <Navbar />}<main id="main-content" data-ek-app-root="true"><AppErrorBoundary label="route content" minimal onReset={() => queryClient.clear()}><Outlet /></AppErrorBoundary></main>{!isAdmin && <ContextualRelatedWork />}{!isAdmin && <Footer />}</div>{!isAdmin && <ScrollToTop />}<AppErrorBoundary label="notifications" minimal><Toaster theme="dark" position="bottom-right" toastOptions={{ style: { background: "#06111f", border: "1px solid rgba(148,163,184,0.14)", color: "#f5f8ff" } }} /></AppErrorBoundary>{!isAdmin && <CommandPalette />}{!isAdmin && <DeferredAiAssistant />}</QueryClientProvider></AppErrorBoundary>;
 }
