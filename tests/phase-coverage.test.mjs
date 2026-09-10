@@ -7,11 +7,11 @@ const read = (path) => readFile(root(path), "utf8");
 
 const phaseContracts = {
   A: ["tests/phase1-hardening.test.mjs", "scripts/diagnose-build.mjs", "ARCHITECTURE.md"],
-  B: ["tests/studio-vector-editor.test.mjs", "src/lib/studio/design-document.ts", "src/lib/studio/export.ts"],
+  B: ["tests/studio-foundation.test.mjs", "src/lib/studio/design-document.ts", "src/lib/studio/export.ts"],
   C: ["tests/studio-creative-engine.test.mjs", "src/lib/studio/ai/creative-engine.ts"],
-  D: ["tests/studio-background.test.mjs", "src/lib/studio/background/magnific.ts"],
+  D: ["tests/studio-background-engine.test.mjs", "src/lib/studio/background/magnific.ts"],
   E: ["tests/studio-digital-identity.test.mjs", "src/lib/studio/identity-format.ts"],
-  F: ["tests/studio-email.test.mjs", "src/routes/api.studio-email.ts"],
+  F: ["tests/studio-email-regression.test.mjs", "src/routes/api.studio-email.ts"],
   G: ["tests/studio-admin-analytics.test.mjs", "src/routes/api.studio-admin.ts"],
   H: ["tests/studio-phase-h-qa.test.mjs", "tests/studio-phase-h-security.test.mjs", "tests/browser/studio-phase-h.spec.ts"],
 };
