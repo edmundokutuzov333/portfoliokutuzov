@@ -11,6 +11,7 @@ import { Toaster } from "sonner";
 import { useEffect, type ReactNode } from "react";
 import { AppErrorBoundary, AppErrorFallback } from "@/components/AppErrorBoundary";
 import { DeferredAiAssistant } from "@/components/DeferredAiAssistant";
+import { CommandPalette } from "@/components/CommandPalette";
 import { RouteTimingInstaller } from "@/components/RouteTimingInstaller";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -22,6 +23,7 @@ import {
   recordRuntimeError,
 } from "@/lib/runtime-diagnostics";
 import { createSeo, SITE_ORIGIN, socialImageUrl } from "@/lib/seo";
+import { trackPageView } from "@/lib/analytics";
 import appCss from "../styles.css?url";
 
 interface RouterContext {
@@ -200,6 +202,10 @@ function RootComponent() {
     return () => window.cancelAnimationFrame(frame);
   }, []);
 
+  useEffect(() => {
+    if (!isAdmin) trackPageView(pathname);
+  }, [isAdmin, pathname]);
+
   return (
     <AppErrorBoundary onReset={() => queryClient.clear()}>
       <QueryClientProvider client={queryClient}>
@@ -236,6 +242,7 @@ function RootComponent() {
             }}
           />
         </AppErrorBoundary>
+        {!isAdmin && <CommandPalette />}
         {!isAdmin && <DeferredAiAssistant />}
       </QueryClientProvider>
     </AppErrorBoundary>
