@@ -27,6 +27,7 @@ import { Route as StudioRouteImport } from './routes/studio'
 import { Route as StudioBusinessCardRouteImport } from './routes/studio.business-card'
 import { Route as ApiStudioBackgroundRouteImport } from './routes/api.studio-background'
 import { Route as StudioBackgroundRouteImport } from './routes/studio.background'
+import { Route as ApiStudioCreativeRouteImport } from './routes/api.studio-creative'
 import { Route as ApiStudioPublishRouteImport } from './routes/api.studio-publish'
 import { Route as ApiStudioVcardRouteImport } from './routes/api.studio-vcard'
 import { Route as ApiStudioEmailRouteImport } from './routes/api.studio-email'
@@ -51,6 +52,7 @@ const StudioRoute = StudioRouteImport.update({ id: '/studio', path: '/studio', g
 const StudioBusinessCardRoute = StudioBusinessCardRouteImport.update({ id: '/studio/business-card', path: '/studio/business-card', getParentRoute: () => rootRouteImport } as any)
 const ApiStudioBackgroundRoute = ApiStudioBackgroundRouteImport.update({ id: '/api/studio/background', path: '/api/studio/background', getParentRoute: () => rootRouteImport } as any)
 const StudioBackgroundRoute = StudioBackgroundRouteImport.update({ id: '/studio/background', path: '/studio/background', getParentRoute: () => rootRouteImport } as any)
+const ApiStudioCreativeRoute = ApiStudioCreativeRouteImport.update({ id: '/api/studio/creative', path: '/api/studio/creative', getParentRoute: () => rootRouteImport } as any)
 const ApiStudioPublishRoute = ApiStudioPublishRouteImport.update({ id: '/api/studio/publish', path: '/api/studio/publish', getParentRoute: () => rootRouteImport } as any)
 const ApiStudioVcardRoute = ApiStudioVcardRouteImport.update({ id: '/api/studio/vcard', path: '/api/studio/vcard', getParentRoute: () => rootRouteImport } as any)
 const ApiStudioEmailRoute = ApiStudioEmailRouteImport.update({ id: '/api/studio/email', path: '/api/studio/email', getParentRoute: () => rootRouteImport } as any)
@@ -76,6 +78,7 @@ export interface FileRoutesByFullPath {
   '/studio/business-card': typeof StudioBusinessCardRoute
   '/api/studio/background': typeof ApiStudioBackgroundRoute
   '/studio/background': typeof StudioBackgroundRoute
+  '/api/studio/creative': typeof ApiStudioCreativeRoute
   '/api/studio/publish': typeof ApiStudioPublishRoute
   '/api/studio/vcard': typeof ApiStudioVcardRoute
   '/api/studio/email': typeof ApiStudioEmailRoute
@@ -101,6 +104,7 @@ export interface FileRoutesByTo {
   '/studio/business-card': typeof StudioBusinessCardRoute
   '/studio/background': typeof StudioBackgroundRoute
   '/api/studio/background': typeof ApiStudioBackgroundRoute
+  '/api/studio/creative': typeof ApiStudioCreativeRoute
   '/api/studio/publish': typeof ApiStudioPublishRoute
   '/api/studio/vcard': typeof ApiStudioVcardRoute
   '/api/studio/email': typeof ApiStudioEmailRoute
@@ -127,6 +131,7 @@ export interface FileRoutesById {
   '/studio/business-card': typeof StudioBusinessCardRoute
   '/api/studio/background': typeof ApiStudioBackgroundRoute
   '/studio/background': typeof StudioBackgroundRoute
+  '/api/studio/creative': typeof ApiStudioCreativeRoute
   '/api/studio/publish': typeof ApiStudioPublishRoute
   '/api/studio/vcard': typeof ApiStudioVcardRoute
   '/api/studio/email': typeof ApiStudioEmailRoute
@@ -154,36 +159,14 @@ export interface FileRouteTypes {
     | '/studio/business-card'
     | '/api/studio/background'
     | '/studio/background'
+    | '/api/studio/creative'
     | '/api/studio/publish'
     | '/api/studio/vcard'
     | '/api/studio/email'
     | '/card/$token'
     | '/studio/identity'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/admin'
-    | '/contact'
-    | '/credentials'
-    | '/mcp'
-    | '/services'
-    | '/sitemap.xml'
-    | '/.mcp/list-tools'
-    | '/.well-known/oauth-protected-resource'
-    | '/api/chat'
-    | '/i/$token'
-    | '/portfolio/$slug'
-    | '/portfolio/'
-    | '/.mcp/invoke-tool/$tool'
-    | '/studio'
-    | '/studio/business-card'
-    | '/studio/background'
-    | '/api/studio/background'
-    | '/api/studio/publish'
-    | '/api/studio/vcard'
-    | '/api/studio/email'
-    | '/card/$token'
-    | '/studio/identity'
+  to: FileRoutesByTo extends never ? never : keyof FileRoutesByTo
   id:
     | '__root__'
     | '/'
@@ -204,6 +187,7 @@ export interface FileRouteTypes {
     | '/studio/business-card'
     | '/api/studio/background'
     | '/studio/background'
+    | '/api/studio/creative'
     | '/api/studio/publish'
     | '/api/studio/vcard'
     | '/api/studio/email'
@@ -211,7 +195,6 @@ export interface FileRouteTypes {
     | '/studio/identity'
   fileRoutesById: FileRoutesById
 }
-
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
@@ -231,6 +214,7 @@ export interface RootRouteChildren {
   StudioBusinessCardRoute: typeof StudioBusinessCardRoute
   ApiStudioBackgroundRoute: typeof ApiStudioBackgroundRoute
   StudioBackgroundRoute: typeof StudioBackgroundRoute
+  ApiStudioCreativeRoute: typeof ApiStudioCreativeRoute
   ApiStudioPublishRoute: typeof ApiStudioPublishRoute
   ApiStudioVcardRoute: typeof ApiStudioVcardRoute
   ApiStudioEmailRoute: typeof ApiStudioEmailRoute
@@ -258,6 +242,7 @@ declare module '@tanstack/react-router' {
     '/studio/business-card': { id: '/studio/business-card'; path: '/studio/business-card'; fullPath: '/studio/business-card'; preLoaderRoute: typeof StudioBusinessCardRouteImport; parentRoute: typeof rootRouteImport }
     '/api/studio/background': { id: '/api/studio/background'; path: '/api/studio/background'; fullPath: '/api/studio/background'; preLoaderRoute: typeof ApiStudioBackgroundRouteImport; parentRoute: typeof rootRouteImport }
     '/studio/background': { id: '/studio/background'; path: '/studio/background'; fullPath: '/studio/background'; preLoaderRoute: typeof StudioBackgroundRouteImport; parentRoute: typeof rootRouteImport }
+    '/api/studio/creative': { id: '/api/studio/creative'; path: '/api/studio/creative'; fullPath: '/api/studio/creative'; preLoaderRoute: typeof ApiStudioCreativeRouteImport; parentRoute: typeof rootRouteImport }
     '/api/studio/publish': { id: '/api/studio/publish'; path: '/api/studio/publish'; fullPath: '/api/studio/publish'; preLoaderRoute: typeof ApiStudioPublishRouteImport; parentRoute: typeof rootRouteImport }
     '/api/studio/vcard': { id: '/api/studio/vcard'; path: '/api/studio/vcard'; fullPath: '/api/studio/vcard'; preLoaderRoute: typeof ApiStudioVcardRouteImport; parentRoute: typeof rootRouteImport }
     '/api/studio/email': { id: '/api/studio/email'; path: '/api/studio/email'; fullPath: '/api/studio/email'; preLoaderRoute: typeof ApiStudioEmailRouteImport; parentRoute: typeof rootRouteImport }
@@ -285,6 +270,7 @@ const rootRouteChildren: RootRouteChildren = {
   StudioBusinessCardRoute,
   ApiStudioBackgroundRoute,
   StudioBackgroundRoute,
+  ApiStudioCreativeRoute,
   ApiStudioPublishRoute,
   ApiStudioVcardRoute,
   ApiStudioEmailRoute,
