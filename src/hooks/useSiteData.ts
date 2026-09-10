@@ -115,10 +115,13 @@ function subscribeToTable(table: string, listener: () => void) {
         realtimeEntries.delete(table);
         try {
           void supabase.removeChannel(latest.channel);
-        } catch {}
+        } catch (_error) {
+          void _error;
+        }
       }, 1000);
     };
-  } catch {
+  } catch (_error) {
+    void _error;
     return () => {};
   }
 }
@@ -148,7 +151,8 @@ export function useSiteSettings() {
             ...((row.value as Record<string, unknown>) ?? {}),
           };
         return out;
-      } catch {
+      } catch (_error) {
+        void _error;
         return FALLBACK_SETTINGS;
       }
     },
@@ -166,7 +170,8 @@ export function useClients(includeInactive = false, kind = "client") {
         const { data, error } = await q.abortSignal(boundedSignal(signal));
         if (error || !data?.length) return kind === "studio" ? FALLBACK_STUDIOS : FALLBACK_CLIENTS;
         return data as DbClient[];
-      } catch {
+      } catch (_error) {
+        void _error;
         return kind === "studio" ? FALLBACK_STUDIOS : FALLBACK_CLIENTS;
       }
     },
@@ -203,7 +208,8 @@ export function useProjects(includeUnpublished = false) {
             ? (p as unknown as { gallery_meta: DbProject["gallery_meta"] }).gallery_meta
             : [],
         })) as unknown as DbProject[];
-      } catch {
+      } catch (_error) {
+        void _error;
         return FALLBACK_PROJECTS;
       }
     },
@@ -218,7 +224,8 @@ export function useServices(includeInactive = false) {
         if (!includeInactive) q = q.eq("is_active", true);
         const { data, error } = await q.abortSignal(boundedSignal(signal));
         return error || !data ? [] : (data as DbService[]);
-      } catch {
+      } catch (_error) {
+        void _error;
         return [];
       }
     },
@@ -233,7 +240,8 @@ export function useStats(includeInactive = false) {
         if (!includeInactive) q = q.eq("is_active", true);
         const { data, error } = await q.abortSignal(boundedSignal(signal));
         return error || !data ? [] : (data as DbStat[]);
-      } catch {
+      } catch (_error) {
+        void _error;
         return [];
       }
     },
@@ -248,7 +256,8 @@ export function useMethod(includeInactive = false) {
         if (!includeInactive) q = q.eq("is_active", true);
         const { data, error } = await q.abortSignal(boundedSignal(signal));
         return error || !data ? [] : (data as DbMethod[]);
-      } catch {
+      } catch (_error) {
+        void _error;
         return [];
       }
     },
