@@ -4,7 +4,6 @@ import { useSiteLocale } from "@/lib/site-locale";
 import { loadDraftLocally, createStudioDesign } from "@/lib/studio/design-document";
 import { getStudioSessionId } from "@/lib/studio/session";
 import { DigitalIdentityPanel } from "@/components/studio/DigitalIdentityPanel";
-import type { StudioTextRole } from "@/lib/studio/types";
 
 export const Route = createFileRoute("/studio/identity")({
   head: () => ({ meta: [{ title: "Digital Identity - Kutuzov Studio" }, { name: "description", content: "Publish and share a Kutuzov Studio digital business card." }] }),
