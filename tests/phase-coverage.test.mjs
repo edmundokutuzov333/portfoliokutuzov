@@ -42,6 +42,17 @@ test("The architecture records production data recovery requirements", async () 
   assert.match(recovery, /restore/i);
 });
 
+test("Scheduled backup automation is encrypted and never commits raw database dumps", async () => {
+  const workflow = await read(".github/workflows/supabase-backup.yml");
+  assert.match(workflow, /schedule:/);
+  assert.match(workflow, /SUPABASE_DB_URL/);
+  assert.match(workflow, /BACKUP_ENCRYPTION_KEY/);
+  assert.match(workflow, /pg_dump/);
+  assert.match(workflow, /aes-256-cbc/);
+  assert.match(workflow, /retention-days: 30/);
+  assert.match(workflow, /rm -f supabase-backup\.dump/);
+});
+
 test("Production print contract is explicit about bleed, crop marks and 300 DPI", async () => {
   const exporter = await read("src/lib/studio/export.ts");
   assert.match(exporter, /PRINT_DPI = 300/);
