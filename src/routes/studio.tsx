@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, ImagePlus, Sparkles } from "lucide-react";
 import { useSiteLocale } from "@/lib/site-locale";
 import { STUDIO_STYLES } from "@/lib/studio/types";
 
@@ -23,7 +23,10 @@ function StudioLanding() {
           <p className="mono mb-5 text-[10px] uppercase tracking-[0.35em] text-[var(--color-accent-base)]">Kutuzov Studio</p>
           <h1 className="display text-5xl font-semibold leading-[0.95] tracking-[-0.04em] text-[var(--color-text-primary)] sm:text-7xl">Business Card Studio</h1>
           <p className="mt-7 max-w-xl text-lg leading-relaxed text-[var(--color-text-secondary)]">{pt ? "Precisa de um cartão de visita? Crie-o aqui. Grátis. Comece com os seus dados e trate o resultado como um verdadeiro ficheiro de design." : "Need a business card? Make one here. Free. Start with your details and treat the result as a real design document."}</p>
-          <Link to="/studio/business-card" className="mt-8 inline-flex items-center gap-2 rounded-full bg-[var(--color-text-primary)] px-6 py-3 text-sm font-semibold text-[var(--color-bg)] transition hover:translate-y-[-1px]">{pt ? "Criar o meu cartão" : "Create my card"}<ArrowRight size={16} /></Link>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link to="/studio/business-card" className="inline-flex items-center gap-2 rounded-full bg-[var(--color-text-primary)] px-6 py-3 text-sm font-semibold text-[var(--color-bg)] transition hover:translate-y-[-1px]">{pt ? "Criar o meu cartão" : "Create my card"}<ArrowRight size={16} /></Link>
+            <Link to="/studio/background" className="inline-flex items-center gap-2 rounded-full border border-white/10 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/[.04]"><ImagePlus size={16} />{pt ? "Criar fundo com Magnific" : "Create background with Magnific"}</Link>
+          </div>
         </div>
 
         <div className="mt-20 grid gap-10 lg:grid-cols-[1.05fr_.95fr] lg:items-end">
