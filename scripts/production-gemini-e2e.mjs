@@ -64,7 +64,8 @@ const tts = await requestJson("/api/chat", {
 });
 assert(tts.response.ok, `tts returned HTTP ${tts.response.status}`);
 assert(!tts.body?.error, "Production TTS returned an error payload");
-assert(typeof tts.body?.audioBase64 === "string" && tts.body.audioBase64.length > 32, "Production TTS did not return audio data");
+assert(typeof tts.body?.audio === "string" && tts.body.audio.length > 32, "Production TTS did not return audio data");
+assert(tts.body?.sampleRate === 24000, `Production TTS returned unexpected sample rate: ${String(tts.body?.sampleRate)}`);
 
 console.log("PASS: production API health");
 console.log("PASS: Gemini opening message");
