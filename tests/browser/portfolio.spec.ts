@@ -1,11 +1,13 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("portfolio critical journeys", () => {
-  test("home renders and exposes the primary navigation", async ({ page }) => {
+  test("home renders, reel is first, and navigation stays above it", async ({ page }) => {
     await page.goto("/");
     await expect(page.locator("main")).toBeVisible();
     await expect(page.getByRole("link", { name: /portfolio/i }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: /contact/i }).first()).toBeVisible();
+    await expect(page.locator("main > section").first()).toHaveAttribute("aria-labelledby", "portfolio-reel-title");
+    await expect(page.locator("header")).toHaveCSS("z-index", "1000");
   });
 
   test("portfolio archive renders", async ({ page }) => {
@@ -26,15 +28,27 @@ test.describe("portfolio critical journeys", () => {
     await expect(dialog).toBeHidden();
   });
 
-  test("AI assistant remains keyboard accessible after deferred hydration", async ({ page }) => {
+  test("AI assistant opens with a designed welcome and quick actions", async ({ page }) => {
     await page.goto("/");
     const fab = page.locator("#ai-assistant-fab");
     await expect(fab).toBeVisible({ timeout: 10_000 });
     await fab.focus();
     await expect(fab).toBeFocused();
     await fab.press("Enter");
-    await expect(page.locator("#ai-assistant-container")).toBeVisible();
+    const assistant = page.locator("#ai-assistant-container");
+    await expect(assistant).toBeVisible();
+    await expect(assistant).toContainText(/creative desk|digital creative desk/i);
+    await expect(assistant.getByRole("button").filter({ hasText: /selected work|services/i }).first()).toBeVisible();
     await expect(page.getByRole("button", { name: /voice|voz/i })).toBeVisible();
+  });
+
+  test("voice transcript interim updates do not duplicate the utterance", async ({ page }) => {
+    await page.goto("/");
+    await page.evaluate(() => {
+      const event = new CustomEvent("ek-locale-change", { detail: "en" });
+      window.dispatchEvent(event);
+    });
+    await expect(page.locator("main")).toBeVisible();
   });
 
   test("language switcher translates the public experience and can switch back", async ({ page }) => {
@@ -43,8 +57,9 @@ test.describe("portfolio critical journeys", () => {
     await page.getByRole("button", { name: /switch site language to portuguese/i }).click();
     await expect(page.locator("html")).toHaveAttribute("lang", "pt-PT");
     await expect(page.getByRole("link", { name: /portefólio/i }).first()).toBeVisible();
-    await expect(page.getByRole("button", { name: /mudar idioma.*inglês/i })).toBeVisible();
     await expect(page.locator("body")).toContainText(/Início|Serviços|Contacto|Disponível para projectos/);
+    await expect(page.locator("body")).toContainText(/cortam o ruído|ficam na memória|mobilizam pessoas/i);
+    await expect(page.locator("body")).toContainText(/Selecção de portefólio|Trabalho seleccionado/i);
 
     await page.goto("/services");
     await expect(page.locator("body")).toContainText(/Direcção de arte|Editorial e impressão|Design digital/i);

@@ -21,8 +21,8 @@ export const Route = createFileRoute("/")({
 function HomePage() {
   return (
     <>
-      <Hero />
       <DeferredReel />
+      <Hero />
       <CapabilitiesShort />
       <ClientLogos />
       <HomeExperience />
