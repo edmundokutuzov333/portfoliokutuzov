@@ -15,11 +15,19 @@ import {
 import { projects as staticProjects } from "@/data/projects";
 import { clients as staticClients } from "@/data/clients";
 import { toDeterministicUuid } from "@/lib/utils";
+import { useDevicePerformance } from "@/hooks/useDevicePerformance";
 
 const PUBLIC_READ_TIMEOUT_MS = 4_000;
+const MOBILE_QUERY_STALE_TIME_MS = 180_000;
+
 function boundedSignal(signal: AbortSignal) {
   if (typeof AbortSignal.timeout !== "function") return signal;
   return AbortSignal.any([signal, AbortSignal.timeout(PUBLIC_READ_TIMEOUT_MS)]);
+}
+
+function getMobileTabletStaleTime() {
+  if (typeof window === "undefined") return 0;
+  return window.matchMedia("(max-width: 1023px)").matches ? MOBILE_QUERY_STALE_TIME_MS : 0;
 }
 
 const FALLBACK_PROJECTS: DbProject[] = staticProjects.map((p) => ({
@@ -79,13 +87,16 @@ const FALLBACK_STUDIOS: DbClient[] = [
     kind: "studio",
   },
 ];
+
 type RealtimeEntry = {
   channel: RealtimeChannel;
   listeners: Set<() => void>;
   references: number;
   removalTimer?: ReturnType<typeof setTimeout>;
 };
+
 const realtimeEntries = new Map<string, RealtimeEntry>();
+
 function subscribeToTable(table: string, listener: () => void) {
   try {
     let entry = realtimeEntries.get(table);
@@ -125,12 +136,45 @@ function subscribeToTable(table: string, listener: () => void) {
     return () => {};
   }
 }
+
 function useRealtimeInvalidate(table: string, queryKey: unknown[]) {
   const qc = useQueryClient();
-  useEffect(
-    () => subscribeToTable(table, () => void qc.invalidateQueries({ queryKey })),
-    [qc, table],
-  );
+  const { isMobileOrTablet, slowConnection } = useDevicePerformance();
+
+  useEffect(() => {
+    let cleanup = () => {};
+    let idleId: number | undefined;
+    let timerId: number | undefined;
+    let cancelled = false;
+
+    const activate = () => {
+      if (!cancelled) cleanup = subscribeToTable(table, () => void qc.invalidateQueries({ queryKey }));
+    };
+
+    if (!isMobileOrTablet) {
+      activate();
+    } else {
+      const w = window as Window & {
+        requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
+        cancelIdleCallback?: (id: number) => void;
+      };
+      const timeout = slowConnection ? 6500 : 3500;
+      if (w.requestIdleCallback) {
+        idleId = w.requestIdleCallback(activate, { timeout });
+      } else {
+        timerId = window.setTimeout(activate, timeout);
+      }
+    }
+
+    return () => {
+      cancelled = true;
+      if (idleId !== undefined) {
+        window.cancelIdleCallback?.(idleId);
+      }
+      if (timerId !== undefined) window.clearTimeout(timerId);
+      cleanup();
+    };
+  }, [isMobileOrTablet, qc, slowConnection, table]);
 }
 
 export function useSiteSettings() {
@@ -159,6 +203,7 @@ export function useSiteSettings() {
     staleTime: 120_000,
   });
 }
+
 export function useClients(includeInactive = false, kind = "client") {
   useRealtimeInvalidate("clients", ["clients"]);
   return useQuery({
@@ -175,11 +220,14 @@ export function useClients(includeInactive = false, kind = "client") {
         return kind === "studio" ? FALLBACK_STUDIOS : FALLBACK_CLIENTS;
       }
     },
+    staleTime: getMobileTabletStaleTime(),
   });
 }
+
 export function useStudios(includeInactive = false) {
   return useClients(includeInactive, "studio");
 }
+
 export function useProjects(includeUnpublished = false) {
   useRealtimeInvalidate("projects", ["projects"]);
   return useQuery({
@@ -247,8 +295,10 @@ export function useProjects(includeUnpublished = false) {
         return FALLBACK_PROJECTS;
       }
     },
+    staleTime: getMobileTabletStaleTime(),
   });
 }
+
 export function useServices(includeInactive = false) {
   return useQuery({
     queryKey: ["services", includeInactive],
@@ -263,8 +313,10 @@ export function useServices(includeInactive = false) {
         return [];
       }
     },
+    staleTime: getMobileTabletStaleTime(),
   });
 }
+
 export function useStats(includeInactive = false) {
   return useQuery({
     queryKey: ["stats", includeInactive],
@@ -279,8 +331,10 @@ export function useStats(includeInactive = false) {
         return [];
       }
     },
+    staleTime: getMobileTabletStaleTime(),
   });
 }
+
 export function useMethod(includeInactive = false) {
   return useQuery({
     queryKey: ["about_method", includeInactive],
@@ -295,5 +349,6 @@ export function useMethod(includeInactive = false) {
         return [];
       }
     },
+    staleTime: getMobileTabletStaleTime(),
   });
 }
