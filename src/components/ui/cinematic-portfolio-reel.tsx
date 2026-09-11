@@ -58,7 +58,7 @@ function CarouselStacked({ projects }: { projects: DbProject[] }) {
   const [visible, setVisible] = React.useState(true);
   const [active, setActive] = React.useState(true);
   const reduced = useReducedMotion();
-  const { isMobileOrTablet, isTouch, slowConnection } = useDevicePerformance();
+  const { isMobileOrTablet, slowConnection } = useDevicePerformance();
   const raf = React.useRef<number | undefined>(undefined);
   const dragging = React.useRef(false);
   const ref = React.useRef<HTMLDivElement>(null);
@@ -100,8 +100,6 @@ function CarouselStacked({ projects }: { projects: DbProject[] }) {
     let frame = 0;
     const loop = () => {
       if (!dragging.current) {
-        // Keep touch-device motion smooth without continuously running a full-rate
-        // state update when the browser is already under CPU pressure.
         if (!isMobileOrTablet || frame % 2 === 0) progress.set(progress.get() + 0.02);
       }
       frame += 1;
