@@ -1,5 +1,5 @@
 export type ProjectCategory =
-  "Social Media" | "Ad Campaigns" | "Videos" | "Image Manipulation" | "Web Design";
+  "Social Media" | "Ad Campaigns" | "Videos" | "Image Manipulation" | "Web Design" | "Branding" | "Editorial" | "Campaign" | "Experimental" | "Digital";
 
 export type Project = {
   id: number;
@@ -14,8 +14,8 @@ export type Project = {
   coverUrl?: string;
 };
 
-// Projects described honestly: real client names where the work is public,
-// or honest project types where the brief was confidential.
+// Source-defined archive fallback. The public portfolio uses Supabase when available,
+// but the complete known project archive remains available locally so the page never renders empty.
 export const projects: Project[] = [
   {
     id: 1,
@@ -24,8 +24,7 @@ export const projects: Project[] = [
     category: "Ad Campaigns",
     year: "2024",
     palette: "from-[#01040A] via-[#071A33] to-[#0B3B73]",
-    description:
-      "Campaign assets and visual rollout for Absa across digital and social formats. Hierarchy, typographic system and image treatment built to perform at scale.",
+    description: "Campaign assets and visual rollout for Absa across digital and social formats. Hierarchy, typographic system and image treatment built to perform at scale.",
     span: "tall",
     tags: ["Visual rollout", "Social assets", "Art direction"],
   },
@@ -36,8 +35,7 @@ export const projects: Project[] = [
     category: "Social Media",
     year: "2024",
     palette: "from-[#020617] via-[#0F172A] to-[#075985]",
-    description:
-      "Modular content system for Vodacom Mozambique: templates, layouts and motion language designed for continuous publication on social channels.",
+    description: "Modular content system for Vodacom Mozambique: templates, layouts and motion language designed for continuous publication on social channels.",
     tags: ["Templates", "Content system", "Motion"],
   },
   {
@@ -47,8 +45,7 @@ export const projects: Project[] = [
     category: "Ad Campaigns",
     year: "2023",
     palette: "from-[#01040A] via-[#082F49] to-[#0EA5E9]",
-    description:
-      "Visual assets and key visuals supporting TotalEnergies brand activations - coordinated typography, image treatment and on-brand visual hierarchy.",
+    description: "Visual assets and key visuals supporting TotalEnergies brand activations: coordinated typography, image treatment and on-brand visual hierarchy.",
     span: "wide",
     tags: ["Key visuals", "Activation", "Print + Digital"],
   },
@@ -59,8 +56,7 @@ export const projects: Project[] = [
     category: "Ad Campaigns",
     year: "2023",
     palette: "from-[#030814] via-[#111827] to-[#1E3A8A]",
-    description:
-      "Product-led campaign visuals for Flying Fish under Pernod Ricard. Photography direction, layout system and tone tuned for consumer-facing surfaces.",
+    description: "Product-led campaign visuals for Flying Fish under Pernod Ricard. Photography direction, layout system and tone tuned for consumer-facing surfaces.",
     tags: ["Photography direction", "Layout", "Campaign"],
   },
   {
@@ -70,8 +66,7 @@ export const projects: Project[] = [
     category: "Videos",
     year: "2024",
     palette: "from-[#01040A] via-[#0B1120] to-[#0369A1]",
-    description:
-      "Promotional and programming assets for MultiChoice (DStv and GOtv): motion-ready key art, lower thirds and channel-aware layouts.",
+    description: "Promotional and programming assets for MultiChoice (DStv and GOtv): motion-ready key art, lower thirds and channel-aware layouts.",
     span: "tall",
     tags: ["Promo", "Motion", "Channel art"],
   },
@@ -82,8 +77,7 @@ export const projects: Project[] = [
     category: "Web Design",
     year: "2023",
     palette: "from-[#01040A] via-[#172554] to-[#38BDF8]",
-    description:
-      "Institutional identity and communication assets for EMOSE - Moçambique Companhia de Seguros. Typographic clarity, consistent palette and editorial layouts.",
+    description: "Institutional identity and communication assets for EMOSE, Moçambique Companhia de Seguros. Typographic clarity, consistent palette and editorial layouts.",
     tags: ["Identity", "Editorial", "Institutional"],
   },
   {
@@ -93,8 +87,7 @@ export const projects: Project[] = [
     category: "Ad Campaigns",
     year: "2023",
     palette: "from-[#020617] via-[#1E293B] to-[#0284C7]",
-    description:
-      "Campaign and dealer-facing visual assets across Nissan, Toyota and Hyundai briefs in Mozambique. Consistent layout systems and product-led art direction.",
+    description: "Campaign and dealer-facing visual assets across Nissan, Toyota and Hyundai briefs in Mozambique. Consistent layout systems and product-led art direction.",
     span: "wide",
     tags: ["Automotive", "Dealer kit", "Print + Digital"],
   },
@@ -105,17 +98,105 @@ export const projects: Project[] = [
     category: "Web Design",
     year: "2023",
     palette: "from-[#01040A] via-[#06111F] to-[#0B3B73]",
-    description:
-      "Visual systems and communication assets for hospitality clients including Hotel Cardoso and Ponta Apart Hotel - quiet typography, strong photography hierarchy.",
+    description: "Visual systems and communication assets for hospitality clients including Hotel Cardoso and Ponta Apart Hotel: quiet typography and strong photography hierarchy.",
     tags: ["Hospitality", "Visual system", "Editorial"],
+  },
+  {
+    id: 9,
+    title: "NEXUS",
+    subtitle: "Identity System",
+    category: "Branding",
+    year: "2026",
+    palette: "from-blue-500 via-blue-900 to-slate-950",
+    description: "Visual identity system for a technology brand with modular language, proprietary typography and digital applications.",
+    span: "tall",
+    tags: ["identity", "tech", "system"],
+  },
+  {
+    id: 10,
+    title: "AURORA",
+    subtitle: "Editorial Series",
+    category: "Editorial",
+    year: "2025",
+    palette: "from-cyan-300 via-blue-800 to-slate-950",
+    description: "Editorial series built around rigid grids, treated photography and high-contrast typographic rhythm.",
+    tags: ["editorial", "print"],
+  },
+  {
+    id: 11,
+    title: "VOLT",
+    subtitle: "Campaign Language",
+    category: "Campaign",
+    year: "2025",
+    palette: "from-sky-400 via-blue-700 to-slate-950",
+    description: "Visual direction for a campaign with controlled colour energy, motion language and social-first assets.",
+    span: "wide",
+    tags: ["campaign", "motion"],
+  },
+  {
+    id: 12,
+    title: "CHRONOS",
+    subtitle: "Poster System",
+    category: "Experimental",
+    year: "2024",
+    palette: "from-slate-300 via-blue-800 to-slate-950",
+    description: "Experimental poster system exploring variable typography, noise and asymmetric compositions.",
+    tags: ["poster", "type"],
+  },
+  {
+    id: 13,
+    title: "LUME",
+    subtitle: "Digital Launch",
+    category: "Digital",
+    year: "2026",
+    palette: "from-cyan-300 via-blue-700 to-slate-950",
+    description: "Digital launch with microinteractions, motion system and brand architecture designed for scale.",
+    span: "tall",
+    tags: ["digital", "launch"],
+  },
+  {
+    id: 14,
+    title: "NOIR",
+    subtitle: "Visual Identity",
+    category: "Branding",
+    year: "2024",
+    palette: "from-slate-200 via-slate-700 to-slate-950",
+    description: "Minimal visual identity built around deep blue and grey, with emphasis on visual silence, typographic weight and rhythm.",
+    tags: ["identity", "minimal"],
+  },
+  {
+    id: 15,
+    title: "ATLAS",
+    subtitle: "Brand Architecture",
+    category: "Branding",
+    year: "2025",
+    palette: "from-blue-300 via-sky-800 to-slate-950",
+    description: "Brand architecture for a multi-vertical group with sub-brands, design tokens and visual governance.",
+    span: "wide",
+    tags: ["architecture", "system"],
+  },
+  {
+    id: 16,
+    title: "BRAVA",
+    subtitle: "Social Campaign",
+    category: "Campaign",
+    year: "2026",
+    palette: "from-sky-400 via-blue-800 to-slate-950",
+    description: "Social campaign with technical language, controlled colour contrast and native vertical formats.",
+    tags: ["social", "campaign"],
   },
 ];
 
-export const categories: ("All" | ProjectCategory)[] = [
+export const categories = [
   "All",
   "Social Media",
   "Ad Campaigns",
   "Videos",
   "Image Manipulation",
   "Web Design",
-];
+  "Branding",
+  "Editorial",
+  "Campaign",
+  "Experimental",
+  "Digital",
+] as const;
