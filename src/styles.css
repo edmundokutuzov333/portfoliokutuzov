@@ -151,6 +151,44 @@ a {
   border-color: var(--color-accent-hover);
   background: rgba(29, 155, 255, 0.04);
 }
+
+/* Mobile/tablet performance layer. Desktop rules above remain unchanged. */
+@media (max-width: 1023px) {
+  html {
+    scroll-behavior: auto;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    min-height: 100svh;
+    overflow-x: clip;
+  }
+
+  button,
+  a {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* The public navbar is a fixed high-visibility surface. Remove its expensive
+     live blur only on touch-sized viewports and keep the desktop treatment. */
+  .glass-nav {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(7, 13, 26, 0.94);
+  }
+
+  .deferred-reel {
+    contain: layout paint style;
+    contain-intrinsic-size: auto 560px;
+  }
+}
+
+@media (max-width: 767px) {
+  .admin-input {
+    font-size: 16px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

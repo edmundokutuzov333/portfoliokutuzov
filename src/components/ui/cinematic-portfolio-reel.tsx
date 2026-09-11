@@ -10,6 +10,7 @@ import {
 } from "framer-motion";
 import { Pause, Play } from "lucide-react";
 import { useProjects } from "@/hooks/useSiteData";
+import { useDevicePerformance } from "@/hooks/useDevicePerformance";
 import { type DbProject } from "@/lib/cms";
 
 interface CarouselConfig {
@@ -21,6 +22,7 @@ interface CarouselConfig {
   rotationMultiplier: number;
   scaleReduction: number;
 }
+
 const getCarouselConfig = (width: number): CarouselConfig =>
   width < 640
     ? { distanceDivisor: 135, velocityDivisor: 560, sensitivity: 190, xMultiplier: 78, yMultiplier: 16, rotationMultiplier: 6, scaleReduction: 0.045 }
@@ -56,26 +58,34 @@ function CarouselStacked({ projects }: { projects: DbProject[] }) {
   const [visible, setVisible] = React.useState(true);
   const [active, setActive] = React.useState(true);
   const reduced = useReducedMotion();
+  const { isMobileOrTablet, slowConnection } = useDevicePerformance();
   const raf = React.useRef<number | undefined>(undefined);
   const dragging = React.useRef(false);
   const ref = React.useRef<HTMLDivElement>(null);
   const config = React.useMemo(() => getCarouselConfig(width), [width]);
-  const count = width > 0 && width < 640 ? Math.min(10, Math.max(6, projects.length)) : Math.min(16, Math.max(8, projects.length * 2));
+  const count = React.useMemo(() => {
+    if (width <= 0) return 0;
+    if (width < 640) return Math.min(7, Math.max(5, projects.length));
+    if (width < 1024) return Math.min(9, Math.max(6, projects.length));
+    return Math.min(16, Math.max(8, projects.length * 2));
+  }, [projects.length, width]);
   const slides = React.useMemo(() => Array.from({ length: count }, (_, i) => projects[i % projects.length]), [count, projects]);
 
   React.useEffect(() => {
     const node = ref.current;
     if (!node) return;
-    const observer = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting), { rootMargin: "160px 0px" });
+    const observer = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting), { rootMargin: isMobileOrTablet ? "80px 0px" : "160px 0px" });
     observer.observe(node);
     return () => observer.disconnect();
-  }, []);
+  }, [isMobileOrTablet]);
+
   React.useEffect(() => {
     const onVisibility = () => setActive(document.visibilityState === "visible");
     document.addEventListener("visibilitychange", onVisibility);
     onVisibility();
     return () => document.removeEventListener("visibilitychange", onVisibility);
   }, []);
+
   React.useEffect(() => {
     if (typeof window === "undefined") return;
     const resize = () => setWidth(window.innerWidth);
@@ -83,26 +93,34 @@ function CarouselStacked({ projects }: { projects: DbProject[] }) {
     window.addEventListener("resize", resize, { passive: true });
     return () => window.removeEventListener("resize", resize);
   }, []);
+
   React.useEffect(() => {
-    if (reduced || paused || !visible || !active) return;
+    if (reduced || paused || !visible || !active || slowConnection) return;
+
+    let frame = 0;
     const loop = () => {
-      if (!dragging.current) progress.set(progress.get() + 0.02);
+      if (!dragging.current) {
+        if (!isMobileOrTablet || frame % 2 === 0) progress.set(progress.get() + 0.02);
+      }
+      frame += 1;
       raf.current = requestAnimationFrame(loop);
     };
     raf.current = requestAnimationFrame(loop);
     return () => {
       if (raf.current !== undefined) cancelAnimationFrame(raf.current);
     };
-  }, [active, paused, progress, reduced, visible]);
+  }, [active, isMobileOrTablet, paused, progress, reduced, slowConnection, visible]);
 
   const move = React.useCallback((amount: number) => {
     setPaused(true);
     animate(progress, Math.round(progress.get()) + amount, { type: "spring", stiffness: 220, damping: 28, mass: 0.9 });
   }, [progress]);
+
   const onStart = () => {
     dragging.current = true;
     start.current = progress.get();
   };
+
   const onEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     dragging.current = false;
     const distance = -info.offset.x / config.distanceDivisor;
@@ -112,12 +130,12 @@ function CarouselStacked({ projects }: { projects: DbProject[] }) {
   };
 
   return (
-    <div ref={ref} className="relative h-[50vh] w-full select-none overflow-hidden md:h-[60vh] lg:h-[70vh]">
+    <div ref={ref} className="relative h-[48vh] w-full select-none overflow-hidden md:h-[58vh] lg:h-[70vh]">
       <div className="relative flex h-full w-full items-center justify-center">
         <motion.button type="button" drag="x" dragConstraints={{ left: 0, right: 0 }} onDragStart={onStart} onDrag={(_, info) => progress.set(progress.get() - info.delta.x / config.sensitivity)} onDragEnd={onEnd} onKeyDown={(event) => { if (event.key === "ArrowLeft") { event.preventDefault(); move(-1); } else if (event.key === "ArrowRight") { event.preventDefault(); move(1); } else if (event.key === " ") { event.preventDefault(); setPaused((value) => !value); } }} aria-label="Portfolio reel. Use the left and right arrow keys to navigate, or space to pause." className="absolute inset-0 z-[20] cursor-grab border-0 bg-transparent p-0 active:cursor-grabbing touch-pan-y focus-visible:outline-2 focus-visible:outline-[var(--color-accent-hover)] focus-visible:outline-offset-[-4px]" />
-        {slides.map((slide, index) => <CarouselCard key={`${slide.id}-${index}`} slide={slide} index={index} total={slides.length} progress={progress} config={config} />)}
+        {slides.map((slide, index) => <CarouselCard key={`${slide.id}-${index}`} slide={slide} index={index} total={slides.length} progress={progress} config={config} mobileOrTablet={isMobileOrTablet} />)}
       </div>
-      {!reduced && (
+      {!reduced && !slowConnection && (
         <button type="button" onClick={() => setPaused((value) => !value)} aria-label={paused ? "Resume portfolio reel" : "Pause portfolio reel"} className="absolute bottom-5 right-5 z-[25] inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-black/50 text-white backdrop-blur-md transition hover:bg-black/70 focus-visible:outline-2 focus-visible:outline-[var(--color-accent-hover)]">
           {paused ? <Play size={15} aria-hidden="true" /> : <Pause size={15} aria-hidden="true" />}
         </button>
@@ -126,7 +144,7 @@ function CarouselStacked({ projects }: { projects: DbProject[] }) {
   );
 }
 
-function CarouselCard({ slide, index, total, progress, config }: { slide: DbProject; index: number; total: number; progress: MotionValue<number>; config: CarouselConfig }) {
+function CarouselCard({ slide, index, total, progress, config, mobileOrTablet }: { slide: DbProject; index: number; total: number; progress: MotionValue<number>; config: CarouselConfig; mobileOrTablet: boolean }) {
   const offset = useTransform(progress, (value) => {
     let distance = (index - value) % total;
     if (distance > total / 2) distance -= total;
@@ -139,10 +157,11 @@ function CarouselCard({ slide, index, total, progress, config }: { slide: DbProj
   const scale = useTransform(offset, (value) => 1 - Math.abs(value) * config.scaleReduction);
   const opacity = useTransform(offset, [-total / 2, -total / 2 + 0.5, 0, total / 2 - 0.5, total / 2], [0, 1, 1, 1, 0]);
   const zIndex = useTransform(offset, (value) => Math.round(100 - Math.abs(value) * 10));
+
   return (
-    <motion.div style={{ x, y, rotate, scale, opacity, zIndex }} aria-hidden="true" className="absolute aspect-[4/5] h-[85%] w-auto overflow-hidden rounded-xl border border-[var(--color-border-subtle)] bg-black shadow-2xl">
+    <motion.div style={{ x, y, rotate, scale, opacity, zIndex }} aria-hidden="true" className="absolute aspect-[4/5] h-[82%] w-auto overflow-hidden rounded-xl border border-[var(--color-border-subtle)] bg-black shadow-2xl md:h-[85%]">
       <div className="relative h-full w-full bg-[#050505]">
-        <img src={slide.cover_url!} alt="" width={slide.cover_width ?? undefined} height={slide.cover_height ?? undefined} loading={index < 3 ? "eager" : "lazy"} fetchPriority={index === 0 ? "high" : "auto"} decoding="async" draggable={false} className="h-full w-full object-contain object-center" />
+        <img src={slide.cover_url!} alt="" width={slide.cover_width ?? undefined} height={slide.cover_height ?? undefined} loading={mobileOrTablet ? (index === 0 ? "eager" : "lazy") : (index < 3 ? "eager" : "lazy")} fetchPriority={mobileOrTablet ? (index === 0 ? "high" : "auto") : (index === 0 ? "high" : "auto")} decoding="async" draggable={false} className="h-full w-full object-contain object-center" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
         <div className="absolute bottom-6 left-6 right-6">
           <div className="mono mb-2 text-[10px] uppercase tracking-[.2em] text-white/70">{slide.category}{slide.year ? ` · ${slide.year}` : ""}</div>
