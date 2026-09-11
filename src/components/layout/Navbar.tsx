@@ -5,21 +5,18 @@ import clsx from "clsx";
 import logoUrl from "@/assets/logo.webp";
 import { motion, LayoutGroup } from "framer-motion";
 import { ShinyButton } from "@/components/ui/shiny-button";
-import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
-import { useSiteLocale } from "@/lib/site-locale";
 
 const links = [
-  { to: "/", label: "Home", pt: "Início" },
-  { to: "/portfolio", label: "Portfolio", pt: "Portefólio" },
-  { to: "/credentials", label: "Credentials", pt: "Percurso" },
-  { to: "/services", label: "Services", pt: "Serviços" },
-  { to: "/contact", label: "Contact", pt: "Contacto" },
+  { to: "/", label: "Home" },
+  { to: "/portfolio", label: "Portfolio" },
+  { to: "/credentials", label: "Credentials" },
+  { to: "/services", label: "Services" },
+  { to: "/contact", label: "Contact" },
 ] as const;
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
   const pathname = useRouterState({ select: (state) => state.location.pathname });
-  const locale = useSiteLocale();
   const studioActive = pathname === "/studio" || pathname.startsWith("/studio/");
 
   useEffect(() => {
@@ -37,7 +34,7 @@ export function Navbar() {
       <div className="mx-auto max-w-[var(--width-wide)]">
         <nav
           className="relative z-[1000] flex items-center justify-between rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-surface)]/70 py-2 pl-4 pr-2 shadow-[0_8px_32px_rgba(0,0,0,0.24)] backdrop-blur-xl transition duration-500 hover:bg-[var(--color-surface)]/90"
-          aria-label={locale === "pt-PT" ? "Navegação principal" : "Main navigation"}
+          aria-label="Main navigation"
         >
           <Link to="/" className="group flex items-center gap-3 pl-1 focus:outline-none" aria-label="Edmundo Kutuzov - home">
             <span className="grid h-8 w-8 place-items-center overflow-hidden rounded-full border border-[var(--color-border-base)] bg-white/[0.02] transition duration-300 group-hover:border-[var(--color-accent-subtle)] group-hover:bg-[var(--color-accent-subtle)]">
@@ -56,7 +53,7 @@ export function Navbar() {
                   <li key={link.to}>
                     <Link to={link.to} className={clsx("relative flex items-center px-3 py-1.5 text-[13px] font-medium transition-colors duration-300 focus:outline-none", active ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]")}>
                       {active && <motion.span layoutId="navActiveIndicator" transition={{ type: "spring", bounce: 0.15, duration: 0.6 }} className="absolute -bottom-1 left-1/2 h-[2px] w-4 -translate-x-1/2 rounded-full bg-[var(--color-accent-base)] opacity-80" />}
-                      <span className="relative z-10">{locale === "pt-PT" ? link.pt : link.label}</span>
+                      <span className="relative z-10">{link.label}</span>
                     </Link>
                   </li>
                 );
@@ -76,12 +73,11 @@ export function Navbar() {
             </ul>
           </LayoutGroup>
           <div className="flex items-center gap-2">
-            <LanguageSwitcher />
             <ShinyButton to="/contact" className="hidden !px-4 !py-2 !text-[13px] sm:inline-flex">
-              {locale === "pt-PT" ? "Iniciar um projecto" : "Start a project"}
+              Start a project
               <ArrowUpRight size={14} strokeWidth={2} />
             </ShinyButton>
-            <button type="button" onClick={() => setOpen((value) => !value)} className="grid h-9 w-9 place-items-center rounded-full border border-[var(--color-border-base)] bg-white/[0.02] text-[var(--color-text-primary)] transition hover:border-[var(--color-accent-hover)] hover:bg-[var(--color-accent-subtle)] focus:outline-none md:hidden" aria-label={open ? (locale === "pt-PT" ? "Fechar menu" : "Close menu") : (locale === "pt-PT" ? "Abrir menu" : "Open menu")} aria-expanded={open} aria-controls="mobile-navigation">
+            <button type="button" onClick={() => setOpen((value) => !value)} className="grid h-9 w-9 place-items-center rounded-full border border-[var(--color-border-base)] bg-white/[0.02] text-[var(--color-text-primary)] transition hover:border-[var(--color-accent-hover)] hover:bg-[var(--color-accent-subtle)] focus:outline-none md:hidden" aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} aria-controls="mobile-navigation">
               {open ? <X size={16} strokeWidth={1.8} /> : <Menu size={16} strokeWidth={1.8} />}
             </button>
           </div>
@@ -91,7 +87,7 @@ export function Navbar() {
             <div className="flex flex-col gap-1">
               {links.map((link) => {
                 const active = pathname === link.to || (link.to !== "/" && pathname.startsWith(link.to));
-                return <Link key={link.to} to={link.to} className={clsx("rounded-2xl px-4 py-3 text-[15px] font-medium transition", active ? "bg-[var(--color-accent-subtle)] text-[var(--color-text-primary)]" : "text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-highlight)] hover:text-[var(--color-text-primary)]")}>{locale === "pt-PT" ? link.pt : link.label}</Link>;
+                return <Link key={link.to} to={link.to} className={clsx("rounded-2xl px-4 py-3 text-[15px] font-medium transition", active ? "bg-[var(--color-accent-subtle)] text-[var(--color-text-primary)]" : "text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-highlight)] hover:text-[var(--color-text-primary)]")}>{link.label}</Link>;
               })}
               <Link to="/studio" className={clsx("mt-1 flex items-center justify-between rounded-2xl border px-4 py-3 text-[15px] font-semibold", studioActive ? "border-[var(--color-accent-base)] bg-[var(--color-accent-subtle)] text-[var(--color-text-primary)]" : "border-[var(--color-accent-base)]/40 bg-[var(--color-accent-base)]/[0.06] text-[var(--color-text-primary)]")}><span>Kutuzov Studio</span><span className="h-1.5 w-1.5 rounded-full bg-[var(--color-accent-base)]" /></Link>
             </div>
