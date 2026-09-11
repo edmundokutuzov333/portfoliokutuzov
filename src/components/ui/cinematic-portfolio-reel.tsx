@@ -133,7 +133,7 @@ function CarouselStacked({ projects }: { projects: DbProject[] }) {
     <div ref={ref} className="relative h-[48vh] w-full select-none overflow-hidden md:h-[58vh] lg:h-[70vh]">
       <div className="relative flex h-full w-full items-center justify-center">
         <motion.button type="button" drag="x" dragConstraints={{ left: 0, right: 0 }} onDragStart={onStart} onDrag={(_, info) => progress.set(progress.get() - info.delta.x / config.sensitivity)} onDragEnd={onEnd} onKeyDown={(event) => { if (event.key === "ArrowLeft") { event.preventDefault(); move(-1); } else if (event.key === "ArrowRight") { event.preventDefault(); move(1); } else if (event.key === " ") { event.preventDefault(); setPaused((value) => !value); } }} aria-label="Portfolio reel. Use the left and right arrow keys to navigate, or space to pause." className="absolute inset-0 z-[20] cursor-grab border-0 bg-transparent p-0 active:cursor-grabbing touch-pan-y focus-visible:outline-2 focus-visible:outline-[var(--color-accent-hover)] focus-visible:outline-offset-[-4px]" />
-        {slides.map((slide, index) => <CarouselCard key={`${slide.id}-${index}`} slide={slide} index={index} total={slides.length} progress={progress} config={config} />)}
+        {slides.map((slide, index) => <CarouselCard key={`${slide.id}-${index}`} slide={slide} index={index} total={slides.length} progress={progress} config={config} mobileOrTablet={isMobileOrTablet} />)}
       </div>
       {!reduced && !slowConnection && (
         <button type="button" onClick={() => setPaused((value) => !value)} aria-label={paused ? "Resume portfolio reel" : "Pause portfolio reel"} className="absolute bottom-5 right-5 z-[25] inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-black/50 text-white backdrop-blur-md transition hover:bg-black/70 focus-visible:outline-2 focus-visible:outline-[var(--color-accent-hover)]">
@@ -144,7 +144,7 @@ function CarouselStacked({ projects }: { projects: DbProject[] }) {
   );
 }
 
-function CarouselCard({ slide, index, total, progress, config }: { slide: DbProject; index: number; total: number; progress: MotionValue<number>; config: CarouselConfig }) {
+function CarouselCard({ slide, index, total, progress, config, mobileOrTablet }: { slide: DbProject; index: number; total: number; progress: MotionValue<number>; config: CarouselConfig; mobileOrTablet: boolean }) {
   const offset = useTransform(progress, (value) => {
     let distance = (index - value) % total;
     if (distance > total / 2) distance -= total;
@@ -161,7 +161,7 @@ function CarouselCard({ slide, index, total, progress, config }: { slide: DbProj
   return (
     <motion.div style={{ x, y, rotate, scale, opacity, zIndex }} aria-hidden="true" className="absolute aspect-[4/5] h-[82%] w-auto overflow-hidden rounded-xl border border-[var(--color-border-subtle)] bg-black shadow-2xl md:h-[85%]">
       <div className="relative h-full w-full bg-[#050505]">
-        <img src={slide.cover_url!} alt="" width={slide.cover_width ?? undefined} height={slide.cover_height ?? undefined} loading={index < 3 ? "eager" : "lazy"} fetchPriority={index === 0 ? "high" : "auto"} decoding="async" draggable={false} className="h-full w-full object-contain object-center" />
+        <img src={slide.cover_url!} alt="" width={slide.cover_width ?? undefined} height={slide.cover_height ?? undefined} loading={mobileOrTablet ? (index === 0 ? "eager" : "lazy") : (index < 3 ? "eager" : "lazy")} fetchPriority={mobileOrTablet ? (index === 0 ? "high" : "auto") : (index === 0 ? "high" : "auto")} decoding="async" draggable={false} className="h-full w-full object-contain object-center" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
         <div className="absolute bottom-6 left-6 right-6">
           <div className="mono mb-2 text-[10px] uppercase tracking-[.2em] text-white/70">{slide.category}{slide.year ? ` · ${slide.year}` : ""}</div>
