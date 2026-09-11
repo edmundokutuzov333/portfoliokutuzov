@@ -186,28 +186,62 @@ export function useProjects(includeUnpublished = false) {
     queryKey: ["projects", includeUnpublished],
     queryFn: async ({ signal }): Promise<DbProject[]> => {
       try {
-        let q = supabase.from("projects").select("*").order("sort_order");
-        if (!includeUnpublished) q = q.eq("is_published", true);
-        const { data, error } = await q.abortSignal(boundedSignal(signal));
-        if (error || !data?.length) return FALLBACK_PROJECTS;
-        return data.map((p) => ({
-          ...p,
-          category: normalizeCategory(p.category),
-          gallery: Array.isArray(p.gallery) ? (p.gallery as string[]) : [],
-          tags: Array.isArray(p.tags) ? (p.tags as string[]) : [],
-          collaborators: Array.isArray((p as { collaborators?: unknown }).collaborators)
-            ? (p as { collaborators: string[] }).collaborators
-            : [],
-          tools_used: Array.isArray((p as { tools_used?: unknown }).tools_used)
-            ? (p as { tools_used: string[] }).tools_used
-            : [],
-          deliverables: Array.isArray((p as { deliverables?: unknown }).deliverables)
-            ? (p as { deliverables: string[] }).deliverables
-            : [],
-          gallery_meta: Array.isArray((p as { gallery_meta?: unknown }).gallery_meta)
-            ? (p as unknown as { gallery_meta: DbProject["gallery_meta"] }).gallery_meta
-            : [],
-        })) as unknown as DbProject[];
+        const url = includeUnpublished
+          ? "/api/portfolio-projects?includeUnpublished=1"
+          : "/api/portfolio-projects";
+        const response = await fetch(url, {
+          headers: { Accept: "application/json" },
+          cache: "no-store",
+          signal: boundedSignal(signal),
+        });
+        if (response.ok) {
+          const payload = (await response.json()) as { projects?: unknown };
+          if (Array.isArray(payload.projects) && payload.projects.length > 0) {
+            return payload.projects.map((p) => {
+              const project = p as Record<string, unknown>;
+              return {
+                ...project,
+                category: normalizeCategory(project.category as string),
+                gallery: Array.isArray(project.gallery) ? project.gallery : [],
+                tags: Array.isArray(project.tags) ? project.tags : [],
+                collaborators: Array.isArray(project.collaborators) ? project.collaborators : [],
+                tools_used: Array.isArray(project.tools_used) ? project.tools_used : [],
+                deliverables: Array.isArray(project.deliverables) ? project.deliverables : [],
+                gallery_meta: Array.isArray(project.gallery_meta) ? project.gallery_meta : [],
+              } as unknown as DbProject;
+            });
+          }
+        }
+
+        const { data, error } = await supabase
+          .from("projects")
+          .select("*")
+          .order("sort_order")
+          .abortSignal(boundedSignal(signal));
+        if (!error && data?.length) {
+          return data
+            .filter((p) => includeUnpublished || p.is_published === true)
+            .map((p) => ({
+              ...p,
+              category: normalizeCategory(p.category),
+              gallery: Array.isArray(p.gallery) ? (p.gallery as string[]) : [],
+              tags: Array.isArray(p.tags) ? (p.tags as string[]) : [],
+              collaborators: Array.isArray((p as { collaborators?: unknown }).collaborators)
+                ? (p as { collaborators: string[] }).collaborators
+                : [],
+              tools_used: Array.isArray((p as { tools_used?: unknown }).tools_used)
+                ? (p as { tools_used: string[] }).tools_used
+                : [],
+              deliverables: Array.isArray((p as { deliverables?: unknown }).deliverables)
+                ? (p as { deliverables: string[] }).deliverables
+                : [],
+              gallery_meta: Array.isArray((p as { gallery_meta?: unknown }).gallery_meta)
+                ? (p as unknown as { gallery_meta: DbProject["gallery_meta"] }).gallery_meta
+                : [],
+            })) as unknown as DbProject[];
+        }
+
+        return FALLBACK_PROJECTS;
       } catch (_error) {
         void _error;
         return FALLBACK_PROJECTS;
