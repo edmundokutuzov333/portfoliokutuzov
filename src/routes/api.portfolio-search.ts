@@ -4,6 +4,7 @@ import { getCorsHeaders, isCorsOriginAllowed } from "@/config/server";
 
 const MAX_QUERY_LENGTH = 120;
 const MAX_RESULTS = 24;
+const MAX_ARCHIVE_RESULTS = 500;
 
 function normalize(value: string) {
   return value
@@ -57,12 +58,14 @@ export const Route = createFileRoute("/api/portfolio-search")({
         const url = new URL(request.url);
         const rawQuery = url.searchParams.get("q") ?? "";
         const query = rawQuery.slice(0, MAX_QUERY_LENGTH);
+        const archive = url.searchParams.get("archive") === "1";
         const projects = await getProductionProjects();
-        const results = projects
+        const ranked = projects
           .map((project) => ({ project, score: score(project, query) }))
           .filter(({ score: value }) => query.trim() === "" || value > 0)
-          .sort((a, b) => b.score - a.score || a.project.title.localeCompare(b.project.title))
-          .slice(0, MAX_RESULTS)
+          .sort((a, b) => b.score - a.score || a.project.title.localeCompare(b.project.title));
+        const results = ranked
+          .slice(0, archive ? MAX_ARCHIVE_RESULTS : MAX_RESULTS)
           .map(({ project }) => ({
             id: project.id,
             title: project.title,
@@ -82,7 +85,9 @@ export const Route = createFileRoute("/api/portfolio-search")({
           headers: {
             ...getCorsHeaders(request),
             "Content-Type": "application/json",
-            "Cache-Control": "public, max-age=30, stale-while-revalidate=120",
+            "Cache-Control": archive
+              ? "public, s-maxage=60, stale-while-revalidate=300"
+              : "public, max-age=30, stale-while-revalidate=120",
           },
         });
       },
