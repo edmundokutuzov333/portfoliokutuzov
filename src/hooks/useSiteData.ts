@@ -25,9 +25,9 @@ function boundedSignal(signal: AbortSignal) {
   return AbortSignal.any([signal, AbortSignal.timeout(PUBLIC_READ_TIMEOUT_MS)]);
 }
 
-function getMobileTabletStaleTime() {
-  if (typeof window === "undefined") return 0;
-  return window.matchMedia("(max-width: 1023px)").matches ? MOBILE_QUERY_STALE_TIME_MS : 0;
+function getMobileTabletStaleTime(): number | undefined {
+  if (typeof window === "undefined") return undefined;
+  return window.matchMedia("(max-width: 1023px)").matches ? MOBILE_QUERY_STALE_TIME_MS : undefined;
 }
 
 const FALLBACK_PROJECTS: DbProject[] = staticProjects.map((p) => ({
