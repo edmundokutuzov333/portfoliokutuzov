@@ -162,7 +162,6 @@ a {
   body {
     min-height: 100svh;
     overflow-x: clip;
-    text-rendering: optimizeSpeed;
   }
 
   button,
@@ -170,14 +169,11 @@ a {
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* Avoid expensive continuous backdrop-filter compositing on touch viewports. */
-  .glass-nav,
-  [class*="backdrop-blur"] {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-  }
-
+  /* The public navbar is a fixed high-visibility surface. Remove its expensive
+     live blur only on touch-sized viewports and keep the desktop treatment. */
   .glass-nav {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
     background: rgba(7, 13, 26, 0.94);
   }
 
@@ -185,38 +181,11 @@ a {
     contain: layout paint style;
     contain-intrinsic-size: auto 560px;
   }
-
-  /* Lazy media already participates in the browser's loading scheduler. This
-     keeps off-screen decoding/layout work out of the critical viewport. */
-  img[loading="lazy"] {
-    content-visibility: auto;
-    contain-intrinsic-size: 240px 180px;
-  }
-
-  /* Smaller shadows reduce raster work while keeping the same visual hierarchy. */
-  [class*="shadow-2xl"],
-  [class*="shadow-xl"] {
-    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.24) !important;
-  }
 }
 
 @media (max-width: 767px) {
-  .admin-input,
-  input,
-  textarea,
-  select {
+  .admin-input {
     font-size: 16px;
-  }
-
-  /* Comfortable touch targets without changing desktop/tablet navigation. */
-  button {
-    min-height: 44px;
-  }
-}
-
-@media (min-width: 768px) and (max-width: 1023px) {
-  body {
-    text-rendering: optimizeLegibility;
   }
 }
 
