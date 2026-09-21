@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 env:
-  PGSSLMODE: require
+  PGSSLMODE: verify-full
 
 jobs:
   backup:

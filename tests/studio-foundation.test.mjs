@@ -41,7 +41,10 @@ test("Studio session storage never creates a synthetic Math.random identifier", 
   assert.match(session, /sessionStorage/);
 });
 
-test("Studio sitemap exposes the public Studio landing page", async () => {
+test("Studio public landing is present in sitemap while private tools remain gated", async () => {
   const sitemap = await read("src/routes/sitemap[.]xml.ts");
+  const route = await read("src/routes/studio.tsx");
   assert.match(sitemap, /\/studio/);
+  assert.match(route, /STUDIO_PUBLIC_ENABLED/);
+  assert.match(route, /Under Construction/);
 });

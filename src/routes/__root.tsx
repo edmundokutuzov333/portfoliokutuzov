@@ -1,4 +1,4 @@
-import { Outlet, createRootRouteWithContext, HeadContent, Scripts, useRouterState } from "@tanstack/react-router";
+import { Outlet, createRootRouteWithContext, HeadContent, Scripts, useRouter, useRouterState } from "@tanstack/react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
 import { useEffect, type ReactNode } from "react";
@@ -37,7 +37,7 @@ function NotFoundComponent() {
 }
 
 function RootErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
-  const router = Route.useRouter();
+  const router = useRouter();
   const { queryClient } = Route.useRouteContext();
   useEffect(() => {
     recordRuntimeError("react", error);

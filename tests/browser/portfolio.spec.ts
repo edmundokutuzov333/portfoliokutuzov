@@ -47,28 +47,27 @@ test.describe("portfolio critical journeys", () => {
     await expect(page.locator("main")).toBeVisible();
   });
 
-  test("language switcher translates the public experience and can switch back", async ({ page }) => {
+  test("public experience remains English-only", async ({ page }) => {
     await page.goto("/");
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
-    await page.getByRole("button", { name: /switch site language to portuguese/i }).click();
-    await expect(page.locator("html")).toHaveAttribute("lang", "pt-PT");
-    await expect(page.getByRole("link", { name: /portefólio/i }).first()).toBeVisible();
-    await expect(page.locator("body")).toContainText(/Início|Serviços|Contacto|Disponível para projectos/);
-    await expect(page.locator("body")).toContainText(/cortam o ruído|ficam na memória|mobilizam pessoas/i);
-    await expect(page.locator("body")).toContainText(/Selecção de portefólio|Trabalho seleccionado/i);
-
-    await page.goto("/services");
-    await expect(page.locator("body")).toContainText(/Direcção de arte|Editorial e impressão|Design digital/i);
-
-    await page.goto("/credentials");
-    await expect(page.locator("body")).toContainText(/Percurso profissional|Experiência profissional|Disponível em 2026/i);
-
-    await page.goto("/contact");
-    await expect(page.locator("body")).toContainText(/Contacto|Iniciar um projecto/i);
-
-    await page.getByRole("button", { name: /mudar idioma.*inglês/i }).click();
-    await expect(page.locator("html")).toHaveAttribute("lang", "en");
     await expect(page.getByRole("link", { name: /portfolio/i }).first()).toBeVisible();
+    await expect(page.locator("body")).not.toContainText(/Início|Serviços|Contacto|Portefólio/);
+  });
+
+  test("Kutuzov Studio is a construction experience with a clear portfolio escape route", async ({ page }) => {
+    await page.goto("/studio");
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+    await expect(page.getByRole("heading", { name: /Something is taking shape/i })).toBeVisible();
+    await expect(page.getByText(/currently under construction/i)).toBeVisible();
+    await expect(page.getByText(/being built in private/i)).toBeVisible();
+    await expect(page.getByRole("link", { name: /explore the portfolio/i })).toBeVisible();
+    await expect(page.locator('[aria-label="Kutuzov Studio construction notice"]')).toBeVisible();
+  });
+
+  test("unfinished Studio tools return visitors to the construction experience", async ({ page }) => {
+    await page.goto("/studio/business-card");
+    await expect(page).toHaveURL(/\/studio$/);
+    await expect(page.getByRole("heading", { name: /Something is taking shape/i })).toBeVisible();
   });
 
   test("contact page validates the briefing before submit", async ({ page }) => {

@@ -6,6 +6,7 @@ import { supabaseAdmin } from "@/integrations/supabase/server/index.server";
 import { createShareToken } from "@/lib/studio/identity";
 import { sanitizePublicIdentityDesign } from "@/lib/studio/identity-format";
 import { trackStudioEvent } from "@/lib/studio/analytics.server";
+import { STUDIO_PUBLIC_ENABLED } from "@/lib/studio/public-launch";
 
 const WINDOW_MS = 5 * 60 * 1000;
 const MAX_REQUESTS = 6;
@@ -34,6 +35,7 @@ function checkRateLimit(key: string) {
 export const Route = createFileRoute("/api/studio/publish")({ server: { handlers: {
   POST: async ({ request }) => {
     const requestId = getRequestId(request); const startedAt = Date.now();
+    if (!STUDIO_PUBLIC_ENABLED) return response(request, requestId, 404, { error: "STUDIO_UNAVAILABLE" });
     if (!isCorsOriginAllowed(request)) return response(request, requestId, 403, { error: "ORIGIN_NOT_ALLOWED" });
     const length = Number(request.headers.get("content-length") || 0);
     if (!Number.isFinite(length) || length < 0 || length > MAX_BODY_BYTES) return response(request, requestId, 413, { error: "REQUEST_TOO_LARGE" });

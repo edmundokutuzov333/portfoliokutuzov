@@ -6,7 +6,7 @@ on:
       production_url:
         description: Production site origin
         required: false
-        default: https://portfoliokutuzov-omega.vercel.app
+        default: https://edmundokutuzov.art
         type: string
   push:
     branches: [ai-realtime-i18n]
@@ -27,5 +27,5 @@ jobs:
       - run: npm ci
       - name: Exercise production Gemini endpoints
         env:
-          PRODUCTION_URL: ${{ inputs.production_url || 'https://portfoliokutuzov-omega.vercel.app' }}
+          PRODUCTION_URL: ${{ inputs.production_url || 'https://edmundokutuzov.art' }}
         run: node scripts/production-gemini-e2e.mjs

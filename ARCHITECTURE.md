@@ -6,6 +6,7 @@ This application is a dynamic TanStack Start application deployed to Vercel with
 
 ```text
 Request
+  -> Vercel
   -> TanStack Start server
   -> route tree
   -> root document
@@ -32,6 +33,16 @@ The application must never introduce a second SPA bootstrap or a parallel routin
 | Migrations | Versioned SQL under `supabase/migrations/` |
 
 There is no Prisma or Drizzle layer. The database boundary is Supabase PostgreSQL accessed through `@supabase/supabase-js` and protected server routes.
+
+## Canonical production origin
+
+The canonical production origin is:
+
+```text
+https://edmundokutuzov.art
+```
+
+The `www.edmundokutuzov.art` hostname permanently redirects to the apex origin. SEO metadata, canonical links, Open Graph URLs, structured data and sitemap references resolve from the apex origin.
 
 ## Public data flow
 
@@ -80,6 +91,39 @@ The admin route is intentionally thin and delegates its Control Room implementat
 
 Framer Motion is part of the visual language. `prefers-reduced-motion` must remain respected.
 
+## Studio public release gate
+
+Kutuzov Studio remains publicly visible only as a construction notice while the feature flag is disabled.
+
+```text
+VITE_STUDIO_PUBLIC_ENABLED=false
+        |
+        +--> /studio renders construction notice
+        |
+        +--> unfinished Studio routes redirect to /studio
+        |
+        +--> unfinished Studio APIs return 404
+        |
+        +--> source code remains in the repository for private development
+```
+
+Set `VITE_STUDIO_PUBLIC_ENABLED=true` only for a deployment intended to expose the completed Studio experience.
+
+## Security headers
+
+Vercel serves a site-wide security header policy from `vercel.json`:
+
+```text
+Strict-Transport-Security
+Content-Security-Policy
+X-Content-Type-Options
+X-Frame-Options
+Referrer-Policy
+Permissions-Policy
+```
+
+The CSP is deliberately compatible with the current SSR document, Google Fonts, Supabase client connections, hosted portfolio media and YouTube/Vimeo project embeds. The current policy uses `unsafe-inline` for scripts/styles because the application currently contains inline SSR scripts and style blocks; removing that exception requires a nonce/hash-based CSP refactor.
+
 ## Studio editor architecture
 
 The card editor uses a structured `StudioDesignDocument` as the single source of truth. Canvas interactions update the document directly during pointer capture and create one bounded history entry when the interaction completes. Discrete edits use immutable document replacement, undo/redo stacks are bounded, and a new commit clears the redo stack.
@@ -104,7 +148,7 @@ The current print pipeline is rasterized. Therefore it does not claim native CMY
 
 Production Studio records are durable business data. The migration chain under `supabase/migrations/` is the schema source of truth, while live rows remain owned by Supabase PostgreSQL.
 
-Backups are not substituted by Git history. The operational policy is documented in `docs/DATA_RECOVERY.md` and targets an RPO of 24 hours and an RTO of 4 hours, with provider-managed backup/PITR where available, independent encrypted exports and scheduled restore drills.
+Backups target an RPO of 24 hours and an RTO of 4 hours, with provider-managed backup/PITR where available, independent encrypted exports and scheduled restore drills.
 
 A Vercel rollback cannot restore PostgreSQL. Database recovery and application recovery are separate exercises.
 
@@ -116,7 +160,7 @@ Node 24 is the supported runtime and is declared consistently in `package.json`,
 
 ## CI/CD and verification gates
 
-Every pull request targeting `main` is expected to pass the regression and browser gates before merge. The regression suite covers the accumulated phase contracts A–H; the Playwright suite covers Studio surfaces across Chromium, Edge, Firefox and WebKit plus mobile browser emulation where configured.
+Every pull request targeting `main` is expected to pass the regression and browser gates before merge. The regression suite covers the accumulated phase contracts and the Playwright suite covers Studio surfaces across Chromium, Edge, Firefox and WebKit plus mobile browser emulation where configured.
 
 The baseline verification sequence is:
 
@@ -130,7 +174,7 @@ npm run build
 npx playwright test
 ```
 
-Phase coverage is enforced by `tests/phase-coverage.test.mjs`, so a future refactor cannot silently delete a phase regression contract.
+Phase coverage is enforced by the test suite, so a future refactor cannot silently delete a hardening contract.
 
 ## Source of truth
 

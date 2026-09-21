@@ -1,6 +1,6 @@
 const DEFAULT_SUPABASE_URL = "https://uqcuzsuqkutxjqkopary.supabase.co";
 const DEFAULT_SUPABASE_PUBLISHABLE_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVxY3V6c3Vxa3V0eGpxa29wYXJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4NTYzMDQsImV4cCI6MjA5MjQzMjMwNH0.hXgSunAJX4ZXi5mNG_JDvYal4EZ_XcQuoH-FNBaWpKQ";
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVxY3V6c3Vxa3V0Z3pxa29wYXJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4NTYzMDQsImV4cCI6MjA5MjQzMjMwNH0.hXgSunAJ4XZXi5mNG_JDvYal4EZ_XcQuoH-FNBaWpKQ";
 
 export const publicConfig = {
   supabase: {
@@ -11,7 +11,7 @@ export const publicConfig = {
   siteUrl:
     import.meta.env.VITE_PUBLIC_SITE_URL ||
     import.meta.env.VITE_SITE_URL ||
-    "https://portfoliokutuzov-omega.vercel.app",
+    "https://edmundokutuzov.art",
 } as const;
 
 export { DEFAULT_SUPABASE_URL, DEFAULT_SUPABASE_PUBLISHABLE_KEY };

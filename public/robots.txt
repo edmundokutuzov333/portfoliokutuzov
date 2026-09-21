@@ -5,4 +5,4 @@ Disallow: /admin
 Disallow: /i/
 Disallow: /api/
 
-Sitemap: https://portfoliokutuzov-omega.vercel.app/sitemap.xml
+Sitemap: https://edmundokutuzov.art/sitemap.xml

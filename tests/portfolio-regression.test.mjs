@@ -10,7 +10,7 @@ test("Portfolio route mounts the deterministic archive renderer", async () => {
   assert.match(route, /PortfolioArchive/);
   assert.match(archive, /data-testid=\"portfolio-archive\"/);
   assert.match(archive, /data-testid=\"portfolio-project-grid\"/);
-  assert.match(archive, /Showing \{filtered\.length\} of \{publishedProjects\.length\}/);
+  assert.match(archive, /Showing \$\{filtered\.length\} of \$\{publishedProjects\.length\}/);
 });
 
 test("Portfolio data has a server-backed recovery path and local fallback", async () => {
@@ -27,5 +27,5 @@ test("Portfolio language is English-only", async () => {
   const navbar = await read("src/components/layout/Navbar.tsx");
   assert.match(locale, /export type SiteLocale = \"en\"/);
   assert.doesNotMatch(navbar, /LanguageSwitcher/);
-  assert.doesNotMatch(navbar, /pt-PT/);
+  assert.doesNotMatch(navbar, /LanguageSwitcher|pt-PT/);
 });
