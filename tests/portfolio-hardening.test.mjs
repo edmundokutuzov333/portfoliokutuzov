@@ -22,7 +22,7 @@ test("canonical origin uses the apex Edmundo Kutuzov domain", async () => {
   assert.match(serverConfig, /DEFAULT_PUBLIC_SITE_URL = "https:\/\/edmundokutuzov\.art"/);
   assert.match(robots, /Sitemap: https:\/\/edmundokutuzov\.art\/sitemap\.xml/);
   assert.doesNotMatch(sitemap, /portfoliokutuzov-omega\.vercel\.app/);
-  assert.doesNotMatch(sitemap, /"\/studio"/);
+  assert.match(sitemap, /"\/studio"/);
   assert.doesNotMatch(sitemap, /"\/studio\/identity"/);
 });
 
