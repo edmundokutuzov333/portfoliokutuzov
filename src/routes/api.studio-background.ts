@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { studioUnavailableResponse } from "@/lib/studio/public-access";
 import { getCorsHeaders, isCorsOriginAllowed } from "@/config/server";
 import { getRequestId, logObservability } from "@/lib/observability";
 import { generateMagnificBackground, MagnificBackgroundError } from "@/lib/studio/background/magnific";
@@ -24,9 +25,10 @@ function bodyTooLarge(request: Request) { const contentLength = request.headers.
 export const Route = createFileRoute("/api/studio/background")({
   server: {
     handlers: {
-      OPTIONS: async ({ request }) => { const requestId = getRequestId(request); return new Response(null, { status: isCorsOriginAllowed(request) ? 204 : 403, headers: headers(request, requestId) }); },
-      GET: async ({ request }) => { const requestId = getRequestId(request); if (!isCorsOriginAllowed(request)) return errorResponse(request, requestId, 403, "ORIGIN_NOT_ALLOWED", "This origin is not allowed."); return new Response(JSON.stringify({ status: "healthy", endpoint: "/api/studio/background", provider: "magnific", model: "magnific-classic-fast", limits: { maxRequests: MAX_REQUESTS, windowMinutes: 5, maxBodyBytes: MAX_BODY_BYTES }, requestId }), { status: 200, headers: headers(request, requestId, { "Content-Type": "application/json", "Cache-Control": "no-store" }) }); },
+      OPTIONS: async ({ request }) => { if (!import.meta.env.VITE_STUDIO_PUBLIC_ENABLED || import.meta.env.VITE_STUDIO_PUBLIC_ENABLED !== "true") return studioUnavailableResponse(); const requestId = getRequestId(request); return new Response(null, { status: isCorsOriginAllowed(request) ? 204 : 403, headers: headers(request, requestId) }); },
+      GET: async ({ request }) => { if (!import.meta.env.VITE_STUDIO_PUBLIC_ENABLED || import.meta.env.VITE_STUDIO_PUBLIC_ENABLED !== "true") return studioUnavailableResponse(); const requestId = getRequestId(request); if (!isCorsOriginAllowed(request)) return errorResponse(request, requestId, 403, "ORIGIN_NOT_ALLOWED", "This origin is not allowed."); return new Response(JSON.stringify({ status: "healthy", endpoint: "/api/studio/background", provider: "magnific", model: "magnific-classic-fast", limits: { maxRequests: MAX_REQUESTS, windowMinutes: 5, maxBodyBytes: MAX_BODY_BYTES }, requestId }), { status: 200, headers: headers(request, requestId, { "Content-Type": "application/json", "Cache-Control": "no-store" }) }); },
       POST: async ({ request }) => {
+        if (!import.meta.env.VITE_STUDIO_PUBLIC_ENABLED || import.meta.env.VITE_STUDIO_PUBLIC_ENABLED !== "true") return studioUnavailableResponse();
         const requestId = getRequestId(request); const startedAt = Date.now();
         if (!isCorsOriginAllowed(request)) return errorResponse(request, requestId, 403, "ORIGIN_NOT_ALLOWED", "This origin is not allowed.");
         if (bodyTooLarge(request)) return errorResponse(request, requestId, 413, "REQUEST_TOO_LARGE", "The background request payload is too large.");
