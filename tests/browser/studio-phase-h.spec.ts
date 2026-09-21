@@ -8,7 +8,7 @@ test.describe("Studio public construction gate", () => {
     await expect(page.getByText(/The tools are being built privately/i)).toBeVisible();
     await expect(page.getByRole("link", { name: /Explore the portfolio/i })).toHaveAttribute("href", "/portfolio");
     await expect(page.getByRole("link", { name: /Return home/i })).toHaveAttribute("href", "/");
-    await expect(page.locator("svg")).toHaveCount(1);
+    await expect(page.getByTestId("studio-construction-signal")).toBeVisible();
   });
 
   test("unfinished Studio surfaces stay private by default", async ({ page }) => {
