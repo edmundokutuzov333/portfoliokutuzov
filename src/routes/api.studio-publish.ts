@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createFileRoute } from "@tanstack/react-router";
+import { studioUnavailableResponse } from "@/lib/studio/public-access";
 import { getCorsHeaders, isCorsOriginAllowed } from "@/config/server";
 import { getRequestId, logObservability } from "@/lib/observability";
 import { supabaseAdmin } from "@/integrations/supabase/server/index.server";
@@ -33,6 +34,7 @@ function checkRateLimit(key: string) {
 
 export const Route = createFileRoute("/api/studio/publish")({ server: { handlers: {
   POST: async ({ request }) => {
+    if (!import.meta.env.VITE_STUDIO_PUBLIC_ENABLED || import.meta.env.VITE_STUDIO_PUBLIC_ENABLED !== "true") return studioUnavailableResponse();
     const requestId = getRequestId(request); const startedAt = Date.now();
     if (!isCorsOriginAllowed(request)) return response(request, requestId, 403, { error: "ORIGIN_NOT_ALLOWED" });
     const length = Number(request.headers.get("content-length") || 0);
