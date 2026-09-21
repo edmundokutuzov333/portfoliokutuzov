@@ -26,8 +26,13 @@ function ClientMark({ client }: { client: LogoCloudClient }) {
       className="h-8 md:h-10 w-auto max-w-[130px] md:max-w-[160px] object-contain grayscale opacity-70 transition-[filter,opacity] duration-300 group-hover:grayscale-0 group-hover:opacity-100"
     />
   ) : (
-    <span className="display text-sm md:text-base font-medium tracking-[0.04em] text-center text-slate-200 opacity-75 transition-opacity duration-300 group-hover:opacity-100">
-      {client.name}
+    <span className="inline-flex items-center gap-3 text-left">
+      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/10 bg-white/[0.04] mono text-[10px] font-semibold tracking-[0.12em] text-sky-200/90">
+        {client.name.trim().slice(0, 2).toUpperCase()}
+      </span>
+      <span className="display text-sm md:text-base font-medium tracking-[0.04em] text-slate-200 opacity-80 transition-opacity duration-300 group-hover:opacity-100">
+        {client.name}
+      </span>
     </span>
   );
 
