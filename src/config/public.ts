@@ -8,10 +8,11 @@ export const publicConfig = {
     publishableKey:
       import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || DEFAULT_SUPABASE_PUBLISHABLE_KEY,
   },
+  studioPublicEnabled: import.meta.env.VITE_STUDIO_PUBLIC_ENABLED === "true",
   siteUrl:
     import.meta.env.VITE_PUBLIC_SITE_URL ||
     import.meta.env.VITE_SITE_URL ||
-    "https://portfoliokutuzov-omega.vercel.app",
+    "https://edmundokutuzov.art",
 } as const;
 
 export { DEFAULT_SUPABASE_URL, DEFAULT_SUPABASE_PUBLISHABLE_KEY };
