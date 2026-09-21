@@ -42,6 +42,20 @@ function disconnectedResponse() {
   return new Response(null, { status: 499, statusText: "Client Closed Request" });
 }
 
+function redirectWwwToCanonical(request: Request) {
+  const url = new URL(request.url);
+  if (url.hostname !== "www.edmundokutuzov.art") return null;
+  url.hostname = "edmundokutuzov.art";
+  return new Response(null, {
+    status: 308,
+    headers: {
+      Location: url.toString(),
+      "Cache-Control": "public, max-age=31536000, immutable",
+    },
+  });
+}
+
+
 async function normalizeSsrResponse(request: Request, response: Response): Promise<Response> {
   if (request.signal.aborted) return disconnectedResponse();
   if (response.status < 500) return response;
@@ -61,6 +75,8 @@ async function normalizeSsrResponse(request: Request, response: Response): Promi
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
+      const canonicalRedirect = redirectWwwToCanonical(request);
+      if (canonicalRedirect) return canonicalRedirect;
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       return await normalizeSsrResponse(request, response);
