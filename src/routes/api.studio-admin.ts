@@ -6,6 +6,7 @@ import { publicConfig } from "@/config/public";
 import { getRequestId } from "@/lib/observability";
 import { supabaseAdmin } from "@/integrations/supabase/server/index.server";
 import { trackStudioEvent } from "@/lib/studio/analytics.server";
+import { STUDIO_PUBLIC_ENABLED } from "@/lib/studio/public-launch";
 
 const PUBLIC_EVENTS = new Set([
   "studio_opened", "card_draft_created", "card_saved", "export_started", "export_completed", "export_failed",
@@ -31,7 +32,8 @@ async function authenticatedAdmin(request: Request) {
 export const Route = createFileRoute("/api/studio/admin")({ server: { handlers: {
   OPTIONS: async ({ request }) => { const requestId = getRequestId(request); return new Response(null, { status: isCorsOriginAllowed(request) ? 204 : 403, headers: headers(request, requestId) }); },
   POST: async ({ request }) => {
-    const requestId = getRequestId(request); if (!isCorsOriginAllowed(request)) return json(request, requestId, 403, { error: "ORIGIN_NOT_ALLOWED" });
+    const requestId = getRequestId(request);
+    if (!STUDIO_PUBLIC_ENABLED) return json(request, requestId, 404, { error: "STUDIO_UNAVAILABLE" }); if (!isCorsOriginAllowed(request)) return json(request, requestId, 403, { error: "ORIGIN_NOT_ALLOWED" });
     const length = Number(request.headers.get("content-length") || 0); if (!Number.isFinite(length) || length < 0 || length > MAX_BODY_BYTES) return json(request, requestId, 413, { error: "REQUEST_TOO_LARGE" });
     const rate = checkRateLimit(clientKey(request)); if (!rate.allowed) return json(request, requestId, 429, { error: "RATE_LIMITED" }, { "Retry-After": String(rate.retryAfter) });
     let body: unknown; try { body = await request.json(); } catch { return json(request, requestId, 400, { error: "INVALID_JSON" }); }
