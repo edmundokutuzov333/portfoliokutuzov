@@ -29,13 +29,6 @@ function StudioLanding() {
       <div className="pointer-events-none absolute left-1/2 top-0 h-[620px] w-[620px] -translate-x-1/2 rounded-full bg-cyan-400/[0.045] blur-3xl" />
       <div className="relative mx-auto grid max-w-[1240px] items-center gap-8 lg:grid-cols-[0.88fr_1.12fr] lg:gap-14">
         <div className="relative z-10 max-w-xl">
-          <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/15 bg-cyan-300/[0.04] px-3 py-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_14px_rgba(8,233,255,.95)]" />
-            <span className="mono text-[9px] uppercase tracking-[0.24em] text-cyan-200/75">
-              Private construction
-            </span>
-          </div>
-
           <p className="mono mt-7 text-[10px] uppercase tracking-[0.34em] text-[var(--color-accent-base)]">
             Kutuzov Studio
           </p>
@@ -73,26 +66,6 @@ function StudioLanding() {
             </Link>
           </div>
 
-          <div className="mt-12 grid max-w-xl grid-cols-2 gap-4 border-t border-white/[0.08] pt-6 sm:grid-cols-3">
-            <div>
-              <p className="mono text-[9px] uppercase tracking-[0.2em] text-white/25">
-                Status
-              </p>
-              <p className="mt-2 text-sm text-white/70">In construction</p>
-            </div>
-            <div>
-              <p className="mono text-[9px] uppercase tracking-[0.2em] text-white/25">
-                Access
-              </p>
-              <p className="mt-2 text-sm text-white/70">Private build</p>
-            </div>
-            <div className="col-span-2 sm:col-span-1">
-              <p className="mono text-[9px] uppercase tracking-[0.2em] text-white/25">
-                Public surface
-              </p>
-              <p className="mt-2 text-sm text-white/70">Portfolio first</p>
-            </div>
-          </div>
         </div>
 
         <div className="relative z-0 flex items-center justify-center lg:min-h-[720px]">
