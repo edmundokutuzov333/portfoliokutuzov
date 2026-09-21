@@ -27,5 +27,5 @@ test("Portfolio language is English-only", async () => {
   const navbar = await read("src/components/layout/Navbar.tsx");
   assert.match(locale, /export type SiteLocale = \"en\"/);
   assert.doesNotMatch(navbar, /LanguageSwitcher/);
-  assert.doesNotMatch(navbar, /pt-PT/);
+  assert.doesNotMatch(navbar, /LanguageSwitcher|pt-PT/);
 });
