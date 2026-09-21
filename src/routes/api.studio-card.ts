@@ -6,6 +6,7 @@ import { getRequestId, logObservability } from "@/lib/observability";
 import { supabaseAdmin } from "@/integrations/supabase/server/index.server";
 import { sanitizePublicIdentityDesign } from "@/lib/studio/identity-format";
 import { trackStudioEvent } from "@/lib/studio/analytics.server";
+import { STUDIO_PUBLIC_ENABLED } from "@/lib/studio/public-launch";
 
 const WINDOW_MS = 5 * 60 * 1000;
 const MAX_REQUESTS = 60;
@@ -33,7 +34,8 @@ const SELECT = "id,draft_token,session_id,name,role,company,email,phone,website,
 export const Route = createFileRoute("/api/studio/card")({ server: { handlers: {
   OPTIONS: async ({ request }) => { const requestId = getRequestId(request); return new Response(null, { status: isCorsOriginAllowed(request) ? 204 : 403, headers: headers(request, requestId) }); },
   GET: async ({ request }) => {
-    const requestId = getRequestId(request); if (!isCorsOriginAllowed(request)) return json(request, requestId, 403, { error: "ORIGIN_NOT_ALLOWED" });
+    const requestId = getRequestId(request);
+    if (!STUDIO_PUBLIC_ENABLED) return json(request, requestId, 404, { error: "STUDIO_UNAVAILABLE" }); if (!isCorsOriginAllowed(request)) return json(request, requestId, 403, { error: "ORIGIN_NOT_ALLOWED" });
     const rate = checkRateLimit(clientKey(request)); if (!rate.allowed) return json(request, requestId, 429, { error: "RATE_LIMITED" }, { "Retry-After": String(rate.retryAfter) });
     const token = text(request.headers.get("x-studio-draft-token"), MAX_DRAFT_TOKEN); if (!token) return json(request, requestId, 400, { error: "DRAFT_TOKEN_REQUIRED" });
     const { data, error } = await (supabaseAdmin as any).from("studio_cards").select(SELECT).eq("draft_token", token).maybeSingle();
@@ -43,6 +45,7 @@ export const Route = createFileRoute("/api/studio/card")({ server: { handlers: {
   },
   POST: async ({ request }) => {
     const requestId = getRequestId(request); const startedAt = Date.now();
+    if (!STUDIO_PUBLIC_ENABLED) return json(request, requestId, 404, { error: "STUDIO_UNAVAILABLE" });
     if (!isCorsOriginAllowed(request)) return json(request, requestId, 403, { error: "ORIGIN_NOT_ALLOWED" });
     const length = Number(request.headers.get("content-length") || 0); if (!Number.isFinite(length) || length < 0 || length > MAX_BODY_BYTES) return json(request, requestId, 413, { error: "REQUEST_TOO_LARGE" });
     const rate = checkRateLimit(clientKey(request)); if (!rate.allowed) return json(request, requestId, 429, { error: "RATE_LIMITED" }, { "Retry-After": String(rate.retryAfter) });
