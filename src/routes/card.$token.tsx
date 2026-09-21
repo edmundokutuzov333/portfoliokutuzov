@@ -7,8 +7,9 @@ import { publicConfig } from "@/config/public";
 import { buildVCard, normalizeWebsite, publicIdentityUrl } from "@/lib/studio/identity-format";
 import { safeClipboardWrite } from "@/lib/browser-safe";
 import { trackStudioClientEvent } from "@/lib/studio/analytics";
+import { isStudioPublicEnabled } from "@/lib/studio/public-access";
 
-export const Route = createFileRoute("/card/$token")({ head: () => ({ meta: [{ title: "Digital Card - Edmundo Kutuzov" }, { name: "robots", content: "index,follow" }] }), component: PublicDigitalCard });
+export const Route = createFileRoute("/card/$token")({ beforeLoad: () => { if (!isStudioPublicEnabled()) throw redirect({ to: "/studio" }); }, head: () => ({ meta: [{ title: "Digital Card - Edmundo Kutuzov" }, { name: "robots", content: "index,follow" }] }), component: PublicDigitalCard });
 
 function PublicDigitalCard() {
   const { token } = Route.useParams();
