@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { randomBytes } from "node:crypto";
 import { createFileRoute } from "@tanstack/react-router";
+import { studioUnavailableResponse } from "@/lib/studio/public-access";
 import { getCorsHeaders, isCorsOriginAllowed } from "@/config/server";
 import { getRequestId, logObservability } from "@/lib/observability";
 import { supabaseAdmin } from "@/integrations/supabase/server/index.server";
@@ -31,8 +32,9 @@ function publicRecord(row: any) { return { id: row.id, draftToken: row.draft_tok
 const SELECT = "id,draft_token,session_id,name,role,company,email,phone,website,design_document,revision,status,created_at,updated_at";
 
 export const Route = createFileRoute("/api/studio/card")({ server: { handlers: {
-  OPTIONS: async ({ request }) => { const requestId = getRequestId(request); return new Response(null, { status: isCorsOriginAllowed(request) ? 204 : 403, headers: headers(request, requestId) }); },
+  OPTIONS: async ({ request }) => { if (!import.meta.env.VITE_STUDIO_PUBLIC_ENABLED || import.meta.env.VITE_STUDIO_PUBLIC_ENABLED !== "true") return studioUnavailableResponse(); const requestId = getRequestId(request); return new Response(null, { status: isCorsOriginAllowed(request) ? 204 : 403, headers: headers(request, requestId) }); },
   GET: async ({ request }) => {
+    if (!import.meta.env.VITE_STUDIO_PUBLIC_ENABLED || import.meta.env.VITE_STUDIO_PUBLIC_ENABLED !== "true") return studioUnavailableResponse();
     const requestId = getRequestId(request); if (!isCorsOriginAllowed(request)) return json(request, requestId, 403, { error: "ORIGIN_NOT_ALLOWED" });
     const rate = checkRateLimit(clientKey(request)); if (!rate.allowed) return json(request, requestId, 429, { error: "RATE_LIMITED" }, { "Retry-After": String(rate.retryAfter) });
     const token = text(request.headers.get("x-studio-draft-token"), MAX_DRAFT_TOKEN); if (!token) return json(request, requestId, 400, { error: "DRAFT_TOKEN_REQUIRED" });
@@ -42,6 +44,7 @@ export const Route = createFileRoute("/api/studio/card")({ server: { handlers: {
     return json(request, requestId, 200, { card: publicRecord(data) });
   },
   POST: async ({ request }) => {
+    if (!import.meta.env.VITE_STUDIO_PUBLIC_ENABLED || import.meta.env.VITE_STUDIO_PUBLIC_ENABLED !== "true") return studioUnavailableResponse();
     const requestId = getRequestId(request); const startedAt = Date.now();
     if (!isCorsOriginAllowed(request)) return json(request, requestId, 403, { error: "ORIGIN_NOT_ALLOWED" });
     const length = Number(request.headers.get("content-length") || 0); if (!Number.isFinite(length) || length < 0 || length > MAX_BODY_BYTES) return json(request, requestId, 413, { error: "REQUEST_TOO_LARGE" });
