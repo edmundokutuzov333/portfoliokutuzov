@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { Download, Mail, Phone, Share2, Globe2 } from "lucide-react";
 import { useEffect } from "react";
 import { useSiteLocale } from "@/lib/site-locale";
