@@ -27,7 +27,7 @@ function ProjectCard({ project, index }: { project: DbProject; index: number }) 
         className="flex flex-col gap-4 rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent-hover)]"
       >
         <div className="relative w-full overflow-hidden border border-[var(--color-border-subtle)] bg-[var(--color-surface)] transition-colors duration-500 group-hover:border-[var(--color-border-base)]">
-          {project.cover_url ? (
+          {project.title ? (
             <img
               src={getProjectVisualUrl(project)}
               alt={project.title}
