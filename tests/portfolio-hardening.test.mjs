@@ -73,8 +73,10 @@ test("database backup requires certificate and hostname verification", async () 
 test("Studio remains private until explicitly launched", async () => {
   const flag = await read("src/lib/studio/public-launch.ts");
   const landing = await read("src/routes/studio.tsx");
+  const signal = await read("src/components/studio/StudioConstructionSignal.tsx");
   assert.match(flag, /VITE_STUDIO_PUBLIC_ENABLED === "true"/);
-  assert.match(landing, /currently under construction/);
+  assert.match(landing, /Under Construction/);
+  assert.match(signal, /currently under construction/);
   assert.match(landing, /STUDIO_PUBLIC_ENABLED/);
   assert.match(landing, /robots/);
 
