@@ -40,7 +40,10 @@ const labels: Record<string, { en: string; pt: string }> = {
 const clone = <T,>(value: T): T => structuredClone(value);
 const sameDocument = (a: StudioDesignDocument, b: StudioDesignDocument) => JSON.stringify(a) === JSON.stringify(b);
 const snap = (value: number, step = 0.5) => Math.round(value / step) * step;
-const getServerDraftMeta = () => {\n  const meta = getStudioDraftMeta();\n  return { draftToken: meta.draftToken, revision: meta.revision };\n};\n
+const getServerDraftMeta = () => {
+  const meta = getStudioDraftMeta();
+  return { draftToken: meta.draftToken, revision: meta.revision };
+};\n
 function readAsDataUrl(file: File) {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
