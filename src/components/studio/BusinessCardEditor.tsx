@@ -43,7 +43,8 @@ const snap = (value: number, step = 0.5) => Math.round(value / step) * step;
 const getServerDraftMeta = () => {
   const meta = getStudioDraftMeta();
   return { draftToken: meta.draftToken, revision: meta.revision };
-};\n
+};
+
 function readAsDataUrl(file: File) {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
