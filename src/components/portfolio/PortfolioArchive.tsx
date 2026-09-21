@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { ArrowUpRight, Layers, Play, Search, X } from "lucide-react";
 import clsx from "clsx";
 import { useProjects } from "@/hooks/useSiteData";
-import { PROJECT_CATEGORIES, normalizeCategory, type DbProject } from "@/lib/cms";
+import { getProjectVisualUrl, PROJECT_CATEGORIES, normalizeCategory, type DbProject } from "@/lib/cms";
 import type { PortfolioSearch } from "@/routes/portfolio.index";
 import { ContextualCursor } from "@/components/portfolio/ContextualCursor";
 
@@ -29,7 +29,7 @@ function ProjectCard({ project, index }: { project: DbProject; index: number }) 
         <div className="relative w-full overflow-hidden border border-[var(--color-border-subtle)] bg-[var(--color-surface)] transition-colors duration-500 group-hover:border-[var(--color-border-base)]">
           {project.cover_url ? (
             <img
-              src={project.cover_url}
+              src={getProjectVisualUrl(project)}
               alt={project.title}
               width={project.cover_width ?? undefined}
               height={project.cover_height ?? undefined}
@@ -39,10 +39,6 @@ function ProjectCard({ project, index }: { project: DbProject; index: number }) 
               style={{ display: "block", width: "100%", height: "auto", objectFit: "contain" }}
               className="transition-transform duration-[1.2s] ease-[0.16,1,0.3,1] group-hover:scale-[1.025]"
             />
-          ) : (
-            <div className="flex aspect-[4/3] w-full items-center justify-center text-[var(--color-text-muted)] mono text-xs">
-              No artwork
-            </div>
           )}
 
           <div className="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center opacity-0 translate-y-2 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
