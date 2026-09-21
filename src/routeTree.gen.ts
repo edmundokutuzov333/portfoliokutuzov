@@ -20,6 +20,8 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as ApiChatRouteImport } from './routes/api.chat'
+import { Route as ApiPortfolioProjectsRouteImport } from './routes/api.portfolio-projects'
+import { Route as ApiPortfolioSearchRouteImport } from './routes/api.portfolio-search'
 import { Route as ITokenRouteImport } from './routes/i.$token'
 import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as PortfolioIndexRouteImport } from './routes/portfolio.index'
@@ -28,12 +30,14 @@ import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[
 import { Route as StudioRouteImport } from './routes/studio'
 import { Route as StudioBusinessCardRouteImport } from './routes/studio.business-card'
 import { Route as ApiStudioAdminRouteImport } from './routes/api.studio-admin'
+import { Route as ApiStudioCardRouteImport } from './routes/api.studio-card'
 import { Route as ApiStudioBackgroundRouteImport } from './routes/api.studio-background'
 import { Route as StudioBackgroundRouteImport } from './routes/studio.background'
 import { Route as ApiStudioCreativeRouteImport } from './routes/api.studio-creative'
 import { Route as ApiStudioPublishRouteImport } from './routes/api.studio-publish'
 import { Route as ApiStudioVcardRouteImport } from './routes/api.studio-vcard'
 import { Route as ApiStudioEmailRouteImport } from './routes/api.studio-email'
+import { Route as ApiStudioPublicCardRouteImport } from './routes/api.studio-public-card'
 import { Route as CardTokenRouteImport } from './routes/card.$token'
 import { Route as StudioIdentityRouteImport } from './routes/studio.identity'
 
@@ -48,6 +52,8 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({ id: '/sitemap.xml',
 const Char91DotmcpChar93ListToolsRoute = Char91DotmcpChar93ListToolsRouteImport.update({ id: '/.mcp/list-tools', path: '/.mcp/list-tools', getParentRoute: () => rootRouteImport } as any)
 const Char91DotwellKnownChar93OauthProtectedResourceRoute = Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({ id: '/.well-known/oauth-protected-resource', path: '/.well-known/oauth-protected-resource', getParentRoute: () => rootRouteImport } as any)
 const ApiChatRoute = ApiChatRouteImport.update({ id: '/api/chat', path: '/api/chat', getParentRoute: () => rootRouteImport } as any)
+const ApiPortfolioProjectsRoute = ApiPortfolioProjectsRouteImport.update({ id: '/api/portfolio-projects', path: '/api/portfolio-projects', getParentRoute: () => rootRouteImport } as any)
+const ApiPortfolioSearchRoute = ApiPortfolioSearchRouteImport.update({ id: '/api/portfolio-search', path: '/api/portfolio-search', getParentRoute: () => rootRouteImport } as any)
 const ITokenRoute = ITokenRouteImport.update({ id: '/i/$token', path: '/i/$token', getParentRoute: () => rootRouteImport } as any)
 const PortfolioRoute = PortfolioRouteImport.update({ id: '/portfolio', path: '/portfolio', getParentRoute: () => rootRouteImport } as any)
 const PortfolioIndexRoute = PortfolioIndexRouteImport.update({ id: '/portfolio/', path: '/portfolio', getParentRoute: () => rootRouteImport } as any)
@@ -56,12 +62,14 @@ const Char91DotmcpChar93InvokeToolToolRoute = Char91DotmcpChar93InvokeToolToolRo
 const StudioRoute = StudioRouteImport.update({ id: '/studio', path: '/studio', getParentRoute: () => rootRouteImport } as any)
 const StudioBusinessCardRoute = StudioBusinessCardRouteImport.update({ id: '/studio/business-card', path: '/studio/business-card', getParentRoute: () => rootRouteImport } as any)
 const ApiStudioAdminRoute = ApiStudioAdminRouteImport.update({ id: '/api/studio/admin', path: '/api/studio/admin', getParentRoute: () => rootRouteImport } as any)
+const ApiStudioCardRoute = ApiStudioCardRouteImport.update({ id: '/api/studio/card', path: '/api/studio/card', getParentRoute: () => rootRouteImport } as any)
 const ApiStudioBackgroundRoute = ApiStudioBackgroundRouteImport.update({ id: '/api/studio/background', path: '/api/studio/background', getParentRoute: () => rootRouteImport } as any)
 const StudioBackgroundRoute = StudioBackgroundRouteImport.update({ id: '/studio/background', path: '/studio/background', getParentRoute: () => rootRouteImport } as any)
 const ApiStudioCreativeRoute = ApiStudioCreativeRouteImport.update({ id: '/api/studio/creative', path: '/api/studio/creative', getParentRoute: () => rootRouteImport } as any)
 const ApiStudioPublishRoute = ApiStudioPublishRouteImport.update({ id: '/api/studio/publish', path: '/api/studio/publish', getParentRoute: () => rootRouteImport } as any)
 const ApiStudioVcardRoute = ApiStudioVcardRouteImport.update({ id: '/api/studio/vcard', path: '/api/studio/vcard', getParentRoute: () => rootRouteImport } as any)
 const ApiStudioEmailRoute = ApiStudioEmailRouteImport.update({ id: '/api/studio/email', path: '/api/studio/email', getParentRoute: () => rootRouteImport } as any)
+const ApiStudioPublicCardRoute = ApiStudioPublicCardRouteImport.update({ id: '/api/studio/public-card', path: '/api/studio/public-card', getParentRoute: () => rootRouteImport } as any)
 const CardTokenRoute = CardTokenRouteImport.update({ id: '/card/$token', path: '/card/$token', getParentRoute: () => rootRouteImport } as any)
 const StudioIdentityRoute = StudioIdentityRouteImport.update({ id: '/studio/identity', path: '/studio/identity', getParentRoute: () => rootRouteImport } as any)
 
@@ -77,6 +85,8 @@ export interface FileRoutesByFullPath {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/portfolio-projects': typeof ApiPortfolioProjectsRoute
+  '/api/portfolio-search': typeof ApiPortfolioSearchRoute
   '/i/$token': typeof ITokenRoute
   '/portfolio': typeof PortfolioRoute
   '/portfolio/$slug': typeof PortfolioSlugRoute
@@ -85,12 +95,14 @@ export interface FileRoutesByFullPath {
   '/studio': typeof StudioRoute
   '/studio/business-card': typeof StudioBusinessCardRoute
   '/api/studio/admin': typeof ApiStudioAdminRoute
+  '/api/studio/card': typeof ApiStudioCardRoute
   '/api/studio/background': typeof ApiStudioBackgroundRoute
   '/studio/background': typeof StudioBackgroundRoute
   '/api/studio/creative': typeof ApiStudioCreativeRoute
   '/api/studio/publish': typeof ApiStudioPublishRoute
   '/api/studio/vcard': typeof ApiStudioVcardRoute
   '/api/studio/email': typeof ApiStudioEmailRoute
+  '/api/studio/public-card': typeof ApiStudioPublicCardRoute
   '/card/$token': typeof CardTokenRoute
   '/studio/identity': typeof StudioIdentityRoute
 }
@@ -106,6 +118,8 @@ export interface FileRoutesByTo {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/portfolio-projects': typeof ApiPortfolioProjectsRoute
+  '/api/portfolio-search': typeof ApiPortfolioSearchRoute
   '/i/$token': typeof ITokenRoute
   '/portfolio': typeof PortfolioRoute
   '/portfolio/$slug': typeof PortfolioSlugRoute
@@ -137,6 +151,8 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/api/chat'
+    | '/api/portfolio-projects'
+    | '/api/portfolio-search'
     | '/i/$token'
     | '/portfolio'
     | '/portfolio/$slug'
@@ -145,12 +161,16 @@ export interface FileRouteTypes {
     | '/studio'
     | '/studio/business-card'
     | '/api/studio/admin'
+    | '/api/studio/card'
+    | '/api/studio/card'
     | '/api/studio/background'
     | '/studio/background'
     | '/api/studio/creative'
     | '/api/studio/publish'
     | '/api/studio/vcard'
     | '/api/studio/email'
+    | '/api/studio/public-card'
+    | '/api/studio/public-card'
     | '/card/$token'
     | '/studio/identity'
   fileRoutesByTo: FileRoutesByTo
@@ -229,6 +249,8 @@ declare module '@tanstack/react-router' {
     '/.mcp/list-tools': { id: '/.mcp/list-tools'; path: '/.mcp/list-tools'; fullPath: '/.mcp/list-tools'; preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport; parentRoute: typeof rootRouteImport }
     '/.well-known/oauth-protected-resource': { id: '/.well-known/oauth-protected-resource'; path: '/.well-known/oauth-protected-resource'; fullPath: '/.well-known/oauth-protected-resource'; preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport; parentRoute: typeof rootRouteImport }
     '/api/chat': { id: '/api/chat'; path: '/api/chat'; fullPath: '/api/chat'; preLoaderRoute: typeof ApiChatRouteImport; parentRoute: typeof rootRouteImport }
+    '/api/portfolio-projects': { id: '/api/portfolio-projects'; path: '/api/portfolio-projects'; fullPath: '/api/portfolio-projects'; preLoaderRoute: typeof ApiPortfolioProjectsRouteImport; parentRoute: typeof rootRouteImport }
+    '/api/portfolio-search': { id: '/api/portfolio-search'; path: '/api/portfolio-search'; fullPath: '/api/portfolio-search'; preLoaderRoute: typeof ApiPortfolioSearchRouteImport; parentRoute: typeof rootRouteImport }
     '/i/$token': { id: '/i/$token'; path: '/i/$token'; fullPath: '/i/$token'; preLoaderRoute: typeof ITokenRouteImport; parentRoute: typeof rootRouteImport }
     '/portfolio': { id: '/portfolio'; path: '/portfolio'; fullPath: '/portfolio'; preLoaderRoute: typeof PortfolioRouteImport; parentRoute: typeof rootRouteImport }
     '/portfolio/': { id: '/portfolio/'; path: '/portfolio'; fullPath: '/portfolio/'; preLoaderRoute: typeof PortfolioIndexRouteImport; parentRoute: typeof rootRouteImport }
@@ -237,12 +259,14 @@ declare module '@tanstack/react-router' {
     '/studio': { id: '/studio'; path: '/studio'; fullPath: '/studio'; preLoaderRoute: typeof StudioRouteImport; parentRoute: typeof rootRouteImport }
     '/studio/business-card': { id: '/studio/business-card'; path: '/studio/business-card'; fullPath: '/studio/business-card'; preLoaderRoute: typeof StudioBusinessCardRouteImport; parentRoute: typeof rootRouteImport }
     '/api/studio/admin': { id: '/api/studio/admin'; path: '/api/studio/admin'; fullPath: '/api/studio/admin'; preLoaderRoute: typeof ApiStudioAdminRouteImport; parentRoute: typeof rootRouteImport }
+    '/api/studio/card': { id: '/api/studio/card'; path: '/api/studio/card'; fullPath: '/api/studio/card'; preLoaderRoute: typeof ApiStudioCardRouteImport; parentRoute: typeof rootRouteImport }
     '/api/studio/background': { id: '/api/studio/background'; path: '/api/studio/background'; fullPath: '/api/studio/background'; preLoaderRoute: typeof ApiStudioBackgroundRouteImport; parentRoute: typeof rootRouteImport }
     '/studio/background': { id: '/studio/background'; path: '/studio/background'; fullPath: '/studio/background'; preLoaderRoute: typeof StudioBackgroundRouteImport; parentRoute: typeof rootRouteImport }
     '/api/studio/creative': { id: '/api/studio/creative'; path: '/api/studio/creative'; fullPath: '/api/studio/creative'; preLoaderRoute: typeof ApiStudioCreativeRouteImport; parentRoute: typeof rootRouteImport }
     '/api/studio/publish': { id: '/api/studio/publish'; path: '/api/studio/publish'; fullPath: '/api/studio/publish'; preLoaderRoute: typeof ApiStudioPublishRouteImport; parentRoute: typeof rootRouteImport }
     '/api/studio/vcard': { id: '/api/studio/vcard'; path: '/api/studio/vcard'; fullPath: '/api/studio/vcard'; preLoaderRoute: typeof ApiStudioVcardRouteImport; parentRoute: typeof rootRouteImport }
     '/api/studio/email': { id: '/api/studio/email'; path: '/api/studio/email'; fullPath: '/api/studio/email'; preLoaderRoute: typeof ApiStudioEmailRouteImport; parentRoute: typeof rootRouteImport }
+    '/api/studio/public-card': { id: '/api/studio/public-card'; path: '/api/studio/public-card'; fullPath: '/api/studio/public-card'; preLoaderRoute: typeof ApiStudioPublicCardRouteImport; parentRoute: typeof rootRouteImport }
     '/card/$token': { id: '/card/$token'; path: '/card/$token'; fullPath: '/card/$token'; preLoaderRoute: typeof CardTokenRouteImport; parentRoute: typeof rootRouteImport }
     '/studio/identity': { id: '/studio/identity'; path: '/studio/identity'; fullPath: '/studio/identity'; preLoaderRoute: typeof StudioIdentityRouteImport; parentRoute: typeof rootRouteImport }
   }
@@ -260,6 +284,8 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute,
   ApiChatRoute,
+  ApiPortfolioProjectsRoute,
+  ApiPortfolioSearchRoute,
   ITokenRoute,
   PortfolioRoute,
   PortfolioSlugRoute,
@@ -268,12 +294,14 @@ const rootRouteChildren: RootRouteChildren = {
   StudioRoute,
   StudioBusinessCardRoute,
   ApiStudioAdminRoute,
+  ApiStudioCardRoute,
   ApiStudioBackgroundRoute,
   StudioBackgroundRoute,
   ApiStudioCreativeRoute,
   ApiStudioPublishRoute,
   ApiStudioVcardRoute,
   ApiStudioEmailRoute,
+  ApiStudioPublicCardRoute,
   CardTokenRoute,
   StudioIdentityRoute,
 }
