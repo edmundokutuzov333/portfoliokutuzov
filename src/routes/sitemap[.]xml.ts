@@ -3,7 +3,7 @@ import { DEFAULT_SUPABASE_PUBLISHABLE_KEY, DEFAULT_SUPABASE_URL } from "@/config
 import { resolvePublicSiteUrl } from "@/config/server";
 
 const STATIC_PATHS = ["/", "/portfolio", "/services", "/credentials", "/contact", "/studio", "/studio/identity"] as const;
-const FALLBACK_ORIGIN = "https://portfoliokutuzov-omega.vercel.app";
+const FALLBACK_ORIGIN = "https://edmundokutuzov.art";
 function origin(value: string) { try { return new URL(value).origin; } catch { return FALLBACK_ORIGIN; } }
 function escapeXml(value: string) { return value.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" })[c]!); }
 async function fetchProjectSlugs() {
