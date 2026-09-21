@@ -87,6 +87,7 @@ export function StudioConstructionSignal() {
       onPointerLeave={handlePointerLeave}
       className="relative mx-auto aspect-square w-full max-w-[640px] touch-pan-y select-none [perspective:1200px]"
       aria-hidden="true"
+      data-testid="studio-construction-signal"
     >
       <motion.div
         style={{ rotateX, rotateY }}
