@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createFileRoute } from "@tanstack/react-router";
+import { studioUnavailableResponse } from "@/lib/studio/public-access";
 import { publicConfig } from "@/config/public";
 import { supabaseAdmin } from "@/integrations/supabase/server/index.server";
 import { buildVCard, normalizeWebsite } from "@/lib/studio/identity-format";
@@ -8,6 +9,7 @@ const MAX_TOKEN = 128;
 
 export const Route = createFileRoute("/api/studio/vcard")({
   server: { handlers: { GET: async ({ request }) => {
+    if (!import.meta.env.VITE_STUDIO_PUBLIC_ENABLED || import.meta.env.VITE_STUDIO_PUBLIC_ENABLED !== "true") return studioUnavailableResponse();
     const token = new URL(request.url).searchParams.get("token")?.trim().slice(0, MAX_TOKEN) || "";
     if (!token) return new Response("Missing token", { status: 400 });
     const { data, error } = await (supabaseAdmin as any)
