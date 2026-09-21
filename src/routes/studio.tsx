@@ -33,10 +33,10 @@ function StudioLanding() {
             Kutuzov Studio
           </p>
 
-          <h1 className="display mt-4 max-w-4xl text-[clamp(3.2rem,7vw,7.6rem)] font-semibold leading-[0.9] tracking-[-0.055em] text-[var(--color-text-primary)]">
-            Something is
+          <h1 className="display mt-4 max-w-4xl text-[clamp(2.65rem,7vw,7.6rem)] font-semibold leading-[0.9] tracking-[-0.055em] text-[var(--color-text-primary)]">
+            <span className="whitespace-nowrap">Something is</span>
             <br />
-            taking shape.
+            <span className="whitespace-nowrap">taking shape.</span>
           </h1>
 
           <p className="mt-7 max-w-xl text-base leading-relaxed text-[var(--color-text-secondary)] sm:text-lg">
@@ -65,7 +65,6 @@ function StudioLanding() {
               Return home
             </Link>
           </div>
-
         </div>
 
         <div className="relative z-0 flex items-center justify-center lg:min-h-[720px]">
