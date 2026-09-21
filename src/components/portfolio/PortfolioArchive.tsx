@@ -40,8 +40,21 @@ function ProjectCard({ project, index }: { project: DbProject; index: number }) 
               className="transition-transform duration-[1.2s] ease-[0.16,1,0.3,1] group-hover:scale-[1.025]"
             />
           ) : (
-            <div className="flex aspect-[4/3] w-full items-center justify-center text-[var(--color-text-muted)] mono text-xs">
-              No artwork
+            <div
+              className="relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-[#02050c] via-[#07182b] to-[#103f70]"
+              aria-label={project.title}
+              role="img"
+            >
+              <div className="absolute inset-0 opacity-20 [background-image:linear-gradient(rgba(255,255,255,.09)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.09)_1px,transparent_1px)] [background-size:48px_48px]" />
+              <div className="absolute right-8 top-8 h-32 w-32 rounded-full border border-white/15" />
+              <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
+                <div className="mono mb-2 text-[10px] uppercase tracking-[0.2em] text-sky-200/80">
+                  {project.category}{project.year ? ` · ${project.year}` : ""}
+                </div>
+                <div className="display max-w-[85%] text-3xl leading-[1.05] tracking-[-0.03em] text-white md:text-5xl">
+                  {project.title}
+                </div>
+              </div>
             </div>
           )}
 
