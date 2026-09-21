@@ -16,7 +16,8 @@ test("Digital identity provides public card, opaque token, QR, vCard and share",
   assert.match(qr, /createDataURL/);
   assert.match(publicCard, /navigator\.share/);
   assert.match(publicCard, /downloadVCard/);
-  assert.match(publicCard, /studio_cards/);
+  assert.match(publicCard, /\/api\/studio\/public-card/);
+  assert.match(publicCard, /isStudioPublicEnabled/);
 });
 
 test("Publishing is server-side and never exposes session ownership", async () => {

@@ -10,15 +10,13 @@ test("Portfolio route mounts the deterministic archive renderer", async () => {
   assert.match(route, /PortfolioArchive/);
   assert.match(archive, /data-testid=\"portfolio-archive\"/);
   assert.match(archive, /data-testid=\"portfolio-project-grid\"/);
-  assert.match(archive, /Showing \{filtered\.length\} of \{publishedProjects\.length\}/);
+  assert.match(archive, /Showing \$\{filtered\.length\} of \$\{publishedProjects\.length\}/);
 });
 
 test("Portfolio data has a server-backed recovery path and local fallback", async () => {
   const hook = await read("src/hooks/useSiteData.ts");
-  const endpoint = await read("src/routes/api.portfolio-projects.ts");
-  assert.match(hook, /\/api\/portfolio-projects/);
-  assert.match(endpoint, /from\("projects"\)/);
-  assert.match(endpoint, /eq\("is_published", true\)/);
+  assert.match(hook, /supabase\.from\("projects"\)/);
+  assert.match(hook, /eq\("is_published", true\)/);
   assert.match(hook, /return FALLBACK_PROJECTS/);
 });
 

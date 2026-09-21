@@ -40,6 +40,10 @@ const labels: Record<string, { en: string; pt: string }> = {
 const clone = <T,>(value: T): T => structuredClone(value);
 const sameDocument = (a: StudioDesignDocument, b: StudioDesignDocument) => JSON.stringify(a) === JSON.stringify(b);
 const snap = (value: number, step = 0.5) => Math.round(value / step) * step;
+const getServerDraftMeta = () => {
+  const meta = getStudioDraftMeta();
+  return { draftToken: meta.draftToken, revision: meta.revision };
+};
 
 function readAsDataUrl(file: File) {
   return new Promise<string>((resolve, reject) => {
@@ -235,7 +239,7 @@ export function BusinessCardEditor() {
         const snapshot = { ...valuesRef.current, design: clone(designRef.current) };
         try {
           const local = saveDraftLocally({ sessionId, ...snapshot });
-          await saveStudioCard({ sessionId, ...snapshot, id: local?.id, ...getStudioDraftMeta() });
+          await saveStudioCard({ sessionId, ...snapshot, id: local?.id, ...getServerDraftMeta() });
           if (targetVersion === changeVersionRef.current) {
             dirtyRef.current = false;
             setSaveState("saved");
@@ -257,7 +261,7 @@ export function BusinessCardEditor() {
     if (dirtyRef.current) {
       const snapshot = { ...valuesRef.current, design: clone(designRef.current) };
       saveQueueRef.current = saveQueueRef.current.then(async () => {
-        try { const local = saveDraftLocally({ sessionId, ...snapshot }); await saveStudioCard({ sessionId, ...snapshot, id: local?.id, ...getStudioDraftMeta() }); } catch { /* local draft is the final fallback during unmount */ }
+        try { const local = saveDraftLocally({ sessionId, ...snapshot }); await saveStudioCard({ sessionId, ...snapshot, id: local?.id, ...getServerDraftMeta() }); } catch { /* local draft is the final fallback during unmount */ }
       });
     }
   }, [sessionId]);
@@ -375,7 +379,7 @@ export function BusinessCardEditor() {
     saveQueueRef.current = saveQueueRef.current.then(async () => {
       try {
         const local = saveDraftLocally({ sessionId, ...snapshot });
-        await saveStudioCard({ sessionId, ...snapshot, id: local?.id, ...getStudioDraftMeta() });
+        await saveStudioCard({ sessionId, ...snapshot, id: local?.id, ...getServerDraftMeta() });
         dirtyRef.current = false;
         setSaveState("saved");
         setNotice(pt ? "Rascunho sincronizado com o servidor." : "Draft synced with the server.");

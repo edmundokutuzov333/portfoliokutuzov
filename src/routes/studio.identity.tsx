@@ -1,4 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { isStudioPublicEnabled } from "@/lib/studio/public-access";
 import { useEffect, useMemo, useState } from "react";
 import { useSiteLocale } from "@/lib/site-locale";
 import { loadDraftLocally, createStudioDesign } from "@/lib/studio/design-document";
@@ -8,6 +9,9 @@ import { DigitalIdentityPanel } from "@/components/studio/DigitalIdentityPanel";
 import type { StudioDesignDocument } from "@/lib/studio/types";
 
 export const Route = createFileRoute("/studio/identity")({
+  beforeLoad: () => {
+    if (!isStudioPublicEnabled()) throw redirect({ to: "/studio" });
+  },
   head: () => ({ meta: [{ title: "Digital Identity - Kutuzov Studio" }, { name: "description", content: "Publish and share a Kutuzov Studio digital business card." }] }),
   component: DigitalIdentityWorkspace,
 });

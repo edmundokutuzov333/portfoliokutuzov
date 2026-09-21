@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createFileRoute } from "@tanstack/react-router";
+import { studioUnavailableResponse } from "@/lib/studio/public-access";
 import { createClient } from "@supabase/supabase-js";
 import { getCorsHeaders, isCorsOriginAllowed } from "@/config/server";
 import { publicConfig } from "@/config/public";
@@ -29,8 +30,9 @@ async function authenticatedAdmin(request: Request) {
   return { ok: true as const, client };
 }
 export const Route = createFileRoute("/api/studio/admin")({ server: { handlers: {
-  OPTIONS: async ({ request }) => { const requestId = getRequestId(request); return new Response(null, { status: isCorsOriginAllowed(request) ? 204 : 403, headers: headers(request, requestId) }); },
+  OPTIONS: async ({ request }) => { if (!import.meta.env.VITE_STUDIO_PUBLIC_ENABLED || import.meta.env.VITE_STUDIO_PUBLIC_ENABLED !== "true") return studioUnavailableResponse(); const requestId = getRequestId(request); return new Response(null, { status: isCorsOriginAllowed(request) ? 204 : 403, headers: headers(request, requestId) }); },
   POST: async ({ request }) => {
+    if (!import.meta.env.VITE_STUDIO_PUBLIC_ENABLED || import.meta.env.VITE_STUDIO_PUBLIC_ENABLED !== "true") return studioUnavailableResponse();
     const requestId = getRequestId(request); if (!isCorsOriginAllowed(request)) return json(request, requestId, 403, { error: "ORIGIN_NOT_ALLOWED" });
     const length = Number(request.headers.get("content-length") || 0); if (!Number.isFinite(length) || length < 0 || length > MAX_BODY_BYTES) return json(request, requestId, 413, { error: "REQUEST_TOO_LARGE" });
     const rate = checkRateLimit(clientKey(request)); if (!rate.allowed) return json(request, requestId, 429, { error: "RATE_LIMITED" }, { "Retry-After": String(rate.retryAfter) });
