@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createFileRoute } from "@tanstack/react-router";
+import { studioUnavailableResponse } from "@/lib/studio/public-access";
 import { getCorsHeaders, isCorsOriginAllowed } from "@/config/server";
 import { getRequestId, logObservability } from "@/lib/observability";
 import { supabaseAdmin } from "@/integrations/supabase/server/index.server";
@@ -17,6 +18,7 @@ function response(request: Request, requestId: string, status: number, body: unk
 export const Route = createFileRoute("/api/studio/public-card")({
   server: { handlers: {
     GET: async ({ request }) => {
+      if (!import.meta.env.VITE_STUDIO_PUBLIC_ENABLED || import.meta.env.VITE_STUDIO_PUBLIC_ENABLED !== "true") return studioUnavailableResponse();
       const requestId = getRequestId(request);
       if (!isCorsOriginAllowed(request)) return response(request, requestId, 403, { error: "ORIGIN_NOT_ALLOWED" });
       const token = new URL(request.url).searchParams.get("token")?.trim().slice(0, MAX_TOKEN) || "";
