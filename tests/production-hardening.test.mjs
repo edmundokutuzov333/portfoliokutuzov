@@ -78,8 +78,10 @@ test("Studio remains available as a public construction page while unfinished su
   assert.match(signal, /framer-motion/);
   assert.match(signal, /preserve-3d/);
   assert.match(signal, /studioSignalArchClip/);
-  assert.match(privateAccess, /VITE_STUDIO_PUBLIC_ENABLED/);
-  assert.match(privateAccess, /=== "true"/);
+  const publicConfig = await read("src/config/public.ts");
+  assert.match(publicConfig, /VITE_STUDIO_PUBLIC_ENABLED/);
+  assert.match(publicConfig, /=== "true"/);
+  assert.match(privateAccess, /studioPublicEnabled/);
   for (const source of [background, businessCard, identity, card]) {
     assert.match(source, /isStudioPublicEnabled/);
     assert.match(source, /redirect\(\{ to: "\/studio" \}\)/);
