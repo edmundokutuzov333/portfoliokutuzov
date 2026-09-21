@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-export type SiteLocale = "en";
+export type SiteLocale = "en" | "pt-PT";
 
 const DEFAULT_LOCALE: SiteLocale = "en";
 const listeners = new Set<(locale: SiteLocale) => void>();
