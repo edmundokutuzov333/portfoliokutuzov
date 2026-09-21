@@ -4,7 +4,7 @@ export const SOCIAL_IMAGE =
   "https://storage.googleapis.com/gpt-engineer-file-uploads/pHZRYs3DGCdOPGZzeAdkZH1MMif2/social-images/social-1778488549600-EKLOGO.webp";
 
 export function canonicalUrl(path = "/") {
-  const normalized = path === "/" ? "/" : `/${path.replace(/^\\/+|\\/+$/g, "")}`;
+  const normalized = path === "/" ? "/" : `/${path.replace(/^\/+|\/+$/g, "")}`;
   return `${SITE_ORIGIN}${normalized}`;
 }
 
