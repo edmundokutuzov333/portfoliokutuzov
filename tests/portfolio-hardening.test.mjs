@@ -26,12 +26,11 @@ test("canonical origin uses the apex Edmundo Kutuzov domain", async () => {
   assert.doesNotMatch(sitemap, /"\/studio\/identity"/);
 });
 
-test("www host redirects to the canonical apex host", async () => {
+test("application config does not introduce a conflicting host redirect", async () => {
   const config = await read("vercel.json");
-  assert.match(config, /"type": "host"/);
-  assert.match(config, /"value": "www\.edmundokutuzov\.art"/);
-  assert.match(config, /"destination": "https:\/\/edmundokutuzov\.art\/\$1"/);
-  assert.match(config, /"permanent": true/);
+  assert.doesNotMatch(config, /"type": "host"/);
+  assert.doesNotMatch(config, /"value": "www\.edmundokutuzov\.art"/);
+  assert.doesNotMatch(config, /"destination": "https:\/\/edmundokutuzov\.art\/\$1"/);
 });
 
 test("security headers include CSP and existing protections", async () => {
