@@ -57,7 +57,7 @@ test("CSP covers the actual first-party and required external runtime dependenci
     "object-src 'none'",
     "frame-ancestors 'none'",
   ]) {
-    assert.match(vercel, new RegExp(source.replace(/[.*+?^$()|[\]\\]/g, "\\$&")));
+    assert.ok(vercel.includes(source), `CSP is missing ${source}`);
   }
 });
 
