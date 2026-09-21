@@ -18,3 +18,6 @@ Browser
 ```
 
 Phase 2 validation is intentionally gated through GitHub CI and Lighthouse before merge.
+## Production recovery
+
+Production baseline restored to the pre-hardening application revision on 2026-09-21 after the hardening merge introduced a production regression.
