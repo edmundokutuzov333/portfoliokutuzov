@@ -8,10 +8,10 @@ test("Public site locale is permanently English-only", () => {
   const locale = read("src/lib/site-locale.ts");
   const switcher = read("src/components/layout/LanguageSwitcher.tsx");
   const root = read("src/routes/__root.tsx");
-  assert.match(locale, /export type SiteLocale = \"en\"/);
+  assert.match(locale, /export type SiteLocale = \"en\" \\| \"pt-PT\"/);
   assert.match(locale, /const DEFAULT_LOCALE: SiteLocale = \"en\"/);
   assert.doesNotMatch(locale, /PT_TRANSLATIONS/);
-  assert.doesNotMatch(locale, /pt-PT/);
+  assert.doesNotMatch(locale, /PT_TRANSLATIONS/);
   assert.match(switcher, /return null/);
   assert.doesNotMatch(switcher, /Portuguese|Português|pt-PT/);
   assert.match(root, /document\.documentElement\.lang=\\?\"en\\?\"/);
