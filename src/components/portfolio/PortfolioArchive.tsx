@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { ArrowUpRight, Layers, Play, Search, X } from "lucide-react";
 import clsx from "clsx";
 import { useProjects } from "@/hooks/useSiteData";
-import { getProjectVisualUrl, PROJECT_CATEGORIES, normalizeCategory, type DbProject } from "@/lib/cms";
+import { PROJECT_CATEGORIES, normalizeCategory, type DbProject } from "@/lib/cms";
 import type { PortfolioSearch } from "@/routes/portfolio.index";
 import { ContextualCursor } from "@/components/portfolio/ContextualCursor";
 
@@ -27,9 +27,9 @@ function ProjectCard({ project, index }: { project: DbProject; index: number }) 
         className="flex flex-col gap-4 rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent-hover)]"
       >
         <div className="relative w-full overflow-hidden border border-[var(--color-border-subtle)] bg-[var(--color-surface)] transition-colors duration-500 group-hover:border-[var(--color-border-base)]">
-          {project.title ? (
+          {project.cover_url ? (
             <img
-              src={getProjectVisualUrl(project)}
+              src={project.cover_url}
               alt={project.title}
               width={project.cover_width ?? undefined}
               height={project.cover_height ?? undefined}
@@ -39,6 +39,23 @@ function ProjectCard({ project, index }: { project: DbProject; index: number }) 
               style={{ display: "block", width: "100%", height: "auto", objectFit: "contain" }}
               className="transition-transform duration-[1.2s] ease-[0.16,1,0.3,1] group-hover:scale-[1.025]"
             />
+          ) : (
+            <div
+              className="relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-[#02050c] via-[#07182b] to-[#103f70]"
+              aria-label={project.title}
+              role="img"
+            >
+              <div className="absolute inset-0 opacity-20 [background-image:linear-gradient(rgba(255,255,255,.09)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.09)_1px,transparent_1px)] [background-size:48px_48px]" />
+              <div className="absolute right-8 top-8 h-32 w-32 rounded-full border border-white/15" />
+              <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
+                <div className="mono mb-2 text-[10px] uppercase tracking-[0.2em] text-sky-200/80">
+                  {project.category}{project.year ? ` · ${project.year}` : ""}
+                </div>
+                <div className="display max-w-[85%] text-3xl leading-[1.05] tracking-[-0.03em] text-white md:text-5xl">
+                  {project.title}
+                </div>
+              </div>
+            </div>
           )}
 
           <div className="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center opacity-0 translate-y-2 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
