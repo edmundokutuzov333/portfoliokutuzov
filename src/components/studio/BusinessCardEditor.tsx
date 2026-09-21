@@ -261,7 +261,7 @@ export function BusinessCardEditor() {
     if (dirtyRef.current) {
       const snapshot = { ...valuesRef.current, design: clone(designRef.current) };
       saveQueueRef.current = saveQueueRef.current.then(async () => {
-        try { const local = saveDraftLocally({ sessionId, ...snapshot }); await saveStudioCard({ sessionId, ...snapshot, id: local?.id, ...getStudioDraftMeta() }); } catch { /* local draft is the final fallback during unmount */ }
+        try { const local = saveDraftLocally({ sessionId, ...snapshot }); await saveStudioCard({ sessionId, ...snapshot, id: local?.id, ...getServerDraftMeta() }); } catch { /* local draft is the final fallback during unmount */ }
       });
     }
   }, [sessionId]);
@@ -379,7 +379,7 @@ export function BusinessCardEditor() {
     saveQueueRef.current = saveQueueRef.current.then(async () => {
       try {
         const local = saveDraftLocally({ sessionId, ...snapshot });
-        await saveStudioCard({ sessionId, ...snapshot, id: local?.id, ...getStudioDraftMeta() });
+        await saveStudioCard({ sessionId, ...snapshot, id: local?.id, ...getServerDraftMeta() });
         dirtyRef.current = false;
         setSaveState("saved");
         setNotice(pt ? "Rascunho sincronizado com o servidor." : "Draft synced with the server.");
