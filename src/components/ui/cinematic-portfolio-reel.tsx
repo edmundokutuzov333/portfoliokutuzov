@@ -10,7 +10,7 @@ import {
 } from "framer-motion";
 import { Pause, Play } from "lucide-react";
 import { useProjects } from "@/hooks/useSiteData";
-import { type DbProject } from "@/lib/cms";
+import { getProjectVisualUrl, type DbProject } from "@/lib/cms";
 
 interface CarouselConfig {
   distanceDivisor: number;
@@ -33,7 +33,7 @@ const orderedProjects = (projects: DbProject[]) =>
 
 export function CinematicPortfolioReel() {
   const { data } = useProjects();
-  const projects = React.useMemo(() => orderedProjects((data ?? []).filter((project) => Boolean(project.cover_url))), [data]);
+  const projects = React.useMemo(() => orderedProjects(data ?? []), [data]);
   if (!projects.length) return null;
 
   return (
@@ -142,7 +142,7 @@ function CarouselCard({ slide, index, total, progress, config }: { slide: DbProj
   return (
     <motion.div style={{ x, y, rotate, scale, opacity, zIndex }} aria-hidden="true" className="absolute aspect-[4/5] h-[85%] w-auto overflow-hidden rounded-xl border border-[var(--color-border-subtle)] bg-black shadow-2xl">
       <div className="relative h-full w-full bg-[#050505]">
-        <img src={slide.cover_url!} alt="" width={slide.cover_width ?? undefined} height={slide.cover_height ?? undefined} loading={index < 3 ? "eager" : "lazy"} fetchPriority={index === 0 ? "high" : "auto"} decoding="async" draggable={false} className="h-full w-full object-contain object-center" />
+        <img src={getProjectVisualUrl(slide)} alt="" width={slide.cover_width ?? undefined} height={slide.cover_height ?? undefined} loading={index < 3 ? "eager" : "lazy"} fetchPriority={index === 0 ? "high" : "auto"} decoding="async" draggable={false} className="h-full w-full object-contain object-center" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
         <div className="absolute bottom-6 left-6 right-6">
           <div className="mono mb-2 text-[10px] uppercase tracking-[.2em] text-white/70">{slide.category}{slide.year ? ` · ${slide.year}` : ""}</div>
