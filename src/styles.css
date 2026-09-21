@@ -183,3 +183,87 @@ a {
 .animate-marquee {
   animation: marquee var(--duration, 40s) linear infinite;
 }
+
+/* Kutuzov Studio construction signal */
+.studio-signal-orbit {
+  transform-style: preserve-3d;
+  animation: studio-signal-orbit 16s linear infinite;
+}
+.studio-signal-orbit-reverse {
+  transform-style: preserve-3d;
+  animation: studio-signal-orbit-reverse 22s linear infinite;
+}
+.studio-signal-particle {
+  opacity: 0;
+  animation-name: studio-signal-particle;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+}
+.studio-signal-node {
+  opacity: 0.28;
+  animation: studio-signal-node 2.4s ease-in-out infinite;
+}
+.studio-signal-network-line {
+  stroke-dasharray: 18 90;
+  stroke-dashoffset: 90;
+  animation: studio-signal-network-line 4.8s linear infinite;
+}
+.studio-signal-pulse-line {
+  stroke-dasharray: 4 20;
+  stroke-dashoffset: 0;
+  animation: studio-signal-pulse-line 2.8s linear infinite;
+}
+.studio-signal-scan {
+  animation: studio-signal-scan 4.4s ease-in-out infinite;
+}
+.studio-signal-grid {
+  transform-origin: center;
+  animation: studio-signal-grid 8s ease-in-out infinite;
+}
+
+@keyframes studio-signal-orbit {
+  from { transform: translateZ(-40px) rotate(0deg); }
+  to { transform: translateZ(-40px) rotate(360deg); }
+}
+@keyframes studio-signal-orbit-reverse {
+  from { transform: translateZ(-22px) rotate(360deg); }
+  to { transform: translateZ(-22px) rotate(0deg); }
+}
+@keyframes studio-signal-particle {
+  0%, 100% { opacity: 0; transform: scale(0.6) translate3d(0, 5px, 0); }
+  35%, 65% { opacity: 0.9; transform: scale(1) translate3d(0, 0, 0); }
+}
+@keyframes studio-signal-node {
+  0%, 100% { opacity: 0.2; transform: scale(0.7); }
+  45% { opacity: 1; transform: scale(1.15); }
+}
+@keyframes studio-signal-network-line {
+  0% { stroke-dashoffset: 90; opacity: 0.1; }
+  45% { opacity: 0.85; }
+  100% { stroke-dashoffset: -108; opacity: 0.1; }
+}
+@keyframes studio-signal-pulse-line {
+  to { stroke-dashoffset: -48; }
+}
+@keyframes studio-signal-scan {
+  0%, 12% { transform: translateY(-8px); opacity: 0; }
+  28%, 74% { opacity: 0.72; }
+  92%, 100% { transform: translateY(346px); opacity: 0; }
+}
+@keyframes studio-signal-grid {
+  0%, 100% { opacity: 0.18; }
+  50% { opacity: 0.34; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .studio-signal-orbit,
+  .studio-signal-orbit-reverse,
+  .studio-signal-particle,
+  .studio-signal-node,
+  .studio-signal-network-line,
+  .studio-signal-pulse-line,
+  .studio-signal-scan,
+  .studio-signal-grid {
+    animation: none !important;
+  }
+}

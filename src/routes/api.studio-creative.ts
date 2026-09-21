@@ -4,6 +4,7 @@ import { getRequestId, logObservability } from "@/lib/observability";
 import { runCreativeEngine } from "@/lib/studio/ai/creative-engine";
 import { CREATIVE_PROVIDER_VALUES, type CreativeEngineRequest } from "@/lib/studio/ai/creative-types";
 import { trackStudioEvent } from "@/lib/studio/analytics.server";
+import { STUDIO_PUBLIC_ENABLED } from "@/lib/studio/public-launch";
 
 const WINDOW_MS = 5 * 60 * 1000;
 const MAX_REQUESTS = 12;
@@ -21,9 +22,10 @@ export const Route = createFileRoute("/api/studio/creative")({
   server: {
     handlers: {
       OPTIONS: async ({ request }) => { const requestId = getRequestId(request); return new Response(null, { status: isCorsOriginAllowed(request) ? 204 : 403, headers: headers(request, requestId) }); },
-      GET: async ({ request }) => { const requestId = getRequestId(request); if (!isCorsOriginAllowed(request)) return errorResponse(request, requestId, 403, "ORIGIN_NOT_ALLOWED", "This origin is not allowed."); return new Response(JSON.stringify({ status: "healthy", endpoint: "/api/studio/creative", providers: CREATIVE_PROVIDER_VALUES, limits: { maxRequests: MAX_REQUESTS, windowMinutes: 5, maxBodyBytes: MAX_BODY_BYTES }, requestId }), { status: 200, headers: headers(request, requestId, { "Content-Type": "application/json", "Cache-Control": "no-store" }) }); },
+      GET: async ({ request }) => { const requestId = getRequestId(request); if (!STUDIO_PUBLIC_ENABLED) return errorResponse(request, requestId, 404, "STUDIO_UNAVAILABLE", "Kutuzov Studio is currently under construction."); if (!isCorsOriginAllowed(request)) return errorResponse(request, requestId, 403, "ORIGIN_NOT_ALLOWED", "This origin is not allowed."); return new Response(JSON.stringify({ status: "healthy", endpoint: "/api/studio/creative", providers: CREATIVE_PROVIDER_VALUES, limits: { maxRequests: MAX_REQUESTS, windowMinutes: 5, maxBodyBytes: MAX_BODY_BYTES }, requestId }), { status: 200, headers: headers(request, requestId, { "Content-Type": "application/json", "Cache-Control": "no-store" }) }); },
       POST: async ({ request }) => {
         const requestId = getRequestId(request); const startedAt = Date.now();
+        if (!STUDIO_PUBLIC_ENABLED) return errorResponse(request, requestId, 404, "STUDIO_UNAVAILABLE", "Kutuzov Studio is currently under construction.");
         if (!isCorsOriginAllowed(request)) return errorResponse(request, requestId, 403, "ORIGIN_NOT_ALLOWED", "This origin is not allowed.");
         if (!acceptableBody(request)) return errorResponse(request, requestId, 413, "REQUEST_TOO_LARGE", "The creative request payload is too large.");
         const rate = checkRateLimit(clientKey(request)); if (!rate.allowed) return errorResponse(request, requestId, 429, "RATE_LIMITED", "Creative generation rate limit exceeded.", { "Retry-After": String(rate.retryAfter) });

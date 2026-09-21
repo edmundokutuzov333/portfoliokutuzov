@@ -23,6 +23,7 @@ VITE_SUPABASE_PUBLISHABLE_KEY
 VITE_SUPABASE_PROJECT_ID
 VITE_PUBLIC_SITE_URL
 VITE_SITE_URL
+VITE_STUDIO_PUBLIC_ENABLED
 ```
 
 Set server-only variables where the corresponding feature is enabled:
@@ -50,7 +51,7 @@ SITE_URL
 CORS_ALLOWED_ORIGINS
 ```
 
-Never commit `.env` files or server secrets. `VITE_*` values are public by design and must never contain service-role keys.
+Never commit `.env` files or server secrets. `VITE_*` values are public by design and must never contain service-role keys. Keep `VITE_STUDIO_PUBLIC_ENABLED=false` in production until Kutuzov Studio is ready for public launch.
 
 ## Pre-deploy verification
 
@@ -79,6 +80,7 @@ Do not:
 - commit `.vercel`, `.output` or environment files;
 - reintroduce legacy `index.html` or `src/main.tsx` bootstrapping;
 - bypass Supabase Auth for administrative access;
+- enable `VITE_STUDIO_PUBLIC_ENABLED` in production before the Studio release gate is complete;
 - expose server-only keys with a `VITE_` prefix.
 
 ## Runtime model

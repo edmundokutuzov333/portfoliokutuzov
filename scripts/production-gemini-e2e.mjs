@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const baseUrl = (process.env.PRODUCTION_URL || "https://portfoliokutuzov-omega.vercel.app").replace(/\/+$/, "");
+const baseUrl = (process.env.PRODUCTION_URL || "https://edmundokutuzov.art").replace(/\/+$/, "");
 const timeoutMs = Number(process.env.E2E_TIMEOUT_MS || 45_000);
 
 function withTimeout(promise, label) {

@@ -1,4 +1,4 @@
-const DEFAULT_PUBLIC_SITE_URL = "https://portfoliokutuzov-omega.vercel.app";
+const DEFAULT_PUBLIC_SITE_URL = "https://edmundokutuzov.art";
 
 function firstNonEmpty(...values: Array<string | undefined>) {
   return values.find((value) => value && value.trim().length > 0)?.trim();
@@ -22,7 +22,7 @@ export function resolvePublicSiteUrl() {
 export function getAllowedCorsOrigins() {
   const configured = parseOrigins(process.env.CORS_ALLOWED_ORIGINS);
   const siteUrl = resolvePublicSiteUrl().replace(/\/$/, "");
-  const defaults = [siteUrl, DEFAULT_PUBLIC_SITE_URL];
+  const defaults = [siteUrl, DEFAULT_PUBLIC_SITE_URL, "https://www.edmundokutuzov.art"];
   if (process.env.NODE_ENV !== "production") {
     defaults.push(
       "http://localhost:3000",

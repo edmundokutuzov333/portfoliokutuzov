@@ -4,6 +4,7 @@ import { getCorsHeaders, isCorsOriginAllowed } from "@/config/server";
 import { getRequestId, logObservability } from "@/lib/observability";
 import { supabaseAdmin } from "@/integrations/supabase/server/index.server";
 import { sanitizePublicIdentityDesign } from "@/lib/studio/identity-format";
+import { STUDIO_PUBLIC_ENABLED } from "@/lib/studio/public-launch";
 
 const MAX_TOKEN = 128;
 
@@ -18,6 +19,7 @@ export const Route = createFileRoute("/api/studio/public-card")({
   server: { handlers: {
     GET: async ({ request }) => {
       const requestId = getRequestId(request);
+      if (!STUDIO_PUBLIC_ENABLED) return response(request, requestId, 404, { error: "STUDIO_UNAVAILABLE" });
       if (!isCorsOriginAllowed(request)) return response(request, requestId, 403, { error: "ORIGIN_NOT_ALLOWED" });
       const token = new URL(request.url).searchParams.get("token")?.trim().slice(0, MAX_TOKEN) || "";
       if (!token) return response(request, requestId, 400, { error: "TOKEN_REQUIRED" });
