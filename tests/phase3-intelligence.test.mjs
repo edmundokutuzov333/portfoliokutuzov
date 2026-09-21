@@ -28,19 +28,12 @@ test("realtime voice uses constrained ephemeral auth and a selected voice", () =
   assert.match(live, /inputTranscription/);
 });
 
-test("bilingual locale switcher is wired into navigation and uses European Portuguese", () => {
+test("public site locale contract stays English-only", () => {
   const locale = read("src/lib/site-locale.ts");
-  const switcher = read("src/components/layout/LanguageSwitcher.tsx");
   const nav = read("src/components/layout/Navbar.tsx");
-  assert.match(locale, /"en" \| "pt-PT"/);
+  assert.match(locale, /export type SiteLocale = "en"/);
   assert.match(locale, /DEFAULT_LOCALE.*"en"/);
-  assert.match(locale, /WeakMap/);
-  assert.match(locale, /MutationObserver/);
-  assert.match(locale, /TRANSLATION_ENTRIES/);
-  assert.match(switcher, /pt-PT/);
-  assert.match(switcher, /setSiteLocale/);
-  assert.match(nav, /LanguageSwitcher/);
-  assert.match(nav, /Português|Iniciar um projecto/);
+  assert.doesNotMatch(nav, /LanguageSwitcher/);
 });
 
 test("production release gates are present and secret-free", () => {
