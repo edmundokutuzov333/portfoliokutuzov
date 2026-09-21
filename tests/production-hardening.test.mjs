@@ -17,14 +17,13 @@ test("canonical origin is the apex custom domain everywhere in the public SEO su
   }
   assert.match(seo, /SITE_ORIGIN = "https:\/\/edmundokutuzov\.art"/);
   assert.match(robots, /Sitemap: https:\/\/edmundokutuzov\.art\/sitemap\.xml/);
-  assert.match(server, /www\.edmundokutuzov\.art/);
+  assert.match(await read("src/config/server.ts"), /www\.edmundokutuzov\.art/);
 });
 
-test("www hostname is redirected to the canonical apex", async () => {
+test("www hostname is served directly so it cannot fall into a redirect loop", async () => {
   const server = await read("src/server.ts");
-  assert.match(server, /redirectWwwToCanonical/);
-  assert.match(server, /status: 308/);
-  assert.match(server, /url\.hostname = "edmundokutuzov\.art"/);
+  assert.doesNotMatch(server, /redirectWwwToCanonical/);
+  assert.doesNotMatch(server, /status: 308/);
 });
 
 test("Supabase service-role configuration fails closed without placeholders", async () => {
@@ -72,9 +71,14 @@ test("Studio remains available as a public construction page while unfinished su
 
   assert.match(landing, /Something is/);
   assert.match(landing, /taking shape/);
+  assert.match(landing, /whitespace-nowrap/);
   assert.match(landing, /Kutuzov Studio is currently under construction/);
   assert.match(landing, /Explore the portfolio/);
   assert.match(landing, /to="\/portfolio"/);
+  assert.doesNotMatch(landing, /Private construction/);
+  assert.doesNotMatch(landing, /Public surface/);
+  assert.doesNotMatch(landing, /Portfolio first/);
+  assert.doesNotMatch(landing, /Private build/);
   assert.match(signal, /framer-motion/);
   assert.match(signal, /preserve-3d/);
   assert.match(signal, /studioSignalArchClip/);
