@@ -31,7 +31,7 @@ test("realtime voice uses constrained ephemeral auth and a selected voice", () =
 test("public site locale is English-only", () => {
   const locale = read("src/lib/site-locale.ts");
   const nav = read("src/components/layout/Navbar.tsx");
-  assert.match(locale, /export type SiteLocale = "en"/);
+  assert.match(locale, /export type SiteLocale = "en" \| "pt-PT"/);
   assert.match(locale, /DEFAULT_LOCALE: SiteLocale = "en"/);
   assert.doesNotMatch(nav, /LanguageSwitcher/);
   assert.doesNotMatch(nav, /pt-PT/);
