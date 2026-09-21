@@ -9,6 +9,7 @@ import { safeClipboardWrite } from "@/lib/browser-safe";
 import { trackStudioClientEvent } from "@/lib/studio/analytics";
 import { STUDIO_PUBLIC_ENABLED } from "@/lib/studio/public-launch";
 
+// Published cards are backed by the studio_cards data model through the server public-card route.
 export const Route = createFileRoute("/card/$token")({
   beforeLoad: () => {
     if (!STUDIO_PUBLIC_ENABLED) throw redirect({ to: "/studio" });
