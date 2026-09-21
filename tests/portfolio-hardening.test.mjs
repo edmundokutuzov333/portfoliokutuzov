@@ -90,6 +90,8 @@ test("Studio remains private until explicitly launched", async () => {
     "src/routes/api.studio-publish.ts",
     "src/routes/api.studio-email.ts",
     "src/routes/api.studio-vcard.ts",
+    "src/routes/api.studio-card.ts",
+    "src/routes/api.studio-admin.ts",
     "src/routes/api.studio-public-card.ts",
   ]) {
     const source = await read(route);
