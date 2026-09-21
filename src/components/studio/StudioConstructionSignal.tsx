@@ -37,7 +37,7 @@ function buildNetwork() {
   return { points, edges };
 }
 
-const SIGNALS = [0, 60, 120, 180, 240, 300].map((rotation, index) => ({
+const SIGNALS = [60, 120, 180, 240, 300].map((rotation, index) => ({
   rotation,
   index,
 }));
