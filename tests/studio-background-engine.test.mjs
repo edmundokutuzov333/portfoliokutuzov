@@ -39,10 +39,12 @@ test("Magnific output is placed behind card content as a locked-size background 
   assert.match(panel, /elements: \[backgroundElement/);
 });
 
-test("Studio landing exposes the isolated Magnific background tool", async () => {
+test("Studio landing does not expose unfinished Magnific tooling publicly", async () => {
   const route = await read("src/routes/studio.tsx");
-  assert.match(route, /\/studio\/background/);
-  assert.match(route, /Magnific/);
+  assert.match(route, /Something is/);
+  assert.match(route, /Explore the portfolio/);
+  assert.doesNotMatch(route, /\/studio\/background/);
+  assert.doesNotMatch(route, /Magnific/);
 });
 
 test("The main editor remains provider-independent", async () => {
