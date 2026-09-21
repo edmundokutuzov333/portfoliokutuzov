@@ -337,6 +337,53 @@ export const FALLBACK_SETTINGS: SiteSettings = {
   },
 };
 
+function escapeSvgText(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
+export function getProjectVisualUrl(
+  project: Pick<DbProject, "cover_url" | "title" | "category" | "year">,
+) {
+  if (project.cover_url) return project.cover_url;
+
+  const title = escapeSvgText(project.title || "Selected work");
+  const category = escapeSvgText(project.category || "Art Direction");
+  const year = escapeSvgText(project.year || "");
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
+    <defs>
+      <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#02050c"/>
+        <stop offset="0.52" stop-color="#07182b"/>
+        <stop offset="1" stop-color="#103f70"/>
+      </linearGradient>
+      <radialGradient id="r" cx="80%" cy="20%" r="80%">
+        <stop offset="0" stop-color="#38bdf8" stop-opacity="0.28"/>
+        <stop offset="1" stop-color="#38bdf8" stop-opacity="0"/>
+      </radialGradient>
+      <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+        <path d="M48 0H0V48" fill="none" stroke="#ffffff" stroke-opacity="0.055"/>
+      </pattern>
+    </defs>
+    <rect width="1200" height="900" fill="url(#g)"/>
+    <rect width="1200" height="900" fill="url(#r)"/>
+    <rect width="1200" height="900" fill="url(#grid)"/>
+    <circle cx="980" cy="180" r="150" fill="none" stroke="#8bdcff" stroke-opacity="0.18"/>
+    <circle cx="980" cy="180" r="220" fill="none" stroke="#8bdcff" stroke-opacity="0.08"/>
+    <path d="M72 96H1128" stroke="#ffffff" stroke-opacity="0.16"/>
+    <path d="M72 804H1128" stroke="#ffffff" stroke-opacity="0.12"/>
+    <text x="72" y="132" fill="#9edfff" font-family="Arial, Helvetica, sans-serif" font-size="24" letter-spacing="8">${category.toUpperCase()}</text>
+    <text x="72" y="188" fill="#ffffff" fill-opacity="0.7" font-family="Arial, Helvetica, sans-serif" font-size="18" letter-spacing="4">${year}</text>
+    <text x="72" y="665" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="76" font-weight="700">${title}</text>
+    <text x="72" y="728" fill="#b9cce0" font-family="Arial, Helvetica, sans-serif" font-size="22" letter-spacing="2">EDMUNDO KUTUZOV / ART DIRECTION</text>
+  </svg>`;
+
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+}
 export function readSetting<T = unknown>(
   settings: SiteSettings | undefined,
   key: string,
