@@ -49,6 +49,8 @@ import {
   restoreAdminAuditState,
   submitAdminDraftForReview,
   updateAdminDraft,
+  listAdminUsersPhase4,
+  updateAdminUserRolePhase4,
 } from "@/lib/admin.phase4.functions";
 import {
   clearAdminDirty,
@@ -1157,6 +1159,76 @@ export function AuditCenter() {
         {open===row.id ? <div className="border-t border-white/[0.07] p-4"><div className="grid gap-4 lg:grid-cols-2"><JsonPanel title="Before" value={row.before_data}/><JsonPanel title="After" value={row.after_data}/></div><div className="mt-4 flex flex-wrap items-center justify-between gap-3"><span className="text-[10px] text-slate-600">Audit ID: {row.id}</span>{["site_settings","projects","clients","services","stats","about_method"].includes(row.entity_type) ? <button type="button" onClick={()=>void (async()=>{if(!confirm("Restore this audited state? A new audit event will be created."))return;try{await restore({data:{id:row.id,entity_type:row.entity_type,entity_id:row.entity_id,snapshot:row.after_data ?? row.before_data ?? {},}});toast.success("State restored");await fetchRows();}catch(error){toast.error(error instanceof Error?error.message:"Restore failed");}})()} className="inline-flex min-h-9 items-center gap-2 rounded-lg border border-amber-300/20 px-3 text-[10px] text-amber-200"><Undo2 size={12}/> Restore this state</button>:null}</div></div>:null}
       </div>)}
     </div>}
+  </div>;
+}
+
+
+
+export function UsersRolesCenter() {
+  const load = useServerFn(listAdminUsersPhase4);
+  const updateRole = useServerFn(updateAdminUserRolePhase4);
+  const [rows, setRows] = useState<Array<{ id:string; user_id:string; email:string; role:string; created_at:string }>>([]);
+  const [busy, setBusy] = useState(false);
+
+  const refresh = async () => {
+    setBusy(true);
+    try {
+      const result = await load({ data: {} });
+      setRows(result.rows ?? []);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Users could not be loaded");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  useEffect(() => { void refresh(); }, []);
+
+  return <div className="space-y-6">
+    <header className="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <div className="mono text-[10px] uppercase tracking-[0.25em] text-sky-300/70">SYSTEM / ACCESS</div>
+        <h2 className="display mt-1 text-3xl text-metal">Users &amp; Roles.</h2>
+        <p className="mt-2 text-sm text-slate-500">Manage Control Room roles without touching Supabase Auth credentials.</p>
+      </div>
+      <button type="button" disabled={busy} onClick={() => void refresh()} className="inline-flex min-h-9 items-center gap-2 rounded-lg border border-white/[0.08] px-3 text-xs text-slate-400"><RefreshCw size={12} className={busy ? "animate-spin" : ""}/> Refresh</button>
+    </header>
+    <div className="rounded-xl border border-amber-300/15 bg-amber-300/[0.03] p-4 text-xs leading-relaxed text-slate-500">
+      Role changes are backend-enforced. Only an owner can assign the owner role, and an administrator cannot demote its own account.
+    </div>
+    <Panel kicker="Access directory" title={\`\${rows.length} administrator accounts\`}>
+      <div className="space-y-2">
+        {rows.map((row) => (
+          <div key={row.id} className="flex flex-wrap items-center gap-3 rounded-lg border border-white/[0.06] p-4">
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-sm text-white">{row.email}</div>
+              <div className="mt-1 text-[10px] text-slate-600">Added {new Date(row.created_at).toLocaleString()}</div>
+            </div>
+            <select
+              aria-label={\`Role for \${row.email}\`}
+              value={row.role}
+              onChange={async (event) => {
+                try {
+                  const result = await updateRole({ data: { user_id: row.user_id, role: event.target.value as "owner"|"admin"|"editor"|"finance" } });
+                  setRows((current) => current.map((item) => item.id === row.id ? { ...item, role: result.row.role } : item));
+                  toast.success("Role updated");
+                } catch (error) {
+                  toast.error(error instanceof Error ? error.message : "Role update failed");
+                }
+              }}
+              className="adm-input w-36"
+            >
+              <option value="owner">Owner</option>
+              <option value="admin">Admin</option>
+              <option value="editor">Editor</option>
+              <option value="finance">Finance</option>
+            </select>
+            <StatusBadge status={row.role}/>
+          </div>
+        ))}
+        {rows.length === 0 ? <EmptyBlock title="No administrator records" body="The access directory is empty or this account does not have system user management permission."/> : null}
+      </div>
+    </Panel>
   </div>;
 }
 
