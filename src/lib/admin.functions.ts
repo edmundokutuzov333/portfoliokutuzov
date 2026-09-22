@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { Database } from "@/integrations/supabase/types";
 
 export type AdminPermission =
   | "content.read"
@@ -23,7 +25,10 @@ const PermissionSchema = z.enum([
   "system.audit.read",
 ]);
 
-async function assertPermission(context: { supabase: any }, permission: AdminPermission) {
+async function assertPermission(
+  context: { supabase: SupabaseClient<Database> },
+  permission: AdminPermission,
+) {
   const { data, error } = await context.supabase.rpc("admin_has_permission", {
     p_permission: permission,
   });
