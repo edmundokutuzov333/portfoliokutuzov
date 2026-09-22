@@ -207,7 +207,7 @@ function ControlRoom() {
     { id: "audit" as const, label: "Audit Center", group: "SYSTEM", Icon: History, roles: ["owner", "admin"] },
     { id: "release" as const, label: "Release Center", group: "SYSTEM", Icon: Send, roles: ["owner", "admin", "editor"] },
     { id: "system" as const, label: "System Health", group: "SYSTEM", Icon: ShieldCheck, roles: ["owner", "admin"] },
-    { id: "analytics" as const, label: "Analytics", group: "SYSTEM", Icon: BarChart3, roles: ["owner", "admin", "editor"] },
+    { id: "analytics" as const, label: "Analytics", group: "SYSTEM", Icon: BarChart3, roles: ["owner", "admin"] },
     { id: "users" as const, label: "Users & Roles", group: "SYSTEM", Icon: Users, roles: ["owner", "admin"] },
     { id: "advanced" as const, label: "Advanced", group: "SYSTEM", Icon: Code2, roles: ["owner", "admin"] },
   ] as const;
