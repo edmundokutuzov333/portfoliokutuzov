@@ -10,6 +10,7 @@ test("critical content receives bounded automatic version history", () => {
   const history = read("src/components/admin/HistoryManager.tsx");
   assert.match(sql, /content_history.*action/s);
   assert.match(sql, /ranked\.rn > 20/);
+  assert.match(sql, /trg_content_history_prune/);
   assert.match(sql, /capture_admin_content_version/);
   assert.match(history, /restoreAdminContentVersion/);
   for (const entity of ["site_settings","clients","projects","services","stats","about_method"]) {
