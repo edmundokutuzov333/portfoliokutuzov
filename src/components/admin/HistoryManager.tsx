@@ -5,7 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { restoreAdminContentVersion } from "@/lib/admin.functions";
 import { History, RotateCcw, Loader2, ChevronDown, ChevronRight } from "lucide-react";
-import { restoreSnapshot, type EntityType } from "@/lib/history";
+import type { EntityType } from "@/lib/history";
 
 type HistoryRow = {
   id: string;
@@ -76,19 +76,15 @@ export function HistoryManager() {
       toast.error(err instanceof Error ? err.message : "Restore failed");
       return;
     }
-    const error = null;
     setRestoringId(null);
-    if (error) toast.error(error);
-    else {
-      toast.success("Restored");
-      qc.invalidateQueries({ queryKey: ["site_settings"] });
-      qc.invalidateQueries({ queryKey: ["projects"] });
-      qc.invalidateQueries({ queryKey: ["clients"] });
-      qc.invalidateQueries({ queryKey: ["services"] });
-      qc.invalidateQueries({ queryKey: ["stats"] });
-      qc.invalidateQueries({ queryKey: ["about_method"] });
-      qc.invalidateQueries({ queryKey: ["content_history"] });
-    }
+    toast.success("Restored");
+    qc.invalidateQueries({ queryKey: ["site_settings"] });
+    qc.invalidateQueries({ queryKey: ["projects"] });
+    qc.invalidateQueries({ queryKey: ["clients"] });
+    qc.invalidateQueries({ queryKey: ["services"] });
+    qc.invalidateQueries({ queryKey: ["stats"] });
+    qc.invalidateQueries({ queryKey: ["about_method"] });
+    qc.invalidateQueries({ queryKey: ["content_history"] });
   };
 
   return (
