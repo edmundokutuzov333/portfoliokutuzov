@@ -282,25 +282,78 @@ export const getAdminPreviewBundle = createServerFn({ method: "POST" })
     await assertPermission(context, "content.read");
     const { data: draft, error: draftError } = await context.supabase.from("admin_drafts").select("*").eq("id", data.id).single();
     if (draftError) throw new Error(draftError.message);
-    const [settingsResult, projectsResult] = await Promise.all([
+    const [settingsResult, projectsResult, clientsResult, servicesResult, statsResult, methodsResult] = await Promise.all([
       context.supabase.from("site_settings").select("key,value").limit(100),
       context.supabase.from("projects").select("*").order("sort_order").limit(100),
+      context.supabase.from("clients").select("*").order("sort_order").limit(100),
+      context.supabase.from("services").select("*").order("sort_order").limit(100),
+      context.supabase.from("stats").select("*").order("sort_order").limit(100),
+      context.supabase.from("about_method").select("*").order("sort_order").limit(100),
     ]);
-    if (settingsResult.error) throw new Error(settingsResult.error.message);
-    if (projectsResult.error) throw new Error(projectsResult.error.message);
+    for (const result of [settingsResult, projectsResult, clientsResult, servicesResult, statsResult, methodsResult]) {
+      if (result.error) throw new Error(result.error.message);
+    }
+
     const settings = Object.fromEntries((settingsResult.data ?? []).map((row) => [row.key, row.value]));
     if (draft.entity_type === "site_settings") settings[draft.entity_id] = draft.payload;
-    let selectedProject = null;
-    if (draft.entity_type === "projects") {
-      const current = (projectsResult.data ?? []).find((row) => row.id === draft.entity_id);
-      selectedProject = current ? { ...current, ...(draft.payload as Record<string, unknown>) } : null;
-    }
+
+    const projects = (projectsResult.data ?? []).map((row) =>
+      draft.entity_type === "projects" && row.id === draft.entity_id
+        ? { ...row, ...(draft.payload as Record<string, unknown>) }
+        : row,
+    );
+    const clients = (clientsResult.data ?? []).map((row) =>
+      draft.entity_type === "clients" && row.id === draft.entity_id
+        ? { ...row, ...(draft.payload as Record<string, unknown>) }
+        : row,
+    );
+    const services = (servicesResult.data ?? []).map((row) =>
+      draft.entity_type === "services" && row.id === draft.entity_id
+        ? { ...row, ...(draft.payload as Record<string, unknown>) }
+        : row,
+    );
+    const stats = (statsResult.data ?? []).map((row) =>
+      draft.entity_type === "stats" && row.id === draft.entity_id
+        ? { ...row, ...(draft.payload as Record<string, unknown>) }
+        : row,
+    );
+    const about_method = (methodsResult.data ?? []).map((row) =>
+      draft.entity_type === "about_method" && row.id === draft.entity_id
+        ? { ...row, ...(draft.payload as Record<string, unknown>) }
+        : row,
+    );
+
     return {
       ok: true,
-      draft: { id: draft.id, label: draft.label, entity_type: draft.entity_type, entity_id: draft.entity_id, status: draft.status, payload: draft.payload },
+      draft: {
+        id: draft.id,
+        label: draft.label,
+        entity_type: draft.entity_type,
+        entity_id: draft.entity_id,
+        status: draft.status,
+        payload: draft.payload,
+      },
       settings,
-      projects: projectsResult.data ?? [],
-      selectedProject,
+      projects,
+      clients,
+      services,
+      stats,
+      about_method,
+      selectedProject: draft.entity_type === "projects"
+        ? projects.find((row) => row.id === draft.entity_id) ?? null
+        : null,
+      selectedClient: draft.entity_type === "clients"
+        ? clients.find((row) => row.id === draft.entity_id) ?? null
+        : null,
+      selectedService: draft.entity_type === "services"
+        ? services.find((row) => row.id === draft.entity_id) ?? null
+        : null,
+      selectedStat: draft.entity_type === "stats"
+        ? stats.find((row) => row.id === draft.entity_id) ?? null
+        : null,
+      selectedMethod: draft.entity_type === "about_method"
+        ? about_method.find((row) => row.id === draft.entity_id) ?? null
+        : null,
     };
   });
 
