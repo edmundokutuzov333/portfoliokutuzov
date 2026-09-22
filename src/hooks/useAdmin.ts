@@ -2,48 +2,53 @@ import { useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
+export type AdminRole = "owner" | "admin" | "editor" | "finance" | null;
+
 export type AdminAuthState = {
   session: Session | null;
   isAdmin: boolean;
+  role: AdminRole;
   loading: boolean;
 };
 
 export function useAdminAuth(): AdminAuthState {
   const [session, setSession] = useState<Session | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [role, setRole] = useState<AdminRole>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let alive = true;
     const timers = new Set<ReturnType<typeof setTimeout>>();
 
-    const applySession = async (nextSession: Session | null) => {
+    const resolveRole = async (nextSession: Session | null) => {
       if (!alive) return;
       setSession(nextSession);
-      setIsAdmin(false);
+      setRole(null);
 
       if (!nextSession?.user) {
         setLoading(false);
         return;
       }
 
-      const ok = await verifyAdmin(nextSession.user.id);
+      const { data, error } = await supabase.rpc("admin_get_role");
       if (!alive) return;
-      setIsAdmin(ok);
+      const nextRole =
+        !error && (data === "owner" || data === "admin" || data === "editor" || data === "finance")
+          ? data
+          : null;
+      setRole(nextRole);
       setLoading(false);
     };
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       if (!alive) return;
       setSession(nextSession);
-      setIsAdmin(false);
+      setRole(null);
 
       if (nextSession?.user) {
         const timer = setTimeout(() => {
           timers.delete(timer);
-          void verifyAdmin(nextSession.user.id).then((ok) => {
-            if (alive) setIsAdmin(ok);
-          });
+          void resolveRole(nextSession);
         }, 0);
         timers.add(timer);
       }
@@ -51,11 +56,11 @@ export function useAdminAuth(): AdminAuthState {
 
     void supabase.auth
       .getSession()
-      .then(({ data: { session } }) => applySession(session))
+      .then(({ data: { session } }) => resolveRole(session))
       .catch(() => {
         if (alive) {
           setSession(null);
-          setIsAdmin(false);
+          setRole(null);
           setLoading(false);
         }
       });
@@ -68,15 +73,5 @@ export function useAdminAuth(): AdminAuthState {
     };
   }, []);
 
-  return { session, isAdmin, loading };
-}
-
-async function verifyAdmin(userId: string): Promise<boolean> {
-  const { data, error } = await supabase
-    .from("admin_users")
-    .select("user_id")
-    .eq("user_id", userId)
-    .maybeSingle();
-
-  return !error && !!data;
+  return { session, isAdmin: role !== null, role, loading };
 }
