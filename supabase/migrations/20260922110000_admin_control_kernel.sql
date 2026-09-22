@@ -337,7 +337,12 @@ $$;
 REVOKE ALL ON FUNCTION public.capture_admin_content_version() FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.prune_content_history() FROM PUBLIC;
 
-DO $$
+DROP TRIGGER IF EXISTS trg_content_history_prune ON public.content_history;
+CREATE TRIGGER trg_content_history_prune
+AFTER INSERT ON public.content_history
+FOR EACH ROW EXECUTE FUNCTION public.prune_content_history();
+
+DO $
 DECLARE
   table_name text;
 BEGIN
