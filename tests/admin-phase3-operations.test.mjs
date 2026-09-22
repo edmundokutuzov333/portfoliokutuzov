@@ -30,8 +30,8 @@ test("Phase 3 operations use server functions and Supabase Realtime", () => {
 
 test("CRM pipeline preserves contact and briefing source records", () => {
   const migration = read("supabase/migrations/20260922160000_phase3_operations_os.sql");
-  assert.match(migration, //create table if not exists public\\.crm_leads/i/);
-  assert.match(migration, /source_type text not null check/);
+  assert.match(migration, /create table if not exists public\.crm_leads/i);
+  assert.match(migration, /source_type text not null check/i);
   assert.match(migration, /ensure_crm_lead_from_source/);
   assert.match(migration, /trg_ensure_crm_lead_contact/);
   assert.match(migration, /trg_ensure_crm_lead_briefing/);
@@ -40,7 +40,7 @@ test("CRM pipeline preserves contact and briefing source records", () => {
 test("Phase 3 provides a unified operational inbox and audience surface", () => {
   const migration = read("supabase/migrations/20260922160000_phase3_operations_os.sql");
   const server = read("src/lib/operations.functions.ts");
-  assert.match(migration, //create view public\\.crm_inbox/i/);
+  assert.match(migration, /create view public\.crm_inbox/i);
   for (const kind of ["briefing", "contact", "booking", "subscriber", "studio_waitlist"]) {
     assert.ok(migration.includes("'" + kind + "'"), kind);
   }
@@ -52,9 +52,9 @@ test("Phase 3 provides a unified operational inbox and audience surface", () => 
 test("Phase 3 finance is transactional and linked to invoice lifecycle", () => {
   const migration = read("supabase/migrations/20260922160000_phase3_operations_os.sql");
   const server = read("src/lib/operations.functions.ts");
-  assert.match(migration, //create table if not exists public\\.crm_payments/i/);
+  assert.match(migration, /create table if not exists public\.crm_payments/i);
   assert.match(migration, /admin_record_invoice_payment/);
-  assert.match(migration, /for update/);
+  assert.match(migration, /for update/i);
   assert.match(migration, /invoice_status=v_status/);
   assert.match(server, /recordInvoicePayment/);
 });
@@ -63,9 +63,9 @@ test("Phase 3 bookings preserve legacy status compatibility", () => {
   const migration = read("supabase/migrations/20260922160000_phase3_operations_os.sql");
   assert.match(migration, /booking_status/);
   assert.match(migration, /sync_booking_status_compatibility/);
-  assert.match(migration, /requested.*new/);
-  assert.match(migration, /confirmed.*accepted/);
-  assert.match(migration, /cancelled.*closed/);
+  assert.match(migration, /requested.*new/i);
+  assert.match(migration, /confirmed.*accepted/i);
+  assert.match(migration, /cancelled.*closed/i);
 });
 
 test("Phase 3 permissions remain server and RLS enforced", () => {
@@ -73,6 +73,6 @@ test("Phase 3 permissions remain server and RLS enforced", () => {
   for (const permission of ["leads.read", "leads.write", "finance.read", "finance.write"]) {
     assert.ok(migration.includes(permission), permission);
   }
-  assert.match(migration, //alter table public\\.crm_leads enable row level security/i/);
-  assert.match(migration, //alter table public\\.crm_payments enable row level security/i/);
+  assert.match(migration, /alter table public\.crm_leads enable row level security/i);
+  assert.match(migration, /alter table public\.crm_payments enable row level security/i);
 });
