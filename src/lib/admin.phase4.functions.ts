@@ -141,6 +141,53 @@ export const listAdminEditableEntities = createServerFn({ method: "POST" })
     return { ok: true, entities: (data ?? {}) as Record<string, Array<{ id: string; label: string; meta: string | null }>> };
   });
 
+export const getAdminAnalyticsOverview = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((i: unknown) => z.object({ days: z.number().int().min(1).max(90).default(30) }).parse(i))
+  .handler(async ({ data, context }) => {
+    await assertPermission(context, "system.audit.read");
+    const since = new Date(Date.now() - data.days * 86400000).toISOString();
+    const { data: rows, error } = await context.supabase
+      .from("analytics_events")
+      .select("action,page,device,element,session_id,created_at")
+      .gte("created_at", since)
+      .order("created_at", { ascending: true })
+      .limit(20000);
+    if (error) throw new Error(error.message);
+
+    const events = rows ?? [];
+    const pages = new Map<string, number>();
+    const actions = new Map<string, number>();
+    const devices = new Map<string, number>();
+    const daily = new Map<string, number>();
+
+    for (const event of events) {
+      pages.set(event.page, (pages.get(event.page) ?? 0) + 1);
+      actions.set(event.action, (actions.get(event.action) ?? 0) + 1);
+      const device = event.device ?? "unknown";
+      devices.set(device, (devices.get(device) ?? 0) + 1);
+      const day = event.created_at.slice(0, 10);
+      daily.set(day, (daily.get(day) ?? 0) + 1);
+    }
+
+    const top = (map: Map<string, number>) =>
+      [...map.entries()].sort((a, b) => b[1] - a[1]).slice(0, 12).map(([name, count]) => ({ name, count }));
+
+    return {
+      ok: true,
+      summary: {
+        events: events.length,
+        sessions: new Set(events.map((event) => event.session_id).filter(Boolean)).size,
+        pages: pages.size,
+        actions: actions.size,
+      },
+      top_pages: top(pages),
+      top_actions: top(actions),
+      devices: top(devices),
+      daily: [...daily.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([day, count]) => ({ day, count })),
+    };
+  });
+
 export const createAdminDraft = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((i: unknown) => DraftCreateSchema.parse(i))
