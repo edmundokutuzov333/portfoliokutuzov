@@ -99,6 +99,28 @@ function permissionName(
   return permission;
 }
 
+async function assertEntityReadPermission(
+  context: AdminContext,
+  entity_type: Phase4EntityType,
+  entity_id: string,
+) {
+  await assertPermission(context, "content.read");
+  if (entity_type === "site_settings" && entity_id === "invoice_settings") {
+    await assertPermission(context, "finance.read");
+  }
+}
+
+async function assertDraftReadPermission(context: AdminContext, id: string) {
+  const { data, error } = await context.supabase
+    .from("admin_drafts")
+    .select("entity_type,entity_id")
+    .eq("id", id)
+    .single();
+  if (error) throw new Error(error.message);
+  await assertEntityReadPermission(context, data.entity_type as Phase4EntityType, data.entity_id);
+  return data;
+}
+
 async function loadLiveEntity(context: AdminContext, entity_type: Phase4EntityType, entity_id: string) {
   if (entity_type === "site_settings") {
     const { data, error } = await context.supabase.from("site_settings").select("key,value,updated_at").eq("key", entity_id).maybeSingle();
@@ -183,7 +205,12 @@ export const listAdminEditableEntities = createServerFn({ method: "POST" })
     await assertPermission(context, "content.read");
     const { data, error } = await context.supabase.rpc("admin_editable_entity_directory");
     if (error) throw new Error(error.message);
-    return { ok: true, entities: (data ?? {}) as Record<string, Array<{ id: string; label: string; meta: string | null }>> };
+    const entities = (data ?? {}) as Record<string, Array<{ id: string; label: string; meta: string | null }>>;
+    const financeRead = await context.supabase.rpc("admin_has_permission", { p_permission: "finance.read" });
+    if (!financeRead.error && !financeRead.data) {
+      entities.site_settings = (entities.site_settings ?? []).filter((item) => item.id !== "invoice_settings");
+    }
+    return { ok: true, entities };
   });
 
 export const getAdminAnalyticsOverview = createServerFn({ method: "POST" })
@@ -266,7 +293,7 @@ export const getAdminDraft = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((i: unknown) => DraftIdSchema.parse(i))
   .handler(async ({ data, context }) => {
-    await assertPermission(context, "content.read");
+    await assertDraftReadPermission(context, data.id);
     const { data: row, error } = await context.supabase.from("admin_drafts").select("*").eq("id", data.id).single();
     if (error) throw new Error(error.message);
     return { ok: true, row };
@@ -279,6 +306,8 @@ export const listAdminDrafts = createServerFn({ method: "POST" })
     await assertPermission(context, "content.read");
     let query = context.supabase.from("admin_drafts").select("*").order("updated_at", { ascending: false }).limit(data.limit);
     if (data.status !== "all") query = query.eq("status", data.status);
+    const financeRead = await context.supabase.rpc("admin_has_permission", { p_permission: "finance.read" });
+    if (!financeRead.error && !financeRead.data) query = query.neq("entity_type", "site_settings").or("entity_type.neq.site_settings,entity_id.neq.invoice_settings");
     const { data: rows, error } = await query;
     if (error) throw new Error(error.message);
     return { ok: true, rows: rows ?? [] };
@@ -394,7 +423,7 @@ export const getAdminPreviewBundle = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((i: unknown) => DraftIdSchema.parse(i))
   .handler(async ({ data, context }) => {
-    await assertPermission(context, "content.read");
+    await assertDraftReadPermission(context, data.id);
     const { data: draft, error: draftError } = await context.supabase.from("admin_drafts").select("*").eq("id", data.id).single();
     if (draftError) throw new Error(draftError.message);
     const [settingsResult, projectsResult, clientsResult, servicesResult, statsResult, methodsResult] = await Promise.all([
