@@ -43,7 +43,7 @@ test("Phase 4 has global unsaved-change protection and lazy admin workspaces", (
   const admin = read("src/components/admin/AdminControlRoom.tsx");
   const portfolio = read("src/components/admin/PortfolioModule.tsx");
   assert.match(dirty, /hasAdminDirty/);
-  assert.match(read("src/components/admin/Phase4ControlRoom.tsx"), /beforeunload/);
+  assert.match(dirty, /beforeunload/);
   assert.match(admin, /lazy/);
   assert.match(admin, /Phase2AdminSurface/);
   assert.match(admin, /PortfolioModule/);
