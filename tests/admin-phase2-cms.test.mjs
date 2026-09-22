@@ -125,7 +125,7 @@ test("No new Phase 2 branch is encoded in the repository automation", async () =
 test("CMS fallback content is SSR-safe", async () => {
   const cms = await read("src/lib/cms.ts");
   assert.ok(cms.includes("SOCIAL_IMAGE"));
-  assert.ok(cms.includes('@/lib/seo'));
+  assert.ok(cms.includes('from "@/lib/seo"'));
 });
 
 test("Phase 2 media search sanitizes Unicode safely", async () => {

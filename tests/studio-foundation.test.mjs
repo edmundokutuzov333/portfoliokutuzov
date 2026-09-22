@@ -13,10 +13,11 @@ test("Kutuzov Studio routes are registered", async () => {
 
 test("Studio navigation entry exists in the CMS-driven desktop and mobile navigation", async () => {
   const navbar = await read("src/components/layout/Navbar.tsx");
+  const cms = await read("src/lib/cms.ts");
   assert.ok(navbar.includes("useSiteSettings"));
   assert.ok(navbar.includes("navigation"));
   assert.ok(navbar.includes("/studio"));
-  assert.ok(navbar.includes("Kutuzov Studio"));
+  assert.ok(cms.includes("Kutuzov Studio"));
 });
 
 test("Business Card Studio uses a versioned editable design document", async () => {
