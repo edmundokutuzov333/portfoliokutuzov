@@ -132,7 +132,7 @@ const AuditSchema = z.object({
 
 export const saveAdminSiteSetting = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) => SiteSettingSchema.parse(i))
+  .validator((i: unknown) => SiteSettingSchema.parse(i))
   .handler(async ({ data, context }) => {
     await assertPermission(context, "content.write");
     const payload = {
@@ -151,7 +151,7 @@ export const saveAdminSiteSetting = createServerFn({ method: "POST" })
 
 export const saveAdminClient = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) => ClientSchema.parse(i))
+  .validator((i: unknown) => ClientSchema.parse(i))
   .handler(async ({ data, context }) => {
     await assertPermission(context, "content.write");
     const payload = {
@@ -174,7 +174,7 @@ export const saveAdminClient = createServerFn({ method: "POST" })
 
 export const createAdminClient = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) =>
+  .validator((i: unknown) =>
     ClientSchema.pick({
       name: true,
       sort_order: true,
@@ -195,7 +195,7 @@ export const createAdminClient = createServerFn({ method: "POST" })
 
 export const deleteAdminClient = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) => IdSchema.parse(i))
+  .validator((i: unknown) => IdSchema.parse(i))
   .handler(async ({ data, context }) => {
     await assertPermission(context, "content.write");
     const { error } = await context.supabase.from("clients").delete().eq("id", data.id);
@@ -240,7 +240,7 @@ function projectPayload(data: z.infer<typeof ProjectSchema>, id?: string) {
 
 export const saveAdminProject = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) => ProjectSchema.parse(i))
+  .validator((i: unknown) => ProjectSchema.parse(i))
   .handler(async ({ data, context }) => {
     await assertPermission(context, "content.write");
     const payload = projectPayload(data, data.id);
@@ -255,7 +255,7 @@ export const saveAdminProject = createServerFn({ method: "POST" })
 
 export const createAdminProject = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) => CreateProjectSchema.parse(i))
+  .validator((i: unknown) => CreateProjectSchema.parse(i))
   .handler(async ({ data, context }) => {
     await assertPermission(context, "content.write");
     const { data: row, error } = await context.supabase
@@ -282,7 +282,7 @@ export const createAdminProject = createServerFn({ method: "POST" })
 
 export const deleteAdminProject = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) => IdSchema.parse(i))
+  .validator((i: unknown) => IdSchema.parse(i))
   .handler(async ({ data, context }) => {
     await assertPermission(context, "content.write");
     const { error } = await context.supabase.from("projects").delete().eq("id", data.id);
@@ -292,7 +292,7 @@ export const deleteAdminProject = createServerFn({ method: "POST" })
 
 export const duplicateAdminProject = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) => IdSchema.parse(i))
+  .validator((i: unknown) => IdSchema.parse(i))
   .handler(async ({ data, context }) => {
     await assertPermission(context, "content.write");
     const { data: source, error: readError } = await context.supabase
@@ -323,7 +323,7 @@ export const duplicateAdminProject = createServerFn({ method: "POST" })
 
 export const publishAdminProject = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator(z.object({ id: z.string().uuid(), is_published: z.boolean() }))
+  .validator(z.object({ id: z.string().uuid(), is_published: z.boolean() }))
   .handler(async ({ data, context }) => {
     await assertPermission(context, "content.write");
     const { data: row, error } = await context.supabase
@@ -338,7 +338,7 @@ export const publishAdminProject = createServerFn({ method: "POST" })
 
 export const createAdminProjectsBatch = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) => BatchProjectSchema.parse(i))
+  .validator((i: unknown) => BatchProjectSchema.parse(i))
   .handler(async ({ data, context }) => {
     await assertPermission(context, "content.write");
     const rows = data.rows.map((row) => ({
@@ -367,7 +367,7 @@ export const createAdminProjectsBatch = createServerFn({ method: "POST" })
 
 export const reorderAdminProjects = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) => ReorderSchema.parse(i))
+  .validator((i: unknown) => ReorderSchema.parse(i))
   .handler(async ({ data, context }) => {
     await assertPermission(context, "content.write");
     const { data: ok, error } = await context.supabase.rpc("admin_reorder_projects", {
@@ -383,7 +383,7 @@ export const reorderAdminProjects = createServerFn({ method: "POST" })
 
 export const restoreAdminContentVersion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) => RestoreSchema.parse(i))
+  .validator((i: unknown) => RestoreSchema.parse(i))
   .handler(async ({ data, context }) => {
     await assertPermission(context, "content.write");
     if (data.entity_type === "site_settings") {
@@ -414,7 +414,7 @@ export const restoreAdminContentVersion = createServerFn({ method: "POST" })
 
 export const getAdminAuditLog = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) => AuditSchema.parse(i))
+  .validator((i: unknown) => AuditSchema.parse(i))
   .handler(async ({ data, context }) => {
     await assertPermission(context, "system.audit.read");
     let query = context.supabase
@@ -441,7 +441,7 @@ export const getAdminAuditLog = createServerFn({ method: "POST" })
 
 export const getAdminPermissions = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) => PermissionSchema.parse(i))
+  .validator((i: unknown) => PermissionSchema.parse(i))
   .handler(async ({ data, context }) => {
     await assertPermission(context, "content.read");
     const { data: allowed, error } = await context.supabase.rpc("admin_has_permission", {
