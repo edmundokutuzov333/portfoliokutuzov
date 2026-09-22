@@ -12,6 +12,7 @@ test("Phase 4 creates a governed release workflow", () => {
   assert.match(migration, /admin_drafts/);
   assert.match(migration, /admin_publish_drafts/);
   assert.match(migration, /baseline_updated_at/);
+  assert.match(migration, /20001|22023|Draft payload id does not match entity id|payload.*entity id/);
   assert.match(migration, /40001/);
   assert.match(fn, /createAdminDraft/);
   assert.match(fn, /submitAdminDraftForReview/);
@@ -90,6 +91,8 @@ test("Phase 4 database security keeps sensitive admin operations behind permissi
   assert.match(migration, /admin_system_health_db/);
   assert.match(restore, /admin_restore_audit_state/);
   assert.match(restore, /auth\.uid\(\)/);
+  const kernel = read("supabase/migrations/20260922110000_admin_control_kernel.sql");
+  assert.match(kernel, /WHEN 'INSERT' THEN 'create'/);
   assert.match(restore, /GRANT EXECUTE ON FUNCTION public\.admin_restore_audit_state/);
   const server = read("src/lib/admin.phase4.functions.ts");
   assert.match(server, /finance\.read/);
