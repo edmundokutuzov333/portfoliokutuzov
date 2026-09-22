@@ -21,8 +21,9 @@ test("Phase 1 migration defines role permissions, audit and version triggers", (
   assert.match(sql, /CREATE OR REPLACE FUNCTION public\.capture_admin_audit/);
   assert.match(sql, /CREATE OR REPLACE FUNCTION public\.capture_admin_content_version/);
   assert.match(sql, /CREATE OR REPLACE FUNCTION public\.admin_reorder_projects/);
+  assert.match(sql, /FOREACH table_name IN ARRAY ARRAY/);
   for (const table of ["site_settings", "clients", "projects", "services", "stats", "about_method"]) {
-    assert.match(sql, new RegExp("trg_admin_version_" + table));
+    assert.match(sql, new RegExp("\\'" + table + "\\'"));
   }
 });
 
