@@ -70,7 +70,7 @@ test("Phase 3 bookings preserve legacy status compatibility", () => {
 
 test("Phase 3 permissions remain server and RLS enforced", () => {
   const migration = read("supabase/migrations/20260922160000_phase3_operations_os.sql");
-  for (const permission of ["leads.read", "leads.write", "finance.read", "finance.write"]) {
+  for (const permission of ["leads.read", "leads.write", "finance.read", "finance.write", "content.write"]) {
     assert.ok(migration.includes(permission), permission);
   }
   assert.match(migration, /alter table public\.crm_leads enable row level security/i);
