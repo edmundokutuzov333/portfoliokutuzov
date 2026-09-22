@@ -1,5 +1,5 @@
 import { createLazyFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,21 +16,40 @@ import {
 } from "@/lib/cms";
 import { readImageDimensions, aspectFromDims } from "@/lib/image-utils";
 import { isUuid, generateUuid } from "@/lib/utils";
-import { InboxHub } from "@/components/admin/InboxHub";
-import { AuditManager } from "@/components/admin/AuditManager";
-import { HistoryManager } from "@/components/admin/HistoryManager";
-import { InvoiceWorkspace } from "@/components/admin/InvoiceWorkspace";
+import { setAdminDirty, clearAdminDirty, hasAdminDirty, subscribeAdminDirty } from "@/lib/admin-dirty";
 import {
-  Phase2Overview,
-  HomepageManager,
-  CredentialsManager,
-  ServicesManager,
-  NavigationManager,
-  GlobalSettingsManager,
-  SeoManager,
-  MediaLibrary,
-} from "@/components/admin/Phase2WebsiteCMS";
-import { Phase3OperationsOS } from "@/components/admin/Phase3OperationsOS";
+  Phase4AdminToolbar,
+  ReleaseCenter,
+  SystemHealthCenter,
+  AuditCenter,
+} from "@/components/admin/Phase4ControlRoom";
+
+const Phase2WebsiteCMS = lazy(() => import("@/components/admin/Phase2WebsiteCMS"));
+const Phase3OperationsOS = lazy(() =>
+  import("@/components/admin/Phase3OperationsOS").then((module) => ({
+    default: module.Phase3OperationsOS,
+  })),
+);
+const InboxHub = lazy(() =>
+  import("@/components/admin/InboxHub").then((module) => ({
+    default: module.InboxHub,
+  })),
+);
+const AuditManager = lazy(() =>
+  import("@/components/admin/AuditManager").then((module) => ({
+    default: module.AuditManager,
+  })),
+);
+const HistoryManager = lazy(() =>
+  import("@/components/admin/HistoryManager").then((module) => ({
+    default: module.HistoryManager,
+  })),
+);
+const InvoiceWorkspace = lazy(() =>
+  import("@/components/admin/InvoiceWorkspace").then((module) => ({
+    default: module.InvoiceWorkspace,
+  })),
+);
 import { toast } from "sonner";
 import {
   createAdminProject,
@@ -74,6 +93,10 @@ import {
   LayoutDashboard,
   Globe2,
   Settings2,
+  Menu,
+  X,
+  Send,
+  ShieldCheck,
 } from "lucide-react";
 
 export const Route = createLazyFileRoute("/admin")({
@@ -100,6 +123,8 @@ type Section =
   | "invoice"
   | "history"
   | "audit"
+  | "release"
+  | "system"
   | "advanced";
 
 function ControlRoom() {
@@ -151,6 +176,8 @@ function ControlRoom() {
       roles: ["owner", "admin", "editor"],
     },
     { id: "audit" as const, label: "Audit", Icon: History, roles: ["owner", "admin"] },
+    { id: "release" as const, label: "Release Center", Icon: Send, roles: ["owner", "admin", "editor"] },
+    { id: "system" as const, label: "System Health", Icon: ShieldCheck, roles: ["owner", "admin"] },
     { id: "advanced" as const, label: "Advanced", Icon: Code2, roles: ["owner", "admin"] },
   ] as const;
   const items = allItems.filter((item) => item.roles.includes(role as never));
