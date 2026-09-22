@@ -108,6 +108,16 @@ async function loadLiveEntity(context: AdminContext, entity_type: Phase4EntityTy
   return { snapshot: data as unknown as Record<string, unknown>, updated_at: data.updated_at };
 }
 
+export const listAdminEditableEntities = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator(() => ({}))
+  .handler(async ({ context }) => {
+    await assertPermission(context, "content.read");
+    const { data, error } = await context.supabase.rpc("admin_editable_entity_directory");
+    if (error) throw new Error(error.message);
+    return { ok: true, entities: (data ?? {}) as Record<string, Array<{ id: string; label: string; meta: string | null }>> };
+  });
+
 export const createAdminDraft = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((i: unknown) => DraftCreateSchema.parse(i))
@@ -369,9 +379,12 @@ export const restoreAdminAuditState = createServerFn({ method: "POST" })
   .validator((i: unknown) => RestoreAuditSchema.parse(i))
   .handler(async ({ data, context }) => {
     await assertPermission(context, "content.write");
-    const result = await context.supabase.rpc("admin_restore_audit_state" as never, {
-      p_entity_type:data.entity_type, p_entity_id:data.entity_id, p_snapshot:data.snapshot, p_audit_id:data.id,
-    } as never);
+    const result = await context.supabase.rpc("admin_restore_audit_state", {
+      p_entity_type:data.entity_type,
+      p_entity_id:data.entity_id,
+      p_snapshot:data.snapshot as never,
+      p_audit_id:data.id,
+    });
     if (result.error) throw new Error(result.error.message);
     return { ok:true, result:result.data };
   });
