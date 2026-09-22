@@ -60,9 +60,8 @@ test("CSP covers the actual first-party and required external runtime dependenci
   }
 });
 
-test("Studio remains available as a public construction page while unfinished surfaces stay private", async () => {
+test("Studio is intentionally minimal while unfinished tools stay private", async () => {
   const landing = await read("src/routes/studio.tsx");
-  const signal = await read("src/components/studio/StudioConstructionSignal.tsx");
   const privateAccess = await read("src/lib/studio/public-access.ts");
   const background = await read("src/routes/studio.background.tsx");
   const businessCard = await read("src/routes/studio.business-card.tsx");
@@ -71,25 +70,20 @@ test("Studio remains available as a public construction page while unfinished su
 
   assert.match(landing, /Something is/);
   assert.match(landing, /taking shape/);
-  assert.match(landing, /whitespace-nowrap/);
-  assert.match(landing, /Kutuzov Studio is currently under construction/);
-  assert.match(landing, /Explore the portfolio/);
-  assert.match(landing, /to="\/portfolio"/);  assert.match(landing, /Wake the signal/);
-  assert.match(landing, /BUILD SIGNAL/);
-  assert.match(landing, /A studio is more than a toolbox/);
-  assert.match(signal, /framer-motion/);
-  assert.match(signal, /preserve-3d/);
-  assert.match(signal, /studioSignalArchClip/);
+  assert.match(landing, /A private creative space for the work behind the work/);
+  assert.match(landing, /View portfolio/);
+  assert.match(landing, /PRIVATE BUILD/);
+  assert.doesNotMatch(landing, /BUILD SIGNAL/);
+  assert.doesNotMatch(landing, /SYSTEM MAP/);
+  assert.match(privateAccess, /studioPublicEnabled/);
   const publicConfig = await read("src/config/public.ts");
   assert.match(publicConfig, /VITE_STUDIO_PUBLIC_ENABLED/);
   assert.match(publicConfig, /=== "true"/);
-  assert.match(privateAccess, /studioPublicEnabled/);
   for (const source of [background, businessCard, identity, card]) {
     assert.match(source, /isStudioPublicEnabled/);
     assert.match(source, /redirect\(\{ to: "\/studio" \}\)/);
   }
 });
-
 test("unfinished Studio APIs return the private-surface guard", async () => {
   const routes = [
     "src/routes/api.studio-vcard.ts",
