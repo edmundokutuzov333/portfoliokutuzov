@@ -490,6 +490,7 @@ export const createProjectFromLead = createServerFn({ method: "POST" })
   .validator((i: unknown) => IdSchema.parse(i))
   .handler(async ({ data, context }) => {
     await assertPermission(context, "content.write");
+    await assertPermission(context, "leads.write");
     const { data: projectId, error } = await context.supabase.rpc("admin_create_project_from_lead", { p_lead_id: data.id });
     if (error) throw new Error(error.message);
     return { ok: true, project_id: projectId };
