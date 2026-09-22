@@ -88,6 +88,18 @@ const CreateProjectSchema = z.object({
   sort_order: z.number().int().min(-100000).max(100000),
 });
 
+const BatchProjectSchema = z.object({
+  rows: z.array(
+    z.object({
+      title: z.string().trim().min(1).max(240),
+      client_name: z.string().trim().max(200).nullable().optional(),
+      category: z.string().trim().min(1).max(100),
+      year: z.string().trim().max(20).nullable().optional(),
+      sort_order: z.number().int().min(-100000).max(100000),
+    }),
+  ).min(1).max(10),
+});
+
 const ReorderSchema = z.object({
   project_id: z.string().uuid(),
   other_project_id: z.string().uuid(),
@@ -151,6 +163,27 @@ export const saveAdminClient = createServerFn({ method: "POST" })
     const { data: row, error } = await context.supabase
       .from("clients")
       .upsert(payload, { onConflict: "id" })
+      .select("*")
+      .single();
+    if (error) throw new Error(error.message);
+    return { ok: true, row };
+  });
+
+export const createAdminClient = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) =>
+    ClientSchema.pick({
+      name: true,
+      sort_order: true,
+      is_active: true,
+      kind: true,
+    }).parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    await assertPermission(context, "content.write");
+    const { data: row, error } = await context.supabase
+      .from("clients")
+      .insert(data)
       .select("*")
       .single();
     if (error) throw new Error(error.message);
@@ -298,6 +331,35 @@ export const publishAdminProject = createServerFn({ method: "POST" })
       .single();
     if (error) throw new Error(error.message);
     return { ok: true, row };
+  });
+
+export const createAdminProjectsBatch = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => BatchProjectSchema.parse(i))
+  .handler(async ({ data, context }) => {
+    await assertPermission(context, "content.write");
+    const rows = data.rows.map((row) => ({
+      title: row.title,
+      client_name: row.client_name ?? null,
+      category: row.category,
+      year: row.year ?? null,
+      sort_order: row.sort_order,
+      is_published: false,
+      featured: false,
+      featured_priority: 0,
+      tags: [],
+      gallery: [],
+      gallery_meta: [],
+      collaborators: [],
+      tools_used: [],
+      deliverables: [],
+    }));
+    const { data: inserted, error } = await context.supabase
+      .from("projects")
+      .insert(rows)
+      .select("*");
+    if (error) throw new Error(error.message);
+    return { ok: true, rows: inserted ?? [] };
   });
 
 export const reorderAdminProjects = createServerFn({ method: "POST" })
