@@ -19,7 +19,7 @@ test("Phase 2 backend exposes service, credential and media mutations", async ()
     "saveAdminService", "createAdminService", "deleteAdminService", "duplicateAdminService", "reorderAdminServices",
     "saveAdminStat", "createAdminStat", "deleteAdminStat", "reorderAdminStats",
     "saveAdminMethod", "createAdminMethod", "deleteAdminMethod", "reorderAdminMethods",
-    "setAdminProjectFeatured", "listAdminMediaAssets", "createAdminMediaAsset", "deleteAdminMediaAsset",
+    "setAdminProjectFeatured", "listAdminMediaAssets", "createAdminMediaAsset", "deleteAdminMediaAsset", "replaceAdminMediaAsset",
   ]) assert.match(server, new RegExp("export const " + token));
 });
 
@@ -33,6 +33,8 @@ test("Phase 2 database migration provides media registry, RLS, realtime and tran
   assert.match(migration, /admin_reorder_about_method/);
   assert.match(migration, /supabase_realtime/);
   assert.match(migration, /'library'/);
+  assert.match(migration, /INSERT INTO public\.site_settings/);
+  assert.match(migration, /Existing site-assets registry backfill/);
 });
 
 test("Navigation is backend-driven at the public surface", async () => {

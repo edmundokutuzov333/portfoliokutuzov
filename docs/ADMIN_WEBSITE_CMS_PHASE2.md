@@ -30,3 +30,8 @@ Operational safety:
 - Existing static fallbacks remain in place so the public site still renders when data is temporarily unavailable.
 
 All implementation changes for this phase are intended for the main branch, per the project execution requirement.
+
+Media lifecycle hardening:
+- Existing local site-assets references are backfilled into media_assets without touching external URLs.
+- Media Library supports same-type asset replacement; the previous physical object is removed after successful metadata persistence.
+- Settings editors protect unsaved local changes from realtime refreshes until the current save completes.

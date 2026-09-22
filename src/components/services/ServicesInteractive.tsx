@@ -113,17 +113,17 @@ export function ServicesInteractive() {
   const { data: services = [] } = useServices();
   const disciplines = React.useMemo<Discipline[]>(() => {
     if (!services.length) return STATIC_DISCIPLINES;
-    return services.map((service) => ({
-      id: service.id,
-      number: service.number || String(service.sort_order).padStart(2, "0"),
-      title: service.title,
-      tagline: (service.description || "Capability delivered with strategic and visual precision.").split(/[.!?]/)[0],
-      description: service.description || "Capability delivered with strategic and visual precision.",
-      tags: [],
-      deliverables: [],
-      projectMatcher: () => true,
-      defaultProjectTitle: "",
-    }));
+    return services.map((service, index) => {
+      const base = STATIC_DISCIPLINES[index] || STATIC_DISCIPLINES[0];
+      return {
+        ...base,
+        id: service.id,
+        number: service.number || String(index + 1).padStart(2, "0"),
+        title: service.title,
+        tagline: (service.description || base.tagline).split(/[.!?]/)[0],
+        description: service.description || base.description,
+      };
+    });
   }, [services]);
   const [activeId, setActiveId] = useState<string>(STATIC_DISCIPLINES[0].id);
   React.useEffect(() => {

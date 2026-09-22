@@ -221,3 +221,72 @@ VALUES
   ('seo_global', '{"title":"Edmundo Kutuzov - Designer & Art Director","description":"Visual identities, art direction and digital experiences built with strategic clarity and technical precision.","og_title":"Edmundo Kutuzov - Designer & Art Director","og_description":"Visual identities, art direction and digital experiences built with strategic clarity and technical precision.","og_image":"https://storage.googleapis.com/gpt-engineer-file-uploads/pHZRYs3DGCdOPGZzeAdkZH1MMif2/social-images/social-1778488549600-EKLOGO.webp","twitter_card":"summary_large_image","canonical_base":"https://edmundokutuzov.art","robots_meta":"index,follow,max-image-preview:large","sitemap_enabled":true}'::jsonb),
   ('seo_pages', '{"pages":{"/":{"title":"Edmundo Kutuzov - Art Director","description":"Edmundo Kutuzov is an art director based in Maputo, Mozambique. Visual identities, art direction and campaign design for brands that want to be remembered.","canonical":"/","og_image":"https://storage.googleapis.com/gpt-engineer-file-uploads/pHZRYs3DGCdOPGZzeAdkZH1MMif2/social-images/social-1778488549600-EKLOGO.webp"},"/portfolio":{"title":"Portfolio - Edmundo Kutuzov","description":"Selected art direction, brand identity and campaign work by Edmundo Kutuzov, art director based in Maputo, Mozambique.","canonical":"/portfolio","og_image":"https://storage.googleapis.com/gpt-engineer-file-uploads/pHZRYs3DGCdOPGZzeAdkZH1MMif2/social-images/social-1778488549600-EKLOGO.webp"},"/services":{"title":"Capabilities - Edmundo Kutuzov","description":"Capabilities and visual disciplines: art direction, brand identity, campaign design, and digital systems by Edmundo Kutuzov.","canonical":"/services","og_image":"https://storage.googleapis.com/gpt-engineer-file-uploads/pHZRYs3DGCdOPGZzeAdkZH1MMif2/social-images/social-1778488549600-EKLOGO.webp"},"/credentials":{"title":"The Credentials - Edmundo Kutuzov","description":"Experience, skills and selected brands worked with as art director and graphic designer by Edmundo Kutuzov.","canonical":"/credentials","og_image":"https://storage.googleapis.com/gpt-engineer-file-uploads/pHZRYs3DGCdOPGZzeAdkZH1MMif2/social-images/social-1778488549600-EKLOGO.webp"},"/contact":{"title":"Contact - Edmundo Kutuzov","description":"Smart project briefing for new collaborations with Edmundo Kutuzov, art director in Maputo.","canonical":"/contact","og_image":"https://storage.googleapis.com/gpt-engineer-file-uploads/pHZRYs3DGCdOPGZzeAdkZH1MMif2/social-images/social-1778488549600-EKLOGO.webp"}}}'::jsonb)
 ON CONFLICT (key) DO NOTHING;
+
+
+-- ---------------------------------------------------------------------------
+-- Existing site-assets registry backfill
+-- ---------------------------------------------------------------------------
+-- Register local assets already referenced by public entities. External URLs
+-- remain untouched because their physical storage lifecycle is outside this bucket.
+INSERT INTO public.media_assets (
+  storage_path, public_url, filename, mime_type, kind, entity_type, entity_id, is_public
+)
+SELECT DISTINCT
+  regexp_replace(p.cover_url, '^.*/storage/v1/object/public/site-assets/', '') AS storage_path,
+  p.cover_url,
+  split_part(regexp_replace(p.cover_url, '^.*/', ''), '?', 1) AS filename,
+  'image/*',
+  'image',
+  'project',
+  p.id::text,
+  true
+FROM public.projects p
+WHERE p.cover_url LIKE '%/storage/v1/object/public/site-assets/%'
+ON CONFLICT (storage_path) DO NOTHING;
+
+INSERT INTO public.media_assets (
+  storage_path, public_url, filename, mime_type, kind, entity_type, entity_id, is_public
+)
+SELECT DISTINCT
+  regexp_replace(c.logo_url, '^.*/storage/v1/object/public/site-assets/', '') AS storage_path,
+  c.logo_url,
+  split_part(regexp_replace(c.logo_url, '^.*/', ''), '?', 1) AS filename,
+  'image/*',
+  'logo',
+  'client',
+  c.id::text,
+  true
+FROM public.clients c
+WHERE c.logo_url LIKE '%/storage/v1/object/public/site-assets/%'
+ON CONFLICT (storage_path) DO NOTHING;
+
+INSERT INTO public.media_assets (
+  storage_path, public_url, filename, mime_type, kind, entity_type, entity_id, is_public
+)
+SELECT DISTINCT
+  regexp_replace(g.url, '^.*/storage/v1/object/public/site-assets/', '') AS storage_path,
+  g.url,
+  split_part(regexp_replace(g.url, '^.*/', ''), '?', 1) AS filename,
+  'image/*',
+  'project',
+  p.id::text,
+  true
+FROM public.projects p
+CROSS JOIN LATERAL unnest(COALESCE(p.gallery, ARRAY[]::text[])) AS g(url)
+WHERE g.url LIKE '%/storage/v1/object/public/site-assets/%'
+ON CONFLICT (storage_path) DO NOTHING;
+
+INSERT INTO public.media_assets (
+  storage_path, public_url, filename, mime_type, kind, entity_type, entity_id, is_public
+)
+SELECT DISTINCT
+  regexp_replace(p.video_url, '^.*/storage/v1/object/public/site-assets/', '') AS storage_path,
+  p.video_url,
+  split_part(regexp_replace(p.video_url, '^.*/', ''), '?', 1) AS filename,
+  'video/*',
+  'project',
+  p.id::text,
+  true
+FROM public.projects p
+WHERE p.video_url LIKE '%/storage/v1/object/public/site-assets/%'
+ON CONFLICT (storage_path) DO NOTHING;
