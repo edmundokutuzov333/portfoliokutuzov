@@ -23,6 +23,7 @@ import {
   SystemHealthCenter,
   AuditCenter,
   AnalyticsCenter,
+  UsersRolesCenter,
 } from "@/components/admin/Phase4ControlRoom";
 
 const Phase2WebsiteCMS = lazy(() =>
@@ -144,6 +145,7 @@ type Section =
   | "release"
   | "system"
   | "analytics"
+  | "users"
   | "advanced";
 
 function ControlRoom() {
@@ -205,6 +207,7 @@ function ControlRoom() {
     { id: "release" as const, label: "Release Center", group: "SYSTEM", Icon: Send, roles: ["owner", "admin", "editor"] },
     { id: "system" as const, label: "System Health", group: "SYSTEM", Icon: ShieldCheck, roles: ["owner", "admin"] },
     { id: "analytics" as const, label: "Analytics", group: "SYSTEM", Icon: BarChart3, roles: ["owner", "admin", "editor"] },
+    { id: "users" as const, label: "Users & Roles", group: "SYSTEM", Icon: Users, roles: ["owner", "admin"] },
     { id: "advanced" as const, label: "Advanced", group: "SYSTEM", Icon: Code2, roles: ["owner", "admin"] },
   ] as const;
   const items = allItems.filter((item) => item.roles.includes(role as never));
@@ -269,6 +272,7 @@ function ControlRoom() {
       {section === "release" && <ReleaseCenter />}
       {section === "system" && <SystemHealthCenter />}
       {section === "analytics" && <AnalyticsCenter />}
+      {section === "users" && <UsersRolesCenter />}
       {section === "advanced" && <AdvancedJSONManager />}
     </>
   );
