@@ -202,7 +202,7 @@ function ControlRoom() {
         {section === "portfolio" && <PortfolioManager />}
         {section === "about" && <AboutManager />}
         {section === "contact" && <ContactManager />}
-        {section === "operations" && <Phase3OperationsOS onNavigate={setSection} />}
+        {section === "operations" && <Phase3OperationsOS onNavigate={(target) => setSection(target as Section)} />}
         {section === "inbox" && <InboxHub />}
         {section === "invoice" && (
           <div className="space-y-12">
