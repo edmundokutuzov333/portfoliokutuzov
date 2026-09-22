@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { joinStudioWaitlist } from "@/server/studio-waitlist";
+import { joinStudioWaitlist } from "@/lib/studio/waitlist.functions";
 
 const schema = z.object({
   email: z.string().trim().email("Enter a valid email.").max(200, "Enter a valid email."),
