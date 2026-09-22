@@ -52,6 +52,20 @@ test("Phase 4 has global unsaved-change protection and lazy admin workspaces", (
   assert.match(portfolio, /JSON.stringify\(form\)/);
 });
 
+test("Phase 4 integrates Studio Intelligence and global Analytics into the Control Room", () => {
+  const admin = read("src/components/admin/AdminControlRoom.tsx");
+  const ui = read("src/components/admin/Phase4ControlRoom.tsx");
+  const studioRoute = read("src/routes/admin.studio.tsx");
+  const studioSurface = read("src/components/admin/StudioIntelligenceSurface.tsx");
+  assert.match(admin, /StudioIntelligenceSurface/);
+  assert.match(admin, /Studio Intelligence/);
+  assert.match(admin, /Analytics/);
+  assert.match(ui, /AnalyticsCenter/);
+  assert.match(ui, /getAdminAnalyticsOverview/);
+  assert.match(studioRoute, /StudioIntelligenceSurface/);
+  assert.match(studioSurface, /StudioAdminPage/);
+});
+
 test("Phase 4 public-data realtime coverage includes services, stats and about_method", () => {
   const siteData = read("src/hooks/useSiteData.ts");
   assert.match(siteData, /useRealtimeInvalidate\("services"/);
