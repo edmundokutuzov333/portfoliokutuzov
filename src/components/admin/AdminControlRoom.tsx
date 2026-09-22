@@ -55,7 +55,8 @@ const InvoiceWorkspace = lazy(() =>
   import("@/components/admin/InvoiceWorkspace").then((module) => ({
     default: module.InvoiceWorkspace,
   })),
-);const PortfolioManager = lazy(() =>
+);
+const PortfolioManager = lazy(() =>
   import("@/components/admin/PortfolioModule").then((module) => ({
     default: module.PortfolioManager,
   })),
