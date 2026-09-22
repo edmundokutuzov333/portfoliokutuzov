@@ -285,7 +285,7 @@ DECLARE
   payload jsonb;
   entity_id_text text;
   entity_label text;
-  action_text text := lower(TG_OP);
+  action_text text;
 BEGIN
   -- Only administrator-originated content changes become rollback points.
   IF auth.uid() IS NULL OR NOT public.is_admin() THEN
@@ -443,6 +443,12 @@ BEGIN
 
   before_row := CASE WHEN TG_OP = 'INSERT' THEN NULL ELSE to_jsonb(OLD) END;
   after_row := CASE WHEN TG_OP = 'DELETE' THEN NULL ELSE to_jsonb(NEW) END;
+  action_text := CASE TG_OP
+    WHEN 'INSERT' THEN 'create'
+    WHEN 'UPDATE' THEN 'update'
+    WHEN 'DELETE' THEN 'delete'
+    ELSE lower(TG_OP)
+  END;
 
   IF TG_TABLE_NAME = 'site_settings' THEN
     entity_id_text := COALESCE(after_row ->> 'key', before_row ->> 'key');
