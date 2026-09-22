@@ -136,11 +136,25 @@ export const getOperationsOverview = createServerFn({ method: "POST" })
       if (payment.status !== "confirmed") continue;
       if (payment.briefing_id) paidByBriefing.set(payment.briefing_id, (paidByBriefing.get(payment.briefing_id) ?? 0) + Number(payment.amount));
       paidByCurrency.set(payment.currency, (paidByCurrency.get(payment.currency) ?? 0) + Number(payment.amount));
+      if (payment.paid_at) {
+        const paidAt = new Date(payment.paid_at);
+        if (paidAt >= monthStart) {
+          revenueThisMonthByCurrency.set(payment.currency, (revenueThisMonthByCurrency.get(payment.currency) ?? 0) + Number(payment.amount));
+        }
+        if (paidAt >= yearStart) {
+          revenueThisYearByCurrency.set(payment.currency, (revenueThisYearByCurrency.get(payment.currency) ?? 0) + Number(payment.amount));
+        }
+      }
     }
 
     const revenueByCurrency = new Map<string, number>();
+    const revenueThisMonthByCurrency = new Map<string, number>();
+    const revenueThisYearByCurrency = new Map<string, number>();
     const outstandingByCurrency = new Map<string, number>();
     const overdueByCurrency = new Map<string, number>();
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const yearStart = new Date(now.getFullYear(), 0, 1);
     const today = Date.now();
 
     for (const invoice of invoices.data ?? []) {
@@ -171,6 +185,8 @@ export const getOperationsOverview = createServerFn({ method: "POST" })
       },
       finance: {
         revenue_by_currency: Object.fromEntries(revenueByCurrency),
+        revenue_this_month_by_currency: Object.fromEntries(revenueThisMonthByCurrency),
+        revenue_this_year_by_currency: Object.fromEntries(revenueThisYearByCurrency),
         outstanding_by_currency: Object.fromEntries(outstandingByCurrency),
         overdue_by_currency: Object.fromEntries(overdueByCurrency),
         paid_records: paidByCurrency.size ? Object.fromEntries(paidByCurrency) : {},
@@ -429,21 +445,31 @@ export const listAdminTasks = createServerFn({ method: "POST" })
     await assertPermission(context, "leads.read");
     let query = context.supabase
       .from("crm_tasks")
-      .select("*,crm_leads(full_name,company_name,email)")
+      .select("*")
       .order("due_at", { ascending: true })
       .limit(data.limit);
     if (data.status !== "all") query = query.eq("status", data.status);
     const { data: rows, error } = await query;
-    if (error) {
-      const fallback = await context.supabase
-        .from("crm_tasks")
-        .select("*")
-        .order("due_at", { ascending: true })
-        .limit(data.limit);
-      if (fallback.error) throw new Error(error.message);
-      return { ok: true, rows: fallback.data ?? [] };
+    if (error) throw new Error(error.message);
+
+    const taskRows = rows ?? [];
+    const leadIds = [...new Set(taskRows.map((row) => row.lead_id).filter(Boolean))];
+    let leadMap = new Map<string, { full_name: string | null; company_name: string | null; email: string | null }>();
+    if (leadIds.length) {
+      const { data: profiles, error: profileError } = await context.supabase
+        .from("crm_lead_profiles")
+        .select("id,full_name,company_name,email")
+        .in("id", leadIds);
+      if (profileError) throw new Error(profileError.message);
+      leadMap = new Map((profiles ?? []).map((profile) => [profile.id, profile]));
     }
-    return { ok: true, rows: rows ?? [] };
+    return {
+      ok: true,
+      rows: taskRows.map((row) => ({
+        ...row,
+        lead_profile: leadMap.get(row.lead_id) ?? null,
+      })),
+    };
   });
 
 export const createProjectFromLead = createServerFn({ method: "POST" })
