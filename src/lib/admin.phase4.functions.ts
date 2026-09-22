@@ -93,7 +93,8 @@ function permissionName(
     | "finance.read"
     | "finance.write"
     | "media.manage"
-    | "system.audit.read",
+    | "system.audit.read"
+    | "system.users.manage",
 ) {
   return permission;
 }
@@ -130,6 +131,50 @@ async function loadLiveEntity(context: AdminContext, entity_type: Phase4EntityTy
   if (error) throw new Error(error.message);
   return { snapshot: data as unknown as Record<string, unknown>, updated_at: data.updated_at };
 }
+
+const AdminRoleSchema = z.enum(["owner", "admin", "editor", "finance"]);
+
+export const listAdminUsersPhase4 = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator(() => ({}))
+  .handler(async ({ context }) => {
+    await assertPermission(context, "system.users.manage");
+    const { data, error } = await context.supabase
+      .from("admin_users")
+      .select("id,user_id,email,role,created_at")
+      .order("email");
+    if (error) throw new Error(error.message);
+    return { ok: true, rows: data ?? [] };
+  });
+
+export const updateAdminUserRolePhase4 = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((i: unknown) =>
+    z.object({
+      user_id: z.string().uuid(),
+      role: AdminRoleSchema,
+    }).parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    await assertPermission(context, "system.users.manage");
+    const actor = await context.supabase.rpc("admin_get_role");
+    if (actor.error) throw new Error(actor.error.message);
+    if (data.role === "owner" && actor.data !== "owner") {
+      throw new Response("Only an owner can assign the owner role.", { status: 403 });
+    }
+    const currentUser = (await context.supabase.auth.getUser()).data.user?.id ?? null;
+    if (currentUser && currentUser === data.user_id && data.role !== "owner") {
+      throw new Response("You cannot demote your own account.", { status: 403 });
+    }
+    const { data: row, error } = await context.supabase
+      .from("admin_users")
+      .update({ role: data.role })
+      .eq("user_id", data.user_id)
+      .select("id,user_id,email,role,created_at")
+      .single();
+    if (error) throw new Error(error.message);
+    return { ok: true, row };
+  });
 
 export const listAdminEditableEntities = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
