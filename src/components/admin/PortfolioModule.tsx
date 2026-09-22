@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type InputHTMLAttributes, type ReactNode, type TextareaHTMLAttributes } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -1037,7 +1037,7 @@ function BatchAddProjects({ onClose, startSort }: { onClose: () => void; startSo
   );
 }
 
-function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
   return (
     <label className="block mt-4">
       <span className="mono text-[10px] tracking-[0.2em] text-slate-500">{label}</span>
@@ -1047,11 +1047,11 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
   );
 }
 
-function TextInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
+function TextInput(props: InputHTMLAttributes<HTMLInputElement>) {
   return <input {...props} className={`adm-input ${props.className ?? ""}`} />;
 }
 
-function TextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
+function TextArea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return <textarea {...props} className={`adm-input ${props.className ?? ""}`} />;
 }
 
