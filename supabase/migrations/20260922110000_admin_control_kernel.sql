@@ -168,11 +168,17 @@ BEGIN
 
   IF TG_OP = 'DELETE' THEN
     payload := to_jsonb(OLD);
+  ELSIF TG_OP = 'INSERT' THEN
+    payload := to_jsonb(NEW);
   ELSE
     payload := to_jsonb(OLD);
   END IF;
 
-  entity_id_text := COALESCE(payload ->> 'id', payload ->> 'key');
+  IF TG_TABLE_NAME = 'site_settings' THEN
+    entity_id_text := payload ->> 'key';
+  ELSE
+    entity_id_text := payload ->> 'id';
+  END IF;
   entity_label := COALESCE(
     payload ->> 'title',
     payload ->> 'name',
@@ -287,12 +293,11 @@ BEGIN
   before_row := CASE WHEN TG_OP = 'INSERT' THEN NULL ELSE to_jsonb(OLD) END;
   after_row := CASE WHEN TG_OP = 'DELETE' THEN NULL ELSE to_jsonb(NEW) END;
 
-  entity_id_text := COALESCE(
-    after_row ->> 'id',
-    before_row ->> 'id',
-    after_row ->> 'key',
-    before_row ->> 'key'
-  );
+  IF TG_TABLE_NAME = 'site_settings' THEN
+    entity_id_text := COALESCE(after_row ->> 'key', before_row ->> 'key');
+  ELSE
+    entity_id_text := COALESCE(after_row ->> 'id', before_row ->> 'id');
+  END IF;
 
   entity_label := COALESCE(
     after_row ->> 'title',
