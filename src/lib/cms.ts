@@ -1,3 +1,5 @@
+import { SOCIAL_IMAGE } from "@/lib/seo";
+
 // CMS types and English fallback content. The site reads from Supabase; if a
 // key is missing or the request fails, these fallbacks render so the site
 // never looks empty.
