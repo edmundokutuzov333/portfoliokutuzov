@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { InvoiceWorkspace } from "@/components/admin/InvoiceWorkspace";
+import { supabase } from "@/integrations/supabase/client";
 import {
   BOOKING_STATUSES,
   LEAD_STAGES,
@@ -102,14 +103,11 @@ export function Phase3OperationsOS({ onNavigate }: { onNavigate?: (section: stri
   const [tab, setTab] = useState<Tab>("overview");
   const qc = useQueryClient();
   const overview = useServerFn(getOperationsOverview);
-  const inbox = useServerFn(listAdminLeads);
+  const inbox = useServerFn(listAdminInbox);
   const [search, setSearch] = useState("");
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
 
   useEffect(() => {
-    const ch = (window as any).__kutuzovPhase3Realtime ?? null;
-    if (ch) return;
-    const { supabase } = requireClient();
     const channel = supabase
       .channel("phase3-operations-os")
       .on("postgres_changes", { event: "*", schema: "public", table: "crm_leads" }, () => invalidateOps(qc))
@@ -131,7 +129,7 @@ export function Phase3OperationsOS({ onNavigate }: { onNavigate?: (section: stri
 
   const leadListQuery = useQuery({
     queryKey: ["phase3-leads", search],
-    queryFn: () => inbox({ data: { search: search.trim() || undefined, limit: 200 } }),
+    queryFn: () => inbox({ data: { kind: "all", search: search.trim() || undefined, limit: 300 } }),
     enabled: tab === "overview" || tab === "inbox" || tab === "leads",
     staleTime: 5_000,
   });
@@ -245,9 +243,9 @@ function OperationsOverview({ data, leads, onSelectLead, onNavigate }: any) {
 }
 
 function UnifiedInbox({ rows, search, setSearch, onSelectLead }: any) {
-  const kinds = useMemo(() => Array.from(new Set(rows.map((row: any) => row.source_type))), [rows]);
+  const kinds = useMemo(() => Array.from(new Set(rows.map((row: any) => row.kind))), [rows]);
   const [kind, setKind] = useState("all");
-  const filtered = kind === "all" ? rows : rows.filter((row: any) => row.source_type === kind);
+  const filtered = kind === "all" ? rows : rows.filter((row: any) => row.kind === kind);
   return (
     <div>
       <SectionHeader kicker="Operations / Inbox" title="Unified lead inbox." description="Every contact and briefing becomes a CRM lead while retaining its original source record." />
@@ -257,11 +255,11 @@ function UnifiedInbox({ rows, search, setSearch, onSelectLead }: any) {
       </div>
       <div className="grid gap-2">
         {filtered.map((row: any) => (
-          <button key={row.id} type="button" onClick={() => row.id && onSelectLead(row.id)} className="flex flex-wrap items-center gap-3 rounded-xl border border-white/[0.07] bg-[#030814] p-4 text-left hover:border-sky-300/25">
+          <button key={row.id} type="button" onClick={() => row.lead_id && onSelectLead(row.lead_id)} className="flex flex-wrap items-center gap-3 rounded-xl border border-white/[0.07] bg-[#030814] p-4 text-left hover:border-sky-300/25">
             <div className="grid h-9 w-9 place-items-center rounded-lg border border-white/[0.07] text-sky-300"><Inbox size={14} /></div>
             <div className="min-w-[190px] flex-1"><div className="text-sm font-medium text-white">{row.full_name ?? "Unnamed"}</div><div className="mt-1 text-xs text-slate-600">{row.email ?? "No email"}{row.company_name ? ` · ${row.company_name}` : ""}</div></div>
-            <Pill label={stageLabels[row.stage as LeadStage] ?? "New"} tone={stageTone(row.stage)} />
-            <span className="mono text-[10px] text-slate-600">{row.source_type}</span>
+            <Pill label={row.stage ? (stageLabels[row.stage as LeadStage] ?? row.stage) : (row.status ?? "New")} tone={row.stage ? stageTone(row.stage) : "muted"} />
+            <span className="mono text-[10px] text-slate-600">{String(row.kind ?? "").replaceAll("_", " ")}</span>
             <span className="mono text-[10px] text-slate-600">{formatDate(row.updated_at)}</span>
           </button>
         ))}
@@ -299,6 +297,7 @@ function LeadsWorkspace({ search, setSearch, selectedLeadId, setSelectedLeadId }
   const newTask = useServerFn(createLeadTask);
   const makeProject = useServerFn(createProjectFromLead);
   const pay = useServerFn(recordInvoicePayment);
+  const updateTaskFn = useServerFn(updateLeadTask);
   const qc = useQueryClient();
 
   const current = detail?.lead;
@@ -368,11 +367,11 @@ function LeadsWorkspace({ search, setSearch, selectedLeadId, setSelectedLeadId }
         <SectionHeader kicker="Operations / CRM" title="Leads." description="Lifecycle state, owner, client, project, activity and finance context." />
         <div className="mb-3 flex flex-wrap gap-2">{["all", ...LEAD_STAGES].map((stage) => <button key={stage} type="button" onClick={() => setStageFilter(stage as any)} className={`rounded-full border px-3 py-1.5 text-[10px] uppercase ${stageFilter === stage ? "border-sky-300/30 bg-sky-300/10 text-sky-100" : "border-white/[0.08] text-slate-500"}`}>{stage === "all" ? "All" : stageLabels[stage as LeadStage]} {stage !== "all" ? `· ${rows.filter((r) => r.stage === stage).length}` : ""}</button>)}</div>
         <div className="mb-3 relative"><Search size={13} className="absolute left-3 top-3 text-slate-600" /><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search leads..." className="adm-input pl-9" /></div>
-        <div className="space-y-2">{rows.map((row) => <button key={row.id} type="button" onClick={() => setSelectedLeadId(row.id)} className={`w-full rounded-xl border p-3 text-left ${selectedLeadId === row.id ? "border-sky-300/35 bg-sky-300/[0.04]" : "border-white/[0.07] bg-[#030814]"}`}><div className="flex items-start gap-3"><div className="min-w-0 flex-1"><div className="truncate text-sm text-white">{row.full_name ?? "Unnamed"}</div><div className="mt-1 truncate text-[11px] text-slate-600">{row.email}</div></div><Pill label={stageLabels[row.stage as LeadStage] ?? row.stage} tone={stageTone(row.stage)} /></div><div className="mt-2 text-[10px] text-slate-600">{row.company_name ?? row.project_type ?? "No project context"} · {formatDate(row.updated_at)}</div></button>)}{rows.length === 0 && <EmptyState label="No leads found." />}</div>
+        <div className="space-y-2">{rows.map((row) => <button key={row.id} type="button" onClick={() => setSelectedLeadId(row.id)} className={`w-full rounded-xl border p-3 text-left ${selectedLeadId === row.id ? "border-sky-300/35 bg-sky-300/[0.04]" : "border-white/[0.07] bg-[#030814]"}`}><div className="flex items-start gap-3"><div className="min-w-0 flex-1"><div className="truncate text-sm text-white">{row.title ?? "Unnamed"}</div><div className="mt-1 truncate text-[11px] text-slate-600">{row.email ?? "No email"}{row.company_name ? ` · ${row.company_name}` : ""}</div></div><Pill label={stageLabels[row.stage as LeadStage] ?? row.stage} tone={stageTone(row.stage)} /></div><div className="mt-2 text-[10px] text-slate-600">{row.company_name ?? row.project_type ?? "No project context"} · {formatDate(row.updated_at)}</div></button>)}{rows.length === 0 && <EmptyState label="No leads found." />}</div>
       </section>
 
       <section className="min-w-0">
-        {busy && !current ? <EmptyState label="Loading lead..." /> : current ? <LeadDetail lead={current} detail={detail!} clients={clients} owners={owners} onPatch={patchLead} onStage={changeStage} onCreateProject={onCreateProject} onPayment={onPayment} addActivity={addActivity} createTask={newTask} updateTask={async (data: any) => { await useServerFn(updateLeadTask)({ data }); await load({ data: { id: current.id } }).then((result: any) => setDetail(result)); }} /> : <EmptyState label="Select a lead." />}
+        {busy && !current ? <EmptyState label="Loading lead..." /> : current ? <LeadDetail lead={current} detail={detail!} clients={clients} owners={owners} onPatch={patchLead} onStage={changeStage} onCreateProject={onCreateProject} onPayment={onPayment} addActivity={addActivity} createTask={newTask} updateTask={async (data: any) => { await updateTaskFn({ data }); await load({ data: { id: current.id } }).then((result: any) => setDetail(result)); }} /> : <EmptyState label="Select a lead." />}
       </section>
     </div>
   );
@@ -467,12 +466,13 @@ function StudioWorkspace() {
 }
 
 function TasksWorkspace() {
-  const load = useServerFn(listAdminLeads);
+  const load = useServerFn(listAdminTasks);
   const taskUpdate = useServerFn(updateLeadTask);
+  const [status, setStatus] = useState("pending");
   const [tasks,setTasks]=useState<any[]>([]);
-  const refresh=async()=>{const r:any=await load({data:{limit:200}});const leads=r.rows??[];const all:any[]=[];for(const lead of leads.slice(0,80)){try{const detail:any=await adminCall((useServerFn as any)(getAdminLead)); if(detail?.tasks) all.push(...detail.tasks.map((task:any)=>({...task,lead_name:lead.full_name,lead_id:lead.id})));}catch{}}setTasks(all.sort((a,b)=>new Date(a.due_at).getTime()-new Date(b.due_at).getTime()));};
-  useEffect(()=>{void refresh().catch((e)=>toast.error(e instanceof Error?e.message:"Tasks could not be loaded"));},[]);
-  return <div><SectionHeader kicker="Operations / Tasks" title="Operational reminders." description="Follow-up, lead, invoice and waitlist tasks stored in Supabase and visible to the whole Control Room."/><div className="space-y-2">{tasks.map((task)=><div key={task.id} className="flex flex-wrap items-center gap-3 rounded-xl border border-white/[0.07] bg-[#030814] p-4"><div className="min-w-0 flex-1"><div className="text-sm text-white">{task.title}</div><div className="mt-1 text-[10px] text-slate-600">{task.lead_name} · {task.kind} · {formatDate(task.due_at)}</div></div><Pill label={task.status} tone={task.status==="pending"?"amber":"muted"}/>{task.status==="pending"&&<button type="button" onClick={async()=>{try{await taskUpdate({data:{id:task.id,status:"completed"}});refresh();toast.success("Task completed");}catch(e){toast.error(e instanceof Error?e.message:"Update failed");}}} className="rounded-full border border-white/[0.08] px-3 py-1.5 text-[10px] text-slate-400">Complete</button>}</div>)}{tasks.length===0&&<EmptyState label="No operational tasks."/ >}</div></div>;
+  const refresh=async()=>{const r:any=await load({data:{status,limit:300}});setTasks((r.rows??[]).map((task:any)=>({...task,lead_name:task.crm_leads?.full_name ?? task.lead_name ?? "Lead"})));};
+  useEffect(()=>{void refresh().catch((e)=>toast.error(e instanceof Error?e.message:"Tasks could not be loaded"));},[status]);
+  return <div><SectionHeader kicker="Operations / Tasks" title="Operational reminders." description="Follow-up, lead, invoice and waitlist tasks stored in Supabase and visible to the whole Control Room."/><div className="mb-4 flex flex-wrap gap-2">{["pending","completed","cancelled","all"].map((v)=><button key={v} type="button" onClick={()=>setStatus(v)} className={`rounded-full border px-3 py-1.5 text-[10px] uppercase ${status===v?"border-sky-300/30 bg-sky-300/10 text-sky-100":"border-white/[0.08] text-slate-500"}`}>{v}</button>)}</div><div className="space-y-2">{tasks.map((task)=><div key={task.id} className="flex flex-wrap items-center gap-3 rounded-xl border border-white/[0.07] bg-[#030814] p-4"><div className="min-w-0 flex-1"><div className="text-sm text-white">{task.title}</div><div className="mt-1 text-[10px] text-slate-600">{task.lead_name} · {task.kind} · {formatDate(task.due_at)}</div></div><Pill label={task.status} tone={task.status==="pending"?"amber":task.status==="completed"?"green":"muted"}/>{task.status==="pending"&&<button type="button" onClick={async()=>{try{await taskUpdate({data:{id:task.id,status:"completed"}});refresh();toast.success("Task completed");}catch(e){toast.error(e instanceof Error?e.message:"Update failed");}}} className="rounded-full border border-white/[0.08] px-3 py-1.5 text-[10px] text-slate-400">Complete</button>}</div>)}{tasks.length===0&&<EmptyState label="No operational tasks."/ >}</div></div>;
 }
 
 function TaskCreate({ leadId, owners, onCreate }: any) {
@@ -502,4 +502,3 @@ function toLocalInput(value:string|null|undefined){if(!value)return "";const d=n
 function normalizeInvoiceStatus(value:string|null|undefined){if(value==="generated")return "issued";if(value==="partially_paid")return "partially paid";return value??"draft";}
 function refreshOps(qc:any){return Promise.all([qc.invalidateQueries({queryKey:["phase3-overview"]}),qc.invalidateQueries({queryKey:["phase3-leads"]})]);}
 function invalidateOps(qc:any){void refreshOps(qc);void qc.invalidateQueries({queryKey:["phase3-owners"]});}
-function requireClient(){throw new Error("Realtime client bootstrap must be wired by the Admin shell.");}
