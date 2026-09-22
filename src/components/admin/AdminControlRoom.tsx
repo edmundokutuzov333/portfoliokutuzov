@@ -160,6 +160,10 @@ function ControlRoom() {
 
   const requestSection = (next: string) => {
     const target = next as Section;
+    if (!items.some((item) => item.id === target)) {
+      toast.error("This Control Room workspace is not available for your role.");
+      return;
+    }
     if (target === section) {
       setMobileNavOpen(false);
       return;
