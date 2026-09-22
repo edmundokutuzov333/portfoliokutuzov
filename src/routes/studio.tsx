@@ -11,6 +11,21 @@ const BUILD_STATES = [
   { id: "identity", label: "Identity", kicker: "DIGITAL LAYER", title: "Every output should travel further.", body: "The Studio will turn designed assets into useful digital objects, ready to share, export, publish and carry the Kutuzov signature beyond the canvas.", icon: Layers3 },
 ] as const;
 
+export const Route = createFileRoute("/studio")({
+  head: () => ({
+    meta: [
+      { title: "Kutuzov Studio | Under Construction" },
+      {
+        name: "description",
+        content:
+          "Kutuzov Studio is a private creative workspace under construction. Explore the public signal and the work already live.",
+      },
+      { name: "robots", content: "noindex,nofollow" },
+    ],
+  }),
+  component: StudioLanding,
+});
+
 function StudioLanding() {
   const reducedMotion = useReducedMotion();
   const [activeState, setActiveState] = useState<(typeof BUILD_STATES)[number]["id"]>("signal");
