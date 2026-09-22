@@ -74,11 +74,9 @@ test("Studio remains available as a public construction page while unfinished su
   assert.match(landing, /whitespace-nowrap/);
   assert.match(landing, /Kutuzov Studio is currently under construction/);
   assert.match(landing, /Explore the portfolio/);
-  assert.match(landing, /to="\/portfolio"/);
-  assert.doesNotMatch(landing, /Private construction/);
-  assert.doesNotMatch(landing, /Public surface/);
-  assert.doesNotMatch(landing, /Portfolio first/);
-  assert.doesNotMatch(landing, /Private build/);
+  assert.match(landing, /to="\/portfolio"/);  assert.match(landing, /Wake the signal/);
+  assert.match(landing, /BUILD SIGNAL/);
+  assert.match(landing, /A studio is more than a toolbox/);
   assert.match(signal, /framer-motion/);
   assert.match(signal, /preserve-3d/);
   assert.match(signal, /studioSignalArchClip/);
