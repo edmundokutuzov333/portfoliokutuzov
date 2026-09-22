@@ -85,7 +85,7 @@ export function GenesisVisual({ reduceMotion }: { reduceMotion: boolean }) {
           style={{ transformOrigin: "324px 186px" }}
         />
       </svg>
-      <div className="absolute bottom-2 left-2 font-mono text-[10px] text-white/30">18 nodes / open composition</div>
+      <div className="absolute bottom-2 left-2 font-mono text-[10px] text-white/30">...</div>
     </div>
   );
 }
