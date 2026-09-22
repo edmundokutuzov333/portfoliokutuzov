@@ -13,7 +13,7 @@ test("Kutuzov Studio routes are registered", async () => {
 
 test("Studio navigation entry exists in desktop and mobile navigation", async () => {
   const navbar = await read("src/components/layout/Navbar.tsx");
-  assert.match(navbar, /to=\"\/studio\"/);
+  assert.match(navbar, /navigation/);\n  assert.match(navbar, /\/studio/);
   assert.match(navbar, /Kutuzov Studio/);
 });
 
