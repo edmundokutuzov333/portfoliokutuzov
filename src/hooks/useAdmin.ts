@@ -17,21 +17,17 @@ function normalizeRole(value: unknown): AdminRole {
     : null;
 }
 
-async function resolveAdminRole(userId: string): Promise<AdminRole> {
+async function verifyAdmin(userId: string): Promise<AdminRole> {
   const { data: rpcRole, error: rpcError } = await supabase.rpc("admin_get_role");
   if (!rpcError) return normalizeRole(rpcRole);
 
   // Backwards-compatible fallback while the Phase 1 migration is being applied.
   const { data, error } = await supabase
     .from("admin_users")
-    .select("role")
+    .select("user_id, role")
     .eq("user_id", userId)
     .maybeSingle();
-  return !error ? normalizeRole(data?.role ?? "admin") : null;
-}
-
-async function verifyAdmin(userId: string): Promise<boolean> {
-  return (await resolveAdminRole(userId)) !== null;
+  return !error && data?.user_id === userId ? normalizeRole(data.role ?? "admin") : null;
 }
 
 export function useAdminAuth(): AdminAuthState {
@@ -53,7 +49,7 @@ export function useAdminAuth(): AdminAuthState {
         return;
       }
 
-      const nextRole = await resolveAdminRole(nextSession.user.id);
+      const nextRole = await verifyAdmin(nextSession.user.id);
       if (!alive) return;
       setRole(nextRole);
       setLoading(false);
