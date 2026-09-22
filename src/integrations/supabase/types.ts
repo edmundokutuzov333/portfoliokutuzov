@@ -841,6 +841,15 @@ export type Database = {
     Functions: {
       is_admin: { Args: never; Returns: boolean };
       admin_has_permission: { Args: { p_permission: string }; Returns: boolean };
+      admin_reorder_projects: {
+        Args: {
+          p_other_order: number;
+          p_other_project_id: string;
+          p_project_id: string;
+          p_project_order: number;
+        };
+        Returns: boolean;
+      };
       next_invoice_number: { Args: { prefix?: string }; Returns: string };
       slugify: { Args: { input: string }; Returns: string };
     };
