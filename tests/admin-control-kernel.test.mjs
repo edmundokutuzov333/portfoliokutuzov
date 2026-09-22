@@ -57,7 +57,14 @@ test("Admin writes are centralized behind server functions", () => {
 
 test("Realtime invalidation covers all structured public content", () => {
   const source = read("src/hooks/useSiteData.ts");
-  for (const table of ["site_settings", "clients", "projects", "services", "stats", "about_method"]) {
+  for (const table of [
+    "site_settings",
+    "clients",
+    "projects",
+    "services",
+    "stats",
+    "about_method",
+  ]) {
     assert.match(source, new RegExp('useRealtimeInvalidate\\("' + table + '"'));
   }
 });
