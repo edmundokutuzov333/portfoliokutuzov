@@ -84,7 +84,7 @@ test("Studio landing is minimal while unfinished tools stay private", async () =
 });
 
 test("Studio waitlist keeps privileged credentials server-side", async () => {
-  const server = await read("src/server/studio-waitlist.ts");
+  const server = await read("src/lib/studio/waitlist.functions.ts");
   const form = await read("src/components/studio/WaitlistForm.tsx");
   const migration = await read("supabase/migrations/20260922150000_create_studio_waitlist.sql");
 
