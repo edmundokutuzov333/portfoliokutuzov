@@ -218,6 +218,7 @@ export function useProjects(includeUnpublished = false) {
 }
 
 export function useServices(includeInactive = false) {
+  useRealtimeInvalidate("services", ["services"]);
   return useQuery({
     queryKey: ["services", includeInactive],
     queryFn: async ({ signal }): Promise<DbService[]> => {
@@ -234,6 +235,7 @@ export function useServices(includeInactive = false) {
   });
 }
 export function useStats(includeInactive = false) {
+  useRealtimeInvalidate("stats", ["stats"]);
   return useQuery({
     queryKey: ["stats", includeInactive],
     queryFn: async ({ signal }): Promise<DbStat[]> => {
@@ -250,6 +252,7 @@ export function useStats(includeInactive = false) {
   });
 }
 export function useMethod(includeInactive = false) {
+  useRealtimeInvalidate("about_method", ["about_method"]);
   return useQuery({
     queryKey: ["about_method", includeInactive],
     queryFn: async ({ signal }): Promise<DbMethod[]> => {

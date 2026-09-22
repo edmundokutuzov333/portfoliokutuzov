@@ -1,27 +1,37 @@
-// Helpers for snapshotting + rolling back content edits.
-// We capture the CURRENT row before an admin write, so the history reflects
-// "what it was before this change". The trigger keeps the last 5 versions.
+// Backwards-compatible helpers for the Admin history surface.
+// Phase 1 moves authoritative writes and restores through server functions and
+// database triggers. These helpers remain for non-admin callers that still
+// import the module.
 import { supabase } from "@/integrations/supabase/client";
 import { isUuid } from "@/lib/utils";
 
-export type EntityType = "site_settings" | "projects" | "clients";
+export type EntityType =
+  "site_settings" | "projects" | "clients" | "services" | "stats" | "about_method";
 
-/** Fetch the current row and store a snapshot in content_history. Best-effort: errors are logged only. */
+const ENTITY_TABLES = new Set<EntityType>([
+  "site_settings",
+  "projects",
+  "clients",
+  "services",
+  "stats",
+  "about_method",
+]);
+
 export async function snapshotBefore(
   entity: EntityType,
   entityId: string,
   label?: string,
 ): Promise<void> {
   try {
-    let snapshot: Record<string, unknown> | null = null;
+    if (!ENTITY_TABLES.has(entity)) return;
 
+    let snapshot: Record<string, unknown> | null = null;
     if (entity === "site_settings") {
       const { data } = await supabase
         .from("site_settings")
         .select("value")
         .eq("key", entityId)
         .maybeSingle();
-      // Only snapshot if a row already existed.
       if (data) snapshot = (data.value as Record<string, unknown>) ?? {};
     } else {
       if (!isUuid(entityId)) return;
@@ -36,40 +46,46 @@ export async function snapshotBefore(
       entity_id: entityId,
       snapshot: snapshot as never,
       label: label ?? null,
+      action: "legacy",
     });
-  } catch (e) {
-    // Non-blocking - rollback should never break a save.
-    console.warn("snapshotBefore failed", e);
+  } catch (error) {
+    console.warn("snapshotBefore failed", error);
   }
 }
 
-/** Apply a previously stored snapshot back onto its source row. */
 export async function restoreSnapshot(
   entity: EntityType,
   entityId: string,
   snapshot: Record<string, unknown>,
 ): Promise<{ error: string | null }> {
-  if (entity === "site_settings") {
+  try {
+    if (entity === "site_settings") {
+      const { error } = await supabase.from("site_settings").upsert(
+        {
+          key: entityId,
+          value: snapshot as never,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "key" },
+      );
+      return { error: error?.message ?? null };
+    }
+
+    if (!isUuid(entityId) || !ENTITY_TABLES.has(entity)) {
+      return { error: "Cannot restore item: invalid identifier." };
+    }
+
+    const cleaned: Record<string, unknown> = { ...snapshot, id: entityId };
+    delete cleaned.created_at;
+    delete cleaned.updated_at;
+
     const { error } = await supabase
-      .from("site_settings")
-      .upsert([{ key: entityId, value: snapshot as never, updated_at: new Date().toISOString() }], {
-        onConflict: "key",
+      .from(entity)
+      .upsert({ ...cleaned, updated_at: new Date().toISOString() } as never, {
+        onConflict: "id",
       });
     return { error: error?.message ?? null };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "Restore failed." };
   }
-
-  if (!isUuid(entityId)) {
-    return { error: "Cannot restore item: invalid identifier." };
-  }
-
-  // For projects/clients, drop server-managed fields before restore.
-  const cleaned: Record<string, unknown> = { ...snapshot };
-  delete cleaned.created_at;
-  delete cleaned.updated_at;
-
-  const { error } = await supabase
-    .from(entity)
-    .update({ ...cleaned, updated_at: new Date().toISOString() } as never)
-    .eq("id", entityId);
-  return { error: error?.message ?? null };
 }

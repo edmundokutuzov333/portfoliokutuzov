@@ -96,10 +96,10 @@ const adminAuth = read("src/hooks/useAdmin.ts");
 const adminRoute = read("src/routes/admin.tsx");
 if (
   /admin_users/.test(adminAuth) &&
-  /verifyAdmin/.test(adminAuth) &&
-  !/mock_admin_email/.test(adminAuth)
+  /admin_get_role|resolveAdminRole/.test(adminAuth) &&
+  !/localStorage|getItem\(|mock_admin_email|Admin123|admin123/i.test(adminAuth)
 )
-  pass("admin authorization requires Supabase admin membership");
+  pass("admin authorization requires protected Supabase role resolution");
 else fail("admin authorization still permits mock/local access");
 if (/noindex, nofollow/.test(adminRoute)) pass("admin route is excluded from search indexing");
 else warn("admin route does not explicitly set noindex/nofollow");

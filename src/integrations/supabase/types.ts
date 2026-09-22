@@ -433,6 +433,7 @@ export type Database = {
       };
       content_history: {
         Row: {
+          action: string | null;
           created_at: string;
           created_by: string | null;
           entity_id: string;
@@ -442,6 +443,7 @@ export type Database = {
           snapshot: Json;
         };
         Insert: {
+          action?: string | null;
           created_at?: string;
           created_by?: string | null;
           entity_id: string;
@@ -451,6 +453,7 @@ export type Database = {
           snapshot: Json;
         };
         Update: {
+          action?: string | null;
           created_at?: string;
           created_by?: string | null;
           entity_id?: string;
@@ -458,6 +461,48 @@ export type Database = {
           id?: string;
           label?: string | null;
           snapshot?: Json;
+        };
+        Relationships: [];
+      };
+      admin_audit_log: {
+        Row: {
+          action: string;
+          actor_email: string | null;
+          actor_user_id: string | null;
+          after_data: Json | null;
+          before_data: Json | null;
+          created_at: string;
+          entity_id: string;
+          entity_label: string | null;
+          entity_type: string;
+          id: string;
+          metadata: Json;
+        };
+        Insert: {
+          action: string;
+          actor_email?: string | null;
+          actor_user_id?: string | null;
+          after_data?: Json | null;
+          before_data?: Json | null;
+          created_at?: string;
+          entity_id: string;
+          entity_label?: string | null;
+          entity_type: string;
+          id?: string;
+          metadata?: Json;
+        };
+        Update: {
+          action?: string;
+          actor_email?: string | null;
+          actor_user_id?: string | null;
+          after_data?: Json | null;
+          before_data?: Json | null;
+          created_at?: string;
+          entity_id?: string;
+          entity_label?: string | null;
+          entity_type?: string;
+          id?: string;
+          metadata?: Json;
         };
         Relationships: [];
       };
@@ -795,6 +840,17 @@ export type Database = {
     };
     Functions: {
       is_admin: { Args: never; Returns: boolean };
+      admin_get_role: { Args: never; Returns: string | null };
+      admin_has_permission: { Args: { p_permission: string }; Returns: boolean };
+      admin_reorder_projects: {
+        Args: {
+          p_other_order: number;
+          p_other_project_id: string;
+          p_project_id: string;
+          p_project_order: number;
+        };
+        Returns: boolean;
+      };
       next_invoice_number: { Args: { prefix?: string }; Returns: string };
       slugify: { Args: { input: string }; Returns: string };
     };
