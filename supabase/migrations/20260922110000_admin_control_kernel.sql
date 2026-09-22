@@ -266,8 +266,8 @@ BEGIN
                ORDER BY created_at DESC
              ) AS rn
       FROM public.content_history
-      WHERE entity_type = NEW.entity_type
-        AND entity_id = NEW.entity_id
+      WHERE entity_type = CASE WHEN TG_OP = 'DELETE' THEN OLD.entity_type ELSE NEW.entity_type END
+        AND entity_id = CASE WHEN TG_OP = 'DELETE' THEN OLD.entity_id ELSE NEW.entity_id END
     ) ranked
     WHERE ranked.rn > 20
   );
