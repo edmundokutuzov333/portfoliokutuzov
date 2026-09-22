@@ -268,6 +268,7 @@ SELECT DISTINCT
   g.url,
   split_part(regexp_replace(g.url, '^.*/', ''), '?', 1) AS filename,
   'image/*',
+  'image',
   'project',
   p.id::text,
   true
@@ -284,6 +285,7 @@ SELECT DISTINCT
   p.video_url,
   split_part(regexp_replace(p.video_url, '^.*/', ''), '?', 1) AS filename,
   'video/*',
+  'video',
   'project',
   p.id::text,
   true
