@@ -1,10 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
-import { z } from "zod";
-
-const emailSchema = z.object({
-  email: z.string().trim().email().max(200).transform((email) => email.toLowerCase()),
-});
+import { studioWaitlistEmailSchema } from "@/lib/studio/waitlist-schema";
 
 const RESEND_GATEWAY = "https://connector-gateway.lovable.dev/resend";
 
@@ -39,7 +35,7 @@ async function sendOpeningEmail(email: string) {
 }
 
 export const joinStudioWaitlist = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => emailSchema.parse(input))
+  .inputValidator((input: unknown) => studioWaitlistEmailSchema.parse(input))
   .handler(async ({ data }) => {
     const supabaseUrl = process.env.SUPABASE_URL;
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -64,5 +60,3 @@ export const joinStudioWaitlist = createServerFn({ method: "POST" })
     await sendOpeningEmail(data.email);
     return { status: "ok" as const };
   });
-
-export { emailSchema as studioWaitlistEmailSchema };
