@@ -101,6 +101,7 @@ async function assertPermission(
 
 export const getOperationsOverview = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
+  .validator(() => ({}))
   .handler(async ({ context }) => {
     await assertPermission(context, "leads.read");
     const [projects, leads, bookings, subscribers, waitlist, invoices, payments, tasks] = await Promise.all([
@@ -109,7 +110,7 @@ export const getOperationsOverview = createServerFn({ method: "POST" })
       context.supabase.from("booking_requests").select("booking_status"),
       context.supabase.from("newsletter_subscribers").select("id", { count: "exact", head: true }).eq("status", "active"),
       context.supabase.from("studio_waitlist").select("id", { count: "exact", head: true }).eq("status", "active"),
-      context.supabase.from("briefing_submissions").select("invoice_total,invoice_currency,invoice_status,invoice_due_date"),
+      context.supabase.from("briefing_submissions").select("id,invoice_total,invoice_currency,invoice_status,invoice_due_date"),
       context.supabase.from("crm_payments").select("briefing_id,amount,currency,status"),
       context.supabase.from("crm_tasks").select("id,due_at,status").eq("status", "pending").order("due_at").limit(20),
     ]);
@@ -224,6 +225,7 @@ export const getAdminLead = createServerFn({ method: "POST" })
 
 export const listLeadOwners = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
+  .validator(() => ({}))
   .handler(async ({ context }) => {
     await assertPermission(context, "leads.read");
     const { data, error } = await context.supabase.rpc("admin_user_directory");
@@ -279,6 +281,7 @@ export const updateLeadTask = createServerFn({ method: "POST" })
 
 export const listAdminBookings = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
+  .validator(() => ({}))
   .handler(async ({ context }) => {
     await assertPermission(context, "leads.read");
     const { data, error } = await context.supabase.from("booking_requests").select("*").order("preferred_date", { ascending: true }).order("created_at", { ascending: false }).limit(200);
@@ -299,6 +302,7 @@ export const updateAdminBooking = createServerFn({ method: "POST" })
 
 export const listAdminAudience = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
+  .validator(() => ({}))
   .handler(async ({ context }) => {
     await assertPermission(context, "leads.read");
     const [subscribers, waitlist] = await Promise.all([
@@ -336,6 +340,7 @@ export const updateAdminWaitlist = createServerFn({ method: "POST" })
 
 export const listAdminClientsCRM = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
+  .validator(() => ({}))
   .handler(async ({ context }) => {
     await assertPermission(context, "leads.read");
     const [clients, projects, leads] = await Promise.all([
@@ -364,6 +369,7 @@ function csvCell(value: unknown) {
 
 export const exportAdminAudience = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
+  .validator(() => ({}))
   .handler(async ({ context }) => {
     await assertPermission(context, "leads.read");
     const [subscribers, waitlist] = await Promise.all([
@@ -378,6 +384,66 @@ export const exportAdminAudience = createServerFn({ method: "POST" })
       ...(waitlist.data ?? []).map((r) => ["studio_waitlist", r.email, "", r.source, r.status, r.created_at].map(csvCell).join(",")),
     ];
     return { ok: true, csv: lines.join("\n") };
+  });
+
+
+const InboxListSchema = z.object({
+  kind: z.enum(["all", "briefing", "contact", "booking", "subscriber", "studio_waitlist"]).default("all"),
+  search: z.string().trim().max(120).optional(),
+  limit: z.number().int().min(1).max(300).default(200),
+});
+
+export const listAdminInbox = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((i: unknown) => InboxListSchema.parse(i))
+  .handler(async ({ data, context }) => {
+    await assertPermission(context, "leads.read");
+    let query = context.supabase
+      .from("crm_inbox")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(data.limit);
+    if (data.kind !== "all") query = query.eq("kind", data.kind);
+    if (data.search) {
+      const needle = data.search.replace(/[^\p{L}\p{N}\s@._-]/gu, "").trim();
+      if (needle) {
+        query = query.or(
+          `title.ilike.%${needle}%,company_name.ilike.%${needle}%,email.ilike.%${needle}%,preview.ilike.%${needle}%`,
+        );
+      }
+    }
+    const { data: rows, error } = await query;
+    if (error) throw new Error(error.message);
+    return { ok: true, rows: rows ?? [] };
+  });
+
+const TaskListSchema = z.object({
+  status: z.enum(["all", "pending", "completed", "cancelled"]).default("all"),
+  limit: z.number().int().min(1).max(500).default(300),
+});
+
+export const listAdminTasks = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((i: unknown) => TaskListSchema.parse(i))
+  .handler(async ({ data, context }) => {
+    await assertPermission(context, "leads.read");
+    let query = context.supabase
+      .from("crm_tasks")
+      .select("*,crm_leads(full_name,company_name,email)")
+      .order("due_at", { ascending: true })
+      .limit(data.limit);
+    if (data.status !== "all") query = query.eq("status", data.status);
+    const { data: rows, error } = await query;
+    if (error) {
+      const fallback = await context.supabase
+        .from("crm_tasks")
+        .select("*")
+        .order("due_at", { ascending: true })
+        .limit(data.limit);
+      if (fallback.error) throw new Error(error.message);
+      return { ok: true, rows: fallback.data ?? [] };
+    }
+    return { ok: true, rows: rows ?? [] };
   });
 
 export const createProjectFromLead = createServerFn({ method: "POST" })
@@ -412,6 +478,7 @@ export const recordInvoicePayment = createServerFn({ method: "POST" })
 
 export const getStudioOperationsSnapshot = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
+  .validator(() => ({}))
   .handler(async ({ context }) => {
     await assertPermission(context, "leads.read");
     const since = new Date(Date.now() - 30 * 86400000).toISOString();
