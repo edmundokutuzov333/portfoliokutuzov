@@ -840,6 +840,7 @@ export type Database = {
     };
     Functions: {
       is_admin: { Args: never; Returns: boolean };
+      admin_get_role: { Args: never; Returns: string | null };
       admin_has_permission: { Args: { p_permission: string }; Returns: boolean };
       admin_reorder_projects: {
         Args: {
