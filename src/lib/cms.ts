@@ -143,6 +143,26 @@ export type DbMethod = {
   is_active: boolean;
 };
 
+export type NavigationItem = {
+  id: string;
+  label: string;
+  route: string;
+  order: number;
+  visible: boolean;
+  external: boolean;
+  cta: boolean;
+};
+
+export const FALLBACK_NAVIGATION: NavigationItem[] = [
+  { id: "home", label: "Home", route: "/", order: 1, visible: true, external: false, cta: false },
+  { id: "portfolio", label: "Portfolio", route: "/portfolio", order: 2, visible: true, external: false, cta: false },
+  { id: "credentials", label: "Credentials", route: "/credentials", order: 3, visible: true, external: false, cta: false },
+  { id: "services", label: "Services", route: "/services", order: 4, visible: true, external: false, cta: false },
+  { id: "contact", label: "Contact", route: "/contact", order: 5, visible: true, external: false, cta: false },
+  { id: "studio", label: "Kutuzov Studio", route: "/studio", order: 6, visible: true, external: false, cta: false },
+  { id: "start-project", label: "Start a project", route: "/contact", order: 7, visible: true, external: false, cta: true },
+];
+
 export const FALLBACK_SETTINGS: SiteSettings = {
   hero: {
     top_left: "Edmundo Kutuzov - Art Director",
@@ -329,6 +349,70 @@ export const FALLBACK_SETTINGS: SiteSettings = {
       "Moçambique Companhia de Seguros",
       "PROMAR",
     ],
+  },
+  global: {
+    site_name: "Edmundo Kutuzov",
+    seo_title: "Edmundo Kutuzov - Designer & Art Director",
+    meta_description: "Visual identities, art direction and digital experiences built with strategic clarity and technical precision.",
+    og_title: "Edmundo Kutuzov - Designer & Art Director",
+    og_description: "Visual identities, art direction and digital experiences built with strategic clarity and technical precision.",
+    og_image: SOCIAL_IMAGE,
+    favicon_url: "/favicon.webp",
+    email: SITE_EMAIL,
+    phone: SITE_PHONE,
+    location: 'Magoanine "C", Maputo · Mozambique',
+    copyright: "Edmundo Kutuzov. All rights reserved. The only one.",
+    studio_visible: true,
+    newsletter_enabled: true,
+    analytics_enabled: true,
+  },
+  navigation: {
+    items: FALLBACK_NAVIGATION,
+  },
+  seo_global: {
+    title: "Edmundo Kutuzov - Designer & Art Director",
+    description: "Visual identities, art direction and digital experiences built with strategic clarity and technical precision.",
+    og_title: "Edmundo Kutuzov - Designer & Art Director",
+    og_description: "Visual identities, art direction and digital experiences built with strategic clarity and technical precision.",
+    og_image: SOCIAL_IMAGE,
+    twitter_card: "summary_large_image",
+    canonical_base: "https://edmundokutuzov.art",
+    robots_meta: "index,follow,max-image-preview:large",
+    sitemap_enabled: true,
+  },
+  seo_pages: {
+    pages: {
+      "/": {
+        title: "Edmundo Kutuzov - Art Director",
+        description: "Edmundo Kutuzov is an art director based in Maputo, Mozambique. Visual identities, art direction and campaign design for brands that want to be remembered.",
+        canonical: "/",
+        og_image: SOCIAL_IMAGE,
+      },
+      "/portfolio": {
+        title: "Portfolio - Edmundo Kutuzov",
+        description: "Selected art direction, brand identity and campaign work by Edmundo Kutuzov, art director based in Maputo, Mozambique.",
+        canonical: "/portfolio",
+        og_image: SOCIAL_IMAGE,
+      },
+      "/services": {
+        title: "Capabilities - Edmundo Kutuzov",
+        description: "Capabilities and visual disciplines: art direction, brand identity, campaign design, and digital systems by Edmundo Kutuzov.",
+        canonical: "/services",
+        og_image: SOCIAL_IMAGE,
+      },
+      "/credentials": {
+        title: "The Credentials - Edmundo Kutuzov",
+        description: "Experience, skills and selected brands worked with as art director and graphic designer by Edmundo Kutuzov.",
+        canonical: "/credentials",
+        og_image: SOCIAL_IMAGE,
+      },
+      "/contact": {
+        title: "Contact - Edmundo Kutuzov",
+        description: "Smart project briefing for new collaborations with Edmundo Kutuzov, art director in Maputo.",
+        canonical: "/contact",
+        og_image: SOCIAL_IMAGE,
+      },
+    },
   },
   social: {
     instagram: "https://www.instagram.com/edmundo.kutuzov/",

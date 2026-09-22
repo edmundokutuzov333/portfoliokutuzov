@@ -20,6 +20,16 @@ import { InboxHub } from "@/components/admin/InboxHub";
 import { AuditManager } from "@/components/admin/AuditManager";
 import { HistoryManager } from "@/components/admin/HistoryManager";
 import { InvoiceWorkspace } from "@/components/admin/InvoiceWorkspace";
+import {
+  Phase2Overview,
+  HomepageManager,
+  CredentialsManager,
+  ServicesManager,
+  NavigationManager,
+  GlobalSettingsManager,
+  SeoManager,
+  MediaLibrary,
+} from "@/components/admin/Phase2WebsiteCMS";
 import { toast } from "sonner";
 import {
   createAdminProject,
@@ -60,6 +70,9 @@ import {
   History,
   ArrowUp,
   ArrowDown,
+  LayoutDashboard,
+  Globe2,
+  Settings2,
 } from "lucide-react";
 
 export const Route = createLazyFileRoute("/admin")({
@@ -67,6 +80,14 @@ export const Route = createLazyFileRoute("/admin")({
 });
 
 type Section =
+  | "overview"
+  | "homepage"
+  | "navigation"
+  | "credentials"
+  | "services"
+  | "global"
+  | "seo"
+  | "media"
   | "site"
   | "clients"
   | "studios"
@@ -82,7 +103,7 @@ type Section =
 function ControlRoom() {
   useAdminInputStyle();
   const { session, isAdmin, role, loading } = useAdminAuth();
-  const [section, setSection] = useState<Section>("site");
+  const [section, setSection] = useState<Section>("overview");
 
   if (loading) {
     return (
@@ -94,6 +115,14 @@ function ControlRoom() {
   if (!session || !isAdmin) return <LoginForm hasSession={!!session} />;
 
   const allItems = [
+    { id: "overview" as const, label: "Overview", Icon: LayoutDashboard, roles: ["owner", "admin", "editor", "finance"] },
+    { id: "homepage" as const, label: "Homepage", Icon: Home, roles: ["owner", "admin", "editor"] },
+    { id: "navigation" as const, label: "Navigation", Icon: ArrowUp, roles: ["owner", "admin", "editor"] },
+    { id: "credentials" as const, label: "Credentials", Icon: UserIcon, roles: ["owner", "admin", "editor"] },
+    { id: "services" as const, label: "Services", Icon: Briefcase, roles: ["owner", "admin", "editor"] },
+    { id: "global" as const, label: "Global Settings", Icon: Settings2, roles: ["owner", "admin", "editor"] },
+    { id: "seo" as const, label: "SEO", Icon: Globe2, roles: ["owner", "admin", "editor"] },
+    { id: "media" as const, label: "Media Library", Icon: ImageIcon, roles: ["owner", "admin", "editor"] },
     { id: "site" as const, label: "Site Content", Icon: Home, roles: ["owner", "admin", "editor"] },
     { id: "clients" as const, label: "Clients", Icon: Users, roles: ["owner", "admin", "editor"] },
     { id: "studios" as const, label: "Studios", Icon: Users, roles: ["owner", "admin", "editor"] },
@@ -156,6 +185,14 @@ function ControlRoom() {
       </aside>
 
       <main className="flex-1 p-6 md:p-10 overflow-auto">
+        {section === "overview" && <Phase2Overview onNavigate={(next) => setSection(next as Section)} />}
+        {section === "homepage" && <HomepageManager />}
+        {section === "navigation" && <NavigationManager />}
+        {section === "credentials" && <CredentialsManager />}
+        {section === "services" && <ServicesManager />}
+        {section === "global" && <GlobalSettingsManager />}
+        {section === "seo" && <SeoManager />}
+        {section === "media" && <MediaLibrary />}
         {section === "site" && <SiteContentManager />}
         {section === "clients" && <ClientsManager />}
         {section === "studios" && <StudiosManager />}

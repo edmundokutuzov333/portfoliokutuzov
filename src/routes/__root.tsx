@@ -10,6 +10,7 @@ import { ContextualRelatedWork } from "@/components/ContextualRelatedWork";
 import { ContactDraftRecovery } from "@/components/ContactDraftRecovery";
 import { RouteTimingInstaller } from "@/components/RouteTimingInstaller";
 import { Navbar } from "@/components/layout/Navbar";
+import { SeoRuntimeSync } from "@/components/SeoRuntimeSync";
 import { Footer } from "@/components/layout/Footer";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { resetKnownCorruptedState } from "@/lib/browser-safe";
@@ -67,7 +68,7 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
-  const isAdmin = pathname.startsWith("/edmundo-control-room");
+  const isAdmin = pathname.startsWith("/edmundo-control-room") || pathname.startsWith("/admin");
   useEffect(() => {
     installRuntimeDiagnostics();
     const frame = window.requestAnimationFrame(() => window.requestAnimationFrame(markRenderHealthy));
@@ -80,5 +81,5 @@ function RootComponent() {
     const cleanupPrimary = installSiteLocaleDomBridge();
     return () => cleanupPrimary();
   }, []);
-  return <AppErrorBoundary onReset={() => queryClient.clear()}><QueryClientProvider client={queryClient}><RouteTimingInstaller />{!isAdmin && <ProjectEntitySchema />}{!isAdmin && <ContactDraftRecovery />}{!isAdmin && <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-[var(--color-text-primary)] focus:px-4 focus:py-3 focus:text-sm focus:font-semibold focus:text-[var(--color-bg)]">Skip to content</a>}{!isAdmin && <div className="fixed inset-0 z-0 bg-[var(--color-bg)]" aria-hidden="true" />}<div className="relative z-10">{!isAdmin && <Navbar />}<main id="main-content" data-ek-app-root="true"><AppErrorBoundary label="route content" minimal onReset={() => queryClient.clear()}><Outlet /></AppErrorBoundary></main>{!isAdmin && <ContextualRelatedWork />}{!isAdmin && <Footer />}</div>{!isAdmin && <ScrollToTop />}<AppErrorBoundary label="notifications" minimal><Toaster theme="dark" position="bottom-right" toastOptions={{ style: { background: "#06111f", border: "1px solid rgba(148,163,184,0.14)", color: "#f5f8ff" } }} /></AppErrorBoundary>{!isAdmin && <CommandPalette />}{!isAdmin && <DeferredAiAssistant />}</QueryClientProvider></AppErrorBoundary>;
+  return <AppErrorBoundary onReset={() => queryClient.clear()}><QueryClientProvider client={queryClient}><RouteTimingInstaller /><SeoRuntimeSync />{!isAdmin && <ProjectEntitySchema />}{!isAdmin && <ContactDraftRecovery />}{!isAdmin && <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-[var(--color-text-primary)] focus:px-4 focus:py-3 focus:text-sm focus:font-semibold focus:text-[var(--color-bg)]">Skip to content</a>}{!isAdmin && <div className="fixed inset-0 z-0 bg-[var(--color-bg)]" aria-hidden="true" />}<div className="relative z-10">{!isAdmin && <Navbar />}<main id="main-content" data-ek-app-root="true"><AppErrorBoundary label="route content" minimal onReset={() => queryClient.clear()}><Outlet /></AppErrorBoundary></main>{!isAdmin && <ContextualRelatedWork />}{!isAdmin && <Footer />}</div>{!isAdmin && <ScrollToTop />}<AppErrorBoundary label="notifications" minimal><Toaster theme="dark" position="bottom-right" toastOptions={{ style: { background: "#06111f", border: "1px solid rgba(148,163,184,0.14)", color: "#f5f8ff" } }} /></AppErrorBoundary>{!isAdmin && <CommandPalette />}{!isAdmin && <DeferredAiAssistant />}</QueryClientProvider></AppErrorBoundary>;
 }

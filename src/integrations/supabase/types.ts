@@ -612,6 +612,63 @@ export type Database = {
           },
         ];
       };
+      media_assets: {
+        Row: {
+          alt_text: string | null;
+          created_at: string;
+          created_by: string | null;
+          entity_id: string | null;
+          entity_type: string | null;
+          filename: string;
+          height: number | null;
+          id: string;
+          is_public: boolean;
+          kind: string;
+          mime_type: string;
+          public_url: string;
+          size_bytes: number;
+          storage_path: string;
+          updated_at: string;
+          width: number | null;
+        };
+        Insert: {
+          alt_text?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          entity_id?: string | null;
+          entity_type?: string | null;
+          filename: string;
+          height?: number | null;
+          id?: string;
+          is_public?: boolean;
+          kind: string;
+          mime_type: string;
+          public_url: string;
+          size_bytes: number;
+          storage_path: string;
+          updated_at?: string;
+          width?: number | null;
+        };
+        Update: {
+          alt_text?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          entity_id?: string | null;
+          entity_type?: string | null;
+          filename?: string;
+          height?: number | null;
+          id?: string;
+          is_public?: boolean;
+          kind?: string;
+          mime_type?: string;
+          public_url?: string;
+          size_bytes?: number;
+          storage_path?: string;
+          updated_at?: string;
+          width?: number | null;
+        };
+        Relationships: [];
+      };
       newsletter_subscribers: {
         Row: {
           consent: boolean;
@@ -849,6 +906,18 @@ export type Database = {
           p_project_id: string;
           p_project_order: number;
         };
+        Returns: boolean;
+      };
+      admin_reorder_services: {
+        Args: { p_ids: string[] };
+        Returns: boolean;
+      };
+      admin_reorder_stats: {
+        Args: { p_ids: string[] };
+        Returns: boolean;
+      };
+      admin_reorder_about_method: {
+        Args: { p_ids: string[] };
         Returns: boolean;
       };
       next_invoice_number: { Args: { prefix?: string }; Returns: string };

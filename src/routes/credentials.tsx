@@ -2,7 +2,7 @@ import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowUpRight, CheckCircle2, Globe, Mail, MapPin, Phone, Sparkles } from "lucide-react";
-import { useSiteSettings, useClients } from "@/hooks/useSiteData";
+import { useSiteSettings, useClients, useStats, useMethod } from "@/hooks/useSiteData";
 import { readSetting } from "@/lib/cms";
 
 export const Route = createFileRoute("/credentials")({
@@ -89,9 +89,12 @@ const EASE_EDITORIAL = [0.16, 1, 0.3, 1] as const;
 function CredentialsPage() {
   const { data: settings } = useSiteSettings();
   const { data: clients = [] } = useClients();
+  const { data: stats = [] } = useStats();
+  const { data: methods = [] } = useMethod();
   const reducedMotion = useReducedMotion();
 
-  const r = <T,>(f: string, fb: T) => readSetting<T>(settings, "about", f, fb);
+  const legacy = <T,>(f: string, fb: T) => readSetting<T>(settings, "about", f, fb);
+  const r = <T,>(f: string, fb: T) => readSetting<T>(settings, "credentials", f, legacy(f, fb));
   const s = <T,>(f: string, fb: T) => readSetting<T>(settings, "social", f, fb);
 
   const experience = r<Exp[]>("experience", FALLBACK_EXPERIENCE);
@@ -263,7 +266,11 @@ function CredentialsPage() {
       <section className="relative px-4 md:px-8 py-16 border-y border-white/[0.08] bg-[#02050c]">
         <div className="max-w-[var(--width-wide)] mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-px bg-white/[0.08] border border-white/[0.08] rounded-2xl overflow-hidden shadow-2xl">
-            {METRICS.map((c, i) => (
+            {(stats.length ? stats.map((item) => ({
+              value: item.value,
+              label: item.label,
+              context: "Admin-managed credential metric",
+            })) : METRICS).map((c, i) => (
               <motion.div
                 key={c.label}
                 initial={{ opacity: 0, y: 12 }}
@@ -349,6 +356,50 @@ function CredentialsPage() {
           </div>
         </div>
       </section>
+
+      {/* 4. SKILLS */}
+      <section className="relative px-4 md:px-8 py-20 border-t border-white/[0.08] bg-[#02050c]">
+        <div className="max-w-[var(--width-wide)] mx-auto">
+          <div className="mb-10 pb-6 border-b border-white/[0.08]">
+            <p className="mono text-[10px] tracking-[0.28em] text-sky-300/80 uppercase">Skill Matrix</p>
+            <h2 className="display text-3xl md:text-5xl text-white mt-2 tracking-tight">Skills</h2>
+          </div>
+          <div className="grid gap-3 md:grid-cols-2">
+            {r<Array<{ name: string; value: number }>>("skills", []).map((skill, index) => (
+              <div key={skill.name + index} className="rounded-xl border border-white/[0.08] bg-[#040915] p-5">
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-sm text-slate-200">{skill.name}</span>
+                  <span className="mono text-[10px] text-sky-300">{Math.max(0, Math.min(100, Number(skill.value) || 0))}%</span>
+                </div>
+                <div className="mt-3 h-1 overflow-hidden rounded-full bg-white/[0.06]">
+                  <div className="h-full bg-sky-300" style={{ width: Math.max(0, Math.min(100, Number(skill.value) || 0)) + "%" }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 4B. METHOD */}
+      {methods.length > 0 && (
+        <section className="relative px-4 md:px-8 py-24 border-t border-white/[0.08]">
+          <div className="max-w-[var(--width-wide)] mx-auto">
+            <div className="mb-12 pb-6 border-b border-white/[0.08]">
+              <p className="mono text-[10px] tracking-[0.28em] text-sky-300/80 uppercase">Method</p>
+              <h2 className="display text-3xl md:text-5xl text-white mt-2 tracking-tight">How the studio works.</h2>
+            </div>
+            <div className="divide-y divide-white/[0.08]">
+              {methods.map((method) => (
+                <div key={method.id} className="grid gap-5 py-7 md:grid-cols-[100px_1fr_2fr]">
+                  <div className="mono text-xs tracking-[0.2em] text-sky-300">{method.number}</div>
+                  <h3 className="display text-2xl text-white">{method.title}</h3>
+                  <p className="text-sm md:text-base leading-relaxed text-slate-400">{method.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* 4. CAPABILITIES HIERARCHY */}
       <section className="relative px-4 md:px-8 py-20 border-t border-white/[0.08] bg-[#02050c]">
@@ -449,7 +500,7 @@ function CredentialsPage() {
             <p className="mono text-[10px] tracking-[0.28em] text-slate-400 uppercase">Reference</p>
           </div>
           <p className="display text-3xl md:text-4xl tracking-[0.04em] text-sky-300 font-medium italic">
-            GOD
+            r("reference", "GOD")
           </p>
         </div>
       </section>

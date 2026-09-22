@@ -3,7 +3,7 @@ import { useState, useRef } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { Link } from "@tanstack/react-router";
 import { ArrowUpRight, Check, Sparkles } from "lucide-react";
-import { useProjects } from "@/hooks/useSiteData";
+import { useProjects, useServices } from "@/hooks/useSiteData";
 import { type DbProject } from "@/lib/cms";
 
 export interface Discipline {
@@ -18,7 +18,7 @@ export interface Discipline {
   defaultProjectTitle: string;
 }
 
-const DISCIPLINES: Discipline[] = [
+const STATIC_DISCIPLINES: Discipline[] = [
   {
     id: "identity",
     number: "01",
@@ -110,7 +110,27 @@ const EASE_EDITORIAL = [0.16, 1, 0.3, 1] as const;
 
 export function ServicesInteractive() {
   const { data: projects = [] } = useProjects();
-  const [activeId, setActiveId] = useState<string>(DISCIPLINES[0].id);
+  const { data: services = [] } = useServices();
+  const disciplines = React.useMemo<Discipline[]>(() => {
+    if (!services.length) return STATIC_DISCIPLINES;
+    return services.map((service) => ({
+      id: service.id,
+      number: service.number || String(service.sort_order).padStart(2, "0"),
+      title: service.title,
+      tagline: (service.description || "Capability delivered with strategic and visual precision.").split(/[.!?]/)[0],
+      description: service.description || "Capability delivered with strategic and visual precision.",
+      tags: [],
+      deliverables: [],
+      projectMatcher: () => true,
+      defaultProjectTitle: "",
+    }));
+  }, [services]);
+  const [activeId, setActiveId] = useState<string>(STATIC_DISCIPLINES[0].id);
+  React.useEffect(() => {
+    if (disciplines.length && !disciplines.some((item) => item.id === activeId)) {
+      setActiveId(disciplines[0].id);
+    }
+  }, [disciplines, activeId]);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const reducedMotion = useReducedMotion();
 
@@ -130,7 +150,7 @@ export function ServicesInteractive() {
   };
 
   const currentId = hoveredId || activeId;
-  const currentDiscipline = DISCIPLINES.find((d) => d.id === currentId) || DISCIPLINES[0];
+  const currentDiscipline = disciplines.find((d) => d.id === currentId) || disciplines[0];
 
   // Resolve matching real project from portfolio
   const matchedProject = React.useMemo(() => {
@@ -201,7 +221,7 @@ export function ServicesInteractive() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
           {/* LEFT: Disciplines Interactive List (7 cols) */}
           <div className="lg:col-span-7 flex flex-col space-y-4">
-            {DISCIPLINES.map((discipline) => {
+            {disciplines.map((discipline) => {
               const isHovered = hoveredId === discipline.id;
               const isActive = currentId === discipline.id;
               const isOtherHovered = hoveredId !== null && !isHovered;
@@ -339,7 +359,7 @@ export function ServicesInteractive() {
                   </span>
                 </div>
                 <span className="mono text-[10px] tracking-[0.15em] text-sky-300 font-semibold uppercase">
-                  {currentDiscipline.number} / 04
+                  {currentDiscipline.number} / {String(disciplines.length).padStart(2, "0")}
                 </span>
               </div>
 

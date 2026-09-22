@@ -139,7 +139,7 @@ const AuditSchema = z.object({
 
 const MediaUploadSchema = z.object({
   entity_id: z.string().uuid(),
-  kind: z.enum(["logo", "cover", "gallery", "video"]),
+  kind: z.enum(["logo", "cover", "gallery", "video", "library"]),
   filename: z.string().trim().min(1).max(240),
   content_type: z.string().trim().max(120),
   size_bytes: z.number().int().positive().max(200 * 1024 * 1024),
@@ -150,6 +150,7 @@ const MEDIA_MIME_ALLOWLIST = new Set([
   "image/jpeg",
   "image/webp",
   "image/svg+xml",
+  "application/pdf",
   "video/mp4",
   "video/webm",
   "video/ogg",
@@ -171,7 +172,8 @@ export const prepareAdminMediaUpload = createServerFn({ method: "POST" })
       throw new Error("Unsupported media type");
     }
 
-    const prefix = data.kind === "logo" ? "logos" : "projects";
+    const prefix =
+      data.kind === "logo" ? "logos" : data.kind === "library" ? "library" : "projects";
     const filename = safeMediaName(data.filename);
     const path = `${prefix}/${data.entity_id}-${data.kind}-${Date.now()}-${filename}`;
 
@@ -193,6 +195,357 @@ export const prepareAdminMediaUpload = createServerFn({ method: "POST" })
       token: signed.token,
       publicUrl: publicData.publicUrl,
     };
+  });
+
+const ServiceSchema = z.object({
+  id: z.string().uuid().optional(),
+  number: z.string().trim().max(40).nullable().optional(),
+  title: z.string().trim().min(1).max(200),
+  description: z.string().trim().max(2000).nullable().optional(),
+  icon: z.string().trim().max(100).nullable().optional(),
+  sort_order: z.number().int().min(-100000).max(100000),
+  is_active: z.boolean(),
+});
+
+const StatSchema = z.object({
+  id: z.string().uuid().optional(),
+  value: z.string().trim().min(1).max(80),
+  label: z.string().trim().min(1).max(120),
+  sort_order: z.number().int().min(-100000).max(100000),
+  is_active: z.boolean(),
+});
+
+const MethodSchema = z.object({
+  id: z.string().uuid().optional(),
+  number: z.string().trim().min(1).max(40),
+  title: z.string().trim().min(1).max(200),
+  description: z.string().trim().max(2000).nullable().optional(),
+  sort_order: z.number().int().min(-100000).max(100000),
+  is_active: z.boolean(),
+});
+
+const StructuredReorderSchema = z.object({
+  ids: z.array(z.string().uuid()).max(200),
+});
+
+const FeaturedSchema = z.object({
+  id: z.string().uuid(),
+  featured: z.boolean(),
+  featured_priority: z.number().int().min(-100000).max(100000),
+});
+
+const MediaAssetSchema = z.object({
+  id: z.string().uuid(),
+  storage_path: z.string().trim().min(1).max(500),
+  public_url: z.string().url(),
+  filename: z.string().trim().min(1).max(240),
+  mime_type: z.string().trim().min(1).max(120),
+  width: z.number().int().positive().nullable().optional(),
+  height: z.number().int().positive().nullable().optional(),
+  size_bytes: z.number().int().positive().max(200 * 1024 * 1024),
+  kind: z.enum(["image", "video", "logo", "document"]),
+  alt_text: z.string().trim().max(500).nullable().optional(),
+  entity_type: z.string().trim().max(120).nullable().optional(),
+  entity_id: z.string().trim().max(160).nullable().optional(),
+  is_public: z.boolean(),
+});
+
+const MediaQuerySchema = z.object({
+  search: z.string().trim().max(120).optional(),
+  kind: z.enum(["image", "video", "logo", "document", "all"]).default("all"),
+});
+
+export const saveAdminService = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((i: unknown) => ServiceSchema.parse(i))
+  .handler(async ({ data, context }) => {
+    await assertPermission(context, "content.write");
+    const payload = {
+      id: data.id,
+      number: data.number ?? null,
+      title: data.title,
+      description: data.description ?? null,
+      icon: data.icon ?? null,
+      sort_order: data.sort_order,
+      is_active: data.is_active,
+      updated_at: new Date().toISOString(),
+    };
+    const { data: row, error } = await context.supabase
+      .from("services")
+      .upsert(payload as never, { onConflict: "id" })
+      .select("*")
+      .single();
+    if (error) throw new Error(error.message);
+    return { ok: true, row };
+  });
+
+export const createAdminService = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((i: unknown) =>
+    ServiceSchema.omit({ id: true }).parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    await assertPermission(context, "content.write");
+    const { data: row, error } = await context.supabase
+      .from("services")
+      .insert(data)
+      .select("*")
+      .single();
+    if (error) throw new Error(error.message);
+    return { ok: true, row };
+  });
+
+export const deleteAdminService = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((i: unknown) => IdSchema.parse(i))
+  .handler(async ({ data, context }) => {
+    await assertPermission(context, "content.write");
+    const { error } = await context.supabase.from("services").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const duplicateAdminService = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((i: unknown) => IdSchema.parse(i))
+  .handler(async ({ data, context }) => {
+    await assertPermission(context, "content.write");
+    const { data: source, error: readError } = await context.supabase
+      .from("services")
+      .select("*")
+      .eq("id", data.id)
+      .single();
+    if (readError || !source) throw new Error(readError?.message ?? "Service not found");
+    const { data: row, error } = await context.supabase
+      .from("services")
+      .insert({
+        number: source.number ? `${source.number} copy` : null,
+        title: `${source.title} (copy)`,
+        description: source.description,
+        icon: source.icon,
+        sort_order: Number(source.sort_order ?? 0) + 1,
+        is_active: false,
+      })
+      .select("*")
+      .single();
+    if (error) throw new Error(error.message);
+    return { ok: true, row };
+  });
+
+export const reorderAdminServices = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((i: unknown) => StructuredReorderSchema.parse(i))
+  .handler(async ({ data, context }) => {
+    await assertPermission(context, "content.write");
+    const { data: ok, error } = await context.supabase.rpc("admin_reorder_services", {
+      p_ids: data.ids,
+    });
+    if (error) throw new Error(error.message);
+    if (!ok) throw new Error("Service reorder failed");
+    return { ok: true };
+  });
+
+export const saveAdminStat = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((i: unknown) => StatSchema.parse(i))
+  .handler(async ({ data, context }) => {
+    await assertPermission(context, "content.write");
+    const { data: row, error } = await context.supabase
+      .from("stats")
+      .upsert({
+        id: data.id,
+        value: data.value,
+        label: data.label,
+        sort_order: data.sort_order,
+        is_active: data.is_active,
+        updated_at: new Date().toISOString(),
+      } as never, { onConflict: "id" })
+      .select("*")
+      .single();
+    if (error) throw new Error(error.message);
+    return { ok: true, row };
+  });
+
+export const createAdminStat = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((i: unknown) => StatSchema.omit({ id: true }).parse(i))
+  .handler(async ({ data, context }) => {
+    await assertPermission(context, "content.write");
+    const { data: row, error } = await context.supabase.from("stats").insert(data).select("*").single();
+    if (error) throw new Error(error.message);
+    return { ok: true, row };
+  });
+
+export const deleteAdminStat = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((i: unknown) => IdSchema.parse(i))
+  .handler(async ({ data, context }) => {
+    await assertPermission(context, "content.write");
+    const { error } = await context.supabase.from("stats").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const reorderAdminStats = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((i: unknown) => StructuredReorderSchema.parse(i))
+  .handler(async ({ data, context }) => {
+    await assertPermission(context, "content.write");
+    const { data: ok, error } = await context.supabase.rpc("admin_reorder_stats", { p_ids: data.ids });
+    if (error) throw new Error(error.message);
+    if (!ok) throw new Error("Stats reorder failed");
+    return { ok: true };
+  });
+
+export const saveAdminMethod = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((i: unknown) => MethodSchema.parse(i))
+  .handler(async ({ data, context }) => {
+    await assertPermission(context, "content.write");
+    const { data: row, error } = await context.supabase
+      .from("about_method")
+      .upsert({
+        id: data.id,
+        number: data.number,
+        title: data.title,
+        description: data.description ?? null,
+        sort_order: data.sort_order,
+        is_active: data.is_active,
+        updated_at: new Date().toISOString(),
+      } as never, { onConflict: "id" })
+      .select("*")
+      .single();
+    if (error) throw new Error(error.message);
+    return { ok: true, row };
+  });
+
+export const createAdminMethod = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((i: unknown) => MethodSchema.omit({ id: true }).parse(i))
+  .handler(async ({ data, context }) => {
+    await assertPermission(context, "content.write");
+    const { data: row, error } = await context.supabase.from("about_method").insert(data).select("*").single();
+    if (error) throw new Error(error.message);
+    return { ok: true, row };
+  });
+
+export const deleteAdminMethod = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((i: unknown) => IdSchema.parse(i))
+  .handler(async ({ data, context }) => {
+    await assertPermission(context, "content.write");
+    const { error } = await context.supabase.from("about_method").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const reorderAdminMethods = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((i: unknown) => StructuredReorderSchema.parse(i))
+  .handler(async ({ data, context }) => {
+    await assertPermission(context, "content.write");
+    const { data: ok, error } = await context.supabase.rpc("admin_reorder_about_method", { p_ids: data.ids });
+    if (error) throw new Error(error.message);
+    if (!ok) throw new Error("Method reorder failed");
+    return { ok: true };
+  });
+
+export const setAdminProjectFeatured = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((i: unknown) => FeaturedSchema.parse(i))
+  .handler(async ({ data, context }) => {
+    await assertPermission(context, "content.write");
+    if (data.featured) {
+      const { count, error: countError } = await context.supabase
+        .from("projects")
+        .select("id", { count: "exact", head: true })
+        .eq("featured", true)
+        .neq("id", data.id);
+      if (countError) throw new Error(countError.message);
+      if ((count ?? 0) >= 3) {
+        throw new Error("Featured Work allows a maximum of 3 projects.");
+      }
+    }
+    const { data: row, error } = await context.supabase
+      .from("projects")
+      .update({
+        featured: data.featured,
+        featured_priority: data.featured_priority,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", data.id)
+      .select("*")
+      .single();
+    if (error) throw new Error(error.message);
+    return { ok: true, row };
+  });
+
+export const listAdminMediaAssets = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((i: unknown) => MediaQuerySchema.parse(i))
+  .handler(async ({ data, context }) => {
+    await assertPermission(context, "media.manage");
+    let query = context.supabase
+      .from("media_assets")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(200);
+    if (data.kind !== "all") query = query.eq("kind", data.kind);
+    if (data.search) {
+      const needle = data.search.replace(/[^p{L}p{N}s._-]/gu, "").trim();
+      if (needle) query = query.ilike("filename", `%${needle}%`);
+    }
+    const { data: rows, error } = await query;
+    if (error) throw new Error(error.message);
+    return { ok: true, rows: rows ?? [] };
+  });
+
+export const createAdminMediaAsset = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((i: unknown) => MediaAssetSchema.parse(i))
+  .handler(async ({ data, context }) => {
+    await assertPermission(context, "media.manage");
+    const { data: row, error } = await context.supabase
+      .from("media_assets")
+      .insert({
+        id: data.id,
+        storage_path: data.storage_path,
+        public_url: data.public_url,
+        filename: data.filename,
+        mime_type: data.mime_type,
+        width: data.width ?? null,
+        height: data.height ?? null,
+        size_bytes: data.size_bytes,
+        kind: data.kind,
+        alt_text: data.alt_text ?? null,
+        entity_type: data.entity_type ?? null,
+        entity_id: data.entity_id ?? null,
+        is_public: data.is_public,
+      } as never)
+      .select("*")
+      .single();
+    if (error) throw new Error(error.message);
+    return { ok: true, row };
+  });
+
+export const deleteAdminMediaAsset = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((i: unknown) => IdSchema.parse(i))
+  .handler(async ({ data, context }) => {
+    await assertPermission(context, "media.manage");
+    const { data: asset, error: readError } = await context.supabase
+      .from("media_assets")
+      .select("storage_path")
+      .eq("id", data.id)
+      .single();
+    if (readError || !asset) throw new Error(readError?.message ?? "Media asset not found");
+    const { error: storageError } = await context.supabase.storage
+      .from("site-assets")
+      .remove([asset.storage_path]);
+    if (storageError) throw new Error(storageError.message);
+    const { error } = await context.supabase.from("media_assets").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
   });
 
 export const saveAdminSiteSetting = createServerFn({ method: "POST" })
