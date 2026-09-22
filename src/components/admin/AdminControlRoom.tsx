@@ -222,12 +222,7 @@ function ControlRoom() {
 
   const renderContent = () => (
     <>
-      {section === "overview" && (
-        <Phase2WebsiteCMS
-          section="overview"
-          onNavigate={requestSection}
-        />
-      )}
+      {section === "overview" && <ControlRoomOverview onNavigate={requestSection} />}
       {section === "homepage" && (
         <Phase2WebsiteCMS section="homepage" onNavigate={requestSection} />
       )}
@@ -400,6 +395,148 @@ function WorkspaceLoader({ label }: { label: string }) {
         <Loader2 size={15} className="animate-spin text-sky-300/70" />
         {label}
       </div>
+    </div>
+  );
+}
+
+function ControlRoomOverview({ onNavigate }: { onNavigate: (section: string) => void }) {
+  const load = useServerFn(getAdminOverviewSnapshot);
+  const [data, setData] = useState<any>(null);
+  const [busy, setBusy] = useState(false);
+
+  const refresh = async () => {
+    setBusy(true);
+    try {
+      const result = await load({ data: {} });
+      setData(result.snapshot);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Control Room overview could not be loaded");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  useEffect(() => {
+    void refresh();
+  }, []);
+
+  if (!data) {
+    return <WorkspaceLoader label="Loading Control Room overview..." />;
+  }
+
+  const financeEntries = Object.entries((data.finance?.outstanding_by_currency ?? {}) as Record<string, number>);
+  const recentChanges = (data.recent_changes ?? []) as Array<{ id: string; action: string; entity_type: string; entity_label: string | null; actor_email: string | null; created_at: string }>;
+
+  return (
+    <div className="space-y-6">
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <div className="mono text-[10px] uppercase tracking-[0.25em] text-sky-300/70">KUTUZOV CONTROL ROOM</div>
+          <h1 className="display mt-1 text-3xl text-metal">Operational overview.</h1>
+          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-500">
+            One entry point for site content, release work, operations, finance and system governance.
+          </p>
+        </div>
+        <button type="button" onClick={() => void refresh()} disabled={busy} className="inline-flex min-h-9 items-center gap-2 rounded-lg border border-white/[0.08] px-3 text-xs text-slate-400 hover:text-white disabled:opacity-50">
+          <RefreshCw size={12} className={busy ? "animate-spin" : ""} /> Refresh
+        </button>
+      </header>
+
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <OverviewMetric label="Published projects" value={data.projects?.published ?? 0} detail={`${data.projects?.drafts ?? 0} live-independent drafts`} />
+        <OverviewMetric label="Release queue" value={data.release?.pending_drafts ?? 0} detail="Drafts waiting in release management" />
+        <OverviewMetric label="New leads" value={data.leads?.new ?? 0} detail={data.leads ? `${data.leads.total} total leads` : "Lead access not enabled for this role"} />
+        <OverviewMetric label="Pending bookings" value={data.bookings?.pending ?? 0} detail={data.bookings ? `${data.bookings.total} total bookings` : "Booking access not enabled for this role"} />
+      </div>
+
+      <div className="grid gap-5 xl:grid-cols-[1.1fr_.9fr]">
+        <section className="rounded-xl border border-white/[0.08] bg-[#030814] p-5 md:p-6">
+          <div className="mono text-[9px] uppercase tracking-[0.2em] text-slate-600">Quick actions</div>
+          <h2 className="display mt-1 text-xl text-metal">Move directly into work.</h2>
+          <div className="mt-4 grid gap-2 sm:grid-cols-2">
+            {[
+              ["Edit Homepage", "homepage", Home],
+              ["Manage Services", "services", Briefcase],
+              ["Open Operations", "operations", LayoutDashboard],
+              ["Release Center", "release", Send],
+              ["Manage Media", "media", ImageIcon],
+              ["Open Finance", "invoice", FileText],
+            ].map(([label, target, Icon]) => (
+              <button key={String(target)} type="button" onClick={() => onNavigate(String(target))} className="inline-flex min-h-11 items-center gap-3 rounded-lg border border-white/[0.07] px-3 text-left text-xs text-slate-400 hover:border-sky-300/25 hover:text-white">
+                <Icon size={13} className="text-sky-300" />
+                {String(label)}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section className="rounded-xl border border-white/[0.08] bg-[#030814] p-5 md:p-6">
+          <div className="mono text-[9px] uppercase tracking-[0.2em] text-slate-600">Finance</div>
+          <h2 className="display mt-1 text-xl text-metal">Outstanding invoices.</h2>
+          {financeEntries.length ? (
+            <div className="mt-4 space-y-2">
+              {financeEntries.map(([currency, amount]) => (
+                <div key={currency} className="flex items-center justify-between rounded-lg border border-white/[0.06] p-3">
+                  <span className="mono text-[10px] text-slate-600">{currency}</span>
+                  <span className="text-sm font-medium text-white">{Number(amount).toLocaleString()}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-4 text-sm text-slate-600">No finance exposure is available for this role or there are no outstanding invoices.</p>
+          )}
+        </section>
+      </div>
+
+      <section className="rounded-xl border border-white/[0.08] bg-[#030814] p-5 md:p-6">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <div className="mono text-[9px] uppercase tracking-[0.2em] text-slate-600">Recent changes</div>
+            <h2 className="display mt-1 text-xl text-metal">Latest governance events.</h2>
+          </div>
+          <button type="button" onClick={() => onNavigate("audit")} className="text-[10px] text-sky-300 hover:text-white">Open Audit Center</button>
+        </div>
+        <div className="mt-4 space-y-2">
+          {recentChanges.length ? recentChanges.map((row) => (
+            <div key={row.id} className="flex flex-wrap items-center gap-3 rounded-lg border border-white/[0.06] p-3">
+              <span className="inline-flex rounded-full border border-white/[0.08] px-2 py-1 text-[9px] uppercase tracking-wider text-slate-500">{row.action}</span>
+              <span className="mono text-[9px] uppercase tracking-wider text-slate-600">{row.entity_type}</span>
+              <span className="min-w-0 flex-1 truncate text-sm text-slate-300">{row.entity_label ?? row.entity_type}</span>
+              <span className="text-[10px] text-slate-600">{row.actor_email ?? "system"} · {new Date(row.created_at).toLocaleString()}</span>
+            </div>
+          )) : (
+            <p className="text-sm text-slate-600">Recent audit events are available to roles with system audit access.</p>
+          )}
+        </div>
+      </section>
+
+      <div className="grid gap-3 sm:grid-cols-3">
+        <button type="button" onClick={() => onNavigate("clients")} className="rounded-xl border border-white/[0.07] bg-[#030814] p-4 text-left hover:border-sky-300/25">
+          <Users size={15} className="text-sky-300" />
+          <div className="mt-3 text-sm text-white">Clients</div>
+          <div className="mt-1 text-[10px] text-slate-600">Identity and relationship management</div>
+        </button>
+        <button type="button" onClick={() => onNavigate("studio")} className="rounded-xl border border-white/[0.07] bg-[#030814] p-4 text-left hover:border-sky-300/25">
+          <Sparkles size={15} className="text-sky-300" />
+          <div className="mt-3 text-sm text-white">Studio</div>
+          <div className="mt-1 text-[10px] text-slate-600">{data.studio ? `${data.studio.waitlist_active ?? 0} active waitlist records` : "Studio operations"} </div>
+        </button>
+        <button type="button" onClick={() => onNavigate("system")} className="rounded-xl border border-white/[0.07] bg-[#030814] p-4 text-left hover:border-sky-300/25">
+          <ShieldCheck size={15} className="text-sky-300" />
+          <div className="mt-3 text-sm text-white">System Health</div>
+          <div className="mt-1 text-[10px] text-slate-600">Provider, database and recovery checks</div>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function OverviewMetric({ label, value, detail }: { label: string; value: string | number; detail?: string }) {
+  return (
+    <div className="rounded-xl border border-white/[0.07] bg-[#030814] p-4">
+      <div className="text-[10px] uppercase tracking-[0.15em] text-slate-600">{label}</div>
+      <div className="mt-2 text-2xl font-semibold text-white">{typeof value === "number" ? value.toLocaleString() : value}</div>
+      {detail ? <div className="mt-1 text-[10px] text-slate-600">{detail}</div> : null}
     </div>
   );
 }
