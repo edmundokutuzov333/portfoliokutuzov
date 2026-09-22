@@ -5,7 +5,8 @@
 import { supabase } from "@/integrations/supabase/client";
 import { isUuid } from "@/lib/utils";
 
-export type EntityType = "site_settings" | "projects" | "clients" | "services" | "stats" | "about_method";
+export type EntityType =
+  "site_settings" | "projects" | "clients" | "services" | "stats" | "about_method";
 
 const ENTITY_TABLES = new Set<EntityType>([
   "site_settings",
