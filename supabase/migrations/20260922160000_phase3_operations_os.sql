@@ -256,6 +256,7 @@ SELECT
   COALESCE(c.timeline,b.deadline::text) AS timeline,
   COALESCE(c.message,b.message) AS message,
   COALESCE(c.source,b.source) AS source,
+  COALESCE(b.attachments,'[]'::jsonb) AS attachments,
   b.urgency AS briefing_urgency,
   b.lead_score,b.lead_tier,b.lead_signals,
   b.invoice_number,b.invoice_currency,b.invoice_total,b.invoice_due_date,
