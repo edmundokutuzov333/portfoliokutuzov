@@ -213,6 +213,96 @@ export const listAdminEditableEntities = createServerFn({ method: "POST" })
     return { ok: true, entities };
   });
 
+export const getAdminOverviewSnapshot = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator(() => ({}))
+  .handler(async ({ context }) => {
+    await assertPermission(context, "content.read");
+
+    const [
+      projectsResult,
+      draftsResult,
+      financeReadResult,
+      leadsReadResult,
+      auditReadResult,
+    ] = await Promise.all([
+      context.supabase.from("projects").select("id,is_published"),
+      context.supabase.from("admin_drafts").select("id,status", { count: "exact", head: true }).in("status", ["draft", "review"]),
+      context.supabase.rpc("admin_has_permission", { p_permission: "finance.read" }),
+      context.supabase.rpc("admin_has_permission", { p_permission: "leads.read" }),
+      context.supabase.rpc("admin_has_permission", { p_permission: "system.audit.read" }),
+    ]);
+    if (projectsResult.error) throw new Error(projectsResult.error.message);
+    if (draftsResult.error) throw new Error(draftsResult.error.message);
+
+    const snapshot: Record<string, unknown> = {
+      projects: {
+        total: projectsResult.data?.length ?? 0,
+        published: (projectsResult.data ?? []).filter((row) => row.is_published).length,
+        drafts: (projectsResult.data ?? []).filter((row) => !row.is_published).length,
+      },
+      release: {
+        pending_drafts: draftsResult.count ?? 0,
+      },
+    };
+
+    if (!leadsReadResult.error && leadsReadResult.data) {
+      const [leads, bookings, waitlist] = await Promise.all([
+        context.supabase.from("crm_leads").select("stage", { count: "exact" }),
+        context.supabase.from("booking_requests").select("booking_status", { count: "exact" }),
+        context.supabase.from("studio_waitlist").select("id", { count: "exact", head: true }).eq("status", "active"),
+      ]);
+      if (leads.error) throw new Error(leads.error.message);
+      if (bookings.error) throw new Error(bookings.error.message);
+      if (waitlist.error) throw new Error(waitlist.error.message);
+      const leadRows = leads.data ?? [];
+      const bookingRows = bookings.data ?? [];
+      snapshot.leads = {
+        total: leads.count ?? leadRows.length,
+        new: leadRows.filter((row) => row.stage === "new").length,
+      };
+      snapshot.bookings = {
+        total: bookings.count ?? bookingRows.length,
+        pending: bookingRows.filter((row) => ["requested", "rescheduled"].includes(row.booking_status)).length,
+      };
+      snapshot.studio = {
+        waitlist_active: waitlist.count ?? 0,
+      };
+    }
+
+    if (!financeReadResult.error && financeReadResult.data) {
+      const { data: invoices, error: invoiceError } = await context.supabase
+        .from("briefing_submissions")
+        .select("invoice_total,invoice_currency,invoice_status");
+      if (invoiceError) throw new Error(invoiceError.message);
+      const outstanding = new Map<string, number>();
+      for (const invoice of invoices ?? []) {
+        const total = Number(invoice.invoice_total ?? 0);
+        const status = String(invoice.invoice_status ?? "").toLowerCase();
+        if (total > 0 && !["paid", "cancelled"].includes(status)) {
+          const currency = invoice.invoice_currency ?? "USD";
+          outstanding.set(currency, (outstanding.get(currency) ?? 0) + total);
+        }
+      }
+      snapshot.finance = {
+        invoices: invoices?.length ?? 0,
+        outstanding_by_currency: Object.fromEntries(outstanding),
+      };
+    }
+
+    if (!auditReadResult.error && auditReadResult.data) {
+      const { data: changes, error: auditError } = await context.supabase
+        .from("admin_audit_log")
+        .select("id,action,entity_type,entity_label,actor_email,created_at")
+        .order("created_at", { ascending: false })
+        .limit(8);
+      if (auditError) throw new Error(auditError.message);
+      snapshot.recent_changes = changes ?? [];
+    }
+
+    return { ok: true, snapshot };
+  });
+
 export const getAdminAnalyticsOverview = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((i: unknown) => z.object({ days: z.number().int().min(1).max(90).default(30) }).parse(i))
