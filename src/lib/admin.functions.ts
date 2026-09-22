@@ -139,7 +139,7 @@ export const saveAdminSiteSetting = createServerFn({ method: "POST" })
     };
     const { data: row, error } = await context.supabase
       .from("site_settings")
-      .upsert(payload, { onConflict: "key" })
+      .upsert(payload as never, { onConflict: "key" })
       .select("key,value,updated_at")
       .single();
     if (error) throw new Error(error.message);
@@ -162,7 +162,7 @@ export const saveAdminClient = createServerFn({ method: "POST" })
     };
     const { data: row, error } = await context.supabase
       .from("clients")
-      .upsert(payload, { onConflict: "id" })
+      .upsert(payload as never, { onConflict: "id" })
       .select("*")
       .single();
     if (error) throw new Error(error.message);
@@ -391,7 +391,7 @@ export const restoreAdminContentVersion = createServerFn({ method: "POST" })
             key: data.entity_id,
             value: data.snapshot,
             updated_at: new Date().toISOString(),
-          },
+          } as never,
           { onConflict: "key" },
         );
       if (error) throw new Error(error.message);
