@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
+import { restoreAdminContentVersion } from "@/lib/admin.functions";
 import { History, RotateCcw, Loader2, ChevronDown, ChevronRight } from "lucide-react";
 import { restoreSnapshot, type EntityType } from "@/lib/history";
 
@@ -10,6 +12,7 @@ type HistoryRow = {
   entity_type: EntityType;
   entity_id: string;
   snapshot: Record<string, unknown>;
+  action: string | null;
   label: string | null;
   created_at: string;
 };
@@ -18,10 +21,14 @@ const TYPE_LABEL: Record<EntityType, string> = {
   site_settings: "Site setting",
   projects: "Project",
   clients: "Client",
+  services: "Service",
+  stats: "Stat",
+  about_method: "Method",
 };
 
 export function HistoryManager() {
   const qc = useQueryClient();
+  const restore = useServerFn(restoreAdminContentVersion);
   const [filter, setFilter] = useState<"all" | EntityType>("all");
   const [openId, setOpenId] = useState<string | null>(null);
   const [restoringId, setRestoringId] = useState<string | null>(null);
@@ -56,7 +63,20 @@ export function HistoryManager() {
   const onRestore = async (row: HistoryRow) => {
     if (!confirm(`Restore this version of "${row.label ?? row.entity_id}"?`)) return;
     setRestoringId(row.id);
-    const { error } = await restoreSnapshot(row.entity_type, row.entity_id, row.snapshot);
+    try {
+      await restore({
+        data: {
+          entity_type: row.entity_type,
+          entity_id: row.entity_id,
+          snapshot: row.snapshot,
+        },
+      });
+    } catch (err) {
+      setRestoringId(null);
+      toast.error(err instanceof Error ? err.message : "Restore failed");
+      return;
+    }
+    const error = null;
     setRestoringId(null);
     if (error) toast.error(error);
     else {
@@ -64,6 +84,10 @@ export function HistoryManager() {
       qc.invalidateQueries({ queryKey: ["site_settings"] });
       qc.invalidateQueries({ queryKey: ["projects"] });
       qc.invalidateQueries({ queryKey: ["clients"] });
+      qc.invalidateQueries({ queryKey: ["services"] });
+      qc.invalidateQueries({ queryKey: ["stats"] });
+      qc.invalidateQueries({ queryKey: ["about_method"] });
+      qc.invalidateQueries({ queryKey: ["content_history"] });
     }
   };
 
@@ -74,13 +98,13 @@ export function HistoryManager() {
           <History size={20} className="text-sky-300" /> Version history
         </h2>
         <p className="text-sm text-slate-500 mt-1">
-          The last 5 versions of every site setting, project and client are kept automatically. Open
+          The last 20 versions of administrator-controlled content are kept automatically. Open
           any entry to inspect or restore it.
         </p>
       </header>
 
       <div className="mt-5 flex flex-wrap gap-2 items-center">
-        {(["all", "site_settings", "projects", "clients"] as const).map((f) => (
+        {(["all", "site_settings", "projects", "clients", "services", "stats", "about_method"] as const).map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
