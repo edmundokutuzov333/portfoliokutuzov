@@ -66,6 +66,16 @@ test("Phase 4 integrates Studio Intelligence and global Analytics into the Contr
   assert.match(studioSurface, /StudioAdminPage/);
 });
 
+test("Phase 4 Users & Roles is server-enforced", () => {
+  const admin = read("src/components/admin/AdminControlRoom.tsx");
+  const ui = read("src/components/admin/Phase4ControlRoom.tsx");
+  const server = read("src/lib/admin.phase4.functions.ts");
+  assert.match(admin, /Users & Roles/);
+  assert.match(ui, /UsersRolesCenter/);
+  assert.match(server, /system\.users\.manage/);
+  assert.match(server, /Only an owner can assign the owner role/);
+});
+
 test("Phase 4 public-data realtime coverage includes services, stats and about_method", () => {
   const siteData = read("src/hooks/useSiteData.ts");
   assert.match(siteData, /useRealtimeInvalidate\("services"/);
@@ -81,4 +91,7 @@ test("Phase 4 database security keeps sensitive admin operations behind permissi
   assert.match(restore, /admin_restore_audit_state/);
   assert.match(restore, /auth\.uid\(\)/);
   assert.match(restore, /GRANT EXECUTE ON FUNCTION public\.admin_restore_audit_state/);
+  const server = read("src/lib/admin.phase4.functions.ts");
+  assert.match(server, /finance\.read/);
+  assert.match(server, /invoice_settings/);
 });
