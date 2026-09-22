@@ -23,6 +23,7 @@ import { InvoiceWorkspace } from "@/components/admin/InvoiceWorkspace";
 import { toast } from "sonner";
 import {
   createAdminProject,
+  createAdminProjectsBatch,
   createAdminClient,
   deleteAdminClient,
   deleteAdminProject,
@@ -1540,43 +1541,21 @@ function PortfolioManager() {
     const other = ordered[swapIdx];
     const a = p.sort_order;
     const b = other.sort_order === a ? a + dir : other.sort_order;
-    const safePId = isUuid(p.id) ? p.id : generateUuid();
-    const safeOtherId = isUuid(other.id) ? other.id : generateUuid();
+    if (!isUuid(p.id) || !isUuid(other.id)) return;
 
-    const [{ error: e1 }, { error: e2 }] = await Promise.all([
-      supabase.from("projects").upsert(
-        {
-          ...p,
-          id: safePId,
-          sort_order: b,
-          tags: (p.tags ?? []) as never,
-          gallery: (p.gallery ?? []) as never,
-          gallery_meta: (p.gallery_meta ?? []) as never,
-          collaborators: (p.collaborators ?? []) as never,
-          tools_used: (p.tools_used ?? []) as never,
-          deliverables: (p.deliverables ?? []) as never,
-          updated_at: new Date().toISOString(),
-        } as never,
-        { onConflict: "id" },
-      ),
-      supabase.from("projects").upsert(
-        {
-          ...other,
-          id: safeOtherId,
-          sort_order: a,
-          tags: (other.tags ?? []) as never,
-          gallery: (other.gallery ?? []) as never,
-          gallery_meta: (other.gallery_meta ?? []) as never,
-          collaborators: (other.collaborators ?? []) as never,
-          tools_used: (other.tools_used ?? []) as never,
-          deliverables: (other.deliverables ?? []) as never,
-          updated_at: new Date().toISOString(),
-        } as never,
-        { onConflict: "id" },
-      ),
-    ]);
-    if (e1 || e2) toast.error((e1 || e2)!.message);
-    else qc.invalidateQueries({ queryKey: ["projects"] });
+    try {
+      await reorderProjects({
+        data: {
+          project_id: p.id,
+          other_project_id: other.id,
+          project_order: b,
+          other_order: a,
+        },
+      });
+      qc.invalidateQueries({ queryKey: ["projects"] });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Reorder failed");
+    }
   };
 
   const create = async () => {
@@ -1616,27 +1595,13 @@ function PortfolioManager() {
   };
 
   const togglePublish = async (p: DbProject) => {
-    const safeId = isUuid(p.id) ? p.id : generateUuid();
-    if (isUuid(p.id)) {
-      await snapshotBefore("projects", p.id, p.title);
+    if (!isUuid(p.id)) return;
+    try {
+      await publishProject({ data: { id: p.id, is_published: !p.is_published } });
+      qc.invalidateQueries({ queryKey: ["projects"] });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Publish failed");
     }
-    const { error } = await supabase.from("projects").upsert(
-      {
-        ...p,
-        id: safeId,
-        is_published: !p.is_published,
-        tags: (p.tags ?? []) as never,
-        gallery: (p.gallery ?? []) as never,
-        gallery_meta: (p.gallery_meta ?? []) as never,
-        collaborators: (p.collaborators ?? []) as never,
-        tools_used: (p.tools_used ?? []) as never,
-        deliverables: (p.deliverables ?? []) as never,
-        updated_at: new Date().toISOString(),
-      } as never,
-      { onConflict: "id" },
-    );
-    if (error) toast.error(error.message);
-    else qc.invalidateQueries({ queryKey: ["projects"] });
   };
 
   return (
@@ -2411,21 +2376,24 @@ function BatchAddProjects({ onClose, startSort }: { onClose: () => void; startSo
       return;
     }
     setSaving(true);
-    const { error } = await supabase.from("projects").insert(
-      valid.map((r) => ({
-        title: r.title.trim(),
-        client_name: r.client_name.trim() || null,
-        category: r.category,
-        year: r.year || null,
-        sort_order: r.sort_order,
-        is_published: false,
-      })),
-    );
-    setSaving(false);
-    if (error) toast.error(error.message);
-    else {
+    try {
+      await createAdminProjectsBatch({
+        data: {
+          rows: valid.map((r) => ({
+            title: r.title,
+            client_name: r.client_name,
+            category: r.category,
+            year: r.year || null,
+            sort_order: r.sort_order,
+          })),
+        },
+      });
       toast.success(`Added ${valid.length} project${valid.length > 1 ? "s" : ""} as drafts`);
       onClose();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Batch create failed");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -2558,6 +2526,8 @@ function RawEditor({
 }) {
   const [text, setText] = useState(JSON.stringify(initial, null, 2));
   const [saving, setSaving] = useState(false);
+  const saveAdminSetting = useServerFn(saveAdminSiteSetting);
+
   const save = async () => {
     let parsed: Record<string, unknown>;
     try {
@@ -2567,16 +2537,16 @@ function RawEditor({
       return;
     }
     setSaving(true);
-    await snapshotBefore("site_settings", sectionKey, sectionKey);
-    const { error } = await supabase
-      .from("site_settings")
-      .upsert([{ key: sectionKey, value: parsed as never, updated_at: new Date().toISOString() }], {
-        onConflict: "key",
-      });
-    setSaving(false);
-    if (error) toast.error(error.message);
-    else toast.success(`Saved ${sectionKey}`);
+    try {
+      await saveAdminSetting({ data: { key: sectionKey, value: parsed } });
+      toast.success(`Saved ${sectionKey}`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Save failed");
+    } finally {
+      setSaving(false);
+    }
   };
+
   return (
     <div className="px-4 pb-4">
       <textarea
