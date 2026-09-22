@@ -94,14 +94,22 @@ export function HistoryManager() {
           <History size={20} className="text-sky-300" /> Version history
         </h2>
         <p className="text-sm text-slate-500 mt-1">
-          The last 20 versions of administrator-controlled content are kept automatically. Open
-          any entry to inspect or restore it.
+          The last 20 versions of administrator-controlled content are kept automatically. Open any
+          entry to inspect or restore it.
         </p>
       </header>
 
       <div className="mt-5 flex flex-wrap gap-2 items-center">
         {(
-          ["all", "site_settings", "projects", "clients", "services", "stats", "about_method"] as const
+          [
+            "all",
+            "site_settings",
+            "projects",
+            "clients",
+            "services",
+            "stats",
+            "about_method",
+          ] as const
         ).map((f) => (
           <button
             key={f}
