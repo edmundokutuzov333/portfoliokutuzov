@@ -20,7 +20,7 @@ export function WaitlistForm() {
 
   const onSubmit = async (values: FormValues) => {
     try {
-      const result = await joinStudioWaitlist(values);
+      const result = await joinStudioWaitlist({ data: values });
       if (result.status === "duplicate") {
         toast("That email's already on the list.");
         return;
