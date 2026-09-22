@@ -1,6 +1,6 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, type CSSProperties } from "react";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { GenesisVisual } from "@/components/studio/GenesisVisual";
 import { WaitlistForm } from "@/components/studio/WaitlistForm";
@@ -30,12 +30,14 @@ function StudioLanding() {
   return (
     <main
       className="min-h-screen overflow-hidden bg-[#0a0c10] px-5 pb-12 pt-28 text-[#edeef0] sm:px-8 sm:pt-32"
-      style={{
-        "--studio-surface": "#10141a",
-        "--studio-muted": "#7c8590",
-        "--studio-accent": "#25e3c2",
-        "--studio-hairline": "rgba(255,255,255,0.08)",
-      } as React.CSSProperties}
+      style={
+        {
+          "--studio-surface": "#10141a",
+          "--studio-muted": "#7c8590",
+          "--studio-accent": "#25e3c2",
+          "--studio-hairline": "rgba(255,255,255,0.08)",
+        } as CSSProperties
+      }
     >
       <div className="mx-auto flex min-h-[calc(100vh-11rem)] max-w-[1240px] flex-col justify-between">
         <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
