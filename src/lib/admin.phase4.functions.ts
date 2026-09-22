@@ -529,11 +529,22 @@ export const globalAdminSearch = createServerFn({ method: "POST" })
     for (const row of services.data ?? []) results.push({ id:"service:"+row.id, title:row.title, subtitle:(row.number ?? "Service")+" · "+(row.is_active?"active":"hidden"), type:"Service", target:"services", entity_id:row.id });
     for (const row of stats.data ?? []) results.push({ id:"stat:"+row.id, title:row.label, subtitle:row.value+" · "+(row.is_active?"active":"hidden"), type:"Stat", target:"credentials", entity_id:row.id });
     for (const row of methods.data ?? []) results.push({ id:"method:"+row.id, title:row.title, subtitle:row.number+" · "+(row.is_active?"active":"hidden"), type:"Method", target:"credentials", entity_id:row.id });
-    for (const row of settings.data ?? []) results.push({ id:"setting:"+row.key, title:row.key, subtitle:"Site setting · "+new Date(row.updated_at).toLocaleString(), type:"Setting", target:row.key==="hero"||row.key==="manifesto"||row.key==="featured_section"?"homepage":row.key==="navbar"?"navigation":row.key==="credentials"?"credentials":row.key==="services_section"?"services":row.key==="seo"?"seo":"global", entity_id:row.key });
+    for (const row of settings.data ?? []) {
+      if (row.key === "invoice_settings" && !canFinanceRead) continue;
+      results.push({
+        id:"setting:"+row.key,
+        title:row.key,
+        subtitle:"Site setting · "+new Date(row.updated_at).toLocaleString(),
+        type:"Setting",
+        target:row.key==="hero"||row.key==="manifesto"||row.key==="featured_section"?"homepage":row.key==="navbar"?"navigation":row.key==="credentials"?"credentials":row.key==="services_section"?"services":row.key==="seo"?"seo":"global",
+        entity_id:row.key
+      });
+    }
     for (const row of leads.data ?? []) results.push({ id:"lead:"+row.id, title:row.full_name ?? "Lead", subtitle:(row.company_name ?? row.email ?? "Lead")+" · "+(row.stage ?? "new"), type:"Lead", target:"operations", entity_id:row.id });
 
     const financePermission = await context.supabase.rpc("admin_has_permission", { p_permission:"finance.read" });
-    if (!financePermission.error && financePermission.data) {
+    const canFinanceRead = !financePermission.error && Boolean(financePermission.data);
+    if (canFinanceRead) {
       for (const row of invoices.data ?? []) results.push({ id:"invoice:"+row.id, title:row.invoice_number ?? "Invoice", subtitle:(row.company_name ?? row.email ?? "Invoice")+" · "+(row.invoice_status ?? "draft"), type:"Invoice", target:"invoice", entity_id:row.id });
     }
     const mediaPermission = await context.supabase.rpc("admin_has_permission", { p_permission:"media.manage" });
