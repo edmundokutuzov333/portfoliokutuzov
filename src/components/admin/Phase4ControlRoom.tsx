@@ -178,6 +178,17 @@ export function Phase4AdminToolbar({
   const dirty = useAdminDirtyState();
   const [searchOpen, setSearchOpen] = useState(false);
 
+  useEffect(() => {
+    const handleShortcut = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    window.addEventListener("keydown", handleShortcut);
+    return () => window.removeEventListener("keydown", handleShortcut);
+  }, []);
+
   return (
     <>
       <div className="sticky top-0 z-40 -mx-6 mb-6 border-b border-white/[0.07] bg-[#01040A]/95 px-6 py-3 backdrop-blur-md md:-mx-10 md:px-10">
@@ -1286,10 +1297,12 @@ export function SystemHealthCenter() {
               ["Deployment rollback", data.recovery?.deployment_rollback ?? "unknown"],
               ["Database backup", data.recovery?.database_backup ?? "external"],
             ].map(([label,value])=><div key={label} className="rounded-lg border border-white/[0.06] p-3"><div className="mono text-[9px] uppercase tracking-wider text-slate-600">{label}</div><div className="mt-2 text-sm text-slate-200">{value}</div></div>)}</div>
-            <a href="/docs/DATA_RECOVERY.md" className="mt-4 inline-flex items-center gap-2 text-[10px] text-sky-300">Recovery policy <ExternalLink size={11}/></a>
-            <p className="mt-3 text-[10px] leading-relaxed text-slate-600">Provider-managed database backup and restore drills remain external operational controls. The Admin does not claim a restore test was executed when it was not.</p>
+            <div className="mt-4 rounded-lg border border-white/[0.06] bg-black/10 p-3 text-[10px] leading-relaxed text-slate-500">
+              Recovery policy: RPO target 24 hours, RTO target 4 hours. Database backup and restore drills remain provider-managed or external operational controls and are not marked as tested unless they actually were.
+            </div>
           </Panel>
-          <Panel kicker="QA / Accessibility" title="Release gate checklist">
+          <Panel kicker="QA / Accessibility" title="Release gate coverage">
+            <p className="mb-3 text-[10px] leading-relaxed text-slate-600">These are implemented safeguards and release requirements. Automated browser validation remains the final verification layer.</p>
             <div className="space-y-2">{[
               "Keyboard-only navigation",
               "Visible focus states",
@@ -1299,7 +1312,7 @@ export function SystemHealthCenter() {
               "Contrast reviewed on dark surfaces",
               "Heavy workspaces loaded on demand",
               "Backend permission checks remain authoritative",
-            ].map((label)=><div key={label} className="flex items-center gap-2 rounded-lg border border-white/[0.06] p-3 text-xs text-slate-400"><Check size={13} className="text-emerald-300"/>{label}</div>)}</div>
+            ].map((label)=><div key={label} className="flex items-center gap-2 rounded-lg border border-white/[0.06] p-3 text-xs text-slate-400"><ShieldCheck size={13} className="text-sky-300"/>{label}</div>)}</div>
           </Panel>
         </div>
       </>}
