@@ -1255,9 +1255,6 @@ function LogoManager({
   const update = async (id: string, patch: Partial<DbClient>) => {
     setBusyId(id);
     const safeId = isUuid(id) ? id : generateUuid();
-    if (isUuid(id)) {
-      await snapshotBefore("clients", id, labelOf(id));
-    }
     const currentItem = items.find((c) => c.id === id);
     try {
       await saveClient({
