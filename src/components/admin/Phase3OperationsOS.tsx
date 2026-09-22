@@ -383,6 +383,7 @@ function LeadsWorkspace({ search, setSearch, selectedLeadId, setSelectedLeadId }
 function LeadDetail({ lead, detail, clients, owners, onPatch, onStage, onCreateProject, onPayment, addActivity, createTask, updateTask }: any) {
   const [note, setNote] = useState(lead.notes ?? "");
   const [activity, setActivity] = useState("");
+  const [activityType, setActivityType] = useState<"note" | "email" | "call" | "meeting">("note");
   useEffect(() => setNote(lead.notes ?? ""), [lead.id, lead.notes]);
   const canPay = lead.source_type === "briefing" && !!lead.invoice_number;
 
@@ -414,7 +415,13 @@ function LeadDetail({ lead, detail, clients, owners, onPatch, onStage, onCreateP
 
         {Array.isArray(lead.attachments) && lead.attachments.length > 0 && <Panel kicker="Brief / Attachments" title={`${lead.attachments.length} attachment${lead.attachments.length === 1 ? "" : "s"}`}><div className="space-y-2">{lead.attachments.map((attachment: any, index: number) => { const item = typeof attachment === "string" ? { url: attachment, name: `Attachment ${index + 1}` } : attachment ?? {}; return <a key={`${item.url ?? "attachment"}-${index}`} href={item.url ?? "#"} target="_blank" rel="noreferrer" className="flex items-center gap-3 rounded-lg border border-white/[0.06] p-3 text-xs text-slate-300 hover:border-sky-300/25 hover:text-white"><FileText size={14} className="text-sky-300" /><span className="min-w-0 flex-1 truncate">{item.name ?? item.filename ?? `Attachment ${index + 1}`}</span><ArrowRight size={12} /></a>; })}</div></Panel>}
       <Panel kicker="Activity" title="Timeline">
-        <div className="flex gap-2"><input value={activity} onChange={(e) => setActivity(e.target.value)} placeholder="Add a note, call, meeting or email event..." className="adm-input"/><button type="button" disabled={!activity.trim()} onClick={async () => { await addActivity({ data: { lead_id: lead.id, activity_type: "note", body: activity.trim(), metadata: {} } }); setActivity(""); toast.success("Activity added"); }} className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-sky-300/30 text-sky-200"><Plus size={14}/></button></div>
+        <div className="grid gap-2 md:grid-cols-[150px_1fr_auto]">
+          <select value={activityType} onChange={(e) => setActivityType(e.target.value as typeof activityType)} className="adm-input">
+            <option value="note">Note</option><option value="email">Email</option><option value="call">Call</option><option value="meeting">Meeting</option>
+          </select>
+          <input value={activity} onChange={(e) => setActivity(e.target.value)} placeholder="Describe the interaction..." className="adm-input"/>
+          <button type="button" disabled={!activity.trim()} onClick={async () => { await addActivity({ data: { lead_id: lead.id, activity_type: activityType, body: activity.trim(), metadata: {} } }); setActivity(""); toast.success("Activity added"); }} className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-sky-300/30 text-sky-200"><Plus size={14}/></button>
+        </div>
         <div className="mt-4 space-y-2">{detail.activities.map((row: any) => <div key={row.id} className="rounded-lg border border-white/[0.06] p-3"><div className="flex justify-between gap-2"><span className="mono text-[9px] uppercase tracking-wider text-sky-300/70">{row.activity_type}</span><span className="text-[10px] text-slate-600">{formatDate(row.created_at)}</span></div><p className="mt-2 text-sm text-slate-300">{row.body}</p></div>)}{detail.activities.length===0 && <EmptyState label="No activity yet." />}</div>
       </Panel>
 
