@@ -672,7 +672,7 @@ function NewDraftDialog({
   const options = directory[type] ?? [];
   useEffect(() => {
     setEntityId(options[0]?.id ?? "");
-  }, [type, options]);
+  }, [type, directory]);
 
   return (
     <Modal title="Create governed draft" onClose={onClose}>
@@ -712,11 +712,12 @@ function DraftEditorModal({
   onClose: () => void;
   onSave: (id: string, payload: Record<string, unknown>, status?: "draft" | "review") => Promise<void>;
   onDiscard: (id: string) => Promise<void>;
-  draftLoader: ReturnType<typeof useServerFn<typeof getAdminDraft>>;
+  draftLoader: (input: { data: { id: string } }) => Promise<{ row: DraftRow }>;
 }) {
   const [draft, setDraft] = useState<DraftRow | null>(null);
   const [payload, setPayload] = useState<Record<string, unknown>>({});
   const [busy, setBusy] = useState(false);
+  const [localDirty, setLocalDirty] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -726,6 +727,7 @@ function DraftEditorModal({
         if (!alive) return;
         setDraft(result.row as DraftRow);
         setPayload((result.row.payload ?? {}) as Record<string, unknown>);
+        setLocalDirty(false);
       })
       .catch((error) => toast.error(error instanceof Error ? error.message : "Draft could not be loaded"))
       .finally(() => alive && setBusy(false));
@@ -733,13 +735,16 @@ function DraftEditorModal({
   }, [draftId, draftLoader]);
 
   useEffect(() => {
-    setAdminDirty("release:" + draftId, Object.keys(payload).length > 0);
+    setAdminDirty("release:" + draftId, localDirty);
     return () => setAdminDirty("release:" + draftId, false);
-  }, [draftId, payload]);
+  }, [draftId, localDirty]);
 
   if (busy || !draft) return <Modal title="Draft editor" onClose={onClose}><div className="grid place-items-center py-12 text-slate-600"><Loader2 className="animate-spin" /></div></Modal>;
 
-  const update = (key: string, value: unknown) => setPayload((current) => ({ ...current, [key]: value }));
+  const update = (key: string, value: unknown) => {
+    setLocalDirty(true);
+    setPayload((current) => ({ ...current, [key]: value }));
+  };
   const isProject = draft.entity_type === "projects";
   const isClient = draft.entity_type === "clients";
   const isService = draft.entity_type === "services";
@@ -750,6 +755,7 @@ function DraftEditorModal({
   const save = async (nextStatus?: "draft" | "review") => {
     try {
       await onSave(draftId, payload, nextStatus);
+      setLocalDirty(false);
       setAdminDirty("release:" + draftId, false);
       if (nextStatus === "review") onClose();
     } catch {
@@ -758,7 +764,13 @@ function DraftEditorModal({
   };
 
   return (
-    <Modal title={\`Edit draft · \${draft.label}\`} onClose={() => void (hasAdminDirty() ? (confirm("Discard unsaved local changes?") ? (clearAdminDirty(), onClose()) : null) : onClose())} wide>
+    <Modal title={\`Edit draft · \${draft.label}\`} onClose={() => {
+        const ownDirty = getAdminDirtyKeys().includes("release:" + draftId);
+        if (!ownDirty || window.confirm("Existem alterações não guardadas neste draft. Fechar e perder o trabalho local?")) {
+          clearAdminDirty();
+          onClose();
+        }
+      }} wide>
       <div className="grid gap-5 lg:grid-cols-[1fr_300px]">
         <div className="space-y-4">
           {isSetting ? (
@@ -881,7 +893,7 @@ function DraftEditorModal({
             <button type="button" onClick={() => void save("review")} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-sky-300 px-4 text-xs font-semibold text-[#01040A]"><Send size={13}/> Save &amp; send to review</button>
             <button type="button" onClick={() => void onDiscard(draftId)} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-white/[0.08] px-4 text-xs text-slate-500 hover:text-red-300"><Trash2 size={13}/> Discard</button>
           </div>
-          <button type="button" onClick={() => window.open("/admin?releasePreview=" + encodeURIComponent(draftId), "_blank", "noopener,noreferrer")} className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg border border-white/[0.08] px-4 text-xs text-slate-400 hover:text-white"><ExternalLink size={13}/> Open preview route</button>
+          <button type="button" onClick={() => window.open("/admin/preview?draft=" + encodeURIComponent(draftId), "_blank", "noopener,noreferrer")} className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg border border-white/[0.08] px-4 text-xs text-slate-400 hover:text-white"><ExternalLink size={13}/> Open preview route</button>
         </aside>
       </div>
     </Modal>
@@ -975,6 +987,12 @@ function PreviewCanvas({ data }: { data: any }) {
   const project = data.selectedProject;
   const featured = (data.projects ?? []).filter((row: any) => row.featured).sort((a:any,b:any)=>Number(a.featured_priority??0)-Number(b.featured_priority??0)).slice(0,3);
 
+  const featuredSettings = settings.featured_section ?? {};
+  const service = data.selectedService;
+  const client = data.selectedClient;
+  const stat = data.selectedStat;
+  const method = data.selectedMethod;
+
   return <div className="space-y-0 text-slate-200">
     <section className="min-h-[360px] border-b border-white/10 p-6 sm:p-10">
       <div className="flex items-center justify-between gap-3 text-[9px] uppercase tracking-[0.2em] text-slate-600"><span>{hero.top_left ?? "KUTUZOV"}</span><span>{hero.top_right ?? ""}</span></div>
@@ -991,8 +1009,16 @@ function PreviewCanvas({ data }: { data: any }) {
     </section>
     <section className="p-6 sm:p-10">
       <div className="mono text-[9px] uppercase tracking-[0.18em] text-slate-600">FEATURED WORK</div>
+      <h4 className="display mt-2 text-2xl text-white">{featuredSettings.title ?? "Featured Work"}</h4>
+      {featuredSettings.subtitle ? <p className="mt-2 max-w-2xl text-xs leading-6 text-slate-500">{featuredSettings.subtitle}</p> : null}
       {project ? <div className="mt-4 rounded-xl border border-sky-300/20 bg-sky-300/[0.04] p-4"><div className="text-[10px] uppercase text-sky-300/70">Draft entity</div><div className="mt-2 text-lg text-white">{project.title}</div><div className="mt-1 text-xs text-slate-500">{project.client_name ?? ""} · {project.category}</div>{project.cover_url ? <img src={project.cover_url} alt="" className="mt-4 max-h-72 w-full rounded object-contain bg-black/20"/> : null}</div> : null}
       <div className="mt-4 grid gap-3 sm:grid-cols-3">{featured.map((row:any)=><div key={row.id} className="rounded-xl border border-white/[0.07] p-3">{row.cover_url ? <img src={row.cover_url} alt="" className="aspect-[4/3] w-full rounded object-cover"/> : <div className="aspect-[4/3] rounded bg-white/[0.03]"/>}<div className="mt-2 text-xs text-white">{row.title}</div></div>)}</div>
+      {(client || service || stat || method) ? <div className="mt-6 grid gap-3 sm:grid-cols-2">
+        {client ? <div className="rounded-xl border border-sky-300/15 bg-sky-300/[0.035] p-4"><div className="mono text-[9px] uppercase text-sky-300/70">Client draft</div><div className="mt-2 text-sm text-white">{client.name}</div><div className="mt-1 text-xs text-slate-500">{client.website_url ?? "No website"}</div></div> : null}
+        {service ? <div className="rounded-xl border border-sky-300/15 bg-sky-300/[0.035] p-4"><div className="mono text-[9px] uppercase text-sky-300/70">Service draft</div><div className="mt-2 text-sm text-white">{service.title}</div><div className="mt-1 text-xs text-slate-500">{service.description ?? ""}</div></div> : null}
+        {stat ? <div className="rounded-xl border border-sky-300/15 bg-sky-300/[0.035] p-4"><div className="mono text-[9px] uppercase text-sky-300/70">Stat draft</div><div className="mt-2 text-2xl text-white">{stat.value}</div><div className="mt-1 text-xs text-slate-500">{stat.label}</div></div> : null}
+        {method ? <div className="rounded-xl border border-sky-300/15 bg-sky-300/[0.035] p-4"><div className="mono text-[9px] uppercase text-sky-300/70">Method draft</div><div className="mt-2 text-sm text-white">{method.title}</div><div className="mt-1 text-xs text-slate-500">{method.description ?? ""}</div></div> : null}
+      </div> : null>
     </section>
   </div>;
 }
@@ -1055,7 +1081,7 @@ export function AuditCenter() {
           <span className="min-w-0 flex-1 truncate text-sm text-white">{row.entity_label ?? row.entity_id}</span>
           <span className="hidden text-[10px] text-slate-600 md:block">{row.actor_email ?? "system"} · {new Date(row.created_at).toLocaleString()}</span>
         </button>
-        {open===row.id ? <div className="border-t border-white/[0.07] p-4"><div className="grid gap-4 lg:grid-cols-2"><JsonPanel title="Before" value={row.before_data}/><JsonPanel title="After" value={row.after_data}/></div><div className="mt-4 flex flex-wrap items-center justify-between gap-3"><span className="text-[10px] text-slate-600">Audit ID: {row.id}</span>{["site_settings","projects","clients","services","stats","about_method"].includes(row.entity_type) && row.action !== "delete" ? <button type="button" onClick={()=>void (async()=>{if(!confirm("Restore this audited state? A new audit event will be created."))return;try{await restore({data:{id:row.id,entity_type:row.entity_type,entity_id:row.entity_id,snapshot:row.after_data ?? {},}});toast.success("State restored");await fetchRows();}catch(error){toast.error(error instanceof Error?error.message:"Restore failed");}})()} className="inline-flex min-h-9 items-center gap-2 rounded-lg border border-amber-300/20 px-3 text-[10px] text-amber-200"><Undo2 size={12}/> Restore this state</button>:null}</div></div>:null}
+        {open===row.id ? <div className="border-t border-white/[0.07] p-4"><div className="grid gap-4 lg:grid-cols-2"><JsonPanel title="Before" value={row.before_data}/><JsonPanel title="After" value={row.after_data}/></div><div className="mt-4 flex flex-wrap items-center justify-between gap-3"><span className="text-[10px] text-slate-600">Audit ID: {row.id}</span>{["site_settings","projects","clients","services","stats","about_method"].includes(row.entity_type) ? <button type="button" onClick={()=>void (async()=>{if(!confirm("Restore this audited state? A new audit event will be created."))return;try{await restore({data:{id:row.id,entity_type:row.entity_type,entity_id:row.entity_id,snapshot:row.after_data ?? row.before_data ?? {},}});toast.success("State restored");await fetchRows();}catch(error){toast.error(error instanceof Error?error.message:"Restore failed");}})()} className="inline-flex min-h-9 items-center gap-2 rounded-lg border border-amber-300/20 px-3 text-[10px] text-amber-200"><Undo2 size={12}/> Restore this state</button>:null}</div></div>:null}
       </div>)}
     </div>}
   </div>;
