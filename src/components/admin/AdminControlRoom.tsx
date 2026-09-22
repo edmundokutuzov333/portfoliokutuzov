@@ -67,6 +67,8 @@ const StudioAdminPage = lazy(() =>
   })),
 );
 
+import { getAdminOverviewSnapshot } from "@/lib/admin.phase4.functions";
+
 import { toast } from "sonner";
 import {
   createAdminProject,
