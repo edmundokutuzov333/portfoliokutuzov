@@ -535,17 +535,37 @@ export const deleteAdminMediaAsset = createServerFn({ method: "POST" })
     await assertPermission(context, "media.manage");
     const { data: asset, error: readError } = await context.supabase
       .from("media_assets")
-      .select("storage_path")
+      .select("storage_path,entity_type,entity_id,filename")
       .eq("id", data.id)
       .single();
     if (readError || !asset) throw new Error(readError?.message ?? "Media asset not found");
+
+    if (asset.entity_id || asset.entity_type) {
+      throw new Response(
+        "This asset is linked to public content. Replace it instead of deleting it.",
+        { status: 409 },
+      );
+    }
+
+    const { error: deleteError } = await context.supabase
+      .from("media_assets")
+      .delete()
+      .eq("id", data.id)
+      .is("entity_id", null)
+      .is("entity_type", null);
+    if (deleteError) throw new Error(deleteError.message);
+
     const { error: storageError } = await context.supabase.storage
       .from("site-assets")
       .remove([asset.storage_path]);
-    if (storageError) throw new Error(storageError.message);
-    const { error } = await context.supabase.from("media_assets").delete().eq("id", data.id);
-    if (error) throw new Error(error.message);
-    return { ok: true };
+    if (storageError) {
+      throw new Error(
+        "Asset registry entry was removed, but physical storage cleanup failed: " +
+          storageError.message,
+      );
+    }
+
+    return { ok: true, filename: asset.filename };
   });
 
 export const saveAdminSiteSetting = createServerFn({ method: "POST" })
