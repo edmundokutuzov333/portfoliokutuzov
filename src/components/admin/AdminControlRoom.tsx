@@ -2361,6 +2361,7 @@ function BatchAddProjects({ onClose, startSort }: { onClose: () => void; startSo
       year: String(new Date().getFullYear()),
     })),
   );
+  const createBatch = useServerFn(createAdminProjectsBatch);
   const [saving, setSaving] = useState(false);
 
   const setRow = (i: number, patch: Partial<BatchRow>) => {
@@ -2377,7 +2378,7 @@ function BatchAddProjects({ onClose, startSort }: { onClose: () => void; startSo
     }
     setSaving(true);
     try {
-      await createAdminProjectsBatch({
+      await createBatch({
         data: {
           rows: valid.map((r) => ({
             title: r.title,
