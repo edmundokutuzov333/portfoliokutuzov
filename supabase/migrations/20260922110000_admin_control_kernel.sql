@@ -26,9 +26,7 @@ AS $$
       'leads.read',
       'leads.write',
       'finance.read',
-      'finance.write',
-      'leads.read',
-      'leads.write'
+      'finance.write'
     )
     ELSE false
   END
