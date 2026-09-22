@@ -102,7 +102,12 @@ export function AuditManager() {
           ))}
         </select>
 
-        <select value={entity} onChange={(event) => setEntity(event.target.value)} className="adm-input" aria-label="Entity">
+        <select
+          value={entity}
+          onChange={(event) => setEntity(event.target.value)}
+          className="adm-input"
+          aria-label="Entity"
+        >
           {entities.map((value) => (
             <option key={value} value={value}>
               {value === "all" ? "All entities" : value}
@@ -122,7 +127,10 @@ export function AuditManager() {
       </div>
 
       {error && (
-        <div role="alert" className="mt-4 rounded border border-red-400/20 bg-red-400/[0.04] p-3 text-sm text-red-200">
+        <div
+          role="alert"
+          className="mt-4 rounded border border-red-400/20 bg-red-400/[0.04] p-3 text-sm text-red-200"
+        >
           {error}
         </div>
       )}
@@ -143,7 +151,10 @@ export function AuditManager() {
         {rows.map((row) => {
           const isOpen = openId === row.id;
           return (
-            <div key={row.id} className="bg-[#030814] border border-white/[0.08] rounded-lg overflow-hidden">
+            <div
+              key={row.id}
+              className="bg-[#030814] border border-white/[0.08] rounded-lg overflow-hidden"
+            >
               <button
                 type="button"
                 onClick={() => setOpenId(isOpen ? null : row.id)}
@@ -154,7 +165,9 @@ export function AuditManager() {
                 ) : (
                   <ChevronRight size={14} className="text-slate-500" />
                 )}
-                <span className={`mono text-[9px] px-2 py-1 rounded-full border ${badgeClass(row.action)}`}>
+                <span
+                  className={`mono text-[9px] px-2 py-1 rounded-full border ${badgeClass(row.action)}`}
+                >
                   {row.action}
                 </span>
                 <span className="mono text-[10px] text-slate-500">{row.entity_type}</span>
@@ -169,13 +182,17 @@ export function AuditManager() {
               {isOpen && (
                 <div className="border-t border-white/[0.06] p-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
                   <div>
-                    <div className="mono text-[9px] tracking-[0.2em] text-slate-500 mb-2">BEFORE</div>
+                    <div className="mono text-[9px] tracking-[0.2em] text-slate-500 mb-2">
+                      BEFORE
+                    </div>
                     <pre className="bg-[#01040A] border border-white/[0.06] rounded p-3 text-[11px] text-slate-300 overflow-auto max-h-[360px]">
                       {row.before_data ? JSON.stringify(row.before_data, null, 2) : "null"}
                     </pre>
                   </div>
                   <div>
-                    <div className="mono text-[9px] tracking-[0.2em] text-slate-500 mb-2">AFTER</div>
+                    <div className="mono text-[9px] tracking-[0.2em] text-slate-500 mb-2">
+                      AFTER
+                    </div>
                     <pre className="bg-[#01040A] border border-white/[0.06] rounded p-3 text-[11px] text-slate-300 overflow-auto max-h-[360px]">
                       {row.after_data ? JSON.stringify(row.after_data, null, 2) : "null"}
                     </pre>
