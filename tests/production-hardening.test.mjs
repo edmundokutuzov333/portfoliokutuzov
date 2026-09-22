@@ -17,7 +17,7 @@ test("canonical origin is the apex custom domain everywhere in the public SEO su
   }
   assert.match(seo, /SITE_ORIGIN = "https:\/\/edmundokutuzov\.art"/);
   assert.match(robots, /Sitemap: https:\/\/edmundokutuzov\.art\/sitemap\.xml/);
-  assert.match(await read("src/config/server.ts"), /www\.edmundokutuzov\.art/);
+  assert.match(server, /www\.edmundokutuzov\.art/);
 });
 
 test("www hostname is served directly so it cannot fall into a redirect loop", async () => {
@@ -60,7 +60,7 @@ test("CSP covers the actual first-party and required external runtime dependenci
   }
 });
 
-test("Studio is intentionally minimal while unfinished tools stay private", async () => {
+test("Studio landing is minimal while unfinished tools stay private", async () => {
   const landing = await read("src/routes/studio.tsx");
   const privateAccess = await read("src/lib/studio/public-access.ts");
   const background = await read("src/routes/studio.background.tsx");
@@ -68,12 +68,10 @@ test("Studio is intentionally minimal while unfinished tools stay private", asyn
   const identity = await read("src/routes/studio.identity.tsx");
   const card = await read("src/routes/card.$token.tsx");
 
-  assert.match(landing, /Something is/);
-  assert.match(landing, /taking shape/);
-  assert.match(landing, /A private creative space for the work behind the work/);
-  assert.match(landing, /View portfolio/);
-  assert.match(landing, /PRIVATE BUILD/);
-  assert.doesNotMatch(landing, /BUILD SIGNAL/);
+  assert.match(landing, /A studio still finding its lines/);
+  assert.match(landing, /Explore the portfolio/);
+  assert.match(landing, /WaitlistForm/);
+  assert.match(landing, /GenesisVisual/);
   assert.doesNotMatch(landing, /SYSTEM MAP/);
   assert.match(privateAccess, /studioPublicEnabled/);
   const publicConfig = await read("src/config/public.ts");
@@ -84,6 +82,22 @@ test("Studio is intentionally minimal while unfinished tools stay private", asyn
     assert.match(source, /redirect\(\{ to: "\/studio" \}\)/);
   }
 });
+
+test("Studio waitlist keeps privileged credentials server-side", async () => {
+  const server = await read("src/server/studio-waitlist.ts");
+  const form = await read("src/components/studio/WaitlistForm.tsx");
+  const migration = await read("supabase/migrations/20260922150000_create_studio_waitlist.sql");
+
+  assert.match(server, /createServerFn/);
+  assert.match(server, /SUPABASE_SERVICE_ROLE_KEY/);
+  assert.match(server, /RESEND_API_KEY/);
+  assert.match(server, /23505/);
+  assert.doesNotMatch(form, /SUPABASE_SERVICE_ROLE_KEY|RESEND_API_KEY/);
+  assert.match(migration, /studio_waitlist/);
+  assert.match(migration, /enable row level security/);
+  assert.match(migration, /using \(false\)/);
+});
+
 test("unfinished Studio APIs return the private-surface guard", async () => {
   const routes = [
     "src/routes/api.studio-vcard.ts",
