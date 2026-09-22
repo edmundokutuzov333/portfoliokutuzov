@@ -82,7 +82,7 @@ test("Footer follows the structured navigation and global settings", async () =>
 
 test("Admin route is separated from public shell", async () => {
   const root = await read("src/routes/__root.tsx");
-  assert.match(root, /pathname\\.startsWith\\("\\/admin"\\)/);
+  assert.match(root, /pathname\.startsWith\("\/admin"\)/);
   assert.match(root, /!isAdmin && <Navbar/);
 });
 
@@ -90,4 +90,21 @@ test("No new Phase 2 branch is encoded in the repository automation", async () =
   const docs = await read("docs/ADMIN_WEBSITE_CMS_PHASE2.md");
   assert.match(docs, /main/);
   assert.doesNotMatch(docs, /feat\\/admin-control-room-phase2/);
+});
+
+
+test("CMS fallback content is SSR-safe", async () => {
+  const cms = await read("src/lib/cms.ts");
+  assert.match(cms, /SOCIAL_IMAGE/);
+  assert.match(cms, /@\/lib\/seo/);
+});
+
+test("Phase 2 media registry backfill reads JSONB galleries", async () => {
+  const migration = await read("supabase/migrations/20260922130000_admin_control_room_phase2.sql");
+  assert.match(migration, /jsonb_array_elements_text\(COALESCE\(p\.gallery, '[]'::jsonb\)\)/);
+});
+
+test("Phase 2 media search sanitizes Unicode safely", async () => {
+  const server = await read("src/lib/admin.functions.ts");
+  assert.match(server, /replace\(\/\[\^\\p\{L\}\\p\{N\}\\s/);
 });

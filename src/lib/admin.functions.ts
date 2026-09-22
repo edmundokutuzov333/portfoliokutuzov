@@ -492,7 +492,7 @@ export const listAdminMediaAssets = createServerFn({ method: "POST" })
       .limit(200);
     if (data.kind !== "all") query = query.eq("kind", data.kind);
     if (data.search) {
-      const needle = data.search.replace(/[^p{L}p{N}s._-]/gu, "").trim();
+      const needle = data.search.replace(/[^\p{L}\p{N}\s._-]/gu, "").trim();
       if (needle) query = query.ilike("filename", `%${needle}%`);
     }
     const { data: rows, error } = await query;

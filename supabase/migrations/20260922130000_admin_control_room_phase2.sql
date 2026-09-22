@@ -272,7 +272,7 @@ SELECT DISTINCT
   p.id::text,
   true
 FROM public.projects p
-CROSS JOIN LATERAL unnest(COALESCE(p.gallery, ARRAY[]::text[])) AS g(url)
+CROSS JOIN LATERAL jsonb_array_elements_text(COALESCE(p.gallery, '[]'::jsonb)) AS g(url)
 WHERE g.url LIKE '%/storage/v1/object/public/site-assets/%'
 ON CONFLICT (storage_path) DO NOTHING;
 
