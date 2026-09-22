@@ -1,5 +1,6 @@
 import { createLazyFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminAuth } from "@/hooks/useAdmin";
@@ -14,12 +15,24 @@ import {
   type DbProject,
 } from "@/lib/cms";
 import { readImageDimensions, aspectFromDims } from "@/lib/image-utils";
-import { snapshotBefore } from "@/lib/history";
 import { isUuid, generateUuid } from "@/lib/utils";
 import { InboxHub } from "@/components/admin/InboxHub";
+import { AuditManager } from "@/components/admin/AuditManager";
 import { HistoryManager } from "@/components/admin/HistoryManager";
 import { InvoiceWorkspace } from "@/components/admin/InvoiceWorkspace";
 import { toast } from "sonner";
+import {
+  createAdminProject,
+  createAdminClient,
+  deleteAdminClient,
+  deleteAdminProject,
+  duplicateAdminProject,
+  publishAdminProject,
+  reorderAdminProjects,
+  saveAdminClient,
+  saveAdminProject,
+  saveAdminSiteSetting,
+} from "@/lib/admin.functions";
 import {
   LogOut,
   Save,
@@ -61,6 +74,7 @@ type Section =
   | "inbox"
   | "invoice"
   | "history"
+  | "audit"
   | "advanced";
 
 function ControlRoom() {
@@ -87,6 +101,7 @@ function ControlRoom() {
     { id: "inbox" as const, label: "Inbox", Icon: Inbox },
     { id: "invoice" as const, label: "Invoicing", Icon: FileText },
     { id: "history" as const, label: "History", Icon: History },
+    { id: "audit" as const, label: "Audit", Icon: History },
     { id: "advanced" as const, label: "Advanced", Icon: Code2 },
   ];
 
@@ -137,6 +152,7 @@ function ControlRoom() {
           </div>
         )}
         {section === "history" && <HistoryManager />}
+        {section === "audit" && <AuditManager />}
         {section === "advanced" && <AdvancedJSONManager />}
       </main>
     </div>
@@ -300,6 +316,7 @@ function useAdminInputStyle() {
 // SETTINGS HELPERS - read merged value (DB over fallback) and save per-key
 // ============================================================================
 function useSectionDraft(key: string) {
+  const saveAdminSetting = useServerFn(saveAdminSiteSetting);
   const { data: settings } = useSiteSettings();
   const merged = useMemo(
     () => ({ ...(FALLBACK_SETTINGS[key] ?? {}), ...(settings?.[key] ?? {}) }),
@@ -322,17 +339,14 @@ function useSectionDraft(key: string) {
 
   const save = async () => {
     setSaving(true);
-    await snapshotBefore("site_settings", key, key);
-    const { error } = await supabase
-      .from("site_settings")
-      .upsert([{ key, value: draft as never, updated_at: new Date().toISOString() }], {
-        onConflict: "key",
-      });
-    setSaving(false);
-    if (error) toast.error(error.message);
-    else {
+    try {
+      await saveAdminSetting({ data: { key, value: draft } });
       toast.success(`Saved ${key}`);
       setDirty(false);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Save failed");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -1229,6 +1243,9 @@ function LogoManager({
   maxItems?: number;
 }) {
   const qc = useQueryClient();
+  const saveClient = useServerFn(saveAdminClient);
+  const createClient = useServerFn(createAdminClient);
+  const deleteClient = useServerFn(deleteAdminClient);
   const { data: items = [] } = useClients(true, kind);
   const [busyId, setBusyId] = useState<string | null>(null);
 
@@ -1241,26 +1258,27 @@ function LogoManager({
       await snapshotBefore("clients", id, labelOf(id));
     }
     const currentItem = items.find((c) => c.id === id);
-    const payload = {
-      id: safeId,
-      name: currentItem?.name ?? `New ${kind}`,
-      sort_order: currentItem?.sort_order ?? 1,
-      is_active: currentItem?.is_active ?? true,
-      kind,
-      website_url: currentItem?.website_url ?? null,
-      logo_url: currentItem?.logo_url ?? null,
-      logo_width: currentItem?.logo_width ?? null,
-      logo_height: currentItem?.logo_height ?? null,
-      ...patch,
-      updated_at: new Date().toISOString(),
-    };
-    const { error } = await supabase.from("clients").upsert(payload as never, { onConflict: "id" });
-    setBusyId(null);
-    if (error) {
-      toast.error(error.message);
-    } else {
+    try {
+      await saveClient({
+        data: {
+          id: safeId,
+          name: currentItem?.name ?? `New ${kind}`,
+          sort_order: currentItem?.sort_order ?? 1,
+          is_active: currentItem?.is_active ?? true,
+          kind,
+          website_url: currentItem?.website_url ?? null,
+          logo_url: currentItem?.logo_url ?? null,
+          logo_width: currentItem?.logo_width ?? null,
+          logo_height: currentItem?.logo_height ?? null,
+          ...patch,
+        },
+      });
       toast.success("Saved");
       qc.invalidateQueries({ queryKey: ["clients"] });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Save failed");
+    } finally {
+      setBusyId(null);
     }
   };
 
@@ -1270,29 +1288,27 @@ function LogoManager({
       return;
     }
     const max = items.reduce((m, c) => Math.max(m, c.sort_order), 0);
-    const { error } = await supabase
-      .from("clients")
-      .insert({ name: `New ${kind}`, sort_order: max + 1, is_active: true, kind });
-    if (error) {
-      toast.error(error.message);
-    } else {
+    try {
+      await createClient({
+        data: { name: `New ${kind}`, sort_order: max + 1, is_active: true, kind },
+      });
       toast.success(`${kind === "client" ? "Client" : "Studio"} added`);
       qc.invalidateQueries({ queryKey: ["clients"] });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Create failed");
     }
   };
 
   const remove = async (id: string) => {
     if (!confirm(`Delete this ${kind}?`)) return;
-    if (isUuid(id)) {
-      await snapshotBefore("clients", id, `${labelOf(id)} (deleted)`);
-      const { error } = await supabase.from("clients").delete().eq("id", id);
-      if (error) {
-        toast.error(error.message);
-        return;
-      }
+    if (!isUuid(id)) return;
+    try {
+      await deleteClient({ data: { id } });
+      toast.success("Deleted");
+      qc.invalidateQueries({ queryKey: ["clients"] });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Delete failed");
     }
-    toast.success("Deleted");
-    qc.invalidateQueries({ queryKey: ["clients"] });
   };
 
   const uploadLogo = async (id: string, file: File) => {
@@ -1490,6 +1506,11 @@ function StudiosManager() {
 
 function PortfolioManager() {
   const qc = useQueryClient();
+  const createProject = useServerFn(createAdminProject);
+  const deleteProject = useServerFn(deleteAdminProject);
+  const duplicateProject = useServerFn(duplicateAdminProject);
+  const publishProject = useServerFn(publishAdminProject);
+  const reorderProjects = useServerFn(reorderAdminProjects);
   const { data: projects = [] } = useProjects(true);
   const [editing, setEditing] = useState<DbProject | null>(null);
   const [filter, setFilter] = useState<string>("All");
@@ -1560,52 +1581,37 @@ function PortfolioManager() {
 
   const create = async () => {
     const max = projects.reduce((m, p) => Math.max(m, p.sort_order), 0);
-    const { data, error } = await supabase
-      .from("projects")
-      .insert({
-        title: "New project",
-        category: "Digital Design",
-        sort_order: max + 1,
-        is_published: false,
-      })
-      .select()
-      .single();
-    if (error) toast.error(error.message);
-    else if (data) {
+    try {
+      const result = (await createProject({
+        data: { title: "New project", category: "Digital Design", sort_order: max + 1 },
+      })) as unknown as { row: DbProject };
       qc.invalidateQueries({ queryKey: ["projects"] });
-      setEditing(data as unknown as DbProject);
+      if (result.row) setEditing(result.row);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Create failed");
     }
   };
 
   const remove = async (id: string) => {
     if (!confirm("Delete this project?")) return;
-    const proj = projects.find((p) => p.id === id);
-    if (isUuid(id)) {
-      await snapshotBefore("projects", id, `${proj?.title ?? id} (deleted)`);
-      const { error } = await supabase.from("projects").delete().eq("id", id);
-      if (error) {
-        toast.error(error.message);
-        return;
-      }
+    if (!isUuid(id)) return;
+    try {
+      await deleteProject({ data: { id } });
+      toast.success("Deleted");
+      qc.invalidateQueries({ queryKey: ["projects"] });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Delete failed");
     }
-    toast.success("Deleted");
-    qc.invalidateQueries({ queryKey: ["projects"] });
   };
 
   const duplicate = async (p: DbProject) => {
-    const { id, ...rest } = p;
-    void id;
-    const payload = {
-      ...rest,
-      title: `${p.title} (copy)`,
-      sort_order: p.sort_order + 1,
-      is_published: false,
-    } as unknown as never;
-    const { error } = await supabase.from("projects").insert(payload);
-    if (error) toast.error(error.message);
-    else {
+    if (!isUuid(p.id)) return;
+    try {
+      await duplicateProject({ data: { id: p.id } });
       toast.success("Duplicated");
       qc.invalidateQueries({ queryKey: ["projects"] });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Duplicate failed");
     }
   };
 
@@ -1801,6 +1807,7 @@ function PortfolioManager() {
 
 function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () => void }) {
   const qc = useQueryClient();
+  const saveProject = useServerFn(saveAdminProject);
   const [form, setForm] = useState<DbProject>(project);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -1828,51 +1835,48 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
       }
     }
     setSaving(true);
-    const safeId = isUuid(form.id) ? form.id : generateUuid();
-    if (isUuid(form.id)) {
-      await snapshotBefore("projects", form.id, form.title);
-    }
-    const payload = {
-      id: safeId,
-      title: form.title,
-      subtitle: form.subtitle,
-      category: normalizeCategory(form.category),
-      year: form.year,
-      description: form.description,
-      cover_url: form.cover_url,
-      cover_width: form.cover_width ?? null,
-      cover_height: form.cover_height ?? null,
-      palette: form.palette,
-      span: form.span,
-      sort_order: form.sort_order,
-      tags: form.tags as unknown as never,
-      gallery: form.gallery as unknown as never,
-      gallery_meta: (form.gallery_meta ?? []) as unknown as never,
-      is_published: form.is_published,
-      featured: form.featured ?? false,
-      featured_priority: form.featured_priority ?? 0,
-      client_name: form.client_name ?? null,
-      image_fit: form.image_fit ?? "contain",
-      concept: form.concept ?? null,
-      idea: form.idea ?? null,
-      role: form.role ?? null,
-      notes: form.notes ?? null,
-      collaborators: (form.collaborators ?? []) as unknown as never,
-      tools_used: (form.tools_used ?? []) as unknown as never,
-      deliverables: (form.deliverables ?? []) as unknown as never,
-      video_url: form.video_url ?? null,
-      video_provider: form.video_provider ?? null,
-      updated_at: new Date().toISOString(),
-    };
-    const { error } = await supabase
-      .from("projects")
-      .upsert(payload as never, { onConflict: "id" });
-    setSaving(false);
-    if (error) toast.error(error.message);
-    else {
+    try {
+      const safeId = isUuid(form.id) ? form.id : generateUuid();
+      await saveProject({
+        data: {
+          id: safeId,
+          title: form.title,
+          subtitle: form.subtitle,
+          category: normalizeCategory(form.category),
+          year: form.year,
+          description: form.description,
+          cover_url: form.cover_url,
+          cover_width: form.cover_width ?? null,
+          cover_height: form.cover_height ?? null,
+          palette: form.palette,
+          span: form.span,
+          sort_order: form.sort_order,
+          tags: Array.isArray(form.tags) ? form.tags : [],
+          gallery: Array.isArray(form.gallery) ? form.gallery : [],
+          gallery_meta: Array.isArray(form.gallery_meta) ? form.gallery_meta : [],
+          is_published: form.is_published,
+          featured: form.featured ?? false,
+          featured_priority: form.featured_priority ?? 0,
+          client_name: form.client_name ?? null,
+          image_fit: form.image_fit ?? "contain",
+          concept: form.concept ?? null,
+          idea: form.idea ?? null,
+          role: form.role ?? null,
+          notes: form.notes ?? null,
+          collaborators: Array.isArray(form.collaborators) ? form.collaborators : [],
+          tools_used: Array.isArray(form.tools_used) ? form.tools_used : [],
+          deliverables: Array.isArray(form.deliverables) ? form.deliverables : [],
+          video_url: form.video_url ?? null,
+          video_provider: form.video_provider ?? null,
+        },
+      });
       toast.success("Saved");
       qc.invalidateQueries({ queryKey: ["projects"] });
       onClose();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Save failed");
+    } finally {
+      setSaving(false);
     }
   };
 
