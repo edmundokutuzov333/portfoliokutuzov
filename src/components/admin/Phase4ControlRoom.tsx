@@ -969,6 +969,21 @@ function ToggleField({ label, value, onChange }: { label: string; value: boolean
   return <button type="button" onClick={() => onChange(!value)} className={\`flex w-full items-center justify-between rounded-lg border px-3 py-3 text-left \${value ? "border-emerald-300/20 bg-emerald-300/[0.04] text-emerald-200" : "border-white/[0.08] text-slate-500"}\`}><span className="text-sm">{label}</span><span className="mono text-[9px] uppercase">{value ? "Enabled" : "Disabled"}</span></button>;
 }
 
+function getPathValue(input: unknown, path: string): unknown {
+  if (!path || path === "$") return input;
+  return path.split(".").reduce<unknown>((value, key) => {
+    if (!value || typeof value !== "object") return undefined;
+    return (value as Record<string, unknown>)[key];
+  }, input);
+}
+
+function displayDiffValue(value: unknown) {
+  if (value === undefined) return "Not set";
+  if (typeof value === "string" && value.length > 160) return value.slice(0, 160) + "…";
+  if (typeof value === "object") return JSON.stringify(value);
+  return String(value);
+}
+
 function CompareModal({ draftId, onClose, diffLoader }: { draftId: string; onClose: () => void; diffLoader: ReturnType<typeof useServerFn<typeof getAdminDraftDiff>> }) {
   const [data, setData] = useState<any>(null);
   useEffect(() => {
@@ -986,7 +1001,7 @@ function CompareModal({ draftId, onClose, diffLoader }: { draftId: string; onClo
         <div className="rounded-xl border border-white/[0.07] bg-[#030814] p-4">
           <div className="mono text-[9px] uppercase tracking-[0.18em] text-slate-600">Changed fields</div>
           {data.diff.changedPaths.length === 0 ? <p className="mt-3 text-sm text-slate-600">No differences.</p> :
-            <div className="mt-3 grid gap-2 sm:grid-cols-2">{data.diff.changedPaths.map((path:string)=><div key={path} className="rounded-lg border border-white/[0.06] px-3 py-2 text-xs text-slate-300">{path}</div>)}</div>}
+            <div className="mt-3 space-y-2">{data.diff.changedPaths.map((path:string)=><div key={path} className="rounded-lg border border-white/[0.06] p-3"><div className="mono text-[9px] uppercase tracking-wider text-slate-500">{path}</div><div className="mt-2 grid gap-2 md:grid-cols-2"><div className="rounded border border-white/[0.05] bg-white/[0.015] p-2"><div className="text-[9px] uppercase text-slate-600">Current</div><div className="mt-1 break-words text-xs text-slate-400">{displayDiffValue(getPathValue(data.row.baseline_snapshot, path))}</div></div><div className="rounded border border-sky-300/10 bg-sky-300/[0.025] p-2"><div className="text-[9px] uppercase text-sky-300/60">Draft</div><div className="mt-1 break-words text-xs text-slate-200">{displayDiffValue(getPathValue(data.row.payload, path))}</div></div></div></div>)}</div>}
         </div>
         <div className="grid gap-4 lg:grid-cols-2">
           <JsonPanel title="Current" value={data.row.baseline_snapshot}/>
