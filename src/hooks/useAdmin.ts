@@ -17,7 +17,7 @@ function normalizeRole(value: unknown): AdminRole {
     : null;
 }
 
-async function resolveAdminRole(): Promise<AdminRole> {
+async function resolveAdminRole(userId: string): Promise<AdminRole> {
   const { data: rpcRole, error: rpcError } = await supabase.rpc("admin_get_role");
   if (!rpcError) return normalizeRole(rpcRole);
 
@@ -25,9 +25,13 @@ async function resolveAdminRole(): Promise<AdminRole> {
   const { data, error } = await supabase
     .from("admin_users")
     .select("role")
-    .eq("user_id", (await supabase.auth.getUser()).data.user?.id ?? "")
+    .eq("user_id", userId)
     .maybeSingle();
   return !error ? normalizeRole(data?.role ?? "admin") : null;
+}
+
+async function verifyAdmin(userId: string): Promise<boolean> {
+  return (await resolveAdminRole(userId)) !== null;
 }
 
 export function useAdminAuth(): AdminAuthState {
@@ -49,7 +53,7 @@ export function useAdminAuth(): AdminAuthState {
         return;
       }
 
-      const nextRole = await resolveAdminRole();
+      const nextRole = await resolveAdminRole(nextSession.user.id);
       if (!alive) return;
       setRole(nextRole);
       setLoading(false);
