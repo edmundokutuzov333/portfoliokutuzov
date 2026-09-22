@@ -1,5 +1,8 @@
--- Phase 3 follow-up: keep legacy newsletter activity and the new
+-- Phase 3 follow-up: backfill and keep legacy newsletter activity and the new
 -- audience status field synchronized in both directions.
+UPDATE public.newsletter_subscribers
+SET status = CASE WHEN COALESCE(is_active, true) THEN 'active' ELSE 'inactive' END;
+
 CREATE OR REPLACE FUNCTION public.sync_newsletter_status_compatibility()
 RETURNS TRIGGER
 LANGUAGE plpgsql
