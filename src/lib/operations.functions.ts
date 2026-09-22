@@ -522,10 +522,10 @@ export const getStudioOperationsSnapshot = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     await assertPermission(context, "leads.read");
     const since = new Date(Date.now() - 30 * 86400000).toISOString();
-    const { data, error } = await context.supabase.rpc("studio_admin_dashboard" as never, {
+    const { data, error } = await context.supabase.rpc("studio_admin_dashboard", {
       p_since: since,
       p_until: new Date().toISOString(),
-    } as never);
+    });
     if (error) throw new Error(error.message);
     return { ok: true, data: data ?? {} };
   });
