@@ -11,6 +11,25 @@ export type AdminAuthState = {
   loading: boolean;
 };
 
+function normalizeRole(value: unknown): AdminRole {
+  return value === "owner" || value === "admin" || value === "editor" || value === "finance"
+    ? value
+    : null;
+}
+
+async function resolveAdminRole(): Promise<AdminRole> {
+  const { data: rpcRole, error: rpcError } = await supabase.rpc("admin_get_role");
+  if (!rpcError) return normalizeRole(rpcRole);
+
+  // Backwards-compatible fallback while the Phase 1 migration is being applied.
+  const { data, error } = await supabase
+    .from("admin_users")
+    .select("role")
+    .eq("user_id", (await supabase.auth.getUser()).data.user?.id ?? "")
+    .maybeSingle();
+  return !error ? normalizeRole(data?.role ?? "admin") : null;
+}
+
 export function useAdminAuth(): AdminAuthState {
   const [session, setSession] = useState<Session | null>(null);
   const [role, setRole] = useState<AdminRole>(null);
@@ -20,7 +39,7 @@ export function useAdminAuth(): AdminAuthState {
     let alive = true;
     const timers = new Set<ReturnType<typeof setTimeout>>();
 
-    const resolveRole = async (nextSession: Session | null) => {
+    const resolveSessionRole = async (nextSession: Session | null) => {
       if (!alive) return;
       setSession(nextSession);
       setRole(null);
@@ -30,12 +49,8 @@ export function useAdminAuth(): AdminAuthState {
         return;
       }
 
-      const { data, error } = await supabase.rpc("admin_get_role");
+      const nextRole = await resolveAdminRole();
       if (!alive) return;
-      const nextRole =
-        !error && (data === "owner" || data === "admin" || data === "editor" || data === "finance")
-          ? data
-          : null;
       setRole(nextRole);
       setLoading(false);
     };
@@ -48,15 +63,17 @@ export function useAdminAuth(): AdminAuthState {
       if (nextSession?.user) {
         const timer = setTimeout(() => {
           timers.delete(timer);
-          void resolveRole(nextSession);
+          void resolveSessionRole(nextSession);
         }, 0);
         timers.add(timer);
+      } else {
+        setLoading(false);
       }
     });
 
     void supabase.auth
       .getSession()
-      .then(({ data: { session } }) => resolveRole(session))
+      .then(({ data: { session } }) => resolveSessionRole(session))
       .catch(() => {
         if (alive) {
           setSession(null);
