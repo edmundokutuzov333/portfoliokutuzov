@@ -1511,6 +1511,7 @@ export type Database = {
       }
       crm_lead_profiles: {
         Row: {
+          attachments: Json | null
           briefing_urgency: string | null
           budget_amount: number | null
           budget_currency: string | null
