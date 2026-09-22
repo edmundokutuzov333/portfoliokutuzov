@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,6 +23,7 @@ import {
   prepareAdminMediaUpload,
 } from "@/lib/admin.functions";
 import { toast } from "sonner";
+import { setAdminDirty } from "@/lib/admin-dirty";
 import {
   ArrowDown,
   ArrowUp,
@@ -307,6 +308,12 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
   const [form, setForm] = useState<DbProject>(project);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const dirty = JSON.stringify(form) !== JSON.stringify(project);
+
+  useEffect(() => {
+    setAdminDirty("project:" + project.id, dirty);
+    return () => setAdminDirty("project:" + project.id, false);
+  }, [dirty, project.id]);
   const set = <K extends keyof DbProject>(k: K, v: DbProject[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
 
