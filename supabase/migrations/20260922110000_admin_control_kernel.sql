@@ -43,12 +43,12 @@ LANGUAGE sql
 STABLE
 SECURITY DEFINER
 SET search_path = public, pg_catalog
-AS $
+AS $$
   SELECT u.role
   FROM public.admin_users u
   WHERE u.user_id = auth.uid()
   LIMIT 1;
-$;
+$$;
 
 REVOKE ALL ON FUNCTION public.admin_get_role() FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.admin_get_role() TO authenticated;
@@ -342,7 +342,7 @@ CREATE TRIGGER trg_content_history_prune
 AFTER INSERT ON public.content_history
 FOR EACH ROW EXECUTE FUNCTION public.prune_content_history();
 
-DO $
+DO $$
 DECLARE
   table_name text;
 BEGIN
@@ -404,11 +404,11 @@ RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public, pg_catalog
-AS $
+AS $$
 BEGIN
   RAISE EXCEPTION 'Admin audit log is immutable' USING ERRCODE = '42501';
 END;
-$;
+$$;
 
 REVOKE ALL ON FUNCTION public.prevent_admin_audit_mutation() FROM PUBLIC;
 
