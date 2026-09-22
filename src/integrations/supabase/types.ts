@@ -1617,6 +1617,10 @@ export type Database = {
       }
       is_admin: { Args: never; Returns: boolean }
       next_invoice_number: { Args: { prefix?: string }; Returns: string }
+      studio_admin_dashboard: {
+        Args: { p_since: string; p_until: string }
+        Returns: Json
+      }
       slugify: { Args: { input: string }; Returns: string }
     }
     Enums: {
