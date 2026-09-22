@@ -30,6 +30,7 @@ import {
 import { useClients, useMethod, useProjects, useServices, useSiteSettings, useStats } from "@/hooks/useSiteData";
 import { supabase } from "@/integrations/supabase/client";
 import { generateUuid } from "@/lib/utils";
+import { setAdminDirty } from "@/lib/admin-dirty";
 import { readImageDimensions } from "@/lib/image-utils";
 
 function Card(p: { title: string; description?: string; children: ReactNode }) {
@@ -73,6 +74,10 @@ function useSettingsDraft(key: string) {
   const [draft, setDraft] = useState<Record<string, unknown>>(merged);
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
+  useEffect(() => {
+    setAdminDirty("settings:" + key, dirty);
+    return () => setAdminDirty("settings:" + key, false);
+  }, [dirty, key]);
   useEffect(() => { if (!dirty) setDraft(merged); }, [dirty, merged]);
   const update = (field: string, value: unknown) => {
     setDirty(true);
