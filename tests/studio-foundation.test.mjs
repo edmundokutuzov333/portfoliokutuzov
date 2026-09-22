@@ -11,10 +11,12 @@ test("Kutuzov Studio routes are registered", async () => {
   assert.match(editor, /createFileRoute\("\/studio\/business-card"\)/);
 });
 
-test("Studio navigation entry exists in desktop and mobile navigation", async () => {
+test("Studio navigation entry exists in the CMS-driven desktop and mobile navigation", async () => {
   const navbar = await read("src/components/layout/Navbar.tsx");
-  assert.match(navbar, /navigation/);\n  assert.match(navbar, /\/studio/);
-  assert.match(navbar, /Kutuzov Studio/);
+  assert.ok(navbar.includes("useSiteSettings"));
+  assert.ok(navbar.includes("navigation"));
+  assert.ok(navbar.includes("/studio"));
+  assert.ok(navbar.includes("Kutuzov Studio"));
 });
 
 test("Business Card Studio uses a versioned editable design document", async () => {
