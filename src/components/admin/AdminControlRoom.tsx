@@ -33,6 +33,7 @@ import {
   saveAdminClient,
   saveAdminProject,
   saveAdminSiteSetting,
+  prepareAdminMediaUpload,
 } from "@/lib/admin.functions";
 import {
   LogOut,
@@ -1262,6 +1263,7 @@ function LogoManager({
   const qc = useQueryClient();
   const saveClient = useServerFn(saveAdminClient);
   const createClient = useServerFn(createAdminClient);
+  const prepareMediaUpload = useServerFn(prepareAdminMediaUpload);
   const deleteClient = useServerFn(deleteAdminClient);
   const { data: items = [] } = useClients(true, kind);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -1330,13 +1332,20 @@ function LogoManager({
     try {
       const safeId = isUuid(id) ? id : generateUuid();
       const dims = await readImageDimensions(file).catch(() => null);
-      const path = `logos/${kind}-${safeId}-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
+      const up = await prepareMediaUpload({
+        data: {
+          entity_id: isUuid(id) ? id : safeId,
+          kind: "logo",
+          filename: file.name,
+          content_type: file.type,
+          size_bytes: file.size,
+        },
+      });
       const { error: upErr } = await supabase.storage
         .from("site-assets")
-        .upload(path, file, { upsert: true });
+        .uploadToSignedUrl(up.path, up.token, file);
       if (upErr) throw upErr;
-      const { data } = supabase.storage.from("site-assets").getPublicUrl(path);
-      const patch: Partial<DbClient> = { logo_url: data.publicUrl };
+      const patch: Partial<DbClient> = { logo_url: up.publicUrl };
       if (dims) {
         patch.logo_width = dims.width;
         patch.logo_height = dims.height;
@@ -1786,6 +1795,7 @@ function PortfolioManager() {
 function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () => void }) {
   const qc = useQueryClient();
   const saveProject = useServerFn(saveAdminProject);
+  const prepareMediaUpload = useServerFn(prepareAdminMediaUpload);
   const [form, setForm] = useState<DbProject>(project);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -1862,13 +1872,21 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
     setUploading(true);
     try {
       const dims = await readImageDimensions(file).catch(() => null);
-      const path = `projects/${form.id}-cover-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
+      if (!isUuid(form.id)) throw new Error("Save the project before uploading media.");
+      const up = await prepareMediaUpload({
+        data: {
+          entity_id: form.id,
+          kind: "cover",
+          filename: file.name,
+          content_type: file.type,
+          size_bytes: file.size,
+        },
+      });
       const { error: upErr } = await supabase.storage
         .from("site-assets")
-        .upload(path, file, { upsert: true });
+        .uploadToSignedUrl(up.path, up.token, file);
       if (upErr) throw upErr;
-      const { data } = supabase.storage.from("site-assets").getPublicUrl(path);
-      set("cover_url", data.publicUrl);
+      set("cover_url", up.publicUrl);
       if (dims) {
         set("cover_width", dims.width);
         set("cover_height", dims.height);
@@ -1884,16 +1902,24 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
     setUploading(true);
     try {
       const dims = await readImageDimensions(file).catch(() => null);
-      const path = `projects/${form.id}-gallery-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
+      if (!isUuid(form.id)) throw new Error("Save the project before uploading media.");
+      const up = await prepareMediaUpload({
+        data: {
+          entity_id: form.id,
+          kind: "gallery",
+          filename: file.name,
+          content_type: file.type,
+          size_bytes: file.size,
+        },
+      });
       const { error: upErr } = await supabase.storage
         .from("site-assets")
-        .upload(path, file, { upsert: true });
+        .uploadToSignedUrl(up.path, up.token, file);
       if (upErr) throw upErr;
-      const { data } = supabase.storage.from("site-assets").getPublicUrl(path);
-      set("gallery", [...(form.gallery ?? []), data.publicUrl]);
+      set("gallery", [...(form.gallery ?? []), up.publicUrl]);
       set("gallery_meta", [
         ...(form.gallery_meta ?? []),
-        { url: data.publicUrl, width: dims?.width, height: dims?.height },
+        { url: up.publicUrl, width: dims?.width, height: dims?.height },
       ]);
     } catch (e) {
       toast.error((e as Error).message);
@@ -1915,13 +1941,21 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
     }
     setUploading(true);
     try {
-      const path = `projects/${form.id}-video-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
+      if (!isUuid(form.id)) throw new Error("Save the project before uploading media.");
+      const up = await prepareMediaUpload({
+        data: {
+          entity_id: form.id,
+          kind: "video",
+          filename: file.name,
+          content_type: file.type,
+          size_bytes: file.size,
+        },
+      });
       const { error: upErr } = await supabase.storage
         .from("site-assets")
-        .upload(path, file, { upsert: true, contentType: file.type || undefined });
+        .uploadToSignedUrl(up.path, up.token, file);
       if (upErr) throw upErr;
-      const { data } = supabase.storage.from("site-assets").getPublicUrl(path);
-      set("video_url", data.publicUrl);
+      set("video_url", up.publicUrl);
       set("video_provider", "file");
       toast.success("Video uploaded");
     } catch (e) {
