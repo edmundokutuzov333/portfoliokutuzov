@@ -19,8 +19,7 @@ AS $$
     WHEN 'editor' THEN lower(p_permission) IN (
       'content.read',
       'content.write',
-      'media.manage',
-      'system.audit.read'
+      'media.manage'
     )
     WHEN 'finance' THEN lower(p_permission) IN (
       'leads.read',
@@ -37,6 +36,22 @@ $$;
 
 REVOKE ALL ON FUNCTION public.admin_has_permission(text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.admin_has_permission(text) TO authenticated;
+
+CREATE OR REPLACE FUNCTION public.admin_get_role()
+RETURNS text
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public, pg_catalog
+AS $
+  SELECT u.role
+  FROM public.admin_users u
+  WHERE u.user_id = auth.uid()
+  LIMIT 1;
+$;
+
+REVOKE ALL ON FUNCTION public.admin_get_role() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.admin_get_role() TO authenticated;
 
 -- Content write policies now honour the role matrix instead of only checking
 -- for membership in admin_users.
