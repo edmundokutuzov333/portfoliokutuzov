@@ -261,6 +261,7 @@ BEGIN
     AND schemaname='public'
     AND tablename IN (
       'site_settings','clients','projects','services','stats','about_method',
+      'media_assets','admin_drafts',
       'contact_requests','briefing_submissions','booking_requests',
       'newsletter_subscribers','studio_waitlist','crm_leads','crm_activities',
       'crm_tasks','crm_payments'
@@ -278,9 +279,9 @@ BEGIN
       'postgres_version', current_setting('server_version')
     ),
     'realtime', jsonb_build_object(
-      'status', CASE WHEN realtime_count >= 14 THEN 'healthy' ELSE 'warning' END,
+      'status', CASE WHEN realtime_count >= 17 THEN 'healthy' ELSE 'warning' END,
       'subscribed_tables', realtime_count,
-      'expected_tables', 15
+      'expected_tables', 17
     ),
     'storage', jsonb_build_object(
       'status', CASE WHEN storage_ready THEN 'healthy' ELSE 'error' END,
