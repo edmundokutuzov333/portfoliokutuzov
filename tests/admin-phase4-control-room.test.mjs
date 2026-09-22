@@ -98,3 +98,21 @@ test("Phase 4 database security keeps sensitive admin operations behind permissi
   assert.match(server, /finance\.read/);
   assert.match(server, /invoice_settings/);
 });
+
+
+test("Phase 4 final hardening keeps finance drafts private and realtime coverage complete", () => {
+  const migration = read("supabase/migrations/20260922200000_phase4_final_hardening.sql");
+  assert.match(migration, /admins read admin drafts/);
+  assert.match(migration, /finance.read/);
+  assert.match(migration, /finance.write/);
+  assert.match(migration, /expected_tables',17/);
+  assert.match(migration, /media_assets/);
+  assert.match(migration, /admin_drafts/);
+});
+
+test("Phase 4 global admin shortcut is wired", () => {
+  const ui = read("src/components/admin/Phase4ControlRoom.tsx");
+  assert.match(ui, /event.metaKey || event.ctrlKey/);
+  assert.match(ui, /event.key.toLowerCase() === "k"/);
+  assert.match(ui, /setSearchOpen(true)/);
+});
