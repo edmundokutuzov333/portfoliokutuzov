@@ -159,16 +159,6 @@ function useAdminDirtyState() {
     return subscribeAdminDirty(() => setDirty(hasAdminDirty()));
   }, []);
 
-  useEffect(() => {
-    if (!dirty) return;
-    const onBeforeUnload = (event: BeforeUnloadEvent) => {
-      event.preventDefault();
-      event.returnValue = "";
-    };
-    window.addEventListener("beforeunload", onBeforeUnload);
-    return () => window.removeEventListener("beforeunload", onBeforeUnload);
-  }, [dirty]);
-
   return { dirty, keys: getAdminDirtyKeys() };
 }
 
