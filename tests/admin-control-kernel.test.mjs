@@ -22,7 +22,14 @@ test("Phase 1 migration defines role permissions, audit and version triggers", (
   assert.match(sql, /CREATE OR REPLACE FUNCTION public\.capture_admin_content_version/);
   assert.match(sql, /CREATE OR REPLACE FUNCTION public\.admin_reorder_projects/);
   assert.match(sql, /FOREACH table_name IN ARRAY ARRAY/);
-  for (const table of ["site_settings", "clients", "projects", "services", "stats", "about_method"]) {
+  for (const table of [
+    "site_settings",
+    "clients",
+    "projects",
+    "services",
+    "stats",
+    "about_method",
+  ]) {
     assert.match(sql, new RegExp("\\'" + table + "\\'"));
   }
 });
@@ -58,7 +65,14 @@ test("Realtime invalidation covers all structured public content", () => {
 test("History supports all Phase 1 content entities and server restore", () => {
   const history = read("src/lib/history.ts");
   const manager = read("src/components/admin/HistoryManager.tsx");
-  for (const entity of ["site_settings", "projects", "clients", "services", "stats", "about_method"]) {
+  for (const entity of [
+    "site_settings",
+    "projects",
+    "clients",
+    "services",
+    "stats",
+    "about_method",
+  ]) {
     assert.match(history, new RegExp('"' + entity + '"'));
     assert.match(manager, new RegExp(entity));
   }
