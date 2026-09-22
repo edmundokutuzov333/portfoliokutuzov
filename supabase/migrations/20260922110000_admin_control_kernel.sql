@@ -121,6 +121,14 @@ TO authenticated
 USING (bucket_id = 'site-assets' AND public.admin_has_permission('media.manage'));
 
 
+-- History reads follow the same content boundary as the editable content.
+DROP POLICY IF EXISTS "admins read content_history" ON public.content_history;
+CREATE POLICY "admins read content_history"
+ON public.content_history
+FOR SELECT
+TO authenticated
+USING (public.admin_has_permission('content.read'));
+
 -- Operational data permissions
 DROP POLICY IF EXISTS "admins read contact_requests" ON public.contact_requests;
 CREATE POLICY "admins read contact_requests"
