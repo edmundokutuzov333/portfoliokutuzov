@@ -508,6 +508,13 @@ BEGIN
     'services',
     'stats',
     'about_method',
+    'contact_requests',
+    'briefing_submissions',
+    'booking_requests',
+    'newsletter_subscribers',
+    'invoice_line_items',
+    'invoice_events',
+    'invoice_counters',
     'admin_users'
   ]
   LOOP
