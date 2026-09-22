@@ -89,15 +89,18 @@ const CreateProjectSchema = z.object({
 });
 
 const BatchProjectSchema = z.object({
-  rows: z.array(
-    z.object({
-      title: z.string().trim().min(1).max(240),
-      client_name: z.string().trim().max(200).nullable().optional(),
-      category: z.string().trim().min(1).max(100),
-      year: z.string().trim().max(20).nullable().optional(),
-      sort_order: z.number().int().min(-100000).max(100000),
-    }),
-  ).min(1).max(10),
+  rows: z
+    .array(
+      z.object({
+        title: z.string().trim().min(1).max(240),
+        client_name: z.string().trim().max(200).nullable().optional(),
+        category: z.string().trim().min(1).max(100),
+        year: z.string().trim().max(20).nullable().optional(),
+        sort_order: z.number().int().min(-100000).max(100000),
+      }),
+    )
+    .min(1)
+    .max(10),
 });
 
 const ReorderSchema = z.object({
@@ -384,16 +387,14 @@ export const restoreAdminContentVersion = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertPermission(context, "content.write");
     if (data.entity_type === "site_settings") {
-      const { error } = await context.supabase
-        .from("site_settings")
-        .upsert(
-          {
-            key: data.entity_id,
-            value: data.snapshot,
-            updated_at: new Date().toISOString(),
-          } as never,
-          { onConflict: "key" },
-        );
+      const { error } = await context.supabase.from("site_settings").upsert(
+        {
+          key: data.entity_id,
+          value: data.snapshot,
+          updated_at: new Date().toISOString(),
+        } as never,
+        { onConflict: "key" },
+      );
       if (error) throw new Error(error.message);
       return { ok: true };
     }
@@ -418,7 +419,9 @@ export const getAdminAuditLog = createServerFn({ method: "POST" })
     await assertPermission(context, "system.audit.read");
     let query = context.supabase
       .from("admin_audit_log")
-      .select("id,actor_user_id,actor_email,action,entity_type,entity_id,entity_label,before_data,after_data,metadata,created_at")
+      .select(
+        "id,actor_user_id,actor_email,action,entity_type,entity_id,entity_label,before_data,after_data,metadata,created_at",
+      )
       .order("created_at", { ascending: false })
       .limit(data.limit);
 
@@ -426,7 +429,9 @@ export const getAdminAuditLog = createServerFn({ method: "POST" })
     if (data.entity_type) query = query.eq("entity_type", data.entity_type);
     if (data.search) {
       const needle = data.search.replace(/[%_]/g, "");
-      query = query.or(`entity_label.ilike.%${needle}%,entity_id.ilike.%${needle}%,actor_email.ilike.%${needle}%`);
+      query = query.or(
+        `entity_label.ilike.%${needle}%,entity_id.ilike.%${needle}%,actor_email.ilike.%${needle}%`,
+      );
     }
 
     const { data: rows, error } = await query;
