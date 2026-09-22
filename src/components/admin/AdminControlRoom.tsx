@@ -60,7 +60,7 @@ const InvoiceWorkspace = lazy(() =>
   })),
 );
 const StudioAdminPage = lazy(() =>
-  import("@/routes/admin.studio").then((module) => ({
+  import("@/components/admin/StudioIntelligenceSurface").then((module) => ({
     default: module.StudioAdminPage,
   })),
 );
