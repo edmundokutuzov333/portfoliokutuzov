@@ -6,14 +6,11 @@ import {
   ArrowRight,
   Bell,
   CalendarClock,
-  CheckCircle2,
   CircleDollarSign,
   Download,
   FileText,
   Inbox,
   Mail,
-  MessageSquare,
-  Phone,
   Plus,
   RefreshCw,
   Search,
@@ -130,14 +127,6 @@ export function Phase3OperationsOS({ onNavigate }: { onNavigate?: (section: stri
     staleTime: 15_000,
   });
 
-  const leadListQuery = useQuery({
-    queryKey: ["phase3-leads", search],
-    queryFn: () => inboxLoader({ data: { kind: "all", search: search.trim() || undefined, limit: 300 } }),
-    enabled: tab === "overview" || tab === "inbox" || tab === "leads",
-    staleTime: 5_000,
-  });
-
-  const leads = (leadListQuery.data as any)?.rows ?? [];
   const inboxQuery = useQuery({
     queryKey: ["phase3-inbox", search],
     queryFn: () => inboxLoader({ data: { kind: "all", search: search.trim() || undefined, limit: 300 } }),
@@ -153,10 +142,6 @@ export function Phase3OperationsOS({ onNavigate }: { onNavigate?: (section: stri
     staleTime: 10_000,
   });
   const overviewLeads = (leadOverviewQuery.data as any)?.rows ?? [];
-
-  useEffect(() => {
-    if (!selectedLeadId && leads[0]?.id) setSelectedLeadId(leads[0].id);
-  }, [leads, selectedLeadId]);
 
   const tabsWithBadges = tabs.map((item) => ({
     ...item,
@@ -569,5 +554,10 @@ function stageTone(stage:string){return stage==="won"?"green":stage==="negotiati
 function formatDate(value:string|null|undefined){return value?new Date(value).toLocaleString():"Not set";}
 function toLocalInput(value:string|null|undefined){if(!value)return "";const d=new Date(value);const offset=d.getTimezoneOffset();return new Date(d.getTime()-offset*60000).toISOString().slice(0,16);}
 function normalizeInvoiceStatus(value:string|null|undefined){if(value==="generated")return "issued";if(value==="partially_paid")return "partially paid";return value??"draft";}
-function refreshOps(qc:any){return Promise.all([qc.invalidateQueries({queryKey:["phase3-overview"]}),qc.invalidateQueries({queryKey:["phase3-leads"]})]);}
-function invalidateOps(qc:any){void refreshOps(qc);void qc.invalidateQueries({queryKey:["phase3-owners"]});}
+function refreshOps(qc:any){return Promise.all([
+  qc.invalidateQueries({queryKey:["phase3-overview"]}),
+  qc.invalidateQueries({queryKey:["phase3-lead-overview"]}),
+  qc.invalidateQueries({queryKey:["phase3-inbox"]}),
+  qc.invalidateQueries({queryKey:["phase3-owners"]}),
+]);}
+function invalidateOps(qc:any){void refreshOps(qc);}
