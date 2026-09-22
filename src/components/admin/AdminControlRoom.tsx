@@ -80,7 +80,7 @@ type Section =
 
 function ControlRoom() {
   useAdminInputStyle();
-  const { session, isAdmin, loading } = useAdminAuth();
+  const { session, isAdmin, role, loading } = useAdminAuth();
   const [section, setSection] = useState<Section>("site");
 
   if (loading) {
@@ -92,19 +92,20 @@ function ControlRoom() {
   }
   if (!session || !isAdmin) return <LoginForm hasSession={!!session} />;
 
-  const items = [
-    { id: "site" as const, label: "Site Content", Icon: Home },
-    { id: "clients" as const, label: "Clients", Icon: Users },
-    { id: "studios" as const, label: "Studios", Icon: Users },
-    { id: "portfolio" as const, label: "Portfolio", Icon: Briefcase },
-    { id: "about" as const, label: "About", Icon: UserIcon },
-    { id: "contact" as const, label: "Contact", Icon: Mail },
-    { id: "inbox" as const, label: "Inbox", Icon: Inbox },
-    { id: "invoice" as const, label: "Invoicing", Icon: FileText },
-    { id: "history" as const, label: "History", Icon: History },
-    { id: "audit" as const, label: "Audit", Icon: History },
-    { id: "advanced" as const, label: "Advanced", Icon: Code2 },
-  ];
+  const allItems = [
+    { id: "site" as const, label: "Site Content", Icon: Home, roles: ["owner", "admin", "editor"] },
+    { id: "clients" as const, label: "Clients", Icon: Users, roles: ["owner", "admin", "editor"] },
+    { id: "studios" as const, label: "Studios", Icon: Users, roles: ["owner", "admin", "editor"] },
+    { id: "portfolio" as const, label: "Portfolio", Icon: Briefcase, roles: ["owner", "admin", "editor"] },
+    { id: "about" as const, label: "About", Icon: UserIcon, roles: ["owner", "admin", "editor"] },
+    { id: "contact" as const, label: "Contact", Icon: Mail, roles: ["owner", "admin", "editor"] },
+    { id: "inbox" as const, label: "Inbox", Icon: Inbox, roles: ["owner", "admin", "finance"] },
+    { id: "invoice" as const, label: "Invoicing", Icon: FileText, roles: ["owner", "admin", "finance"] },
+    { id: "history" as const, label: "History", Icon: History, roles: ["owner", "admin", "editor"] },
+    { id: "audit" as const, label: "Audit", Icon: History, roles: ["owner", "admin"] },
+    { id: "advanced" as const, label: "Advanced", Icon: Code2, roles: ["owner", "admin"] },
+  ] as const;
+  const items = allItems.filter((item) => item.roles.includes(role as never));
 
   return (
     <div className="min-h-screen bg-[#01040A] text-slate-200 flex">
