@@ -428,10 +428,15 @@ export const getAdminAuditLog = createServerFn({ method: "POST" })
     if (data.action) query = query.eq("action", data.action);
     if (data.entity_type) query = query.eq("entity_type", data.entity_type);
     if (data.search) {
-      const needle = data.search.replace(/[%_]/g, "");
-      query = query.or(
-        `entity_label.ilike.%${needle}%,entity_id.ilike.%${needle}%,actor_email.ilike.%${needle}%`,
-      );
+      const needle = data.search
+        .normalize("NFKC")
+        .replace(/[^\p{L}\p{N}\s@._-]/gu, "")
+        .trim();
+      if (needle) {
+        query = query.or(
+          `entity_label.ilike.%${needle}%,entity_id.ilike.%${needle}%,actor_email.ilike.%${needle}%`,
+        );
+      }
     }
 
     const { data: rows, error } = await query;
