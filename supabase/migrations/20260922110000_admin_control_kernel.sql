@@ -391,6 +391,26 @@ CREATE INDEX IF NOT EXISTS idx_admin_audit_entity
   ON public.admin_audit_log (entity_type, entity_id, created_at DESC);
 
 ALTER TABLE public.admin_audit_log ENABLE ROW LEVEL SECURITY;
+REVOKE INSERT, UPDATE, DELETE ON public.admin_audit_log FROM anon, authenticated;
+GRANT SELECT ON public.admin_audit_log TO authenticated;
+
+CREATE OR REPLACE FUNCTION public.prevent_admin_audit_mutation()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_catalog
+AS $
+BEGIN
+  RAISE EXCEPTION 'Admin audit log is immutable' USING ERRCODE = '42501';
+END;
+$;
+
+REVOKE ALL ON FUNCTION public.prevent_admin_audit_mutation() FROM PUBLIC;
+
+DROP TRIGGER IF EXISTS trg_admin_audit_immutable ON public.admin_audit_log;
+CREATE TRIGGER trg_admin_audit_immutable
+BEFORE UPDATE OR DELETE ON public.admin_audit_log
+FOR EACH ROW EXECUTE FUNCTION public.prevent_admin_audit_mutation();
 
 DROP POLICY IF EXISTS "admins read audit log" ON public.admin_audit_log;
 CREATE POLICY "admins read audit log"
