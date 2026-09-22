@@ -165,9 +165,9 @@ export function HomepageManager() {
   const setFeatured = useServerFn(setAdminProjectFeatured);
   const qc = useQueryClient();
   const selected = projects.filter((p) => p.featured).length;
-  const toggle = async (id: string, featured: boolean, priority: number) => {
+  const toggle = async (id: string, featured: boolean, priority: number | undefined) => {
     try {
-      await setFeatured({ data: { id, featured, featured_priority: featured ? Math.max(1, priority) : 0 } });
+      await setFeatured({ data: { id, featured, featured_priority: featured ? Math.max(1, priority ?? 0) : 0 } });
       await qc.invalidateQueries({ queryKey: ["projects"] });
       toast.success(featured ? "Added to Featured Work" : "Removed from Featured Work");
     } catch (error) {
@@ -305,7 +305,7 @@ export function MediaLibrary() {
   const [query,setQuery]=useState("");
   const [kind,setKind]=useState<MediaAsset["kind"]|"all">("all");
   const [busy,setBusy]=useState(false);
-  const {data:assets=[],isFetching}=useQuery({queryKey:["admin","media-library",query,kind],queryFn:async()=>await list({data:{search:query||undefined,kind}}),staleTime:10000});
+  const {data:assets=[],isFetching}=useQuery({queryKey:["admin","media-library",query,kind],queryFn:async()=>{const result=await list({data:{search:query||undefined,kind}});return result.rows||[];},staleTime:10000});
   const upload=async(file:File)=>{setBusy(true);try{const allowed=["image/png","image/jpeg","image/webp","image/svg+xml","video/mp4","video/webm","video/ogg","application/pdf"];if(!allowed.includes(file.type))throw new Error("Unsupported media type");const id=generateUuid();let width:number|null=null;let height:number|null=null;if(file.type.startsWith("image/")){const dims=await readImageDimensions(file);width=dims.width;height=dims.height;}const detected=file.type==="application/pdf"?"document":file.type.startsWith("video/")?"video":kind==="logo"?"logo":"image";const signed=await prepare({data:{entity_id:id,kind:"library",filename:file.name,content_type:file.type,size_bytes:file.size}});const put=await supabase.storage.from("site-assets").uploadToSignedUrl(signed.path,signed.token,file);if(put.error)throw new Error(put.error.message);await create({data:{id,storage_path:signed.path,public_url:signed.publicUrl,filename:file.name,mime_type:file.type,width,height,size_bytes:file.size,kind:detected as "image"|"video"|"logo"|"document",alt_text:null,entity_type:null,entity_id:null,is_public:true}});await qc.invalidateQueries({queryKey:["admin","media-library"]});toast.success("Asset added");}catch(error){toast.error(error instanceof Error?error.message:"Upload failed");}finally{setBusy(false);}};
   const del=async(id:string)=>{if(!window.confirm("Delete this asset and its stored file?"))return;try{await remove({data:{id}});await qc.invalidateQueries({queryKey:["admin","media-library"]});toast.success("Asset deleted");}catch(error){toast.error(error instanceof Error?error.message:"Delete failed");}};
   const replaceAsset=async(asset:MediaAsset,file:File)=>{
