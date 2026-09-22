@@ -86,7 +86,7 @@ export async function restoreSnapshot(
       return { error: "Cannot restore item: invalid identifier." };
     }
 
-    const cleaned = { ...snapshot, id: entityId };
+    const cleaned: Record<string, unknown> = { ...snapshot, id: entityId };
     delete cleaned.created_at;
     delete cleaned.updated_at;
 
