@@ -74,3 +74,15 @@ test("Audit workspace exists and is protected through the kernel", () => {
   assert.match(admin, /section === "audit"/);
   assert.match(admin, /<AuditManager \/>/);
 });
+
+test("Control Room exposes a safe role resolver and role-aware navigation", () => {
+  const auth = read("src/hooks/useAdmin.ts");
+  const admin = read("src/components/admin/AdminControlRoom.tsx");
+  const migration = read("supabase/migrations/20260922110000_admin_control_kernel.sql");
+  assert.match(auth, /admin_get_role/);
+  assert.match(auth, /Backwards-compatible fallback/);
+  assert.match(admin, /const allItems = \[/);
+  assert.match(admin, /roles: \["owner", "admin", "editor"\]/);
+  assert.match(admin, /roles: \["owner", "admin", "finance"\]/);
+  assert.match(migration, /CREATE OR REPLACE FUNCTION public\.admin_get_role/);
+});
