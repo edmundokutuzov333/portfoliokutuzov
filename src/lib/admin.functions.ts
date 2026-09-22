@@ -12,7 +12,8 @@ export type AdminPermission =
   | "leads.write"
   | "finance.read"
   | "finance.write"
-  | "system.audit.read";
+  | "system.audit.read"
+  | "system.users.manage";
 
 const PermissionSchema = z.enum([
   "content.read",
@@ -23,6 +24,7 @@ const PermissionSchema = z.enum([
   "finance.read",
   "finance.write",
   "system.audit.read",
+  "system.users.manage",
 ]);
 
 async function assertPermission(
