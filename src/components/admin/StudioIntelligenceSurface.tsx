@@ -20,7 +20,8 @@ const tabs: Array<{ id: Tab; label: string; Icon: typeof BarChart3 }> = [
   { id: "digital", label: "Digital Card Analytics", Icon: ExternalLink },
   { id: "ai", label: "AI Analytics", Icon: BrainCircuit },
 ];
- {
+
+export function StudioAdminPage() {
   const { session, isAdmin, loading } = useAdminAuth();
   const [tab, setTab] = useState<Tab>("overview"); const [days, setDays] = useState<RangeDays>(30); const [data, setData] = useState<Dashboard | null>(null); const [busy, setBusy] = useState(false); const [error, setError] = useState(""); const [query, setQuery] = useState("");
   const load = useCallback(async () => { const token = session?.access_token; if (!token || !isAdmin) return; setBusy(true); setError(""); try { const response = await fetch(`/api/studio/admin?days=${days}`, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" }); if (!response.ok) throw new Error(response.status === 403 ? "Admin access required." : "Analytics could not be loaded."); setData((await response.json()) as Dashboard); } catch (err) { setError(err instanceof Error ? err.message : "Analytics could not be loaded."); } finally { setBusy(false); } }, [days, isAdmin, session?.access_token]);
