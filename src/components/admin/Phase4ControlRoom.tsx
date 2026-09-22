@@ -105,6 +105,53 @@ const ENTITY_LABELS: Record<Phase4EntityType, string> = {
   about_method: "Method",
 };
 
+
+
+export function AdminDraftPreviewPage({ draftId }: { draftId: string }) {
+  const load = useServerFn(getAdminPreviewBundle);
+  const [data, setData] = useState<any>(null);
+  const [device, setDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
+  const [error, setError] = useState("");
+  useEffect(() => {
+    void load({ data: { id: draftId } })
+      .then(setData)
+      .catch((err) => setError(err instanceof Error ? err.message : "Preview could not be loaded"));
+  }, [draftId, load]);
+
+  const width = device === "desktop" ? "100%" : device === "tablet" ? "768px" : "390px";
+
+  return (
+    <div className="min-h-screen bg-[#01040A] text-slate-200">
+      <header className="sticky top-0 z-20 border-b border-white/[0.08] bg-[#01040A]/95 px-4 py-3 backdrop-blur md:px-8">
+        <div className="mx-auto flex max-w-[1480px] items-center justify-between gap-3">
+          <div>
+            <div className="mono text-[9px] uppercase tracking-[0.24em] text-sky-300/70">CONTROL ROOM / PREVIEW</div>
+            <h1 className="display mt-1 text-lg text-metal">{data?.draft?.label ?? "Draft preview"}</h1>
+          </div>
+          <div className="flex items-center gap-1 rounded-lg border border-white/[0.08] p-1">
+            {([["desktop", Monitor], ["tablet", Tablet], ["mobile", Smartphone]] as const).map(([id, Icon]) => (
+              <button key={id} type="button" onClick={() => setDevice(id)} aria-label={id} className={\`grid h-8 w-9 place-items-center rounded \${device === id ? "bg-white/10 text-white" : "text-slate-600 hover:text-white"}\`}>
+                <Icon size={13} />
+              </button>
+            ))}
+          </div>
+        </div>
+      </header>
+      <main className="mx-auto max-w-[1480px] p-3 sm:p-6">
+        {error ? <div role="alert" className="rounded-xl border border-red-300/20 bg-red-300/[0.04] p-5 text-sm text-red-200">{error}</div> : null}
+        {!data && !error ? <LoadingBlock label="Loading draft preview..." /> : null}
+        {data ? (
+          <div className="overflow-auto rounded-2xl border border-white/[0.08] bg-[#020712] p-2">
+            <div className="mx-auto min-h-[85vh] overflow-hidden rounded-xl border border-white/[0.06] bg-[#01040A]" style={{ width, maxWidth: "100%" }}>
+              <PreviewCanvas data={data} />
+            </div>
+          </div>
+        ) : null}
+      </main>
+    </div>
+  );
+}
+
 function useAdminDirtyState() {
   const [dirty, setDirty] = useState(hasAdminDirty());
 
