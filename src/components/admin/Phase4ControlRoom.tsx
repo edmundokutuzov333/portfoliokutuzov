@@ -30,6 +30,7 @@ import {
   Undo2,
   Users,
   X,
+  BarChart3,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -161,6 +162,53 @@ function useAdminDirtyState() {
 
   return { dirty, keys: getAdminDirtyKeys() };
 }
+
+export const getAdminAnalyticsOverview = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((i: unknown) => z.object({ days: z.number().int().min(1).max(90).default(30) }).parse(i))
+  .handler(async ({ data, context }) => {
+    await assertPermission(context, "system.audit.read");
+    const since = new Date(Date.now() - data.days * 86400000).toISOString();
+    const { data: rows, error } = await context.supabase
+      .from("analytics_events")
+      .select("action,page,device,element,session_id,created_at")
+      .gte("created_at", since)
+      .order("created_at", { ascending: true })
+      .limit(20000);
+    if (error) throw new Error(error.message);
+
+    const events = rows ?? [];
+    const pages = new Map<string, number>();
+    const actions = new Map<string, number>();
+    const devices = new Map<string, number>();
+    const daily = new Map<string, number>();
+
+    for (const event of events) {
+      pages.set(event.page, (pages.get(event.page) ?? 0) + 1);
+      actions.set(event.action, (actions.get(event.action) ?? 0) + 1);
+      const device = event.device ?? "unknown";
+      devices.set(device, (devices.get(device) ?? 0) + 1);
+      const day = event.created_at.slice(0, 10);
+      daily.set(day, (daily.get(day) ?? 0) + 1);
+    }
+
+    const top = (map: Map<string, number>) =>
+      [...map.entries()].sort((a, b) => b[1] - a[1]).slice(0, 12).map(([name, count]) => ({ name, count }));
+
+    return {
+      ok: true,
+      summary: {
+        events: events.length,
+        sessions: new Set(events.map((event) => event.session_id).filter(Boolean)).size,
+        pages: pages.size,
+        actions: actions.size,
+      },
+      top_pages: top(pages),
+      top_actions: top(actions),
+      devices: top(devices),
+      daily: [...daily.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([day, count]) => ({ day, count })),
+    };
+  });
 
 export function Phase4AdminToolbar({
   onNavigate,
@@ -1058,6 +1106,40 @@ function PreviewCanvas({ data }: { data: any }) {
       </div> : null>
     </section>
   </div>;
+}
+
+
+export function AnalyticsCenter() {
+  const load = useServerFn(getAdminAnalyticsOverview);
+  const [days, setDays] = useState<7 | 30 | 90>(30);
+  const [data, setData] = useState<any>(null);
+  const [busy, setBusy] = useState(false);
+  const refresh = async () => {
+    setBusy(true);
+    try { setData(await load({ data: { days } })); }
+    catch (error) { toast.error(error instanceof Error ? error.message : "Analytics could not be loaded"); }
+    finally { setBusy(false); }
+  };
+  useEffect(() => { void refresh(); }, [days]);
+  return <div className="space-y-6">
+    <header className="flex flex-wrap items-end justify-between gap-4">
+      <div><div className="mono text-[10px] uppercase tracking-[0.25em] text-sky-300/70">SYSTEM / ANALYTICS</div><h2 className="display mt-1 text-3xl text-metal">Site analytics.</h2><p className="mt-2 text-sm text-slate-500">Behavioural events, page activity, actions, devices and daily event volume.</p></div>
+      <div className="flex items-center gap-1 rounded-lg border border-white/[0.08] p-1">{([7,30,90] as const).map((value)=><button key={value} type="button" onClick={()=>setDays(value)} className={`rounded px-3 py-1.5 text-[10px] ${days===value?"bg-white/10 text-white":"text-slate-500"}`}>{value}d</button>)}<button type="button" onClick={()=>void refresh()} disabled={busy} className="grid h-8 w-8 place-items-center rounded text-slate-500 hover:text-white" aria-label="Refresh analytics"><RefreshCw size={12} className={busy?"animate-spin":""}/></button></div>
+    </header>
+    {!data ? <LoadingBlock label="Loading site analytics..."/> : <>
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"><SummaryTile label="Events" value={data.summary.events}/><SummaryTile label="Sessions" value={data.summary.sessions}/><SummaryTile label="Pages touched" value={data.summary.pages}/><SummaryTile label="Actions" value={data.summary.actions}/></div>
+      <div className="grid gap-5 xl:grid-cols-2">
+        <Panel kicker="Top pages" title="Where people interact"><AnalyticsList rows={data.top_pages} empty="No page activity in this window."/></Panel>
+        <Panel kicker="Top actions" title="What people do"><AnalyticsList rows={data.top_actions} empty="No action activity in this window."/></Panel>
+        <Panel kicker="Devices" title="Usage mix"><AnalyticsList rows={data.devices} empty="No device data in this window."/></Panel>
+        <Panel kicker="Daily volume" title="Event cadence"><AnalyticsList rows={data.daily.map((row:any)=>({name:row.day,count:row.count}))} empty="No daily activity."/></Panel>
+      </div>
+    </>}
+  </div>;
+}
+function AnalyticsList({ rows, empty }: { rows: Array<{name:string;count:number}>; empty:string }) {
+  const max = Math.max(...rows.map((row)=>row.count), 1);
+  return rows.length ? <div className="space-y-3">{rows.map((row)=><div key={row.name} className="grid grid-cols-[minmax(0,1fr)_70px] gap-3"><div className="min-w-0"><div className="truncate text-xs text-slate-300">{row.name}</div><div className="mt-1 h-1.5 overflow-hidden rounded-full bg-white/[0.05]"><div className="h-full rounded-full bg-sky-300/60" style={{width:`${Math.max(4,(row.count/max)*100)}%`}} /></div></div><div className="mono text-right text-[10px] text-slate-500">{row.count.toLocaleString()}</div></div>)}</div> : <div className="text-sm text-slate-600">{empty}</div>;
 }
 
 export function AuditCenter() {
