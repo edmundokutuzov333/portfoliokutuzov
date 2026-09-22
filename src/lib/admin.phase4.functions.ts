@@ -578,7 +578,7 @@ export const getAdminSystemHealth = createServerFn({ method: "POST" })
 
     const siteUrl = resolvePublicSiteUrl().replace(/\/$/, "");
     const [publicSite,resend,gemini] = await Promise.allSettled([
-      checkWithTimeout(siteUrl,{method:"HEAD"}),
+      checkWithTimeout(siteUrl,{method:"GET",headers:{Accept:"text/html"}}),
       process.env.RESEND_API_KEY ? checkWithTimeout("https://api.resend.com/domains",{headers:{Authorization:"Bearer "+process.env.RESEND_API_KEY}}) : Promise.resolve({ok:false,status:0}),
       process.env.GEMINI_API_KEY ? checkWithTimeout("https://generativelanguage.googleapis.com/v1beta/models",{headers:{"x-goog-api-key":process.env.GEMINI_API_KEY}}) : Promise.resolve({ok:false,status:0}),
     ]);
