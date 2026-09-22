@@ -5,13 +5,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { isUuid } from "@/lib/utils";
 
-export type EntityType =
-  | "site_settings"
-  | "projects"
-  | "clients"
-  | "services"
-  | "stats"
-  | "about_method";
+export type EntityType = "site_settings" | "projects" | "clients" | "services" | "stats" | "about_method";
 
 const ENTITY_TABLES = new Set<EntityType>([
   "site_settings",
@@ -40,11 +34,7 @@ export async function snapshotBefore(
       if (data) snapshot = (data.value as Record<string, unknown>) ?? {};
     } else {
       if (!isUuid(entityId)) return;
-      const { data } = await supabase
-        .from(entity)
-        .select("*")
-        .eq("id", entityId)
-        .maybeSingle();
+      const { data } = await supabase.from(entity).select("*").eq("id", entityId).maybeSingle();
       if (data) snapshot = data as Record<string, unknown>;
     }
 
@@ -69,16 +59,14 @@ export async function restoreSnapshot(
 ): Promise<{ error: string | null }> {
   try {
     if (entity === "site_settings") {
-      const { error } = await supabase
-        .from("site_settings")
-        .upsert(
-          {
-            key: entityId,
-            value: snapshot as never,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: "key" },
-        );
+      const { error } = await supabase.from("site_settings").upsert(
+        {
+          key: entityId,
+          value: snapshot as never,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "key" },
+      );
       return { error: error?.message ?? null };
     }
 
