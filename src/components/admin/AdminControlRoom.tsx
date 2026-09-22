@@ -22,6 +22,7 @@ import {
   ReleaseCenter,
   SystemHealthCenter,
   AuditCenter,
+  AnalyticsCenter,
 } from "@/components/admin/Phase4ControlRoom";
 
 const Phase2WebsiteCMS = lazy(() =>
@@ -56,6 +57,11 @@ const InvoiceWorkspace = lazy(() =>
 );const PortfolioManager = lazy(() =>
   import("@/components/admin/PortfolioModule").then((module) => ({
     default: module.PortfolioManager,
+  })),
+);
+const StudioAdminPage = lazy(() =>
+  import("@/routes/admin.studio").then((module) => ({
+    default: module.StudioAdminPage,
   })),
 );
 
@@ -106,6 +112,8 @@ import {
   X,
   Send,
   ShieldCheck,
+  Sparkles,
+  BarChart3,
 } from "lucide-react";
 
 export const Route = createLazyFileRoute("/admin")({
@@ -125,6 +133,7 @@ type Section =
   | "clients"
   | "studios"
   | "portfolio"
+  | "studio"
   | "about"
   | "contact"
   | "operations"
@@ -134,6 +143,7 @@ type Section =
   | "audit"
   | "release"
   | "system"
+  | "analytics"
   | "advanced";
 
 function ControlRoom() {
@@ -183,7 +193,8 @@ function ControlRoom() {
     { id: "global" as const, label: "Global Settings", group: "WEBSITE", Icon: Settings2, roles: ["owner", "admin", "editor"] },
     { id: "portfolio" as const, label: "Portfolio", group: "CONTENT", Icon: Briefcase, roles: ["owner", "admin", "editor"] },
     { id: "clients" as const, label: "Clients", group: "CONTENT", Icon: Users, roles: ["owner", "admin", "editor"] },
-    { id: "studios" as const, label: "Studios", group: "CONTENT", Icon: Users, roles: ["owner", "admin", "editor"] },
+    { id: "studios" as const, label: "Studio Logos", group: "CONTENT", Icon: Users, roles: ["owner", "admin", "editor"] },
+    { id: "studio" as const, label: "Studio Intelligence", group: "STUDIO", Icon: Sparkles, roles: ["owner", "admin", "editor"] },
     { id: "media" as const, label: "Media Library", group: "CONTENT", Icon: ImageIcon, roles: ["owner", "admin", "editor"] },
     { id: "site" as const, label: "Site Content", group: "CONTENT", Icon: Home, roles: ["owner", "admin", "editor"] },
     { id: "operations" as const, label: "Operations OS", group: "OPERATIONS", Icon: LayoutDashboard, roles: ["owner", "admin", "finance"] },
@@ -193,6 +204,7 @@ function ControlRoom() {
     { id: "audit" as const, label: "Audit Center", group: "SYSTEM", Icon: History, roles: ["owner", "admin"] },
     { id: "release" as const, label: "Release Center", group: "SYSTEM", Icon: Send, roles: ["owner", "admin", "editor"] },
     { id: "system" as const, label: "System Health", group: "SYSTEM", Icon: ShieldCheck, roles: ["owner", "admin"] },
+    { id: "analytics" as const, label: "Analytics", group: "SYSTEM", Icon: BarChart3, roles: ["owner", "admin", "editor"] },
     { id: "advanced" as const, label: "Advanced", group: "SYSTEM", Icon: Code2, roles: ["owner", "admin"] },
   ] as const;
   const items = allItems.filter((item) => item.roles.includes(role as never));
@@ -236,6 +248,7 @@ function ControlRoom() {
       {section === "site" && <SiteContentManager />}
       {section === "clients" && <ClientsManager />}
       {section === "studios" && <StudiosManager />}
+      {section === "studio" && <StudioAdminPage />}
       {section === "portfolio" && <PortfolioManager />}
       {section === "about" && <AboutManager />}
       {section === "contact" && <ContactManager />}
@@ -255,6 +268,7 @@ function ControlRoom() {
       {section === "audit" && <AuditCenter />}
       {section === "release" && <ReleaseCenter />}
       {section === "system" && <SystemHealthCenter />}
+      {section === "analytics" && <AnalyticsCenter />}
       {section === "advanced" && <AdvancedJSONManager />}
     </>
   );
