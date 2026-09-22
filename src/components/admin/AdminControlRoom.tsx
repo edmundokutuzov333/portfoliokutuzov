@@ -547,6 +547,11 @@ function useSectionDraft(key: string) {
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
 
+  useEffect(() => {
+    setAdminDirty("settings:" + key, dirty);
+    return () => setAdminDirty("settings:" + key, false);
+  }, [dirty, key]);
+
   // Resync only when DB changes & not editing locally.
   useEffect(() => {
     if (!dirty) setDraft(merged);
