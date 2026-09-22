@@ -86,6 +86,60 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_drafts: {
+        Row: {
+          baseline_snapshot: Json
+          baseline_updated_at: string | null
+          created_at: string
+          created_by: string | null
+          entity_id: string
+          entity_type: string
+          id: string
+          label: string
+          payload: Json
+          publish_note: string | null
+          published_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          baseline_snapshot: Json
+          baseline_updated_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          entity_id: string
+          entity_type: string
+          id?: string
+          label: string
+          payload: Json
+          publish_note?: string | null
+          published_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          baseline_snapshot?: Json
+          baseline_updated_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          label?: string
+          payload?: Json
+          publish_note?: string | null
+          published_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       admin_users: {
         Row: {
           created_at: string
@@ -1576,8 +1630,17 @@ export type Database = {
         Args: { p_lead_id: string }
         Returns: string
       }
+      admin_editable_entity_directory: { Args: never; Returns: Json }
       admin_get_role: { Args: never; Returns: string }
       admin_has_permission: { Args: { p_permission: string }; Returns: boolean }
+      admin_publish_drafts: {
+        Args: { p_draft_ids: string[]; p_publish_note?: string }
+        Returns: {
+          draft_id: string
+          entity_id: string
+          entity_type: string
+        }[]
+      }
       admin_record_invoice_payment: {
         Args: {
           p_amount: number
@@ -1607,6 +1670,16 @@ export type Database = {
       }
       admin_reorder_services: { Args: { p_ids: string[] }; Returns: boolean }
       admin_reorder_stats: { Args: { p_ids: string[] }; Returns: boolean }
+      admin_restore_audit_state: {
+        Args: {
+          p_audit_id: string
+          p_entity_id: string
+          p_entity_type: string
+          p_snapshot: Json
+        }
+        Returns: Json
+      }
+      admin_system_health_db: { Args: never; Returns: Json }
       admin_user_directory: {
         Args: never
         Returns: {
@@ -1617,10 +1690,6 @@ export type Database = {
       }
       is_admin: { Args: never; Returns: boolean }
       next_invoice_number: { Args: { prefix?: string }; Returns: string }
-      studio_admin_dashboard: {
-        Args: { p_since: string; p_until: string }
-        Returns: Json
-      }
       slugify: { Args: { input: string }; Returns: string }
     }
     Enums: {
