@@ -24,7 +24,11 @@ import {
   AuditCenter,
 } from "@/components/admin/Phase4ControlRoom";
 
-const Phase2WebsiteCMS = lazy(() => import("@/components/admin/Phase2WebsiteCMS"));
+const Phase2WebsiteCMS = lazy(() =>
+  import("@/components/admin/Phase2AdminSurface").then((module) => ({
+    default: module.Phase2AdminSurface,
+  })),
+);
 const Phase3OperationsOS = lazy(() =>
   import("@/components/admin/Phase3OperationsOS").then((module) => ({
     default: module.Phase3OperationsOS,
@@ -131,6 +135,27 @@ function ControlRoom() {
   useAdminInputStyle();
   const { session, isAdmin, role, loading } = useAdminAuth();
   const [section, setSection] = useState<Section>("overview");
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [dirty, setDirty] = useState(hasAdminDirty());
+
+  useEffect(() => subscribeAdminDirty(() => setDirty(hasAdminDirty())), []);
+
+  const requestSection = (next: string) => {
+    const target = next as Section;
+    if (target === section) {
+      setMobileNavOpen(false);
+      return;
+    }
+    if (dirty) {
+      const proceed = window.confirm(
+        "Existem alterações não guardadas. Quer sair sem guardar?",
+      );
+      if (!proceed) return;
+      clearAdminDirty();
+    }
+    setSection(target);
+    setMobileNavOpen(false);
+  };
 
   if (loading) {
     return (
@@ -142,105 +167,215 @@ function ControlRoom() {
   if (!session || !isAdmin) return <LoginForm hasSession={!!session} />;
 
   const allItems = [
-    { id: "overview" as const, label: "Overview", Icon: LayoutDashboard, roles: ["owner", "admin", "editor", "finance"] },
-    { id: "homepage" as const, label: "Homepage", Icon: Home, roles: ["owner", "admin", "editor"] },
-    { id: "navigation" as const, label: "Navigation", Icon: ArrowUp, roles: ["owner", "admin", "editor"] },
-    { id: "credentials" as const, label: "Credentials", Icon: UserIcon, roles: ["owner", "admin", "editor"] },
-    { id: "services" as const, label: "Services", Icon: Briefcase, roles: ["owner", "admin", "editor"] },
-    { id: "global" as const, label: "Global Settings", Icon: Settings2, roles: ["owner", "admin", "editor"] },
-    { id: "seo" as const, label: "SEO", Icon: Globe2, roles: ["owner", "admin", "editor"] },
-    { id: "media" as const, label: "Media Library", Icon: ImageIcon, roles: ["owner", "admin", "editor"] },
-    { id: "site" as const, label: "Site Content", Icon: Home, roles: ["owner", "admin", "editor"] },
-    { id: "clients" as const, label: "Clients", Icon: Users, roles: ["owner", "admin", "editor"] },
-    { id: "studios" as const, label: "Studios", Icon: Users, roles: ["owner", "admin", "editor"] },
-    {
-      id: "portfolio" as const,
-      label: "Portfolio",
-      Icon: Briefcase,
-      roles: ["owner", "admin", "editor"],
-    },
-    { id: "about" as const, label: "About", Icon: UserIcon, roles: ["owner", "admin", "editor"] },
-    { id: "contact" as const, label: "Contact", Icon: Mail, roles: ["owner", "admin", "editor"] },
-    { id: "operations" as const, label: "Operations OS", Icon: LayoutDashboard, roles: ["owner", "admin", "finance"] },
-    { id: "inbox" as const, label: "Legacy Inbox", Icon: Inbox, roles: ["owner", "admin", "finance"] },
-    {
-      id: "invoice" as const,
-      label: "Invoicing",
-      Icon: FileText,
-      roles: ["owner", "admin", "finance"],
-    },
-    {
-      id: "history" as const,
-      label: "History",
-      Icon: History,
-      roles: ["owner", "admin", "editor"],
-    },
-    { id: "audit" as const, label: "Audit", Icon: History, roles: ["owner", "admin"] },
-    { id: "release" as const, label: "Release Center", Icon: Send, roles: ["owner", "admin", "editor"] },
-    { id: "system" as const, label: "System Health", Icon: ShieldCheck, roles: ["owner", "admin"] },
-    { id: "advanced" as const, label: "Advanced", Icon: Code2, roles: ["owner", "admin"] },
+    { id: "overview" as const, label: "Overview", group: "CONTROL", Icon: LayoutDashboard, roles: ["owner", "admin", "editor", "finance"] },
+    { id: "homepage" as const, label: "Homepage", group: "WEBSITE", Icon: Home, roles: ["owner", "admin", "editor"] },
+    { id: "navigation" as const, label: "Navigation", group: "WEBSITE", Icon: ArrowUp, roles: ["owner", "admin", "editor"] },
+    { id: "about" as const, label: "About", group: "WEBSITE", Icon: UserIcon, roles: ["owner", "admin", "editor"] },
+    { id: "credentials" as const, label: "Credentials", group: "WEBSITE", Icon: UserIcon, roles: ["owner", "admin", "editor"] },
+    { id: "services" as const, label: "Services", group: "WEBSITE", Icon: Briefcase, roles: ["owner", "admin", "editor"] },
+    { id: "contact" as const, label: "Contact", group: "WEBSITE", Icon: Mail, roles: ["owner", "admin", "editor"] },
+    { id: "seo" as const, label: "SEO", group: "WEBSITE", Icon: Globe2, roles: ["owner", "admin", "editor"] },
+    { id: "global" as const, label: "Global Settings", group: "WEBSITE", Icon: Settings2, roles: ["owner", "admin", "editor"] },
+    { id: "portfolio" as const, label: "Portfolio", group: "CONTENT", Icon: Briefcase, roles: ["owner", "admin", "editor"] },
+    { id: "clients" as const, label: "Clients", group: "CONTENT", Icon: Users, roles: ["owner", "admin", "editor"] },
+    { id: "studios" as const, label: "Studios", group: "CONTENT", Icon: Users, roles: ["owner", "admin", "editor"] },
+    { id: "media" as const, label: "Media Library", group: "CONTENT", Icon: ImageIcon, roles: ["owner", "admin", "editor"] },
+    { id: "site" as const, label: "Site Content", group: "CONTENT", Icon: Home, roles: ["owner", "admin", "editor"] },
+    { id: "operations" as const, label: "Operations OS", group: "OPERATIONS", Icon: LayoutDashboard, roles: ["owner", "admin", "finance"] },
+    { id: "inbox" as const, label: "Legacy Inbox", group: "OPERATIONS", Icon: Inbox, roles: ["owner", "admin", "finance"] },
+    { id: "invoice" as const, label: "Invoicing", group: "FINANCE", Icon: FileText, roles: ["owner", "admin", "finance"] },
+    { id: "history" as const, label: "History", group: "SYSTEM", Icon: History, roles: ["owner", "admin", "editor"] },
+    { id: "audit" as const, label: "Audit Center", group: "SYSTEM", Icon: History, roles: ["owner", "admin"] },
+    { id: "release" as const, label: "Release Center", group: "SYSTEM", Icon: Send, roles: ["owner", "admin", "editor"] },
+    { id: "system" as const, label: "System Health", group: "SYSTEM", Icon: ShieldCheck, roles: ["owner", "admin"] },
+    { id: "advanced" as const, label: "Advanced", group: "SYSTEM", Icon: Code2, roles: ["owner", "admin"] },
   ] as const;
   const items = allItems.filter((item) => item.roles.includes(role as never));
 
+  let lastGroup = "";
+  const nav = items.map((item) => {
+    const showGroup = item.group !== lastGroup;
+    lastGroup = item.group;
+    return { item, showGroup };
+  });
+
+  const renderContent = () => (
+    <>
+      {section === "overview" && (
+        <Phase2WebsiteCMS
+          section="overview"
+          onNavigate={requestSection}
+        />
+      )}
+      {section === "homepage" && (
+        <Phase2WebsiteCMS section="homepage" onNavigate={requestSection} />
+      )}
+      {section === "navigation" && (
+        <Phase2WebsiteCMS section="navigation" onNavigate={requestSection} />
+      )}
+      {section === "credentials" && (
+        <Phase2WebsiteCMS section="credentials" onNavigate={requestSection} />
+      )}
+      {section === "services" && (
+        <Phase2WebsiteCMS section="services" onNavigate={requestSection} />
+      )}
+      {section === "global" && (
+        <Phase2WebsiteCMS section="global" onNavigate={requestSection} />
+      )}
+      {section === "seo" && (
+        <Phase2WebsiteCMS section="seo" onNavigate={requestSection} />
+      )}
+      {section === "media" && (
+        <Phase2WebsiteCMS section="media" onNavigate={requestSection} />
+      )}
+      {section === "site" && <SiteContentManager />}
+      {section === "clients" && <ClientsManager />}
+      {section === "studios" && <StudiosManager />}
+      {section === "portfolio" && <PortfolioManager />}
+      {section === "about" && <AboutManager />}
+      {section === "contact" && <ContactManager />}
+      {section === "operations" && (
+        <Phase3OperationsOS onNavigate={requestSection} />
+      )}
+      {section === "inbox" && <InboxHub />}
+      {section === "invoice" && (
+        <div className="space-y-12">
+          <Suspense fallback={<WorkspaceLoader label="Loading invoicing workspace..." />}>
+            <InvoiceWorkspace />
+          </Suspense>
+          <InvoiceSettingsEditor />
+        </div>
+      )}
+      {section === "history" && <HistoryManager />}
+      {section === "audit" && <AuditCenter />}
+      {section === "release" && <ReleaseCenter />}
+      {section === "system" && <SystemHealthCenter />}
+      {section === "advanced" && <AdvancedJSONManager />}
+    </>
+  );
+
   return (
     <div className="min-h-screen bg-[#01040A] text-slate-200 flex">
-      <aside className="w-60 shrink-0 border-r border-white/[0.08] bg-[#030814] p-5 flex flex-col">
-        <div className="mono text-[10px] tracking-[0.28em] text-sky-300/80">CONTROL ROOM</div>
-        <div className="display text-xl mt-1">Edmundo</div>
-        <nav className="mt-8 space-y-1 flex-1">
-          {items.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setSection(item.id)}
-              className={`w-full flex items-center gap-2 px-3 py-2 rounded text-sm transition ${
-                section === item.id
-                  ? "bg-sky-300/10 text-sky-100 border border-sky-300/20"
-                  : "text-slate-400 hover:text-white hover:bg-white/[0.04]"
-              }`}
-            >
-              <item.Icon size={14} /> {item.label}
-            </button>
+      <a
+        href="#control-room-main"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[140] focus:rounded-lg focus:bg-sky-300 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-[#01040A]"
+      >
+        Skip to main content
+      </a>
+
+      {mobileNavOpen ? (
+        <button
+          type="button"
+          aria-label="Close navigation"
+          onClick={() => setMobileNavOpen(false)}
+          className="fixed inset-0 z-[80] bg-black/70 lg:hidden"
+        />
+      ) : null}
+
+      <aside
+        className={
+          "fixed inset-y-0 left-0 z-[90] flex w-[280px] shrink-0 flex-col border-r border-white/[0.08] bg-[#030814] p-5 transition-transform lg:sticky lg:top-0 lg:h-screen lg:w-60 lg:translate-x-0 " +
+          (mobileNavOpen ? "translate-x-0" : "-translate-x-full")
+        }
+        aria-label="Control Room navigation"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="mono text-[10px] tracking-[0.28em] text-sky-300/80">CONTROL ROOM</div>
+            <div className="display text-xl mt-1">Edmundo</div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setMobileNavOpen(false)}
+            className="grid h-8 w-8 place-items-center rounded-lg border border-white/[0.08] text-slate-500 hover:text-white lg:hidden"
+            aria-label="Close menu"
+          >
+            <X size={14} />
+          </button>
+        </div>
+
+        <nav className="mt-7 min-h-0 flex-1 space-y-4 overflow-y-auto pr-1">
+          {nav.map(({ item, showGroup }) => (
+            <div key={item.id}>
+              {showGroup ? (
+                <div className="mono mb-1 px-3 text-[8px] uppercase tracking-[0.24em] text-slate-700">
+                  {item.group}
+                </div>
+              ) : null}
+              <button
+                type="button"
+                onClick={() => requestSection(item.id)}
+                aria-current={section === item.id ? "page" : undefined}
+                className={
+                  "w-full flex items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/50 " +
+                  (section === item.id
+                    ? "border-sky-300/20 bg-sky-300/10 text-sky-100"
+                    : "border-transparent text-slate-400 hover:bg-white/[0.04] hover:text-white")
+                }
+              >
+                <item.Icon size={14} aria-hidden="true" />
+                {item.label}
+              </button>
+            </div>
           ))}
         </nav>
-        <div className="text-[11px] text-slate-500 mb-3 truncate">{session.user.email}</div>
-        <button
-          onClick={() => {
-            supabase.auth.signOut();
-            window.location.reload();
-          }}
-          className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition"
-        >
-          <LogOut size={14} /> Sign out
-        </button>
+
+        <div className="mt-4 border-t border-white/[0.06] pt-4">
+          {dirty ? (
+            <div className="mb-3 rounded-lg border border-amber-300/20 bg-amber-300/[0.04] px-3 py-2 text-[10px] text-amber-200">
+              Unsaved changes. Navigation will ask before leaving this surface.
+            </div>
+          ) : null}
+          <div className="mb-3 truncate text-[11px] text-slate-500">{session.user.email}</div>
+          <button
+            type="button"
+            onClick={() => {
+              void supabase.auth.signOut();
+              window.location.reload();
+            }}
+            className="flex min-h-9 items-center gap-2 text-sm text-slate-400 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/50"
+          >
+            <LogOut size={14} /> Sign out
+          </button>
+        </div>
       </aside>
 
-      <main className="flex-1 p-6 md:p-10 overflow-auto">
-        {section === "overview" && <Phase2Overview onNavigate={(next) => setSection(next as Section)} />}
-        {section === "homepage" && <HomepageManager />}
-        {section === "navigation" && <NavigationManager />}
-        {section === "credentials" && <CredentialsManager />}
-        {section === "services" && <ServicesManager />}
-        {section === "global" && <GlobalSettingsManager />}
-        {section === "seo" && <SeoManager />}
-        {section === "media" && <MediaLibrary />}
-        {section === "site" && <SiteContentManager />}
-        {section === "clients" && <ClientsManager />}
-        {section === "studios" && <StudiosManager />}
-        {section === "portfolio" && <PortfolioManager />}
-        {section === "about" && <AboutManager />}
-        {section === "contact" && <ContactManager />}
-        {section === "operations" && <Phase3OperationsOS onNavigate={(target) => setSection(target as Section)} />}
-        {section === "inbox" && <InboxHub />}
-        {section === "invoice" && (
-          <div className="space-y-12">
-            <InvoiceWorkspace />
-            <InvoiceSettingsEditor />
-          </div>
-        )}
-        {section === "history" && <HistoryManager />}
-        {section === "audit" && <AuditManager />}
-        {section === "advanced" && <AdvancedJSONManager />}
+      <main id="control-room-main" tabIndex={-1} className="min-w-0 flex-1 overflow-auto p-4 sm:p-6 md:p-10">
+        <div className="mb-3 flex items-center justify-between gap-3 lg:hidden">
+          <button
+            type="button"
+            onClick={() => setMobileNavOpen(true)}
+            className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-white/[0.09] px-3 text-xs text-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/50"
+            aria-label="Open admin navigation"
+          >
+            <Menu size={14} /> Menu
+          </button>
+          <span className="mono text-[9px] uppercase tracking-[0.18em] text-slate-600">
+            {items.find((item) => item.id === section)?.label}
+          </span>
+        </div>
+
+        <Phase4AdminToolbar
+          onNavigate={requestSection}
+          onOpenRelease={() => requestSection("release")}
+          onOpenSystem={() => requestSection("system")}
+        />
+
+        <Suspense fallback={<WorkspaceLoader label="Loading workspace..." />}>
+          {renderContent()}
+        </Suspense>
       </main>
+    </div>
+  );
+}
+
+function WorkspaceLoader({ label }: { label: string }) {
+  return (
+    <div className="grid min-h-[280px] place-items-center rounded-xl border border-white/[0.07] bg-[#030814] text-sm text-slate-600">
+      <div className="flex items-center gap-2">
+        <Loader2 size={15} className="animate-spin text-sky-300/70" />
+        {label}
+      </div>
     </div>
   );
 }
