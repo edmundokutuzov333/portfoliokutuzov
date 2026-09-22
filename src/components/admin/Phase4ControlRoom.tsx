@@ -749,7 +749,7 @@ function DraftEditorModal({
   onClose: () => void;
   onSave: (id: string, payload: Record<string, unknown>, status?: "draft" | "review") => Promise<void>;
   onDiscard: (id: string) => Promise<void>;
-  draftLoader: (input: { data: { id: string } }) => Promise<{ row: DraftRow }>;
+  draftLoader: (input: { data: { id: string } }) => Promise<any>;
 }) {
   const [draft, setDraft] = useState<DraftRow | null>(null);
   const [payload, setPayload] = useState<Record<string, unknown>>({});
