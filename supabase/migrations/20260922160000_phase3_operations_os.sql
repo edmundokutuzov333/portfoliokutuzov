@@ -246,14 +246,18 @@ SELECT
   l.id,l.source_type,l.source_id,l.stage,l.owner_user_id,l.client_id,l.project_id,
   l.next_action_at,l.notes,l.created_at,l.updated_at,
   COALESCE(c.name,b.full_name) AS full_name,
-  COALESCE(c.kind,b.company_name) AS company_name,
-  COALESCE(c.website_url,b.source) AS source,
+  COALESCE(c.company,b.company_name) AS company_name,
   COALESCE(c.email,b.email) AS email,
-  COALESCE(c.logo_url,b.phone) AS phone,
-  COALESCE(NULLIF(b.project_type,''),NULL) AS project_type,
-  b.exact_amount AS budget_amount,b.currency AS budget_currency,b.budget_range AS budget_label,
-  b.deadline::text AS timeline,b.message AS message,
-  b.urgency AS briefing_urgency,b.lead_score,b.lead_tier,b.lead_signals,
+  COALESCE(c.phone,b.phone) AS phone,
+  COALESCE(c.project_type,b.project_type) AS project_type,
+  COALESCE(c.budget_amount,b.exact_amount) AS budget_amount,
+  COALESCE(c.budget_currency,b.currency) AS budget_currency,
+  COALESCE(c.budget_label,b.budget_range) AS budget_label,
+  COALESCE(c.timeline,b.deadline::text) AS timeline,
+  COALESCE(c.message,b.message) AS message,
+  COALESCE(c.source,b.source) AS source,
+  b.urgency AS briefing_urgency,
+  b.lead_score,b.lead_tier,b.lead_signals,
   b.invoice_number,b.invoice_currency,b.invoice_total,b.invoice_due_date,
   b.invoice_status,b.invoice_sent_at,b.invoice_viewed_at,b.invoice_paid_at,
   b.invoice_payment_ref,b.invoice_payment_method,b.invoice_payment_proof_path,
@@ -263,3 +267,161 @@ LEFT JOIN public.contact_requests c ON l.source_type='contact' AND l.source_id=c
 LEFT JOIN public.briefing_submissions b ON l.source_type='briefing' AND l.source_id=b.id
 LEFT JOIN public.projects p ON p.id=l.project_id
 LEFT JOIN public.clients cl ON cl.id=l.client_id;
+GRANT SELECT ON public.crm_lead_profiles TO authenticated;
+
+DROP VIEW IF EXISTS public.crm_inbox;
+CREATE VIEW public.crm_inbox WITH (security_invoker=true) AS
+SELECT
+  'briefing'::text AS kind,b.id AS source_id,l.id AS lead_id,b.full_name AS title,
+  b.company_name,b.email,b.message AS preview,b.status,l.stage,b.created_at,
+  COALESCE(b.lead_score,0) AS priority
+FROM public.briefing_submissions b
+LEFT JOIN public.crm_leads l ON l.source_type='briefing' AND l.source_id=b.id
+UNION ALL
+SELECT
+  'contact'::text,c.id,l.id,c.name,c.company,c.email,c.message,c.status,l.stage,c.created_at,0
+FROM public.contact_requests c
+LEFT JOIN public.crm_leads l ON l.source_type='contact' AND l.source_id=c.id
+UNION ALL
+SELECT
+  'booking'::text,br.id,br.lead_id,br.name,NULL,br.email,br.note,br.booking_status,NULL,br.created_at,0
+FROM public.booking_requests br
+UNION ALL
+SELECT
+  'subscriber'::text,n.id,NULL,COALESCE(n.name,n.email),NULL,n.email,'Newsletter subscriber',n.status,NULL,n.created_at,0
+FROM public.newsletter_subscribers n
+UNION ALL
+SELECT
+  'studio_waitlist'::text,w.id,NULL,w.email,NULL,w.email,'Kutuzov Studio waitlist',w.status,NULL,w.created_at,0
+FROM public.studio_waitlist w;
+GRANT SELECT ON public.crm_inbox TO authenticated;
+
+CREATE OR REPLACE FUNCTION public.admin_create_project_from_lead(p_lead_id uuid)
+RETURNS uuid
+LANGUAGE plpgsql SECURITY INVOKER SET search_path=public,pg_catalog
+AS $$
+DECLARE v_lead public.crm_lead_profiles%ROWTYPE; v_project_id uuid;
+BEGIN
+  IF NOT public.admin_has_permission('content.write') THEN RAISE EXCEPTION 'Forbidden' USING ERRCODE='42501'; END IF;
+  SELECT * INTO v_lead FROM public.crm_lead_profiles WHERE id=p_lead_id;
+  IF v_lead.id IS NULL THEN RAISE EXCEPTION 'Lead not found'; END IF;
+  INSERT INTO public.projects(title,subtitle,category,year,description,client_name,client_id,sort_order,is_published,featured,featured_priority,tags,gallery,gallery_meta,collaborators,tools_used,deliverables)
+  VALUES (
+    CASE WHEN coalesce(trim(v_lead.project_type),'')<>'' THEN v_lead.project_type ELSE 'New project' END,
+    v_lead.company_name,coalesce(nullif(v_lead.project_type,''),'Creative Project'),extract(year from now())::text,
+    v_lead.message,v_lead.company_name,v_lead.client_id,COALESCE((SELECT max(sort_order)+1 FROM public.projects),1),
+    false,false,0,'[]'::jsonb,'[]'::jsonb,'[]'::jsonb,'[]'::jsonb,'[]'::jsonb
+  ) RETURNING id INTO v_project_id;
+  UPDATE public.crm_leads SET project_id=v_project_id,stage=CASE WHEN stage='new' THEN 'qualified' ELSE stage END,updated_at=now() WHERE id=p_lead_id;
+  INSERT INTO public.crm_activities(lead_id,activity_type,body,actor_user_id,metadata)
+  VALUES(p_lead_id,'system','Project draft created from lead.',auth.uid(),jsonb_build_object('project_id',v_project_id));
+  RETURN v_project_id;
+END;
+$$;
+REVOKE ALL ON FUNCTION public.admin_create_project_from_lead(uuid) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.admin_create_project_from_lead(uuid) TO authenticated;
+
+CREATE OR REPLACE FUNCTION public.admin_record_invoice_payment(
+  p_lead_id uuid,p_briefing_id uuid,p_amount numeric,p_currency text,
+  p_method text DEFAULT NULL,p_reference text DEFAULT NULL,p_status text DEFAULT 'confirmed',
+  p_paid_at timestamptz DEFAULT now(),p_notes text DEFAULT NULL
+)
+RETURNS jsonb LANGUAGE plpgsql SECURITY INVOKER SET search_path=public,pg_catalog
+AS $$
+DECLARE v_payment_id uuid;v_total numeric:=0;v_paid numeric:=0;v_status text:='generated';
+BEGIN
+  IF NOT public.admin_has_permission('finance.write') THEN RAISE EXCEPTION 'Forbidden' USING ERRCODE='42501'; END IF;
+  IF p_amount IS NULL OR p_amount<=0 THEN RAISE EXCEPTION 'Payment amount must be greater than zero'; END IF;
+  INSERT INTO public.crm_payments(lead_id,briefing_id,amount,currency,method,reference,status,paid_at,notes,created_by)
+  VALUES(p_lead_id,p_briefing_id,p_amount,p_currency,p_method,p_reference,p_status,
+    CASE WHEN p_status='confirmed' THEN coalesce(p_paid_at,now()) ELSE NULL END,p_notes,auth.uid())
+  RETURNING id INTO v_payment_id;
+  IF p_briefing_id IS NOT NULL THEN
+    SELECT coalesce(invoice_total,invoice_amount,0) INTO v_total FROM public.briefing_submissions WHERE id=p_briefing_id FOR UPDATE;
+    SELECT coalesce(sum(amount),0) INTO v_paid FROM public.crm_payments WHERE briefing_id=p_briefing_id AND status='confirmed';
+    v_status:=CASE WHEN v_total>0 AND v_paid>=v_total THEN 'paid' WHEN v_paid>0 THEN 'partially_paid' ELSE 'generated' END;
+    UPDATE public.briefing_submissions
+    SET invoice_status=v_status,invoice_paid_at=CASE WHEN v_status='paid' THEN now() ELSE NULL END,updated_at=now()
+    WHERE id=p_briefing_id;
+  END IF;
+  IF p_lead_id IS NOT NULL THEN
+    INSERT INTO public.crm_activities(lead_id,activity_type,body,actor_user_id,metadata)
+    VALUES(p_lead_id,'payment',CASE WHEN p_status='confirmed' THEN 'Payment recorded.' ELSE 'Payment record created.' END,auth.uid(),
+      jsonb_build_object('payment_id',v_payment_id,'amount',p_amount,'currency',p_currency));
+  END IF;
+  RETURN jsonb_build_object('ok',true,'payment_id',v_payment_id,'invoice_status',v_status,'paid_total',v_paid);
+END;
+$$;
+REVOKE ALL ON FUNCTION public.admin_record_invoice_payment(uuid,uuid,numeric,text,text,text,text,timestamptz,text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.admin_record_invoice_payment(uuid,uuid,numeric,text,text,text,text,timestamptz,text) TO authenticated;
+
+CREATE OR REPLACE FUNCTION public.sync_booking_status_compatibility()
+RETURNS TRIGGER LANGUAGE plpgsql SET search_path=public
+AS $$
+BEGIN
+  IF NEW.booking_status IS DISTINCT FROM OLD.booking_status THEN
+    NEW.status:=CASE NEW.booking_status WHEN 'requested' THEN 'new' WHEN 'confirmed' THEN 'accepted'
+      WHEN 'rescheduled' THEN 'reviewing' WHEN 'completed' THEN 'accepted' WHEN 'cancelled' THEN 'closed' ELSE NEW.status END;
+  ELSIF NEW.status IS DISTINCT FROM OLD.status THEN
+    NEW.booking_status:=CASE lower(coalesce(NEW.status,'new'))
+      WHEN 'new' THEN 'requested' WHEN 'reviewing' THEN 'rescheduled' WHEN 'accepted' THEN 'confirmed'
+      WHEN 'closed' THEN 'cancelled' ELSE NEW.booking_status END;
+  END IF;
+  NEW.updated_at:=now(); RETURN NEW;
+END;
+$$;
+DROP TRIGGER IF EXISTS trg_booking_status_compatibility ON public.booking_requests;
+CREATE TRIGGER trg_booking_status_compatibility BEFORE UPDATE ON public.booking_requests
+FOR EACH ROW EXECUTE FUNCTION public.sync_booking_status_compatibility();
+
+DROP POLICY IF EXISTS "service role only" ON public.studio_waitlist;
+DROP POLICY IF EXISTS "admins read studio waitlist" ON public.studio_waitlist;
+CREATE POLICY "admins read studio waitlist" ON public.studio_waitlist FOR SELECT TO authenticated
+USING (public.admin_has_permission('leads.read'));
+DROP POLICY IF EXISTS "admins update studio waitlist" ON public.studio_waitlist;
+CREATE POLICY "admins update studio waitlist" ON public.studio_waitlist FOR UPDATE TO authenticated
+USING (public.admin_has_permission('leads.write')) WITH CHECK (public.admin_has_permission('leads.write'));
+DROP POLICY IF EXISTS "admins delete studio waitlist" ON public.studio_waitlist;
+CREATE POLICY "admins delete studio waitlist" ON public.studio_waitlist FOR DELETE TO authenticated
+USING (public.admin_has_permission('leads.write'));
+GRANT SELECT,UPDATE,DELETE ON public.studio_waitlist TO authenticated;
+DROP TRIGGER IF EXISTS trg_studio_waitlist_updated ON public.studio_waitlist;
+CREATE TRIGGER trg_studio_waitlist_updated BEFORE UPDATE ON public.studio_waitlist
+FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+DROP TRIGGER IF EXISTS trg_admin_audit_studio_waitlist ON public.studio_waitlist;
+CREATE TRIGGER trg_admin_audit_studio_waitlist AFTER INSERT OR UPDATE OR DELETE ON public.studio_waitlist
+FOR EACH ROW EXECUTE FUNCTION public.capture_admin_audit();
+
+DO $$
+DECLARE table_name text;
+BEGIN
+  FOREACH table_name IN ARRAY ARRAY['contact_requests','briefing_submissions','booking_requests','newsletter_subscribers','studio_waitlist','crm_leads','crm_activities','crm_tasks','crm_payments'] LOOP
+    IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname='supabase_realtime' AND schemaname='public' AND tablename=table_name)
+    THEN EXECUTE format('ALTER PUBLICATION supabase_realtime ADD TABLE public.%I',table_name); END IF;
+  END LOOP;
+END;
+$$;
+
+ANALYZE public.crm_leads;
+ANALYZE public.crm_activities;
+ANALYZE public.crm_tasks;
+ANALYZE public.crm_payments;
+ANALYZE public.booking_requests;
+ANALYZE public.newsletter_subscribers;
+ANALYZE public.studio_waitlist;
+
+CREATE OR REPLACE FUNCTION public.admin_user_directory()
+RETURNS TABLE (user_id uuid, email text, role text)
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public, pg_catalog
+AS $$
+  SELECT u.user_id, u.email, u.role
+  FROM public.admin_users u
+  WHERE public.admin_has_permission('leads.read')
+  ORDER BY lower(u.email);
+$$;
+
+REVOKE ALL ON FUNCTION public.admin_user_directory() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.admin_user_directory() TO authenticated;
