@@ -105,7 +105,8 @@ export function Phase3OperationsOS({ onNavigate }: { onNavigate?: (section: stri
   const [tab, setTab] = useState<Tab>("overview");
   const qc = useQueryClient();
   const overview = useServerFn(getOperationsOverview);
-  const inbox = useServerFn(listAdminInbox);
+  const inboxLoader = useServerFn(listAdminInbox);
+  const leadLoader = useServerFn(listAdminLeads);
   const [search, setSearch] = useState("");
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
 
@@ -131,12 +132,27 @@ export function Phase3OperationsOS({ onNavigate }: { onNavigate?: (section: stri
 
   const leadListQuery = useQuery({
     queryKey: ["phase3-leads", search],
-    queryFn: () => inbox({ data: { kind: "all", search: search.trim() || undefined, limit: 300 } }),
+    queryFn: () => inboxLoader({ data: { kind: "all", search: search.trim() || undefined, limit: 300 } }),
     enabled: tab === "overview" || tab === "inbox" || tab === "leads",
     staleTime: 5_000,
   });
 
   const leads = (leadListQuery.data as any)?.rows ?? [];
+  const inboxQuery = useQuery({
+    queryKey: ["phase3-inbox", search],
+    queryFn: () => inboxLoader({ data: { kind: "all", search: search.trim() || undefined, limit: 300 } }),
+    enabled: tab === "inbox",
+    staleTime: 5_000,
+  });
+  const inboxRows = (inboxQuery.data as any)?.rows ?? [];
+
+  const leadOverviewQuery = useQuery({
+    queryKey: ["phase3-lead-overview"],
+    queryFn: () => leadLoader({ data: { limit: 200 } }),
+    enabled: tab === "overview",
+    staleTime: 10_000,
+  });
+  const overviewLeads = (leadOverviewQuery.data as any)?.rows ?? [];
 
   useEffect(() => {
     if (!selectedLeadId && leads[0]?.id) setSelectedLeadId(leads[0].id);
@@ -178,8 +194,8 @@ export function Phase3OperationsOS({ onNavigate }: { onNavigate?: (section: stri
         ))}
       </div>
 
-      {tab === "overview" && <OperationsOverview data={overviewQuery.data} leads={leads} onSelectLead={(id) => { setSelectedLeadId(id); setTab("leads"); }} onNavigate={onNavigate} />}
-      {tab === "inbox" && <UnifiedInbox search={search} setSearch={setSearch} rows={leads} onSelectLead={(id) => { setSelectedLeadId(id); setTab("leads"); }} />}
+      {tab === "overview" && <OperationsOverview data={overviewQuery.data} leads={overviewLeads} onSelectLead={(id) => { setSelectedLeadId(id); setTab("leads"); }} onNavigate={onNavigate} />}
+      {tab === "inbox" && <UnifiedInbox search={search} setSearch={setSearch} rows={inboxRows} onSelectLead={(id) => { setSelectedLeadId(id); setTab("leads"); }} />}
       {tab === "leads" && <LeadsWorkspace search={search} setSearch={setSearch} selectedLeadId={selectedLeadId} setSelectedLeadId={setSelectedLeadId} />}
       {tab === "bookings" && <BookingsWorkspace />}
       {tab === "audience" && <AudienceWorkspace />}
@@ -440,12 +456,63 @@ function AudienceWorkspace() {
   const updateWaitlist = useServerFn(updateAdminWaitlist);
   const exportCsv = useServerFn(exportAdminAudience);
   const [data, setData] = useState<AudienceData>({ subscribers: [], waitlist: [] });
-  const refresh = () => void load({ data: {} }).then((result: any) => setData({ subscribers: result.subscribers ?? [], waitlist: result.waitlist ?? [] })).catch((error: any)=>toast.error(error?.message??"Audience could not be loaded"));
-  useEffect(()=>{refresh();},[]);
-  const download = async ()=>{try{const result:any=await exportCsv({data:{}});const blob=new Blob([result.csv],{type:"text/csv;charset=utf-8"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=`kutuzov-audience-${new Date().toISOString().slice(0,10)}.csv`;a.click();URL.revokeObjectURL(url);}catch(error){toast.error(error instanceof Error?error.message:"Export failed");}};
-  return <div><div className="flex flex-wrap items-end justify-between gap-3"><SectionHeader kicker="Operations / Audience" title="Newsletter + Studio waitlist." description="One audience surface with status, source, search-ready records and export."/><button type="button" onClick={()=>void download()} className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-white/[0.08] px-3 text-xs text-slate-300"><Download size={13}/> Export CSV</button></div><Panel kicker="Newsletter" title={`${data.subscribers.length} subscribers`}><div className="space-y-2">{data.subscribers.map((row)=><div key={row.id} className="flex flex-wrap items-center gap-3 rounded-lg border border-white/[0.06] p-3"><div className="min-w-0 flex-1"><div className="text-sm text-slate-200">{row.email}</div><div className="text-[10px] text-slate-600">{row.name ?? "No name"} · {row.source ?? "website"} · {formatDate(row.created_at)}</div></div><FieldSelect label="" value={row.status} onChange={async(value)=>{try{await updateSubscriber({data:{id:row.id,status:value as any}});refresh();toast.success("Subscriber updated");}catch(error){toast.error(error instanceof Error?error.message:"Update failed");}}} options={[{value:"active",label:"Active"},{value:"inactive",label:"Inactive"},{value:"unsubscribed",label:"Unsubscribed"}]}/></div>)}{data.subscribers.length===0&&<EmptyState label="No newsletter subscribers."/ >}</div></Panel><div className="mt-5"><Panel kicker="Studio" title={`${data.waitlist.length} waitlist records`}><div className="space-y-2">{data.waitlist.map((row)=><div key={row.id} className="flex flex-wrap items-center gap-3 rounded-lg border border-white/[0.06] p-3"><div className="min-w-0 flex-1"><div className="text-sm text-slate-200">{row.email}</div><div className="text-[10px] text-slate-600">{row.source ?? "studio"} · {formatDate(row.created_at)}</div></div><FieldSelect label="" value={row.status} onChange={async(value)=>{try{await updateWaitlist({data:{id:row.id,status:value as any}});refresh();toast.success("Waitlist updated");}catch(error){toast.error(error instanceof Error?error.message:"Update failed");}}} options={[{value:"active",label:"Active"},{value:"inactive",label:"Inactive"}]}/></div>)}{data.waitlist.length===0&&<EmptyState label="No Studio waitlist records."/ >}</div></Panel></div></div>;
-}
+  const [query, setQuery] = useState("");
+  const [status, setStatus] = useState<"all" | "active" | "inactive" | "unsubscribed">("all");
+  const [kind, setKind] = useState<"all" | "newsletter" | "studio">("all");
 
+  const refresh = () => void load({ data: {} })
+    .then((result: any) => setData({ subscribers: result.subscribers ?? [], waitlist: result.waitlist ?? [] }))
+    .catch((error: any) => toast.error(error?.message ?? "Audience could not be loaded"));
+
+  useEffect(() => { refresh(); }, []);
+
+  const needle = query.trim().toLowerCase();
+  const subscribers = data.subscribers.filter((row) => {
+    const haystack = `${row.email ?? ""} ${row.name ?? ""} ${row.source ?? ""}`.toLowerCase();
+    return (kind === "all" || kind === "newsletter")
+      && (!needle || haystack.includes(needle))
+      && (status === "all" || row.status === status);
+  });
+  const waitlist = data.waitlist.filter((row) => {
+    const haystack = `${row.email ?? ""} ${row.source ?? ""}`.toLowerCase();
+    return (kind === "all" || kind === "studio")
+      && (!needle || haystack.includes(needle))
+      && (status === "all" || row.status === status);
+  });
+
+  const download = async () => {
+    try {
+      const result: any = await exportCsv({ data: {} });
+      const blob = new Blob([result.csv], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `kutuzov-audience-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Export failed");
+    }
+  };
+
+  return <div>
+    <div className="flex flex-wrap items-end justify-between gap-3">
+      <SectionHeader kicker="Operations / Audience" title="Newsletter + Studio waitlist." description="One audience surface with search, lifecycle filters, activation controls and export." />
+      <button type="button" onClick={() => void download()} className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-white/[0.08] px-3 text-xs text-slate-300"><Download size={13}/> Export CSV</button>
+    </div>
+    <div className="mb-5 grid gap-2 md:grid-cols-[1fr_auto_auto]">
+      <div className="relative"><Search size={13} className="absolute left-3 top-3 text-slate-600" /><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search email, name or source..." className="adm-input pl-9" /></div>
+      <select value={kind} onChange={(e) => setKind(e.target.value as any)} className="adm-input md:w-40"><option value="all">All audiences</option><option value="newsletter">Newsletter</option><option value="studio">Studio waitlist</option></select>
+      <select value={status} onChange={(e) => setStatus(e.target.value as any)} className="adm-input md:w-40"><option value="all">All statuses</option><option value="active">Active</option><option value="inactive">Inactive</option><option value="unsubscribed">Unsubscribed</option></select>
+    </div>
+    <Panel kicker="Newsletter" title={`${subscribers.length} visible · ${data.subscribers.length} total`}>
+      <div className="space-y-2">{subscribers.map((row)=><div key={row.id} className="flex flex-wrap items-center gap-3 rounded-lg border border-white/[0.06] p-3"><div className="min-w-0 flex-1"><div className="text-sm text-slate-200">{row.email}</div><div className="text-[10px] text-slate-600">{row.name ?? "No name"} · {row.source ?? "website"} · {formatDate(row.created_at)}</div></div><FieldSelect label="" value={row.status} onChange={async(value)=>{try{await updateSubscriber({data:{id:row.id,status:value as any}});refresh();toast.success("Subscriber updated");}catch(error){toast.error(error instanceof Error?error.message:"Update failed");}}} options={[{value:"active",label:"Active"},{value:"inactive",label:"Inactive"},{value:"unsubscribed",label:"Unsubscribed"}]}/></div>)}{subscribers.length===0&&<EmptyState label="No newsletter records match the filters."/ >}</div>
+    </Panel>
+    <div className="mt-5"><Panel kicker="Studio" title={`${waitlist.length} visible · ${data.waitlist.length} total`}>
+      <div className="space-y-2">{waitlist.map((row)=><div key={row.id} className="flex flex-wrap items-center gap-3 rounded-lg border border-white/[0.06] p-3"><div className="min-w-0 flex-1"><div className="text-sm text-slate-200">{row.email}</div><div className="text-[10px] text-slate-600">{row.source ?? "studio"} · {formatDate(row.created_at)}</div></div><FieldSelect label="" value={row.status} onChange={async(value)=>{try{await updateWaitlist({data:{id:row.id,status:value as any}});refresh();toast.success("Waitlist updated");}catch(error){toast.error(error instanceof Error?error.message:"Update failed");}}} options={[{value:"active",label:"Active"},{value:"inactive",label:"Inactive"}]}/></div>)}{waitlist.length===0&&<EmptyState label="No Studio waitlist records match the filters."/ >}</div>
+    </Panel></div>
+  </div>;
+}
 function ClientCRMWorkspace() {
   const load = useServerFn(listAdminClientsCRM);
   const [rows,setRows]=useState<ClientRow[]>([]);
