@@ -111,7 +111,7 @@ export const getOperationsOverview = createServerFn({ method: "POST" })
       context.supabase.from("newsletter_subscribers").select("id", { count: "exact", head: true }).eq("status", "active"),
       context.supabase.from("studio_waitlist").select("id", { count: "exact", head: true }).eq("status", "active"),
       context.supabase.from("briefing_submissions").select("id,invoice_total,invoice_currency,invoice_status,invoice_due_date"),
-      context.supabase.from("crm_payments").select("briefing_id,amount,currency,status"),
+      context.supabase.from("crm_payments").select("briefing_id,amount,currency,status,paid_at"),
       context.supabase.from("crm_tasks").select("id,due_at,status").eq("status", "pending").order("due_at").limit(20),
     ]);
     for (const result of [projects, leads, bookings, subscribers, waitlist, invoices, payments, tasks]) {
@@ -130,11 +130,23 @@ export const getOperationsOverview = createServerFn({ method: "POST" })
       if (booking_counts[status] !== undefined) booking_counts[status] += 1;
     }
 
+    const revenueByCurrency = new Map<string, number>();
+    const revenueThisMonthByCurrency = new Map<string, number>();
+    const revenueThisYearByCurrency = new Map<string, number>();
+    const outstandingByCurrency = new Map<string, number>();
+    const overdueByCurrency = new Map<string, number>();
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const yearStart = new Date(now.getFullYear(), 0, 1);
+    const today = Date.now();
+
     const paidByBriefing = new Map<string, number>();
     const paidByCurrency = new Map<string, number>();
     for (const payment of payments.data ?? []) {
       if (payment.status !== "confirmed") continue;
-      if (payment.briefing_id) paidByBriefing.set(payment.briefing_id, (paidByBriefing.get(payment.briefing_id) ?? 0) + Number(payment.amount));
+      if (payment.briefing_id) {
+        paidByBriefing.set(payment.briefing_id, (paidByBriefing.get(payment.briefing_id) ?? 0) + Number(payment.amount));
+      }
       paidByCurrency.set(payment.currency, (paidByCurrency.get(payment.currency) ?? 0) + Number(payment.amount));
       if (payment.paid_at) {
         const paidAt = new Date(payment.paid_at);
@@ -146,16 +158,6 @@ export const getOperationsOverview = createServerFn({ method: "POST" })
         }
       }
     }
-
-    const revenueByCurrency = new Map<string, number>();
-    const revenueThisMonthByCurrency = new Map<string, number>();
-    const revenueThisYearByCurrency = new Map<string, number>();
-    const outstandingByCurrency = new Map<string, number>();
-    const overdueByCurrency = new Map<string, number>();
-    const now = new Date();
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const yearStart = new Date(now.getFullYear(), 0, 1);
-    const today = Date.now();
 
     for (const invoice of invoices.data ?? []) {
       const total = Number(invoice.invoice_total ?? 0);
@@ -267,7 +269,11 @@ export const addLeadActivity = createServerFn({ method: "POST" })
     await assertPermission(context, "leads.write");
     const { data: row, error } = await context.supabase
       .from("crm_activities")
-      .insert({ ...data, actor_user_id: (await context.supabase.auth.getUser()).data.user?.id ?? null })
+      .insert({
+        ...data,
+        metadata: data.metadata as Database["public"]["Tables"]["crm_activities"]["Insert"]["metadata"],
+        actor_user_id: (await context.supabase.auth.getUser()).data.user?.id ?? null,
+      })
       .select("*")
       .single();
     if (error) throw new Error(error.message);
@@ -279,7 +285,10 @@ export const createLeadTask = createServerFn({ method: "POST" })
   .validator((i: unknown) => TaskCreateSchema.parse(i))
   .handler(async ({ data, context }) => {
     await assertPermission(context, "leads.write");
-    const { data: row, error } = await context.supabase.from("crm_tasks").insert(data).select("*").single();
+    const { data: row, error } = await context.supabase.from("crm_tasks").insert({
+      ...data,
+      metadata: data.metadata as Database["public"]["Tables"]["crm_tasks"]["Insert"]["metadata"],
+    }).select("*").single();
     if (error) throw new Error(error.message);
     return { ok: true, row };
   });
@@ -453,7 +462,7 @@ export const listAdminTasks = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
 
     const taskRows = rows ?? [];
-    const leadIds = [...new Set(taskRows.map((row) => row.lead_id).filter(Boolean))];
+    const leadIds = [...new Set(taskRows.map((row) => row.lead_id).filter((id): id is string => Boolean(id)))];
     let leadMap = new Map<string, { full_name: string | null; company_name: string | null; email: string | null }>();
     if (leadIds.length) {
       const { data: profiles, error: profileError } = await context.supabase
@@ -461,7 +470,11 @@ export const listAdminTasks = createServerFn({ method: "POST" })
         .select("id,full_name,company_name,email")
         .in("id", leadIds);
       if (profileError) throw new Error(profileError.message);
-      leadMap = new Map((profiles ?? []).map((profile) => [profile.id, profile]));
+      leadMap = new Map(
+        (profiles ?? [])
+          .filter((profile): profile is typeof profile & { id: string } => Boolean(profile.id))
+          .map((profile) => [profile.id, profile]),
+      );
     }
     return {
       ok: true,
@@ -497,7 +510,7 @@ export const recordInvoicePayment = createServerFn({ method: "POST" })
       p_status: data.status,
       p_paid_at: data.paid_at ?? null,
       p_notes: data.notes ?? null,
-    });
+    } as never);
     if (error) throw new Error(error.message);
     return { ok: true, result };
   });
@@ -508,10 +521,10 @@ export const getStudioOperationsSnapshot = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     await assertPermission(context, "leads.read");
     const since = new Date(Date.now() - 30 * 86400000).toISOString();
-    const { data, error } = await context.supabase.rpc("studio_admin_dashboard", {
+    const { data, error } = await context.supabase.rpc("studio_admin_dashboard" as never, {
       p_since: since,
       p_until: new Date().toISOString(),
-    });
+    } as never);
     if (error) throw new Error(error.message);
     return { ok: true, data: data ?? {} };
   });
