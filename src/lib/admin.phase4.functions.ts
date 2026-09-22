@@ -63,12 +63,35 @@ async function assertPermission(context: AdminContext, permission: Parameters<ty
   if (error) throw new Error(error.message);
   if (!data) throw new Response("Forbidden", { status: 403 });
 }
+async function assertEntityWritePermission(
+  context: AdminContext,
+  entity_type: Phase4EntityType,
+  entity_id: string,
+) {
+  await assertPermission(context, "content.write");
+  if (entity_type === "site_settings" && entity_id === "invoice_settings") {
+    await assertPermission(context, "finance.write");
+  }
+}
+
+async function assertDraftWritePermission(context: AdminContext, id: string) {
+  const { data, error } = await context.supabase
+    .from("admin_drafts")
+    .select("entity_type,entity_id")
+    .eq("id", id)
+    .single();
+  if (error) throw new Error(error.message);
+  await assertEntityWritePermission(context, data.entity_type as Phase4EntityType, data.entity_id);
+  return data;
+}
+
 function permissionName(
   permission:
     | "content.read"
     | "content.write"
     | "leads.read"
     | "finance.read"
+    | "finance.write"
     | "media.manage"
     | "system.audit.read",
 ) {
@@ -122,7 +145,7 @@ export const createAdminDraft = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((i: unknown) => DraftCreateSchema.parse(i))
   .handler(async ({ data, context }) => {
-    await assertPermission(context, "content.write");
+    await assertEntityWritePermission(context, data.entity_type, data.entity_id);
     const { data: existing, error: existingError } = await context.supabase
       .from("admin_drafts").select("*").eq("entity_type", data.entity_type).eq("entity_id", data.entity_id)
       .in("status", ["draft", "review"]).maybeSingle();
@@ -173,7 +196,7 @@ export const updateAdminDraft = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((i: unknown) => DraftUpdateSchema.parse(i))
   .handler(async ({ data, context }) => {
-    await assertPermission(context, "content.write");
+    await assertDraftWritePermission(context, data.id);
     const userId = (await context.supabase.auth.getUser()).data.user?.id ?? null;
     const { data: row, error } = await context.supabase.from("admin_drafts").update({
       payload: data.payload as never,
@@ -189,7 +212,7 @@ export const submitAdminDraftForReview = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((i: unknown) => DraftIdSchema.parse(i))
   .handler(async ({ data, context }) => {
-    await assertPermission(context, "content.write");
+    await assertDraftWritePermission(context, data.id);
     const userId = (await context.supabase.auth.getUser()).data.user?.id ?? null;
     const { data: row, error } = await context.supabase.from("admin_drafts")
       .update({ status: "review", reviewed_by: null, updated_by: userId })
@@ -202,7 +225,7 @@ export const discardAdminDraft = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((i: unknown) => DraftIdSchema.parse(i))
   .handler(async ({ data, context }) => {
-    await assertPermission(context, "content.write");
+    await assertDraftWritePermission(context, data.id);
     const userId = (await context.supabase.auth.getUser()).data.user?.id ?? null;
     const { data: row, error } = await context.supabase.from("admin_drafts")
       .update({ status: "discarded", updated_by: userId, updated_at: new Date().toISOString() })
