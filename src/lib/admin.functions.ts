@@ -137,6 +137,64 @@ const AuditSchema = z.object({
   search: z.string().trim().max(120).optional(),
 });
 
+const MediaUploadSchema = z.object({
+  entity_id: z.string().uuid(),
+  kind: z.enum(["logo", "cover", "gallery", "video"]),
+  filename: z.string().trim().min(1).max(240),
+  content_type: z.string().trim().max(120),
+  size_bytes: z.number().int().positive().max(200 * 1024 * 1024),
+});
+
+const MEDIA_MIME_ALLOWLIST = new Set([
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+  "image/svg+xml",
+  "video/mp4",
+  "video/webm",
+  "video/ogg",
+]);
+
+function safeMediaName(filename: string) {
+  return filename
+    .replace(/[^a-zA-Z0-9._-]/g, "_")
+    .replace(/_+/g, "_")
+    .slice(0, 160);
+}
+
+export const prepareAdminMediaUpload = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((i: unknown) => MediaUploadSchema.parse(i))
+  .handler(async ({ data, context }) => {
+    await assertPermission(context, "media.manage");
+    if (!MEDIA_MIME_ALLOWLIST.has(data.content_type)) {
+      throw new Error("Unsupported media type");
+    }
+
+    const prefix = data.kind === "logo" ? "logos" : "projects";
+    const filename = safeMediaName(data.filename);
+    const path = `${prefix}/${data.entity_id}-${data.kind}-${Date.now()}-${filename}`;
+
+    const { data: signed, error } = await context.supabase.storage
+      .from("site-assets")
+      .createSignedUploadUrl(path);
+
+    if (error || !signed?.token) {
+      throw new Error(error?.message ?? "Could not prepare media upload");
+    }
+
+    const { data: publicData } = context.supabase.storage
+      .from("site-assets")
+      .getPublicUrl(path);
+
+    return {
+      ok: true,
+      path,
+      token: signed.token,
+      publicUrl: publicData.publicUrl,
+    };
+  });
+
 export const saveAdminSiteSetting = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((i: unknown) => SiteSettingSchema.parse(i))
