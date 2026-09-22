@@ -13,7 +13,10 @@ async function sendOpeningEmail(email: string) {
   const resendKey = process.env.RESEND_API_KEY;
   if (!lovableKey || !resendKey) return;
 
-  const from = process.env.STUDIO_FROM ?? process.env.NEWSLETTER_FROM ?? "Edmundo Kutuzov <onboarding@resend.dev>";
+  const from =
+    process.env.STUDIO_EMAIL_FROM ??
+    process.env.NEWSLETTER_FROM ??
+    "Edmundo Kutuzov <onboarding@resend.dev>";
 
   try {
     await fetch(`${RESEND_GATEWAY}/emails`, {
@@ -49,7 +52,9 @@ export const joinStudioWaitlist = createServerFn({ method: "POST" })
       auth: { persistSession: false, autoRefreshToken: false },
     });
 
-    const { error } = await supabase.from("studio_waitlist").insert({ email: data.email });
+    const { error } = await supabase
+      .from("studio_waitlist")
+      .insert({ email: data.email });
 
     if (error) {
       if (error.code === "23505") return { status: "duplicate" as const };
