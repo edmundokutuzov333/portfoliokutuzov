@@ -30,6 +30,7 @@ import {
   SeoManager,
   MediaLibrary,
 } from "@/components/admin/Phase2WebsiteCMS";
+import { Phase3OperationsOS } from "@/components/admin/Phase3OperationsOS";
 import { toast } from "sonner";
 import {
   createAdminProject,
@@ -94,6 +95,7 @@ type Section =
   | "portfolio"
   | "about"
   | "contact"
+  | "operations"
   | "inbox"
   | "invoice"
   | "history"
@@ -134,7 +136,8 @@ function ControlRoom() {
     },
     { id: "about" as const, label: "About", Icon: UserIcon, roles: ["owner", "admin", "editor"] },
     { id: "contact" as const, label: "Contact", Icon: Mail, roles: ["owner", "admin", "editor"] },
-    { id: "inbox" as const, label: "Inbox", Icon: Inbox, roles: ["owner", "admin", "finance"] },
+    { id: "operations" as const, label: "Operations OS", Icon: LayoutDashboard, roles: ["owner", "admin", "finance"] },
+    { id: "inbox" as const, label: "Legacy Inbox", Icon: Inbox, roles: ["owner", "admin", "finance"] },
     {
       id: "invoice" as const,
       label: "Invoicing",
@@ -199,6 +202,7 @@ function ControlRoom() {
         {section === "portfolio" && <PortfolioManager />}
         {section === "about" && <AboutManager />}
         {section === "contact" && <ContactManager />}
+        {section === "operations" && <Phase3OperationsOS onNavigate={setSection} />}
         {section === "inbox" && <InboxHub />}
         {section === "invoice" && (
           <div className="space-y-12">
