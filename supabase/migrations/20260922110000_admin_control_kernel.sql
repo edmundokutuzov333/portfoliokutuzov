@@ -26,7 +26,9 @@ AS $$
       'leads.read',
       'leads.write',
       'finance.read',
-      'finance.write'
+      'finance.write',
+      'leads.read',
+      'leads.write'
     )
     ELSE false
   END
@@ -104,6 +106,109 @@ ON storage.objects
 FOR DELETE
 TO authenticated
 USING (bucket_id = 'site-assets' AND public.admin_has_permission('media.manage'));
+
+
+-- Operational data permissions
+DROP POLICY IF EXISTS "admins read contact_requests" ON public.contact_requests;
+CREATE POLICY "admins read contact_requests"
+ON public.contact_requests FOR SELECT TO public
+USING (public.admin_has_permission('leads.read'));
+
+DROP POLICY IF EXISTS "admins update contact_requests" ON public.contact_requests;
+CREATE POLICY "admins update contact_requests"
+ON public.contact_requests FOR UPDATE TO public
+USING (public.admin_has_permission('leads.write'))
+WITH CHECK (public.admin_has_permission('leads.write'));
+
+DROP POLICY IF EXISTS "admins delete contact_requests" ON public.contact_requests;
+CREATE POLICY "admins delete contact_requests"
+ON public.contact_requests FOR DELETE TO public
+USING (public.admin_has_permission('leads.write'));
+
+DROP POLICY IF EXISTS "admins read briefings" ON public.briefing_submissions;
+CREATE POLICY "admins read briefings"
+ON public.briefing_submissions FOR SELECT TO public
+USING (public.admin_has_permission('leads.read'));
+
+DROP POLICY IF EXISTS "admins update briefings" ON public.briefing_submissions;
+CREATE POLICY "admins update briefings"
+ON public.briefing_submissions FOR UPDATE TO public
+USING (public.admin_has_permission('leads.write') OR public.admin_has_permission('finance.write'))
+WITH CHECK (public.admin_has_permission('leads.write') OR public.admin_has_permission('finance.write'));
+
+DROP POLICY IF EXISTS "admins delete briefings" ON public.briefing_submissions;
+CREATE POLICY "admins delete briefings"
+ON public.briefing_submissions FOR DELETE TO public
+USING (public.admin_has_permission('leads.write') OR public.admin_has_permission('finance.write'));
+
+DROP POLICY IF EXISTS "admins read bookings" ON public.booking_requests;
+CREATE POLICY "admins read bookings"
+ON public.booking_requests FOR SELECT TO public
+USING (public.admin_has_permission('leads.read'));
+
+DROP POLICY IF EXISTS "admins update bookings" ON public.booking_requests;
+CREATE POLICY "admins update bookings"
+ON public.booking_requests FOR UPDATE TO public
+USING (public.admin_has_permission('leads.write'))
+WITH CHECK (public.admin_has_permission('leads.write'));
+
+DROP POLICY IF EXISTS "admins delete bookings" ON public.booking_requests;
+CREATE POLICY "admins delete bookings"
+ON public.booking_requests FOR DELETE TO public
+USING (public.admin_has_permission('leads.write'));
+
+DROP POLICY IF EXISTS "admins read subscribers" ON public.newsletter_subscribers;
+CREATE POLICY "admins read subscribers"
+ON public.newsletter_subscribers FOR SELECT TO public
+USING (public.admin_has_permission('leads.read'));
+
+DROP POLICY IF EXISTS "admins update subscribers" ON public.newsletter_subscribers;
+CREATE POLICY "admins update subscribers"
+ON public.newsletter_subscribers FOR UPDATE TO public
+USING (public.admin_has_permission('leads.write'))
+WITH CHECK (public.admin_has_permission('leads.write'));
+
+DROP POLICY IF EXISTS "admins delete subscribers" ON public.newsletter_subscribers;
+CREATE POLICY "admins delete subscribers"
+ON public.newsletter_subscribers FOR DELETE TO public
+USING (public.admin_has_permission('leads.write'));
+
+DROP POLICY IF EXISTS "Admins read invoice line items" ON public.invoice_line_items;
+CREATE POLICY "Admins read invoice line items"
+ON public.invoice_line_items FOR SELECT TO authenticated
+USING (public.admin_has_permission('finance.read'));
+
+DROP POLICY IF EXISTS "Admins write invoice line items" ON public.invoice_line_items;
+CREATE POLICY "Admins write invoice line items"
+ON public.invoice_line_items FOR ALL TO authenticated
+USING (public.admin_has_permission('finance.write'))
+WITH CHECK (public.admin_has_permission('finance.write'));
+
+DROP POLICY IF EXISTS "Admins read invoice events" ON public.invoice_events;
+CREATE POLICY "Admins read invoice events"
+ON public.invoice_events FOR SELECT TO authenticated
+USING (public.admin_has_permission('finance.read'));
+
+DROP POLICY IF EXISTS "Admins write invoice events" ON public.invoice_events;
+CREATE POLICY "Admins write invoice events"
+ON public.invoice_events FOR INSERT TO authenticated
+WITH CHECK (public.admin_has_permission('finance.write'));
+
+DROP POLICY IF EXISTS "Admins read invoice counters" ON public.invoice_counters;
+CREATE POLICY "Admins read invoice counters"
+ON public.invoice_counters FOR SELECT TO authenticated
+USING (public.admin_has_permission('finance.read'));
+
+DROP POLICY IF EXISTS "admins read admin_users" ON public.admin_users;
+CREATE POLICY "admins read admin_users"
+ON public.admin_users FOR SELECT TO authenticated
+USING (public.admin_has_permission('system.users.manage'));
+
+DROP POLICY IF EXISTS "admins manage admin_users" ON public.admin_users;
+CREATE POLICY "admins manage admin_users"
+ON public.admin_users FOR ALL TO authenticated
+USING (public.admin_has_permission('system.users.manage'))
+WITH CHECK (public.admin_has_permission('system.users.manage'));
 
 -- ---------------------------------------------------------------------------
 -- Automatic version history
