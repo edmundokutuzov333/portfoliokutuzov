@@ -86,3 +86,21 @@ test("Control Room exposes a safe role resolver and role-aware navigation", () =
   assert.match(admin, /roles: \["owner", "admin", "finance"\]/);
   assert.match(migration, /CREATE OR REPLACE FUNCTION public\.admin_get_role/);
 });
+
+test("Role permissions are enforced on operational and finance data", () => {
+  const sql = read("supabase/migrations/20260922110000_admin_control_kernel.sql");
+  for (const permission of ["leads.read", "leads.write", "finance.read", "finance.write"]) {
+    assert.match(sql, new RegExp(permission.replace(".", "\\.")));
+  }
+  assert.match(sql, /admins read contact_requests/);
+  assert.match(sql, /admins update contact_requests/);
+  assert.match(sql, /admins read briefings/);
+  assert.match(sql, /admins update briefings/);
+  assert.match(sql, /admins read bookings/);
+  assert.match(sql, /admins update bookings/);
+  assert.match(sql, /admins read subscribers/);
+  assert.match(sql, /Admins read invoice line items/);
+  assert.match(sql, /Admins write invoice line items/);
+  assert.match(sql, /Admins read invoice events/);
+  assert.match(sql, /Admins read invoice counters/);
+});
