@@ -100,7 +100,9 @@ export function HistoryManager() {
       </header>
 
       <div className="mt-5 flex flex-wrap gap-2 items-center">
-        {(["all", "site_settings", "projects", "clients", "services", "stats", "about_method"] as const).map((f) => (
+        {(
+          ["all", "site_settings", "projects", "clients", "services", "stats", "about_method"] as const
+        ).map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
