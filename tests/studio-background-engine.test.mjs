@@ -39,10 +39,13 @@ test("Magnific output is placed behind card content as a locked-size background 
   assert.match(panel, /elements: \[backgroundElement/);
 });
 
-test("Studio landing does not expose unfinished Magnific tooling publicly", async () => {
+test("Studio landing is minimal and keeps unfinished tooling private", async () => {
   const route = await read("src/routes/studio.tsx");
-  assert.match(route, /Something is/);
+  assert.match(route, /A studio still finding its lines/);
   assert.match(route, /Explore the portfolio/);
+  assert.match(route, /kutuzov_studio · composing/);
+  assert.match(route, /WaitlistForm/);
+  assert.match(route, /GenesisVisual/);
   assert.doesNotMatch(route, /\/studio\/background/);
   assert.doesNotMatch(route, /Magnific/);
 });
