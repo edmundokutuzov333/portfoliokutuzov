@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ArrowDown, ArrowUp, Check, Copy, FileText, Globe2, Image as ImageIcon, LayoutDashboard, Loader2, Plus, RefreshCw, Search, Trash2, Upload } from "lucide-react";
-import { FALLBACK_NAVIGATION, FALLBACK_SETTINGS, readSetting, SITE_EMAIL, SITE_PHONE, type NavigationItem } from "@/lib/cms";
+import { FALLBACK_NAVIGATION, FALLBACK_SETTINGS, SITE_EMAIL, SITE_PHONE, type NavigationItem } from "@/lib/cms";
 import {
   createAdminMediaAsset,
   createAdminMethod,
@@ -17,6 +17,7 @@ import {
   getAdminAuditLog,
   listAdminMediaAssets,
   prepareAdminMediaUpload,
+  replaceAdminMediaAsset,
   reorderAdminMethods,
   reorderAdminServices,
   reorderAdminStats,
@@ -70,14 +71,19 @@ function useSettingsDraft(key: string) {
   const { data: settings } = useSiteSettings();
   const merged = useMemo(() => ({ ...(FALLBACK_SETTINGS[key] || {}), ...(settings?.[key] || {}) }), [key, settings]);
   const [draft, setDraft] = useState<Record<string, unknown>>(merged);
+  const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
-  useEffect(() => setDraft(merged), [merged]);
-  const update = (field: string, value: unknown) => setDraft((current) => ({ ...current, [field]: value }));
+  useEffect(() => { if (!dirty) setDraft(merged); }, [dirty, merged]);
+  const update = (field: string, value: unknown) => {
+    setDirty(true);
+    setDraft((current) => ({ ...current, [field]: value }));
+  };
   const save = async () => {
     setSaving(true);
     try {
       await saveServer({ data: { key, value: draft } });
       await qc.invalidateQueries({ queryKey: ["site_settings"] });
+      setDirty(false);
       toast.success(key + " saved");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not save changes");
@@ -106,12 +112,14 @@ export function Phase2Overview(p: { onNavigate?: (section: string) => void }) {
         (supabase as any).from("booking_requests").select("id,status", { count: "exact" }),
         (supabase as any).from("newsletter_subscribers").select("id", { count: "exact" }),
         (supabase as any).from("studio_waitlist").select("id", { count: "exact" }),
+        (supabase as any).from("briefing_submissions").select("id,invoice_status", { count: "exact" }),
       ]);
       return {
         leads: ((rows[0].data || []) as Array<{ status?: string }>).filter((r) => r.status === "new" || r.status === "unread").length,
         bookings: ((rows[1].data || []) as Array<{ status?: string }>).filter((r) => r.status === "requested" || r.status === "pending").length,
         subscribers: rows[2].count ?? 0,
         waitlist: rows[3].count ?? 0,
+        outstandingInvoices: ((rows[4].data || []) as Array<{ invoice_status?: string }>).filter((r) => r.invoice_status && !["none","paid","cancelled"].includes(r.invoice_status)).length,
       };
     },
     staleTime: 30000,
@@ -125,6 +133,7 @@ export function Phase2Overview(p: { onNavigate?: (section: string) => void }) {
     ["Pending bookings", ops?.bookings || 0, "inbox"],
     ["Newsletter", ops?.subscribers || 0, "inbox"],
     ["Studio waitlist", ops?.waitlist || 0, "inbox"],
+    ["Outstanding invoices", ops?.outstandingInvoices || 0, "invoice"],
   ];
   return <div>
     <header className="flex items-end justify-between gap-4">
@@ -292,14 +301,29 @@ export function MediaLibrary() {
   const prepare=useServerFn(prepareAdminMediaUpload);
   const create=useServerFn(createAdminMediaAsset);
   const remove=useServerFn(deleteAdminMediaAsset);
+  const replace=useServerFn(replaceAdminMediaAsset);
   const [query,setQuery]=useState("");
   const [kind,setKind]=useState<MediaAsset["kind"]|"all">("all");
   const [busy,setBusy]=useState(false);
   const {data:assets=[],isFetching}=useQuery({queryKey:["admin","media-library",query,kind],queryFn:async()=>await list({data:{search:query||undefined,kind}}),staleTime:10000});
   const upload=async(file:File)=>{setBusy(true);try{const allowed=["image/png","image/jpeg","image/webp","image/svg+xml","video/mp4","video/webm","video/ogg","application/pdf"];if(!allowed.includes(file.type))throw new Error("Unsupported media type");const id=generateUuid();let width:number|null=null;let height:number|null=null;if(file.type.startsWith("image/")){const dims=await readImageDimensions(file);width=dims.width;height=dims.height;}const detected=file.type==="application/pdf"?"document":file.type.startsWith("video/")?"video":kind==="logo"?"logo":"image";const signed=await prepare({data:{entity_id:id,kind:"library",filename:file.name,content_type:file.type,size_bytes:file.size}});const put=await supabase.storage.from("site-assets").uploadToSignedUrl(signed.path,signed.token,file);if(put.error)throw new Error(put.error.message);await create({data:{id,storage_path:signed.path,public_url:signed.publicUrl,filename:file.name,mime_type:file.type,width,height,size_bytes:file.size,kind:detected as "image"|"video"|"logo"|"document",alt_text:null,entity_type:null,entity_id:null,is_public:true}});await qc.invalidateQueries({queryKey:["admin","media-library"]});toast.success("Asset added");}catch(error){toast.error(error instanceof Error?error.message:"Upload failed");}finally{setBusy(false);}};
   const del=async(id:string)=>{if(!window.confirm("Delete this asset and its stored file?"))return;try{await remove({data:{id}});await qc.invalidateQueries({queryKey:["admin","media-library"]});toast.success("Asset deleted");}catch(error){toast.error(error instanceof Error?error.message:"Delete failed");}};
+  const replaceAsset=async(asset:MediaAsset,file:File)=>{
+    try{
+      const allowed=asset.kind==="document"?["application/pdf"]:asset.kind==="video"?["video/mp4","video/webm","video/ogg"]:["image/png","image/jpeg","image/webp","image/svg+xml"];
+      if(!allowed.includes(file.type)) throw new Error("Replacement format does not match the asset type.");
+      let width:number|null=null; let height:number|null=null;
+      if(file.type.startsWith("image/")){const dims=await readImageDimensions(file);width=dims.width;height=dims.height;}
+      const signed=await prepare({data:{entity_id:asset.id,kind:"library",filename:file.name,content_type:file.type,size_bytes:file.size}});
+      const put=await supabase.storage.from("site-assets").uploadToSignedUrl(signed.path,signed.token,file);
+      if(put.error) throw new Error(put.error.message);
+      await replace({data:{id:asset.id,storage_path:signed.path,public_url:signed.publicUrl,filename:file.name,mime_type:file.type,width,height,size_bytes:file.size}});
+      await qc.invalidateQueries({queryKey:["admin","media-library"]});
+      toast.success("Asset replaced");
+    }catch(error){toast.error(error instanceof Error?error.message:"Replacement failed");}
+  };
   return <div>
     <header className="flex items-end justify-between gap-4"><div><p className="mono text-[10px] tracking-[0.28em] text-sky-300/80">CONTENT / MEDIA</p><h2 className="display mt-1 text-3xl text-white">Media library.</h2><p className="mt-2 text-sm text-slate-500">Persistent asset registry with physical file metadata and lifecycle state.</p></div><label className="inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-lg bg-sky-300 px-4 text-xs font-semibold text-[#01040A]">{busy?<Loader2 size={14} className="animate-spin"/>:<Upload size={14}/>}Add asset<input type="file" className="sr-only" disabled={busy} accept="image/png,image/jpeg,image/webp,image/svg+xml,video/mp4,video/webm,video/ogg,application/pdf" onChange={(e)=>{const f=e.target.files?.[0];if(f)void upload(f);e.currentTarget.value="";}}/></label></header>
-    <Card title="Library" description="Images, videos, logos and documents. Unassigned records are visible as unused."><div className="flex flex-col gap-3 md:flex-row"><div className="relative flex-1"><Search size={14} className="absolute left-3 top-3 text-slate-600"/><Input className="pl-9" value={query} onChange={(e)=>setQuery(e.target.value)} placeholder="Search filename"/></div><select value={kind} onChange={(e)=>setKind(e.target.value as MediaAsset["kind"]|"all")} className="rounded-lg border border-white/[0.09] bg-[#030814] px-3 text-sm text-slate-300"><option value="all">All types</option><option value="image">Images</option><option value="video">Videos</option><option value="logo">Logos</option><option value="document">Documents</option></select></div>{isFetching&&assets.length===0?<div className="grid min-h-40 place-items-center"><Loader2 size={18} className="animate-spin text-sky-300"/></div>:assets.length===0?<div className="mt-4 grid min-h-40 place-items-center rounded-xl border border-dashed border-white/[0.08] text-sm text-slate-600">No assets match this view.</div>:<div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{(assets as unknown as MediaAsset[]).map((asset)=><article key={asset.id} className="overflow-hidden rounded-xl border border-white/[0.06] bg-[#01040A]"><div className="aspect-video overflow-hidden border-b border-white/[0.06] bg-white/[0.02]">{asset.mime_type.startsWith("image/")?<img src={asset.public_url} alt={asset.alt_text||asset.filename} className="h-full w-full object-cover" loading="lazy"/>:asset.mime_type.startsWith("video/")?<video src={asset.public_url} className="h-full w-full object-cover" muted playsInline preload="metadata"/>:<div className="grid h-full place-items-center"><FileText size={28} className="text-slate-600"/></div>}</div><div className="p-3"><div className="truncate text-sm text-white" title={asset.filename}>{asset.filename}</div><div className="mono mt-1 text-[9px] uppercase tracking-wider text-slate-600">{asset.kind+" · "+Math.max(1,Math.round(asset.size_bytes/1024))+" KB"+(asset.width&&asset.height?" · "+asset.width+"×"+asset.height:"")}</div><div className="mt-2 text-[11px] text-slate-500">{asset.entity_id?String(asset.entity_type||"entity")+":"+asset.entity_id:"Unused / library asset"}</div><div className="mt-3 flex gap-2"><button type="button" onClick={()=>navigator.clipboard.writeText(asset.public_url).then(()=>toast.success("Asset URL copied")).catch(()=>toast.error("Clipboard unavailable"))} className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.07] px-3 py-1.5 text-[10px] text-slate-300"><Copy size={11}/>Copy URL</button><a href={asset.public_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.07] px-3 py-1.5 text-[10px] text-slate-300"><Globe2 size={11}/>Open</a><button type="button" onClick={()=>void del(asset.id)} className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-white/[0.07] px-3 py-1.5 text-[10px] text-slate-500 hover:text-red-300"><Trash2 size={11}/>Delete</button></div></div></article>)}</div>}</Card>
+    <Card title="Library" description="Images, videos, logos and documents. Unassigned records are visible as unused."><div className="flex flex-col gap-3 md:flex-row"><div className="relative flex-1"><Search size={14} className="absolute left-3 top-3 text-slate-600"/><Input className="pl-9" value={query} onChange={(e)=>setQuery(e.target.value)} placeholder="Search filename"/></div><select value={kind} onChange={(e)=>setKind(e.target.value as MediaAsset["kind"]|"all")} className="rounded-lg border border-white/[0.09] bg-[#030814] px-3 text-sm text-slate-300"><option value="all">All types</option><option value="image">Images</option><option value="video">Videos</option><option value="logo">Logos</option><option value="document">Documents</option></select></div>{isFetching&&assets.length===0?<div className="grid min-h-40 place-items-center"><Loader2 size={18} className="animate-spin text-sky-300"/></div>:assets.length===0?<div className="mt-4 grid min-h-40 place-items-center rounded-xl border border-dashed border-white/[0.08] text-sm text-slate-600">No assets match this view.</div>:<div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{(assets as unknown as MediaAsset[]).map((asset)=><article key={asset.id} className="overflow-hidden rounded-xl border border-white/[0.06] bg-[#01040A]"><div className="aspect-video overflow-hidden border-b border-white/[0.06] bg-white/[0.02]">{asset.mime_type.startsWith("image/")?<img src={asset.public_url} alt={asset.alt_text||asset.filename} className="h-full w-full object-cover" loading="lazy"/>:asset.mime_type.startsWith("video/")?<video src={asset.public_url} className="h-full w-full object-cover" muted playsInline preload="metadata"/>:<div className="grid h-full place-items-center"><FileText size={28} className="text-slate-600"/></div>}</div><div className="p-3"><div className="truncate text-sm text-white" title={asset.filename}>{asset.filename}</div><div className="mono mt-1 text-[9px] uppercase tracking-wider text-slate-600">{asset.kind+" · "+Math.max(1,Math.round(asset.size_bytes/1024))+" KB"+(asset.width&&asset.height?" · "+asset.width+"×"+asset.height:"")}</div><div className="mt-2 text-[11px] text-slate-500">{asset.entity_id?String(asset.entity_type||"entity")+":"+asset.entity_id:"Unused / library asset"}</div><div className="mt-3 flex gap-2"><button type="button" onClick={()=>navigator.clipboard.writeText(asset.public_url).then(()=>toast.success("Asset URL copied")).catch(()=>toast.error("Clipboard unavailable"))} className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.07] px-3 py-1.5 text-[10px] text-slate-300"><Copy size={11}/>Copy URL</button><label className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-white/[0.07] px-3 py-1.5 text-[10px] text-slate-300">Replace<input type="file" className="sr-only" accept={asset.kind==="document"?"application/pdf":asset.kind==="video"?"video/*":"image/*"} onChange={(e)=>{const f=e.target.files?.[0];if(f)void replaceAsset(asset,f);e.currentTarget.value="";}}/></label><a href={asset.public_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.07] px-3 py-1.5 text-[10px] text-slate-300"><Globe2 size={11}/>Open</a><button type="button" onClick={()=>void del(asset.id)} className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-white/[0.07] px-3 py-1.5 text-[10px] text-slate-500 hover:text-red-300"><Trash2 size={11}/>Delete</button></div></div></article>)}</div>}</Card>
   </div>;
 }

@@ -830,6 +830,64 @@ export const restoreAdminContentVersion = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+
+const MediaReplaceSchema = z.object({
+  id: z.string().uuid(),
+  storage_path: z.string().trim().min(1).max(500),
+  public_url: z.string().url(),
+  filename: z.string().trim().min(1).max(240),
+  mime_type: z.string().trim().min(1).max(120),
+  width: z.number().int().positive().nullable().optional(),
+  height: z.number().int().positive().nullable().optional(),
+  size_bytes: z.number().int().positive().max(200 * 1024 * 1024),
+});
+
+export const replaceAdminMediaAsset = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((i: unknown) => MediaReplaceSchema.parse(i))
+  .handler(async ({ data, context }) => {
+    await assertPermission(context, "media.manage");
+    const { data: oldAsset, error: readError } = await context.supabase
+      .from("media_assets")
+      .select("storage_path")
+      .eq("id", data.id)
+      .single();
+
+    if (readError || !oldAsset) {
+      throw new Error(readError?.message ?? "Media asset not found");
+    }
+
+    const { error } = await context.supabase
+      .from("media_assets")
+      .update({
+        storage_path: data.storage_path,
+        public_url: data.public_url,
+        filename: data.filename,
+        mime_type: data.mime_type,
+        width: data.width ?? null,
+        height: data.height ?? null,
+        size_bytes: data.size_bytes,
+        updated_at: new Date().toISOString(),
+      } as never)
+      .eq("id", data.id);
+
+    if (error) {
+      await context.supabase.storage.from("site-assets").remove([data.storage_path]);
+      throw new Error(error.message);
+    }
+
+    if (oldAsset.storage_path !== data.storage_path) {
+      const { error: storageError } = await context.supabase.storage
+        .from("site-assets")
+        .remove([oldAsset.storage_path]);
+      if (storageError) {
+        throw new Error(storageError.message);
+      }
+    }
+
+    return { ok: true };
+  });
+
 export const getAdminAuditLog = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((i: unknown) => AuditSchema.parse(i))
