@@ -243,7 +243,7 @@ export const saveAdminProject = createServerFn({ method: "POST" })
     const payload = projectPayload(data, data.id);
     const { data: row, error } = await context.supabase
       .from("projects")
-      .upsert(payload, { onConflict: "id" })
+      .upsert(payload as never, { onConflict: "id" })
       .select("*")
       .single();
     if (error) throw new Error(error.message);
