@@ -41,10 +41,9 @@ function StudioLanding() {
     >
       <div className="mx-auto flex min-h-[calc(100vh-11rem)] max-w-[1240px] flex-col justify-between">
         <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
-          <span className="font-mono text-[10px] text-white/45">Kutuzov Studio</span>
+          <span className="font-mono text-[10px] text-white/45">]</span>
           <span className="flex items-center gap-2 font-mono text-[10px] text-white/45">
             <span className="h-1.5 w-1.5 rounded-full bg-[#25e3c2]" aria-hidden="true" />
-            composing
           </span>
         </div>
 
@@ -55,7 +54,7 @@ function StudioLanding() {
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
             className="max-w-[700px]"
           >
-            <p className="font-mono text-xs text-[#7c8590]">kutuzov_studio · composing</p>
+            <p className="font-mono text-xs text-[#7c8590]"></p>
             <h1 className="display mt-6 max-w-[720px] text-[clamp(3.4rem,7.6vw,7.6rem)] leading-[0.94] tracking-[-0.055em] text-[#edeef0]">
               A studio still finding its lines.
             </h1>
@@ -103,7 +102,7 @@ function StudioLanding() {
 
         <div className="flex items-center justify-between border-t border-white/[0.08] pt-4 font-mono text-[10px] text-white/30">
           <span>Maputo / 2026</span>
-          <span>Private build</span>
+          <span></span>
         </div>
       </div>
     </main>
