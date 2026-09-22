@@ -576,6 +576,9 @@ export const restoreAdminAuditState = createServerFn({ method: "POST" })
   .validator((i: unknown) => RestoreAuditSchema.parse(i))
   .handler(async ({ data, context }) => {
     await assertPermission(context, "content.write");
+    if (data.entity_type === "site_settings" && data.entity_id === "invoice_settings") {
+      await assertPermission(context, "finance.write");
+    }
     const result = await context.supabase.rpc("admin_restore_audit_state", {
       p_entity_type:data.entity_type,
       p_entity_id:data.entity_id,
