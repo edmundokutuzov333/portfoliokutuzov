@@ -6,6 +6,10 @@ on:
   push:
     branches: [phase3-ai-intelligence, ai-realtime-i18n, main, feat/studio-qa-final]
 
+concurrency:
+  group: control-room-browser-qa-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   browser-qa:
     runs-on: ubuntu-latest
