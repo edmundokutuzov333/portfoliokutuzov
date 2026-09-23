@@ -68,7 +68,6 @@ function getValue<T>(draft: Record<string, unknown>, key: string, fallback: T): 
 
 function useSettingsDraft(key: string) {
   const saveServer = useServerFn(saveAdminSiteSetting);
-  const qc = useQueryClient();
   const { data: settings } = useSiteSettings();
   const merged = useMemo(() => ({ ...(FALLBACK_SETTINGS[key] || {}), ...(settings?.[key] || {}) }), [key, settings]);
   const [draft, setDraft] = useState<Record<string, unknown>>(merged);
