@@ -637,7 +637,7 @@ export const globalAdminSearch = createServerFn({ method: "POST" })
         entity_id:row.key
       });
     }
-    for (const row of leads.data ?? []) results.push({ id:"lead:"+row.id, title:row.full_name ?? "Lead", subtitle:(row.company_name ?? row.email ?? "Lead")+" · "+(row.stage ?? "new"), type:"Lead", target:"leads", entity_id:row.id });
+    for (const row of leads.data ?? []) results.push({ id:"lead:"+row.id, title:row.full_name ?? "Lead", subtitle:(row.company_name ?? row.email ?? "Lead")+" · "+(row.stage ?? "new"), type:"Lead", target:"leads", entity_id:row.id ?? undefined });
 
     if (canFinanceRead) {
       for (const row of invoices.data ?? []) results.push({ id:"invoice:"+row.id, title:row.invoice_number ?? "Invoice", subtitle:(row.company_name ?? row.email ?? "Invoice")+" · "+(row.invoice_status ?? "draft"), type:"Invoice", target:"invoices", entity_id:row.id });
