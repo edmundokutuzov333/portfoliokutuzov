@@ -125,6 +125,7 @@ import {
   Sparkles,
   BarChart3,
   CircleDollarSign,
+  RefreshCw,
 } from "lucide-react";
 
 export const Route = createLazyFileRoute("/admin")({
@@ -179,7 +180,12 @@ function ControlRoom() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [dirty, setDirty] = useState(hasAdminDirty());
 
-  useEffect(() => subscribeAdminDirty(() => setDirty(hasAdminDirty())), []);
+  useEffect(() => {
+    const unsubscribe = subscribeAdminDirty(() => setDirty(hasAdminDirty()));
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   const requestSection = (next: string) => {
     const target = next as Section;
@@ -461,7 +467,7 @@ function ControlRoomOverview({ onNavigate }: { onNavigate: (section: string) => 
   const refresh = async () => {
     setBusy(true);
     try {
-      const result = await load({ data: {} });
+      const result = (await load({ data: {} })) as { snapshot: Record<string, unknown> };
       setData(result.snapshot);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Control Room overview could not be loaded");
@@ -751,6 +757,55 @@ function useAdminInputStyle() {
 // ============================================================================
 // SETTINGS HELPERS - read merged value (DB over fallback) and save per-key
 // ============================================================================
+function InvoiceSettingsEditor() {
+  const { draft, update, save, saving, dirty } = useSectionDraft("invoice_settings");
+  const fields: Array<[string, string, string]> = [
+    ["studio_name", "Studio name", "e.g. Edmundo Kutuzov"],
+    ["studio_email", "Studio email", "billing email"],
+    ["studio_phone", "Studio phone", "phone"],
+    ["studio_address", "Studio address", "address"],
+    ["studio_tax_id", "Tax ID", "tax or registration number"],
+    ["bank_name", "Bank name", "bank"],
+    ["bank_account_name", "Account name", "account holder"],
+    ["bank_iban", "IBAN", "IBAN"],
+    ["bank_swift", "SWIFT", "SWIFT/BIC"],
+    ["mpesa_number", "M-Pesa", "payment number"],
+    ["payment_terms", "Payment terms", "e.g. Net 15"],
+    ["footer_note", "Footer note", "invoice footer"],
+    ["legal_text", "Legal text", "legal notice"],
+  ];
+  return (
+    <div className="space-y-6">
+      <header>
+        <div className="mono text-[10px] uppercase tracking-[0.24em] text-sky-300/70">FINANCE / INVOICE SETTINGS</div>
+        <h2 className="display mt-1 text-2xl text-metal">Invoice settings.</h2>
+        <p className="mt-2 text-sm text-slate-500">Branding, payment coordinates and legal text used by invoice generation. Changes remain protected by the finance permission boundary.</p>
+      </header>
+      <Panel title="Billing identity" kicker="Invoice configuration">
+        <div className="grid gap-4 md:grid-cols-2">
+          {fields.map(([key, label, placeholder]) => (
+            <label key={key} className="space-y-2">
+              <span className="mono text-[9px] uppercase tracking-[0.18em] text-slate-600">{label}</span>
+              <input
+                value={String(draft[key] ?? "")}
+                onChange={(event) => update(key, event.target.value)}
+                placeholder={placeholder}
+                className="adm-input"
+              />
+            </label>
+          ))}
+        </div>
+        <div className="mt-5 flex items-center justify-between gap-3 border-t border-white/[0.06] pt-4">
+          <span className="text-xs text-slate-500">{dirty ? "Unsaved changes" : "Saved"}</span>
+          <button type="button" onClick={() => void save()} disabled={saving || !dirty} className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-sky-300 px-4 text-xs font-semibold text-[#01040A] disabled:opacity-40">
+            {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />} Save settings
+          </button>
+        </div>
+      </Panel>
+    </div>
+  );
+}
+
 function useSectionDraft(key: string) {
   const saveAdminSetting = useServerFn(saveAdminSiteSetting);
   const { data: settings } = useSiteSettings();
