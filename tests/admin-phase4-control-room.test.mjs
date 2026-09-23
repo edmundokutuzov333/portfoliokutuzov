@@ -183,3 +183,13 @@ test("Control Room navigation matches the final architecture", () => {
   assert.match(ui, /releaseOpen/);
   assert.match(ui, /ReleaseCenter/);
 });
+test("Phase 4 restore is bound to the selected immutable audit snapshot", () => {
+  const migration = read("supabase/migrations/20260923100000_phase4_restore_snapshot_integrity.sql");
+  assert.match(migration, /SELECT \* INTO audit_row/);
+  assert.match(migration, /audit_row\.entity_type IS DISTINCT FROM p_entity_type/);
+  assert.match(migration, /audit_row\.entity_id IS DISTINCT FROM p_entity_id/);
+  assert.match(migration, /p_snapshot IS NOT DISTINCT FROM audit_row\.before_data/);
+  assert.match(migration, /p_snapshot IS NOT DISTINCT FROM audit_row\.after_data/);
+  assert.match(migration, /Restore snapshot does not match the selected audit event/);
+  assert.match(migration, /verified_snapshot/);
+});
