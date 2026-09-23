@@ -8,6 +8,7 @@ export function HomeCTA() {
   const { data: settings } = useSiteSettings();
   const r = <T,>(f: string, fb: T) => readSetting<T>(settings, "cta_home", f, fb);
   const email = r("email", SITE_EMAIL);
+  const ctaRoute = r("cta_route", "/contact");
 
   return (
     <section className="relative px-5 md:px-8 py-28">
@@ -38,7 +39,7 @@ export function HomeCTA() {
               </span>
             </h2>
             <div className="mt-10 flex flex-wrap items-center gap-4">
-              <ShinyButton to="/contact">
+              <ShinyButton to={ctaRoute}>
                 {r("cta_primary", "Start a project")}
                 <ArrowUpRight size={16} />
               </ShinyButton>
