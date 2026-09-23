@@ -134,7 +134,7 @@ export function AdminDraftPreviewPage({ draftId }: { draftId: string }) {
           </div>
           <div className="flex items-center gap-1 rounded-lg border border-white/[0.08] p-1">
             {([["desktop", Monitor], ["tablet", Tablet], ["mobile", Smartphone]] as const).map(([id, Icon]) => (
-              <button key={id} type="button" onClick={() => setDevice(id)} aria-label={id} className={\`grid h-8 w-9 place-items-center rounded \${device === id ? "bg-white/10 text-white" : "text-slate-600 hover:text-white"}\`}>
+              <button key={id} type="button" onClick={() => setDevice(id)} aria-label={id} className={`grid h-8 w-9 place-items-center rounded ${device === id ? "bg-white/10 text-white" : "text-slate-600 hover:text-white"}`}>
                 <Icon size={13} />
               </button>
             ))}
@@ -512,8 +512,8 @@ export function ReleaseCenter() {
         images += result.diff.imagesReplaced;
         if (result.diff.reordered) reordered += 1;
       }
-      const impact = \`\${changed} field\${changed === 1 ? "" : "s"} changed, \${images} media change\${images === 1 ? "" : "s"}\${reordered ? \`, \${reordered} reorder\${reordered === 1 ? "" : "s"}\` : ""}\`;
-      if (!confirm(\`Publish \${selectedReviewable.length} change\${selectedReviewable.length === 1 ? "" : "s"}?\\n\\nImpact: \${impact}\\n\\nThis publishes atomically and checks for stale data.\`)) return;
+      const impact = `${changed} field${changed === 1 ? "" : "s"} changed, ${images} media change${images === 1 ? "" : "s"}${reordered ? `, ${reordered} reorder${reordered === 1 ? "" : "s"}` : ""}`;
+      if (!confirm(`Publish ${selectedReviewable.length} change${selectedReviewable.length === 1 ? "" : "s"}?\\n\\nImpact: ${impact}\\n\\nThis publishes atomically and checks for stale data.`)) return;
       await publish({ data: { ids: selectedReviewable, note: impact } });
       await refresh();
       toast.success("Changes published");
@@ -610,7 +610,7 @@ export function ReleaseCenter() {
                             : current.filter((id) => id !== row.id),
                         )
                       }
-                      aria-label={\`Select \${row.label}\`}
+                      aria-label={`Select ${row.label}`}
                     />
                   ) : <span className="w-4" />}
                   <div className="min-w-0 flex-1">
@@ -672,7 +672,7 @@ export function ReleaseCenter() {
                       type="button"
                       onClick={() => void discardDraft(row.id)}
                       className="grid h-9 w-9 place-items-center rounded-lg border border-white/[0.08] text-slate-600 hover:text-red-300"
-                      aria-label={\`Discard \${row.label}\`}
+                      aria-label={`Discard ${row.label}`}
                     >
                       <Trash2 size={12} />
                     </button>
@@ -738,7 +738,7 @@ function NewDraftDialog({
         <label className="space-y-2">
           <FieldLabel>Record</FieldLabel>
           <select value={entityId} onChange={(event) => setEntityId(event.target.value)} className="adm-input">
-            {options.map((item) => <option key={item.id} value={item.id}>{item.label}{item.meta ? \` · \${item.meta}\` : ""}</option>)}
+            {options.map((item) => <option key={item.id} value={item.id}>{item.label}{item.meta ? ` · ${item.meta}` : ""}</option>)}
           </select>
         </label>
         <div className="rounded-lg border border-sky-300/15 bg-sky-300/[0.04] p-3 text-xs leading-relaxed text-slate-400">
@@ -816,7 +816,7 @@ function DraftEditorModal({
   };
 
   return (
-    <Modal title={\`Edit draft · \${draft.label}\`} onClose={() => {
+    <Modal title={`Edit draft · ${draft.label}`} onClose={() => {
         const ownDirty = getAdminDirtyKeys().includes("release:" + draftId);
         if (!ownDirty || window.confirm("Existem alterações não guardadas neste draft. Fechar e perder o trabalho local?")) {
           clearAdminDirty();
@@ -977,7 +977,7 @@ function toStringArray(value: unknown): string[] {
 }
 
 function ToggleField({ label, value, onChange }: { label: string; value: boolean; onChange: (value: boolean) => void }) {
-  return <button type="button" onClick={() => onChange(!value)} className={\`flex w-full items-center justify-between rounded-lg border px-3 py-3 text-left \${value ? "border-emerald-300/20 bg-emerald-300/[0.04] text-emerald-200" : "border-white/[0.08] text-slate-500"}\`}><span className="text-sm">{label}</span><span className="mono text-[9px] uppercase">{value ? "Enabled" : "Disabled"}</span></button>;
+  return <button type="button" onClick={() => onChange(!value)} className={`flex w-full items-center justify-between rounded-lg border px-3 py-3 text-left ${value ? "border-emerald-300/20 bg-emerald-300/[0.04] text-emerald-200" : "border-white/[0.08] text-slate-500"}`}><span className="text-sm">{label}</span><span className="mono text-[9px] uppercase">{value ? "Enabled" : "Disabled"}</span></button>;
 }
 
 function getPathValue(input: unknown, path: string): unknown {
@@ -1035,7 +1035,7 @@ function PreviewModal({ draftId, onClose, previewLoader }: { draftId: string; on
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="mono text-[9px] uppercase tracking-[0.18em] text-slate-600">Draft overlay</div>
           <div className="flex items-center gap-1 rounded-lg border border-white/[0.08] p-1">
-            {([["desktop",Monitor],["tablet",Tablet],["mobile",Smartphone]] as const).map(([id,Icon])=><button key={id} type="button" onClick={()=>setDevice(id)} aria-label={id} className={\`grid h-8 w-9 place-items-center rounded \${device===id?"bg-white/10 text-white":"text-slate-600 hover:text-white"}\`}><Icon size={13}/></button>)}
+            {([["desktop",Monitor],["tablet",Tablet],["mobile",Smartphone]] as const).map(([id,Icon])=><button key={id} type="button" onClick={()=>setDevice(id)} aria-label={id} className={`grid h-8 w-9 place-items-center rounded ${device===id?"bg-white/10 text-white":"text-slate-600 hover:text-white"}`}><Icon size={13}/></button>)}
           </div>
         </div>
         <div className="overflow-auto rounded-xl border border-white/[0.08] bg-[#020712] p-2">
@@ -1222,7 +1222,7 @@ export function UsersRolesCenter() {
     <div className="rounded-xl border border-amber-300/15 bg-amber-300/[0.03] p-4 text-xs leading-relaxed text-slate-500">
       Role changes are backend-enforced. Only an owner can assign the owner role, and an administrator cannot demote its own account.
     </div>
-    <Panel kicker="Access directory" title={\`\${rows.length} administrator accounts\`}>
+    <Panel kicker="Access directory" title={`${rows.length} administrator accounts`}>
       <div className="space-y-2">
         {rows.map((row) => (
           <div key={row.id} className="flex flex-wrap items-center gap-3 rounded-lg border border-white/[0.06] p-4">
@@ -1231,7 +1231,7 @@ export function UsersRolesCenter() {
               <div className="mt-1 text-[10px] text-slate-600">Added {new Date(row.created_at).toLocaleString()}</div>
             </div>
             <select
-              aria-label={\`Role for \${row.email}\`}
+              aria-label={`Role for ${row.email}`}
               value={row.role}
               onChange={async (event) => {
                 try {
@@ -1269,14 +1269,14 @@ export function SystemHealthCenter() {
   useEffect(()=>{void refresh();},[]);
   const items = [
     ["Database", data?.database?.database?.status, data?.database?.database?.postgres_version],
-    ["Realtime", data?.database?.realtime?.status, \`\${data?.database?.realtime?.subscribed_tables ?? 0} / \${data?.database?.realtime?.expected_tables ?? 0} tables\`],
+    ["Realtime", data?.database?.realtime?.status, `${data?.database?.realtime?.subscribed_tables ?? 0} / ${data?.database?.realtime?.expected_tables ?? 0} tables`],
     ["Storage", data?.database?.storage?.status, data?.database?.storage?.bucket],
-    ["Public Site", data?.providers?.public_site?.status, data?.providers?.public_site?.http_status ? \`HTTP \${data.providers.public_site.http_status}\` : data?.providers?.public_site?.url],
+    ["Public Site", data?.providers?.public_site?.status, data?.providers?.public_site?.http_status ? `HTTP ${data.providers.public_site.http_status}` : data?.providers?.public_site?.url],
     ["Vercel", data?.providers?.vercel?.status, data?.providers?.vercel?.environment],
     ["Resend", data?.providers?.resend?.status, data?.providers?.resend?.configured ? "configured" : "not configured"],
     ["Gemini", data?.providers?.gemini?.status, data?.providers?.gemini?.configured ? "configured" : "not configured"],
-    ["Audit", data?.database?.audit?.status, \`\${data?.database?.audit?.events ?? 0} events\`],
-    ["Versioning", data?.database?.versioning?.status, \`\${data?.database?.versioning?.versions ?? 0} versions\`],
+    ["Audit", data?.database?.audit?.status, `${data?.database?.audit?.events ?? 0} events`],
+    ["Versioning", data?.database?.versioning?.status, `${data?.database?.versioning?.versions ?? 0} versions`],
   ] as Array<[string,string|undefined,string|undefined]>;
 
   return <div className="space-y-6">
@@ -1290,8 +1290,8 @@ export function SystemHealthCenter() {
         <div className="grid gap-5 lg:grid-cols-2">
           <Panel kicker="Recovery" title="Disaster recovery readiness">
             <div className="grid gap-3 sm:grid-cols-2">{[
-              ["RPO target", \`\${data.recovery?.rpo_hours ?? 24} hours\`],
-              ["RTO target", \`\${data.recovery?.rto_hours ?? 4} hours\`],
+              ["RPO target", `${data.recovery?.rpo_hours ?? 24} hours`],
+              ["RTO target", `${data.recovery?.rto_hours ?? 4} hours`],
               ["Content recovery", data.recovery?.content_versioning ?? "unknown"],
               ["Audit immutability", data.recovery?.audit_immutability ?? "unknown"],
               ["Deployment rollback", data.recovery?.deployment_rollback ?? "unknown"],
@@ -1321,7 +1321,7 @@ export function SystemHealthCenter() {
 
 function HealthCard({ label, status, detail }: { label:string; status:string; detail?:string }) {
   const tone = status === "healthy" ? "border-emerald-300/20 bg-emerald-300/[0.04] text-emerald-200" : status === "error" ? "border-red-300/20 bg-red-300/[0.04] text-red-200" : "border-amber-300/20 bg-amber-300/[0.04] text-amber-200";
-  return <div className={\`rounded-xl border p-4 \${tone}\`}><div className="flex items-center justify-between gap-2"><div className="text-sm text-white">{label}</div><StatusBadge status={status}/></div><div className="mt-2 text-[10px] text-slate-500">{detail ?? "No detail"}</div></div>;
+  return <div className={`rounded-xl border p-4 ${tone}`}><div className="flex items-center justify-between gap-2"><div className="text-sm text-white">{label}</div><StatusBadge status={status}/></div><div className="mt-2 text-[10px] text-slate-500">{detail ?? "No detail"}</div></div>;
 }
 
 function SummaryTile({ label, value }: { label: string; value: string | number }) {
@@ -1333,7 +1333,7 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
 function FieldLabel({ children }: { children: ReactNode }) { return <span className="mono text-[9px] uppercase tracking-[0.18em] text-slate-600">{children}</span>; }
 function Modal({ title, children, onClose, wide = false }: { title:string; children:ReactNode; onClose:()=>void; wide?:boolean }) {
   return <div className="fixed inset-0 z-[110] grid place-items-center bg-black/70 p-3 backdrop-blur-sm" role="presentation" onMouseDown={onClose}>
-    <div role="dialog" aria-modal="true" aria-label={title} onMouseDown={(event)=>event.stopPropagation()} className={\`max-h-[92vh] w-full overflow-y-auto rounded-2xl border border-white/10 bg-[#050a12] shadow-2xl \${wide?"max-w-6xl":"max-w-xl"}\`}>
+    <div role="dialog" aria-modal="true" aria-label={title} onMouseDown={(event)=>event.stopPropagation()} className={`max-h-[92vh] w-full overflow-y-auto rounded-2xl border border-white/10 bg-[#050a12] shadow-2xl ${wide?"max-w-6xl":"max-w-xl"}`}>
       <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-white/[0.07] bg-[#050a12]/95 px-5 py-4 backdrop-blur"><h2 className="text-sm font-medium text-white">{title}</h2><button type="button" onClick={onClose} aria-label="Close dialog" className="grid h-8 w-8 place-items-center rounded-lg border border-white/[0.08] text-slate-500 hover:text-white"><X size={14}/></button></div>
       <div className="p-5">{children}</div>
     </div>
@@ -1342,7 +1342,7 @@ function Modal({ title, children, onClose, wide = false }: { title:string; child
 function Panel({ kicker, title, children }: { kicker?:string; title:string; children:ReactNode }) { return <section className="rounded-xl border border-white/[0.08] bg-[#030814] p-5 md:p-6">{kicker?<div className="mono text-[9px] uppercase tracking-[0.2em] text-sky-300/60">{kicker}</div>:null}<h3 className="display mt-1 text-lg text-metal">{title}</h3><div className="mt-4">{children}</div></section>; }
 function StatusBadge({ status }: { status: string }) {
   const tone = ["published","healthy","create","completed","paid"].includes(status) ? "border-emerald-300/20 bg-emerald-300/10 text-emerald-200" : ["review","warning","update","draft"].includes(status) ? "border-amber-300/20 bg-amber-300/10 text-amber-200" : ["error","delete","discarded","cancelled"].includes(status) ? "border-red-300/20 bg-red-300/10 text-red-200" : "border-white/[0.08] bg-white/[0.02] text-slate-500";
-  return <span className={\`inline-flex rounded-full border px-2 py-1 text-[9px] uppercase tracking-wider \${tone}\`}>{status}</span>;
+  return <span className={`inline-flex rounded-full border px-2 py-1 text-[9px] uppercase tracking-wider ${tone}`}>{status}</span>;
 }
 function JsonPanel({ title, value }: { title:string; value:unknown }) { return <div><div className="mono mb-2 text-[9px] uppercase tracking-[0.18em] text-slate-600">{title}</div><pre className="max-h-[330px] overflow-auto rounded-lg border border-white/[0.06] bg-[#01040A] p-3 font-mono text-[10px] leading-5 text-slate-400">{value ? JSON.stringify(value,null,2) : "null"}</pre></div>; }
 function LoadingBlock({ label }: { label:string }) { return <div className="flex items-center gap-2 rounded-xl border border-white/[0.07] bg-[#030814] p-8 text-sm text-slate-600"><Loader2 size={15} className="animate-spin"/>{label}</div>; }
