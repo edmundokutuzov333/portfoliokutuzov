@@ -162,7 +162,7 @@ export function PortfolioArchive() {
       ) : (
         <div data-testid="portfolio-empty" className="grid place-items-center border border-[var(--color-border-subtle)] bg-[var(--color-surface)] px-6 py-28 text-center">
           <div className="mono mb-3 text-[10px] uppercase tracking-[0.2em] text-[var(--color-text-muted)]">{isError ? "Archive temporarily unavailable" : "No matching projects"}</div>
-          <p className="max-w-md text-[15px] leading-relaxed text-[var(--color-text-secondary)]">{isError ? "The archive could not be loaded from the content service. Please reload the page." : query ? `No projects found for \"${query}\".` : `No projects found in category \"${filter}\".`}</p>
+          <p className="max-w-md text-[15px] leading-relaxed text-[var(--color-text-secondary)]">{isError ? "The archive could not be loaded from the content service. Please reload the page." : query ? `No projects found for "${query}".` : `No projects found in category "${filter}".`}</p>
           <button type="button" onClick={reset} className="mt-6 border-b border-[var(--color-text-primary)] pb-0.5 mono text-[11px] font-semibold uppercase tracking-[0.15em] text-[var(--color-text-primary)]">Clear filters & search</button>
         </div>
       )}
