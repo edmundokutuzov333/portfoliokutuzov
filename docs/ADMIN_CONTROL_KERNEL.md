@@ -39,6 +39,10 @@ public.admin_audit_log records create/update/delete events for administrator-con
 
 The Audit workspace exposes actor, action, entity, timestamp, before state and after state.
 
+## Editorial boundary
+
+Existing CMS save actions are now bridged into the Phase 4 draft store instead of mutating live content directly. A save creates or updates one active draft per entity. Drafts under review cannot be silently overwritten by legacy save surfaces. Publication is centralized in public.admin_publish_drafts.
+
 ## Transactional ordering
 
 Portfolio reorder uses public.admin_reorder_projects so the pair of order updates executes inside one Postgres transaction rather than two independent browser mutations.
