@@ -757,10 +757,6 @@ function useAdminInputStyle() {
 // ============================================================================
 // SETTINGS HELPERS - read merged value (DB over fallback) and save per-key
 // ============================================================================
-function WorkspaceLoader({ label }: { label: string }) {
-  return <div className="grid min-h-40 place-items-center rounded-xl border border-white/[0.07] bg-[#030814] text-sm text-slate-600"><div className="flex items-center gap-2"><Loader2 size={14} className="animate-spin" />{label}</div></div>;
-}
-
 function Panel({ kicker, title, children }: { kicker?: string; title: string; children: ReactNode }) {
   return <section className="rounded-xl border border-white/[0.08] bg-[#030814] p-5 md:p-6">{kicker ? <div className="mono text-[9px] uppercase tracking-[0.2em] text-sky-300/60">{kicker}</div> : null}<h3 className="display mt-1 text-lg text-metal">{title}</h3><div className="mt-4">{children}</div></section>;
 }
