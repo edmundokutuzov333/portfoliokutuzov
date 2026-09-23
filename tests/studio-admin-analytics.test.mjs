@@ -20,11 +20,11 @@ test("Phase G has protected admin analytics and bounded event ingestion", async 
 });
 
 test("Phase G dashboard exposes all requested admin surfaces", async () => {
-  const route = await read("src/routes/admin.studio.tsx");
-  for (const label of ["Studio Analytics", "Card Library", "Generation", "Export", "Email", "Digital Card", "AI"]) assert.match(route, new RegExp(label));
-  assert.match(route, /Latest 100 cards/);
-  assert.match(route, /7, 30, 90/);
-  assert.match(route, /recharts/);
+  const surface = await read("src/components/admin/StudioIntelligenceSurface.tsx");
+  for (const label of ["Studio Analytics", "Card Library", "Generation Analytics", "Export Analytics", "Email Analytics", "Digital Card Analytics", "AI Analytics"]) assert.match(surface, new RegExp(label));
+  assert.match(surface, /Latest 100 cards/);
+  assert.match(surface, /7, 30, 90/);
+  assert.match(surface, /recharts/);
 });
 
 test("Phase G instruments generation, export, email, digital card and AI activity", async () => {
