@@ -160,7 +160,6 @@ type Section =
   | "analytics"
   | "users"
   | "system"
-  | "advanced"
   | "advanced";
 
 function ControlRoom() {
