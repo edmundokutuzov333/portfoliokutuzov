@@ -51,9 +51,9 @@ const AuditRangeSchema = z.object({
 });
 const RestoreAuditSchema = z.object({
   id: z.string().uuid(),
-  snapshot: z.record(z.string(), z.unknown()),
   entity_type: z.enum(ENTITY_TYPES),
   entity_id: z.string().min(1).max(160),
+  snapshot: z.record(z.string(), z.unknown()),
 });
 
 async function assertPermission(context: AdminContext, permission: Parameters<typeof permissionName>[0]) {
@@ -684,11 +684,12 @@ export const restoreAdminAuditState = createServerFn({ method: "POST" })
     if (data.entity_type === "site_settings" && data.entity_id === "invoice_settings") {
       await assertPermission(context, "finance.write");
     }
+    // The database re-validates that snapshot against the immutable audit event.
     const result = await context.supabase.rpc("admin_restore_audit_state", {
-      p_entity_type:data.entity_type,
-      p_entity_id:data.entity_id,
-      p_snapshot:data.snapshot as never,
-      p_audit_id:data.id,
+      p_entity_type: data.entity_type,
+      p_entity_id: data.entity_id,
+      p_snapshot: data.snapshot as never,
+      p_audit_id: data.id,
     });
     if (result.error) throw new Error(result.error.message);
     return { ok:true, result:result.data };
