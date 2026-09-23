@@ -1085,7 +1085,7 @@ function PreviewCanvas({ data }: { data: any }) {
         {service ? <div className="rounded-xl border border-sky-300/15 bg-sky-300/[0.035] p-4"><div className="mono text-[9px] uppercase text-sky-300/70">Service draft</div><div className="mt-2 text-sm text-white">{service.title}</div><div className="mt-1 text-xs text-slate-500">{service.description ?? ""}</div></div> : null}
         {stat ? <div className="rounded-xl border border-sky-300/15 bg-sky-300/[0.035] p-4"><div className="mono text-[9px] uppercase text-sky-300/70">Stat draft</div><div className="mt-2 text-2xl text-white">{stat.value}</div><div className="mt-1 text-xs text-slate-500">{stat.label}</div></div> : null}
         {method ? <div className="rounded-xl border border-sky-300/15 bg-sky-300/[0.035] p-4"><div className="mono text-[9px] uppercase text-sky-300/70">Method draft</div><div className="mt-2 text-sm text-white">{method.title}</div><div className="mt-1 text-xs text-slate-500">{method.description ?? ""}</div></div> : null}
-      </div> : null>
+      </div> : null}
     </section>
   </div>;
 }
