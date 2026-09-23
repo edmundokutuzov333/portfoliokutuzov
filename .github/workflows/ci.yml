@@ -37,8 +37,6 @@ jobs:
           node -e "const p=require('./package.json'); if(p.engines?.node!=='24.x') process.exit(1)"
       - name: Install
         run: npm ci
-      - name: Regression tests A-H
-        run: npm test
       - name: Diagnostics
         run: npm run diagnose
       - name: Typecheck
@@ -47,3 +45,5 @@ jobs:
         run: npm run build
       - name: Lint
         run: npm run lint
+      - name: Regression tests A-H
+        run: npm test
