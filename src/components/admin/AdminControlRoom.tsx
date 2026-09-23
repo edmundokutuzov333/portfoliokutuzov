@@ -124,6 +124,7 @@ import {
   ShieldCheck,
   Sparkles,
   BarChart3,
+  CircleDollarSign,
 } from "lucide-react";
 
 export const Route = createLazyFileRoute("/admin")({
@@ -2028,6 +2029,8 @@ function AdvancedJSONManager({ onNavigate }: { onNavigate?: (section: string) =>
     }
   };
 
+  // The command functions are stable server-function wrappers; rerun when admin session changes.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!session?.access_token || !isAdmin) return;
     void Promise.all([runHealth(), loadEvents()]);
