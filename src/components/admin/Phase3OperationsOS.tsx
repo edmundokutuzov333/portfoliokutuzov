@@ -537,7 +537,6 @@ function FinanceSummaryWorkspace() {
   const refresh = () => void overview({ data: {} }).then((result: any) => setData(result)).catch((error: any) => toast.error(error?.message ?? "Finance overview could not be loaded"));
   useEffect(() => { refresh(); }, []);
   const finance = data?.finance ?? {};
-  if (mode === "payments") return <PaymentsWorkspace />;
   return <div className="space-y-6"><SectionHeader kicker="Operations / Finance" title="Finance." description="Existing invoice workspace plus the payment ledger, lifecycle totals and CRM linkage."/>
     <div className="grid gap-5 xl:grid-cols-2">
       <Panel kicker="Cash performance" title="Paid revenue"><MoneyRows label="All confirmed payments" rows={finance.paid_records ?? {}} icon={<CircleDollarSign size={14}/>} /><div className="mt-4"><MoneyRows label="This month" rows={finance.revenue_this_month_by_currency ?? {}} icon={<CalendarClock size={14}/>} /></div><div className="mt-4"><MoneyRows label="This year" rows={finance.revenue_this_year_by_currency ?? {}} icon={<CalendarClock size={14}/>} /></div></Panel>
