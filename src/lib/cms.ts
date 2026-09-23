@@ -177,6 +177,9 @@ export const FALLBACK_SETTINGS: SiteSettings = {
       "I'm Edmundo Kutuzov, an art director rooted in Mozambique's creative ecosystem. I design visual identities and communication pieces that capture attention and drive action - blending storytelling, visual hierarchy, and typographic craft.",
     cta_primary: "View Portfolio",
     cta_secondary: "Contact Me",
+    cta_primary_route: "/portfolio",
+    cta_secondary_route: "/contact",
+    title_3: "stay in memory,",
     status_label: "Current Status",
     status: "Available for projects",
     location: "Maputo · Remote",
@@ -204,6 +207,7 @@ export const FALLBACK_SETTINGS: SiteSettings = {
     title: "Brands and teams\nI have worked with.",
     subtitle:
       "A selection of local and international brands I have collaborated with as art director, graphic designer and creative lead.",
+    max_items: 16,
   },
   featured_section: {
     eyebrow: "Featured work",
@@ -248,12 +252,16 @@ export const FALLBACK_SETTINGS: SiteSettings = {
     eyebrow: "Services",
     title: "Visual disciplines for brands that move with precision.",
     sidebar: "Brand Logic / Visual Systems / Digital Presence",
+    cta_label: "View capabilities",
+    cta_route: "/services",
+    preview_limit: 6,
   },
   cta_home: {
     eyebrow: "Let's collaborate",
     title_1: "Let's build a visual presence",
     title_accent: "impossible to ignore.",
     cta_primary: "Start a project",
+    cta_route: "/contact",
     email: SITE_EMAIL,
   },
   footer: {
@@ -350,6 +358,18 @@ export const FALLBACK_SETTINGS: SiteSettings = {
       "EMOSE",
       "Moçambique Companhia de Seguros",
       "PROMAR",
+    ],
+  },
+  homepage_structure: {
+    sections: [
+      { id: "hero", label: "Hero", visible: true, order: 1 },
+      { id: "manifesto", label: "Manifesto", visible: true, order: 2 },
+      { id: "services", label: "Services", visible: true, order: 3 },
+      { id: "clients", label: "Clients", visible: true, order: 4 },
+      { id: "featured", label: "Featured Work", visible: true, order: 5 },
+      { id: "experience", label: "Experience / Numbers", visible: true, order: 6 },
+      { id: "cta", label: "CTA", visible: true, order: 7 },
+      { id: "footer", label: "Footer (global)", visible: true, order: 8 },
     ],
   },
   global: {
