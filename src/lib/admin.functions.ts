@@ -260,7 +260,7 @@ export const saveAdminService = createServerFn({ method: "POST" })
   .validator((i: unknown) => ServiceSchema.parse(i))
   .handler(async ({ data, context }) => {
     await assertPermission(context, "content.write");
-    return publishExistingAdminEntity(
+    return saveAdminEntityDraft(
       context,
       "services",
       data.id ?? "",
@@ -340,7 +340,7 @@ export const saveAdminStat = createServerFn({ method: "POST" })
   .validator((i: unknown) => StatSchema.parse(i))
   .handler(async ({ data, context }) => {
     await assertPermission(context, "content.write");
-    return publishExistingAdminEntity(
+    return saveAdminEntityDraft(
       context,
       "stats",
       data.id ?? "",
@@ -385,7 +385,7 @@ export const saveAdminMethod = createServerFn({ method: "POST" })
   .validator((i: unknown) => MethodSchema.parse(i))
   .handler(async ({ data, context }) => {
     await assertPermission(context, "content.write");
-    return publishExistingAdminEntity(
+    return saveAdminEntityDraft(
       context,
       "about_method",
       data.id ?? "",
@@ -551,7 +551,7 @@ export const saveAdminSiteSetting = createServerFn({ method: "POST" })
     if (data.key === "invoice_settings") {
       await assertPermission(context, "finance.write");
     }
-    const result = await publishExistingAdminEntity(
+    const result = await saveAdminEntityDraft(
       context,
       "site_settings",
       data.key,
@@ -566,7 +566,7 @@ export const saveAdminClient = createServerFn({ method: "POST" })
   .validator((i: unknown) => ClientSchema.parse(i))
   .handler(async ({ data, context }) => {
     await assertPermission(context, "content.write");
-    return publishExistingAdminEntity(
+    return saveAdminEntityDraft(
       context,
       "clients",
       data.id ?? "",
@@ -606,7 +606,7 @@ export const deleteAdminClient = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-async function publishExistingAdminEntity(
+async function saveAdminEntityDraft(
   context: { supabase: SupabaseClient<Database> },
   entity_type: "site_settings" | "projects" | "clients" | "services" | "stats" | "about_method",
   entity_id: string,
@@ -662,27 +662,8 @@ async function publishExistingAdminEntity(
     );
   }
 
-  let draftId = existingDraft?.id as string | undefined;
-  if (!draftId) {
-    const { data: createdDraft, error: createError } = await context.supabase
-      .from("admin_drafts")
-      .insert({
-        entity_type,
-        entity_id,
-        label,
-        payload: { ...liveSnapshot, ...payload },
-        baseline_snapshot: liveSnapshot,
-        baseline_updated_at: liveUpdatedAt,
-        status: "draft",
-        created_by: userId,
-        updated_by: userId,
-      } as never)
-      .select("id")
-      .single();
-    if (createError || !createdDraft) throw new Error(createError?.message ?? "Could not create editorial draft");
-    draftId = createdDraft.id;
-  } else {
-    const { error: updateError } = await context.supabase
+  if (existingDraft?.id) {
+    const { data: row, error: updateError } = await context.supabase
       .from("admin_drafts")
       .update({
         label,
@@ -691,21 +672,30 @@ async function publishExistingAdminEntity(
         updated_by: userId,
         updated_at: new Date().toISOString(),
       } as never)
-      .eq("id", draftId);
-    if (updateError) throw new Error(updateError.message);
+      .eq("id", existingDraft.id)
+      .select("*")
+      .single();
+    if (updateError || !row) throw new Error(updateError?.message ?? "Could not save editorial draft");
+    return { ok: true, draft: row, published: false as const };
   }
 
-  const { data: published, error: publishError } = await context.supabase.rpc("admin_publish_drafts", {
-    p_draft_ids: [draftId],
-    p_publish_note: "Immediate save from legacy CMS surface",
-  });
-  if (publishError) throw new Error(publishError.message);
-
-  return {
-    ok: true,
-    draft_id: draftId,
-    published: published ?? [],
-  };
+  const { data: row, error: createError } = await context.supabase
+    .from("admin_drafts")
+    .insert({
+      entity_type,
+      entity_id,
+      label,
+      payload: { ...liveSnapshot, ...payload },
+      baseline_snapshot: liveSnapshot,
+      baseline_updated_at: liveUpdatedAt,
+      status: "draft",
+      created_by: userId,
+      updated_by: userId,
+    } as never)
+    .select("*")
+    .single();
+  if (createError || !row) throw new Error(createError?.message ?? "Could not create editorial draft");
+  return { ok: true, draft: row, published: false as const };
 }
 
 function projectPayload(data: z.infer<typeof ProjectSchema>, id?: string) {
@@ -748,7 +738,7 @@ export const saveAdminProject = createServerFn({ method: "POST" })
   .validator((i: unknown) => ProjectSchema.parse(i))
   .handler(async ({ data, context }) => {
     await assertPermission(context, "content.write");
-    return publishExistingAdminEntity(
+    return saveAdminEntityDraft(
       context,
       "projects",
       data.id ?? "",
@@ -836,13 +826,19 @@ export const publishAdminProject = createServerFn({ method: "POST" })
       .eq("id", data.id)
       .single();
     if (sourceError || !source) throw new Error(sourceError?.message ?? "Project not found");
-    return publishExistingAdminEntity(
+    const saved = await saveAdminEntityDraft(
       context,
       "projects",
       data.id,
       source.title,
       { ...(source as unknown as Record<string, unknown>), is_published: data.is_published },
     );
+    const { data: published, error: publishError } = await context.supabase.rpc("admin_publish_drafts", {
+      p_draft_ids: [saved.draft.id],
+      p_publish_note: data.is_published ? "Published from portfolio control" : "Unpublished from portfolio control",
+    });
+    if (publishError) throw new Error(publishError.message);
+    return { ok: true, draft: saved.draft, published: published ?? [] };
   });
 
 export const createAdminProjectsBatch = createServerFn({ method: "POST" })
