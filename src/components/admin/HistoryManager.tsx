@@ -51,6 +51,7 @@ export function HistoryManager() {
       .channel(`rt-content_history-${Math.random().toString(36).slice(2, 8)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "content_history" }, () => {
         qc.invalidateQueries({ queryKey: ["content_history"] });
+    qc.invalidateQueries({ queryKey: ["admin", "drafts"] });
       })
       .subscribe();
     return () => {
@@ -64,26 +65,21 @@ export function HistoryManager() {
     if (!confirm(`Restore this version of "${row.label ?? row.entity_id}"?`)) return;
     setRestoringId(row.id);
     try {
-      await restore({
+      const result = await restore({
         data: {
           entity_type: row.entity_type,
           entity_id: row.entity_id,
           snapshot: row.snapshot,
         },
       });
+      if (!result?.draft) throw new Error("Restore draft could not be created.");
     } catch (err) {
       setRestoringId(null);
       toast.error(err instanceof Error ? err.message : "Restore failed");
       return;
     }
     setRestoringId(null);
-    toast.success("Restored");
-    qc.invalidateQueries({ queryKey: ["site_settings"] });
-    qc.invalidateQueries({ queryKey: ["projects"] });
-    qc.invalidateQueries({ queryKey: ["clients"] });
-    qc.invalidateQueries({ queryKey: ["services"] });
-    qc.invalidateQueries({ queryKey: ["stats"] });
-    qc.invalidateQueries({ queryKey: ["about_method"] });
+    toast.success("Restore draft created. Publish it from Release Management.");
     qc.invalidateQueries({ queryKey: ["content_history"] });
   };
 
@@ -94,8 +90,8 @@ export function HistoryManager() {
           <History size={20} className="text-sky-300" /> Version history
         </h2>
         <p className="text-sm text-slate-500 mt-1">
-          The last 20 versions of administrator-controlled content are kept automatically. Open any
-          entry to inspect or restore it.
+          The last 20 versions of administrator-controlled content are kept automatically. A restore
+          creates a draft; the public site changes only after that draft is published.
         </p>
       </header>
 
@@ -178,7 +174,7 @@ export function HistoryManager() {
                   ) : (
                     <RotateCcw size={12} />
                   )}{" "}
-                  Restore
+                  Restore draft
                 </button>
               </div>
               {isOpen && (
