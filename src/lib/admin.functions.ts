@@ -617,6 +617,9 @@ async function publishExistingAdminEntity(
   if (entity_type === "site_settings" && entity_id === "invoice_settings") {
     await assertPermission(context, "finance.write");
   }
+  if (entity_type !== "site_settings" && !z.string().uuid().safeParse(entity_id).success) {
+    throw new Error("A valid entity id is required before saving this content.");
+  }
 
   const { data: live, error: liveError } =
     entity_type === "site_settings"
@@ -652,6 +655,12 @@ async function publishExistingAdminEntity(
     .in("status", ["draft", "review"])
     .maybeSingle();
   if (draftReadError) throw new Error(draftReadError.message);
+  if (existingDraft?.status === "review") {
+    throw new Response(
+      "This content is currently under review. Edit or publish it from Release Management.",
+      { status: 409 },
+    );
+  }
 
   let draftId = existingDraft?.id as string | undefined;
   if (!draftId) {
