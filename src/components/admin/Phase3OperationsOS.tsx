@@ -529,6 +529,10 @@ function ClientCRMWorkspace() {
 }
 
 function FinanceWorkspace({ mode = "full" }: { mode?: "full" | "payments" }) {
+  return mode === "payments" ? <PaymentsWorkspace /> : <FinanceSummaryWorkspace />;
+}
+
+function FinanceSummaryWorkspace() {
   const overview = useServerFn(getOperationsOverview);
   const [data, setData] = useState<any>(null);
   const refresh = () => void overview({ data: {} }).then((result: any) => setData(result)).catch((error: any) => toast.error(error?.message ?? "Finance overview could not be loaded"));
