@@ -1,3 +1,10 @@
+## Control Room release hardening
+## Control Room release hardening
+
+The production Control Room release includes two regression guards:
+- Invalid or missing draft identifiers on `/admin/preview` render a controlled error state instead of a route-validation 500.
+- The Overview Studio shortcut resolves to the canonical `Studio Overview` workspace.
+
 # Deployment Guide
 
 This project is a dynamic TanStack Start application with SSR and server functions. Vercel deploys the Nitro `vercel` preset output and must not be configured as a static export.
