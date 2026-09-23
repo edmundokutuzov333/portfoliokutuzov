@@ -14,7 +14,7 @@ Implemented surfaces:
 - Media Library backed by Supabase Storage and a persistent media_assets registry
 
 Frontend/backend flow:
-Admin UI -> typed server function -> permission check -> Supabase/RLS -> audit -> realtime/query invalidation -> public UI.
+Admin UI -> typed server function -> permission check -> Supabase/RLS -> draft -> Release Management -> atomic publish -> audit -> realtime/query invalidation -> public UI.
 
 Public reflection paths added in this phase:
 - Featured Work reads site_settings + project relationships.
@@ -25,6 +25,10 @@ Public reflection paths added in this phase:
 
 Operational safety:
 - No normal website operation requires editing raw JSON.
+- CMS Save actions create/update drafts rather than changing live public content.
+- Publication is centralized in the Phase 4 release pipeline.
+- Content under review cannot be silently overwritten from legacy CMS surfaces.
+- Structured Stats and Method edits are local until the explicit Save draft action, avoiding backend writes on every keystroke.
 - Media uploads are signed and server-prepared.
 - Service/Stats/Method ordering uses transactional database RPCs.
 - Existing static fallbacks remain in place so the public site still renders when data is temporarily unavailable.
