@@ -322,7 +322,7 @@ function ControlRoom() {
       {section === "system" && <SystemHealthCenter />}
       {section === "analytics" && <AnalyticsCenter />}
       {section === "users" && <UsersRolesCenter />}
-      {section === "advanced" && <AdvancedJSONManager />}
+      {section === "advanced" && <AdvancedJSONManager onNavigate={requestSection} />}
     </>
   );
 
@@ -1952,7 +1952,7 @@ function StudiosManager() {
 // ============================================================================
 // ADVANCED - raw JSON editor (kept for power use)
 // ============================================================================
-function AdvancedJSONManager() {
+function AdvancedJSONManager({ onNavigate }: { onNavigate?: (section: string) => void }) {
   const { session, isAdmin } = useAdminAuth();
   const qc = useQueryClient();
   const systemHealth = useServerFn(getAdminSystemHealth);
@@ -2070,7 +2070,7 @@ function AdvancedJSONManager() {
             <input value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") void runSearch(); }} placeholder="Project, lead, invoice, media..." className="adm-input min-w-0 flex-1" />
             <button type="button" onClick={() => void runSearch()} className="rounded-lg border border-white/[0.08] px-3 text-xs text-slate-300">Search</button>
           </div>
-          <div className="mt-3 space-y-2">{results.map((row) => <button type="button" key={row.id} onClick={() => requestSectionFromAdvanced(row.target)} className="block w-full rounded-lg border border-white/[0.06] p-3 text-left hover:border-sky-300/20"><div className="text-xs text-slate-200">{row.title}</div><div className="mt-1 text-[10px] text-slate-600">{row.type} · {row.subtitle}</div></button>)}</div>
+          <div className="mt-3 space-y-2">{results.map((row) => <button type="button" key={row.id} onClick={() => onNavigate?.(row.target)} className="block w-full rounded-lg border border-white/[0.06] p-3 text-left hover:border-sky-300/20"><div className="text-xs text-slate-200">{row.title}</div><div className="mt-1 text-[10px] text-slate-600">{row.type} · {row.subtitle}</div></button>)}</div>
         </section>
       </div>
 
