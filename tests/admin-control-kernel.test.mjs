@@ -36,12 +36,15 @@ test("Phase 1 migration defines role permissions, audit and version triggers", (
 
 test("Admin writes are centralized behind server functions", () => {
   const admin = read("src/components/admin/AdminControlRoom.tsx");
+  const portfolio = read("src/components/admin/PortfolioModule.tsx");
   const functions = read("src/lib/admin.functions.ts");
   assert.match(admin, /useServerFn\(saveAdminSiteSetting\)/);
   assert.match(admin, /useServerFn\(saveAdminClient\)/);
-  assert.match(admin, /useServerFn\(saveAdminProject\)/);
-  assert.match(admin, /useServerFn\(reorderAdminProjects\)/);
-  assert.match(admin, /useServerFn\(createAdminProjectsBatch\)/);
+  for (const source of [portfolio]) {
+    assert.match(source, /useServerFn\(saveAdminProject\)/);
+    assert.match(source, /useServerFn\(reorderAdminProjects\)/);
+    assert.match(source, /useServerFn\(createAdminProjectsBatch\)/);
+  }
   assert.doesNotMatch(admin, /supabase\.from\(["'](site_settings|clients|projects)["']\)/);
   for (const fn of [
     "saveAdminSiteSetting",
@@ -93,7 +96,7 @@ test("Audit workspace exists and is protected through the kernel", () => {
   assert.match(manager, /getAdminAuditLog/);
   assert.match(manager, /Administrator activity/);
   assert.match(admin, /section === "audit"/);
-  assert.match(admin, /<AuditManager \/>/);
+  assert.match(admin, /section === "audit" && <AuditCenter \/>/);
 });
 
 test("Control Room exposes a safe role resolver and role-aware navigation", () => {
