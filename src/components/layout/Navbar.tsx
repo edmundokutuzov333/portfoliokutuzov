@@ -46,7 +46,7 @@ export function Navbar() {
     [settings],
   );
   const globalName = readSetting(settings, "global", "site_name", "Edmundo Kutuzov");
-  const brand = readSetting(settings, "navbar", "subtitle", "Art Director");
+  const brand = readSetting(settings, "navbar", "brand", readSetting(settings, "navbar", "subtitle", "Art Director"));
   const ctaFallback = readSetting(settings, "navbar", "cta", "Start a project");
   const visibleLinks = items.filter((item) => item.visible && !item.cta);
   const cta = items.find((item) => item.visible && item.cta);
