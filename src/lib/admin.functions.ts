@@ -438,29 +438,57 @@ export const setAdminProjectFeatured = createServerFn({ method: "POST" })
   .validator((i: unknown) => FeaturedSchema.parse(i))
   .handler(async ({ data, context }) => {
     await assertPermission(context, "content.write");
-    if (data.featured) {
-      const { count, error: countError } = await context.supabase
-        .from("projects")
-        .select("id", { count: "exact", head: true })
-        .eq("featured", true)
-        .neq("id", data.id);
-      if (countError) throw new Error(countError.message);
-      if ((count ?? 0) >= 3) {
-        throw new Error("Featured Work allows a maximum of 3 projects.");
-      }
-    }
+
     const { data: row, error } = await context.supabase
       .from("projects")
-      .update({
-        featured: data.featured,
-        featured_priority: data.featured_priority,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", data.id)
       .select("*")
+      .eq("id", data.id)
       .single();
-    if (error) throw new Error(error.message);
-    return { ok: true, row };
+    if (error || !row) throw new Error(error?.message ?? "Project not found");
+
+    if (data.featured) {
+      const [{ data: liveFeatured, error: liveError }, { data: activeDrafts, error: draftError }] =
+        await Promise.all([
+          context.supabase.from("projects").select("id").eq("featured", true),
+          context.supabase
+            .from("admin_drafts")
+            .select("entity_id,payload,status")
+            .eq("entity_type", "projects")
+            .in("status", ["draft", "review"]),
+        ]);
+      if (liveError) throw new Error(liveError.message);
+      if (draftError) throw new Error(draftError.message);
+
+      const effective = new Map<string, boolean>(
+        (liveFeatured ?? []).map((project) => [project.id, true]),
+      );
+      for (const draft of activeDrafts ?? []) {
+        const draftFeatured =
+          typeof draft.payload === "object" &&
+          draft.payload !== null &&
+          "featured" in draft.payload
+            ? Boolean((draft.payload as Record<string, unknown>).featured)
+            : undefined;
+        if (draftFeatured !== undefined) effective.set(draft.entity_id, draftFeatured);
+      }
+      effective.set(data.id, true);
+      const count = Array.from(effective.values()).filter(Boolean).length;
+      if (count > 3) {
+        throw new Error("Featured Work allows a maximum of 3 projects including staged drafts.");
+      }
+    }
+
+    return saveAdminEntityDraft(
+      context,
+      "projects",
+      data.id,
+      row.title,
+      {
+        ...row,
+        featured: data.featured,
+        featured_priority: data.featured ? Math.max(1, data.featured_priority) : 0,
+      },
+    );
   });
 
 export const listAdminMediaAssets = createServerFn({ method: "POST" })
