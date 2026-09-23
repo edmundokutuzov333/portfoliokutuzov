@@ -73,3 +73,14 @@ test("legacy save bridge rejects invalid structured entity identifiers", () => {
   const functions = read("src/lib/admin.functions.ts");
   assert.match(functions, /A valid entity id is required before saving this content/);
 });
+
+test("new structured CMS records never become public before editorial publication", () => {
+  const functions = read("src/lib/admin.functions.ts");
+  for (const table of ["services", "stats", "about_method", "clients"]) {
+    const tableStart = functions.indexOf(`.from("${table}")`);
+    assert.ok(tableStart >= 0, `Missing ${table} server mutation`);
+    const next = functions.indexOf("\n\nexport const", tableStart);
+    const block = functions.slice(tableStart, next > tableStart ? next : tableStart + 900);
+    assert.match(block, /is_active: false/);
+  }
+});
