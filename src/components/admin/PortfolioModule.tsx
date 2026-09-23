@@ -373,7 +373,7 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
           video_provider: form.video_provider ?? null,
         },
       });
-      toast.success("Saved");
+      toast.success("Project draft saved to Release Management");
       qc.invalidateQueries({ queryKey: ["projects"] });
       onClose();
     } catch (error) {
