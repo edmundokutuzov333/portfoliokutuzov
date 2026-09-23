@@ -184,6 +184,7 @@ export function HomepageManager() {
   const { data: projects = [] } = useProjects(true);
   const setFeatured = useServerFn(setAdminProjectFeatured);
   const qc = useQueryClient();
+  const [featuredDrafts, setFeaturedDrafts] = useState<Record<string, boolean>>({});
 
   const defaultSections = [
     { id: "hero", label: "Hero", visible: true, order: 1 },
@@ -207,20 +208,27 @@ export function HomepageManager() {
       next.map((item, index) => ({ ...item, order: index + 1 })),
     );
 
-  const selected = projects.filter((p) => p.featured).length;
-  const toggle = async (id: string, isFeatured: boolean, priority: number | undefined) => {
+  const effectiveFeatured = (project: { id: string; featured?: boolean }) =>
+    featuredDrafts[project.id] ?? Boolean(project.featured);
+  const selected = projects.filter((p) => effectiveFeatured(p)).length;
+  const toggle = async (project: (typeof projects)[number], isFeatured: boolean, priority: number | undefined) => {
+    if (isFeatured && selected >= 3 && !effectiveFeatured(project)) {
+      toast.error("Featured Work allows a maximum of 3 projects.");
+      return;
+    }
     try {
       await setFeatured({
         data: {
-          id,
+          id: project.id,
           featured: isFeatured,
           featured_priority: isFeatured ? Math.max(1, priority ?? 0) : 0,
         },
       });
-      await qc.invalidateQueries({ queryKey: ["projects"] });
-      toast.success(isFeatured ? "Added to Featured Work" : "Removed from Featured Work");
+      setFeaturedDrafts((current) => ({ ...current, [project.id]: isFeatured }));
+      await qc.invalidateQueries({ queryKey: ["admin", "drafts"] });
+      toast.success("Featured Work change staged. Publish it from Release Management.");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not update Featured Work");
+      toast.error(error instanceof Error ? error.message : "Could not stage Featured Work change");
     }
   };
 
@@ -409,8 +417,8 @@ export function HomepageManager() {
             <div key={project.id} className="flex items-center gap-3 p-3">
               {project.cover_url ? <img src={project.cover_url} alt="" className="h-12 w-16 rounded object-cover" /> : <div className="grid h-12 w-16 place-items-center rounded bg-white/[0.03]"><ImageIcon size={14} className="text-slate-600" /></div>}
               <div className="min-w-0 flex-1"><div className="truncate text-sm text-white">{project.title}</div><div className="mono mt-1 text-[9px] uppercase tracking-wider text-slate-600">{project.category}</div></div>
-              <button type="button" onClick={() => void toggle(project.id, !project.featured, project.featured_priority)} className={"inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3 text-[10px] uppercase tracking-wider " + (project.featured ? "border-sky-300/30 bg-sky-300/10 text-sky-200" : "border-white/[0.08] text-slate-500")}>
-                <Check size={12} />{project.featured ? "Featured" : "Add"}
+              <button type="button" onClick={() => void toggle(project, !effectiveFeatured(project), project.featured_priority)} className={"inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3 text-[10px] uppercase tracking-wider " + (effectiveFeatured(project) ? "border-sky-300/30 bg-sky-300/10 text-sky-200" : "border-white/[0.08] text-slate-500")}>
+                <Check size={12} />{effectiveFeatured(project) ? "Staged / Featured" : "Add to draft"}
               </button>
             </div>
           ))}
