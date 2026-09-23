@@ -69,7 +69,7 @@ test("Advanced is a technical surface and no longer mounts the raw JSON editor",
   assert.match(source, /Cache and state recovery/);
   assert.match(source, /Event inspection/);
   assert.match(source, /Global technical search/);
-  assert.match(source, /section === "advanced" && <AdvancedJSONManager onNavigate=\{requestSection\} \/>/);
+  assert.match(source, /section === "advanced" && <AdvancedControlCenter onNavigate=\{requestSection\} \/>/);
   assert.doesNotMatch(source, /Raw JSON editing for every setting key/);
 });
 
@@ -84,7 +84,7 @@ test("Focused operations and Studio destinations are wired to existing live modu
   assert.match(admin, /section === "payments" && <Phase3OperationsOS initialTab="finance" financeMode="payments"/);
   assert.match(admin, /section === "studioLibrary" && <StudioAdminPage initialTab="library"/);
   assert.match(admin, /section === "studioAI" && <StudioAdminPage initialTab="ai"/);
-  assert.match(operations, /initialTab?: Tab/);
+  assert.match(operations, /initialTab = "overview"/);
   assert.match(operations, /audienceMode?: "all" | "newsletter" | "studio"/);
   assert.match(operations, /export const listAdminPayments/);
   assert.match(studio, /initialTab?: Tab/);
