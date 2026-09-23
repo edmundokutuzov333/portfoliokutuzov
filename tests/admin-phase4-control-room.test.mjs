@@ -27,6 +27,14 @@ test("Phase 4 creates a governed release workflow", () => {
   assert.match(route, /AdminDraftPreviewPage/);
 });
 
+test("Admin preview route rejects invalid identifiers without throwing route validation errors", () => {
+  const route = read("src/routes/admin.preview.tsx");
+  assert.match(route, /draft: z\.string\(\)\.optional\(\)/);
+  assert.match(route, /!draft \|\| !isUuid\(draft\)/);
+  assert.match(route, /Invalid preview request/);
+  assert.doesNotMatch(route, /draft: z\.string\(\)\.uuid\(\)/);
+});
+
 test("Phase 4 has a global command palette and audit center", () => {
   const ui = read("src/components/admin/Phase4ControlRoom.tsx");
   const fn = read("src/lib/admin.phase4.functions.ts");
