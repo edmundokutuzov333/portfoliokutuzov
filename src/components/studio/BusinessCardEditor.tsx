@@ -306,7 +306,12 @@ export function BusinessCardEditor() {
       const isEditable = !!target && (target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName));
       if (isEditable) return;
       const meta = event.metaKey || event.ctrlKey;
-      if (meta && event.key.toLowerCase() === "z") { event.preventDefault(); event.shiftKey ? redo() : undo(); return; }
+      if (meta && event.key.toLowerCase() === "z") {
+        event.preventDefault();
+        if (event.shiftKey) redo();
+        else undo();
+        return;
+      }
       if (meta && event.key.toLowerCase() === "y") { event.preventDefault(); redo(); return; }
       if (event.key === "Delete" || event.key === "Backspace") {
         if (selectedId && selectedId !== "accent") {
