@@ -442,6 +442,53 @@ export const listAdminInbox = createServerFn({ method: "POST" })
     return { ok: true, rows: rows ?? [] };
   });
 
+const PaymentsListSchema = z.object({
+  status: z.enum(["all", "pending", "confirmed", "rejected"]).default("all"),
+  limit: z.number().int().min(1).max(500).default(300),
+});
+
+export const listAdminPayments = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((i: unknown) => PaymentsListSchema.parse(i))
+  .handler(async ({ data, context }) => {
+    await assertPermission(context, "finance.read");
+    let query = context.supabase
+      .from("crm_payments")
+      .select("id,lead_id,briefing_id,amount,currency,method,reference,status,paid_at,proof_path,notes,created_at,updated_at")
+      .order("created_at", { ascending: false })
+      .limit(data.limit);
+    if (data.status !== "all") query = query.eq("status", data.status);
+    const { data: rows, error } = await query;
+    if (error) throw new Error(error.message);
+
+    const paymentRows = rows ?? [];
+    const leadIds = [...new Set(paymentRows.map((row) => row.lead_id).filter((id): id is string => Boolean(id)))];
+    const briefingIds = [...new Set(paymentRows.map((row) => row.briefing_id).filter((id): id is string => Boolean(id)))];
+
+    const [leadResult, briefingResult] = await Promise.all([
+      leadIds.length
+        ? context.supabase.from("crm_lead_profiles").select("id,full_name,company_name,email").in("id", leadIds)
+        : Promise.resolve({ data: [], error: null }),
+      briefingIds.length
+        ? context.supabase.from("briefing_submissions").select("id,full_name,company_name,email,invoice_number").in("id", briefingIds)
+        : Promise.resolve({ data: [], error: null }),
+    ]);
+    if (leadResult.error) throw new Error(leadResult.error.message);
+    if (briefingResult.error) throw new Error(briefingResult.error.message);
+
+    const leadMap = new Map((leadResult.data ?? []).map((row: any) => [row.id, row]));
+    const briefingMap = new Map((briefingResult.data ?? []).map((row: any) => [row.id, row]));
+
+    return {
+      ok: true,
+      rows: paymentRows.map((row: any) => ({
+        ...row,
+        lead: row.lead_id ? leadMap.get(row.lead_id) ?? null : null,
+        briefing: row.briefing_id ? briefingMap.get(row.briefing_id) ?? null : null,
+      })),
+    };
+  });
+
 const TaskListSchema = z.object({
   status: z.enum(["all", "pending", "completed", "cancelled"]).default("all"),
   limit: z.number().int().min(1).max(500).default(300),
