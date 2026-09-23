@@ -46,11 +46,27 @@ test("legacy CMS save mutations cannot bypass the Phase 4 editorial boundary", (
   ]) {
     assert.match(functions, new RegExp("export const " + name + " = createServerFn"));
   }
-  assert.match(functions, /async function publishExistingAdminEntity/);
+  assert.match(functions, /async function saveAdminEntityDraft/);
   assert.match(functions, /from\("admin_drafts"\)/);
   assert.match(functions, /rpc\("admin_publish_drafts"/);
-  assert.match(functions, /status === "review"/);
-  assert.match(functions, /currently under review/);
+  const helperStart = functions.indexOf("async function saveAdminEntityDraft");
+  const helperEnd = functions.indexOf("function projectPayload", helperStart);
+  assert.ok(helperStart >= 0 && helperEnd > helperStart);
+  const helper = functions.slice(helperStart, helperEnd);
+  assert.doesNotMatch(helper, /rpc\("admin_publish_drafts"/);
+  assert.match(helper, /status: "draft"/);
+  assert.match(helper, /status === "review"/);
+  assert.match(helper, /currently under review/);
+});
+
+test("credentials structured records use local drafts instead of per-keystroke writes", () => {
+  const ui = read("src/components/admin/Phase2WebsiteCMS.tsx");
+  assert.match(ui, /const \[statDrafts, setStatDrafts\]/);
+  assert.match(ui, /const \[methodDrafts, setMethodDrafts\]/);
+  assert.match(ui, /function patchStat/);
+  assert.match(ui, /function patchMethod/);
+  assert.doesNotMatch(ui, /onChange=\{\(e\)=>void saveRow\(saveStat/);
+  assert.doesNotMatch(ui, /onChange=\{\(e\)=>void saveRow\(saveMethod/);
 });
 
 test("legacy save bridge rejects invalid structured entity identifiers", () => {
