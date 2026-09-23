@@ -200,7 +200,7 @@ export const updateAdminUserRolePhase4 = createServerFn({ method: "POST" })
 
 export const listAdminEditableEntities = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator(() => ({}))
+  .validator((i: unknown) => z.object({}).parse(i))
   .handler(async ({ context }) => {
     await assertPermission(context, "content.read");
     const { data, error } = await context.supabase.rpc("admin_editable_entity_directory");
@@ -452,7 +452,7 @@ export const publishAdminDrafts = createServerFn({ method: "POST" })
     await assertPermission(context, "content.write");
     const { data: rows, error } = await context.supabase.rpc("admin_publish_drafts", {
       p_draft_ids: data.ids,
-      p_publish_note: data.note ?? null,
+      p_publish_note: data.note ?? undefined,
     });
     if (error) throw new Error(error.message);
     return { ok: true, rows: rows ?? [] };
