@@ -73,6 +73,12 @@ test("Advanced is a technical surface and no longer mounts the raw JSON editor",
   assert.doesNotMatch(source, /Raw JSON editing for every setting key/);
 });
 
+test("Overview Studio shortcut targets the canonical Studio Overview destination", () => {
+  const source = read("src/components/admin/AdminControlRoom.tsx");
+  assert.match(source, /onNavigate\("studioOverview"\)/);
+  assert.doesNotMatch(source, /onNavigate\("studio"\)/);
+});
+
 test("Focused operations and Studio destinations are wired to existing live modules", () => {
   const admin = read("src/components/admin/AdminControlRoom.tsx");
   const operations = read("src/components/admin/Phase3OperationsOS.tsx");
