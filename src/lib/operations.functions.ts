@@ -572,7 +572,7 @@ export const getStudioOperationsSnapshot = createServerFn({ method: "POST" })
     const { data, error } = await context.supabase.rpc("studio_admin_dashboard" as never, {
       p_since: since,
       p_until: new Date().toISOString(),
-    });
+    } as never);
     if (error) throw new Error(error.message);
     return { ok: true, data: data ?? {} };
   });
