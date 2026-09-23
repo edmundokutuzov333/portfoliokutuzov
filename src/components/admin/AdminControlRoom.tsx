@@ -805,7 +805,7 @@ function InvoiceSettingsEditor() {
         <div className="mt-5 flex items-center justify-between gap-3 border-t border-white/[0.06] pt-4">
           <span className="text-xs text-slate-500">{dirty ? "Unsaved changes" : "Saved"}</span>
           <button type="button" onClick={() => void save()} disabled={saving || !dirty} className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-sky-300 px-4 text-xs font-semibold text-[#01040A] disabled:opacity-40">
-            {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />} Save settings
+            {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />} Save draft
           </button>
         </div>
       </Panel>
@@ -823,20 +823,21 @@ function useSectionDraft(key: string) {
   const [draft, setDraft] = useState<Record<string, unknown>>(merged);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const [hasSavedDraft, setHasSavedDraft] = useState(false);
 
   useEffect(() => {
     setAdminDirty("settings:" + key, dirty);
     return () => setAdminDirty("settings:" + key, false);
   }, [dirty, key]);
 
-  // Resync only when DB changes & not editing locally.
   useEffect(() => {
-    if (!dirty) setDraft(merged);
+    if (!dirty && !hasSavedDraft) setDraft(merged);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(merged)]);
+  }, [JSON.stringify(merged), hasSavedDraft, dirty]);
 
   const update = <T,>(field: string, value: T) => {
     setDirty(true);
+    setHasSavedDraft(false);
     setDraft((d) => ({ ...d, [field]: value }));
   };
 
@@ -844,10 +845,11 @@ function useSectionDraft(key: string) {
     setSaving(true);
     try {
       await saveAdminSetting({ data: { key, value: draft } });
-      toast.success(`Saved ${key}`);
+      toast.success(`Draft saved for ${key}. Publish it from Release Management.`);
+      setHasSavedDraft(true);
       setDirty(false);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Save failed");
+      toast.error(error instanceof Error ? error.message : "Could not save draft");
     } finally {
       setSaving(false);
     }
@@ -855,6 +857,7 @@ function useSectionDraft(key: string) {
 
   const restore = () => {
     setDraft(FALLBACK_SETTINGS[key] ?? {});
+    setHasSavedDraft(false);
     setDirty(true);
   };
 
@@ -875,7 +878,7 @@ function SiteContentManager() {
       <header>
         <h2 className="display text-2xl text-metal">Site content</h2>
         <p className="text-sm text-slate-500 mt-1">
-          Edit the homepage and shared layout sections. Changes go live immediately.
+          Edit the homepage and shared layout sections. Saves are staged as drafts and published from Release Management.
         </p>
       </header>
 
