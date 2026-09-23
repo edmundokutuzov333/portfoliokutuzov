@@ -601,6 +601,13 @@ export const globalAdminSearch = createServerFn({ method: "POST" })
     const needle = query.normalize("NFKC").replace(/[^\p{L}\p{N}\s@._-]/gu, "").trim();
     if (!needle) return { ok: true, results: [] };
 
+    const [financePermission, mediaPermission] = await Promise.all([
+      context.supabase.rpc("admin_has_permission", { p_permission:"finance.read" }),
+      context.supabase.rpc("admin_has_permission", { p_permission:"media.manage" }),
+    ]);
+    const canFinanceRead = !financePermission.error && Boolean(financePermission.data);
+    const canMediaManage = !mediaPermission.error && Boolean(mediaPermission.data);
+
     const [projects,clients,services,stats,methods,settings,leads,invoices,media] = await Promise.all([
       context.supabase.from("projects").select("id,title,client_name,category,slug,is_published").or("title.ilike.%" + needle + "%,client_name.ilike.%" + needle + "%,category.ilike.%" + needle + "%").limit(8),
       context.supabase.from("clients").select("id,name,kind,is_active").ilike("name", "%" + needle + "%").limit(8),
@@ -630,15 +637,12 @@ export const globalAdminSearch = createServerFn({ method: "POST" })
         entity_id:row.key
       });
     }
-    for (const row of leads.data ?? []) results.push({ id:"lead:"+row.id, title:row.full_name ?? "Lead", subtitle:(row.company_name ?? row.email ?? "Lead")+" · "+(row.stage ?? "new"), type:"Lead", target:"operations", entity_id:row.id });
+    for (const row of leads.data ?? []) results.push({ id:"lead:"+row.id, title:row.full_name ?? "Lead", subtitle:(row.company_name ?? row.email ?? "Lead")+" · "+(row.stage ?? "new"), type:"Lead", target:"leads", entity_id:row.id });
 
-    const financePermission = await context.supabase.rpc("admin_has_permission", { p_permission:"finance.read" });
-    const canFinanceRead = !financePermission.error && Boolean(financePermission.data);
     if (canFinanceRead) {
-      for (const row of invoices.data ?? []) results.push({ id:"invoice:"+row.id, title:row.invoice_number ?? "Invoice", subtitle:(row.company_name ?? row.email ?? "Invoice")+" · "+(row.invoice_status ?? "draft"), type:"Invoice", target:"invoice", entity_id:row.id });
+      for (const row of invoices.data ?? []) results.push({ id:"invoice:"+row.id, title:row.invoice_number ?? "Invoice", subtitle:(row.company_name ?? row.email ?? "Invoice")+" · "+(row.invoice_status ?? "draft"), type:"Invoice", target:"invoices", entity_id:row.id });
     }
-    const mediaPermission = await context.supabase.rpc("admin_has_permission", { p_permission:"media.manage" });
-    if (!mediaPermission.error && mediaPermission.data) {
+    if (canMediaManage) {
       for (const row of media.data ?? []) results.push({ id:"media:"+row.id, title:row.filename, subtitle:row.kind+" · "+row.mime_type, type:"Asset", target:"media", entity_id:row.id });
     }
 
