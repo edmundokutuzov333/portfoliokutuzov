@@ -890,32 +890,20 @@ export const restoreAdminContentVersion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((i: unknown) => RestoreSchema.parse(i))
   .handler(async ({ data, context }) => {
-    await assertPermission(context, "content.write");
-    if (data.entity_type === "site_settings") {
-      const { error } = await context.supabase.from("site_settings").upsert(
-        {
-          key: data.entity_id,
-          value: data.snapshot,
-          updated_at: new Date().toISOString(),
-        } as never,
-        { onConflict: "key" },
-      );
-      if (error) throw new Error(error.message);
-      return { ok: true };
-    }
-
-    const entityId = z.string().uuid().parse(data.entity_id);
-    const cleaned = { ...data.snapshot };
-    delete cleaned.created_at;
-    delete cleaned.updated_at;
-    cleaned.id = entityId;
-    const table = data.entity_type;
-    const { error } = await context.supabase
-      .from(table)
-      .upsert({ ...cleaned, updated_at: new Date().toISOString() } as never, { onConflict: "id" });
-    if (error) throw new Error(error.message);
-    return { ok: true };
+    const result = await saveAdminEntityDraft(
+      context,
+      data.entity_type,
+      data.entity_id,
+      `Restore: ${data.entity_id}`,
+      data.snapshot,
+    );
+    return {
+      ok: true,
+      draft: result.draft,
+      published: false as const,
+    };
   });
+
 
 
 const MediaReplaceSchema = z.object({
