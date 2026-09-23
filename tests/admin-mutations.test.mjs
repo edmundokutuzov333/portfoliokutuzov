@@ -59,6 +59,18 @@ test("legacy CMS save mutations cannot bypass the Phase 4 editorial boundary", (
   assert.match(helper, /currently under review/);
 });
 
+test("Featured Work changes stay inside Release Management", () => {
+  const functions = read("src/lib/admin.functions.ts");
+  const ui = read("src/components/admin/Phase2WebsiteCMS.tsx");
+  const start = functions.indexOf("export const setAdminProjectFeatured");
+  const end = functions.indexOf("\n\nexport const listAdminMediaAssets", start);
+  const block = functions.slice(start, end);
+  assert.match(block, /saveAdminEntityDraft/);
+  assert.doesNotMatch(block, /\.from\("projects"\)\.update/);
+  assert.match(ui, /Featured Work change staged\. Publish it from Release Management\./);
+  assert.match(ui, /featuredDrafts/);
+});
+
 test("credentials structured records use local drafts instead of per-keystroke writes", () => {
   const ui = read("src/components/admin/Phase2WebsiteCMS.tsx");
   assert.match(ui, /const \[statDrafts, setStatDrafts\]/);
