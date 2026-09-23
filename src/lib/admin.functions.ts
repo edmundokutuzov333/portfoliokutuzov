@@ -260,23 +260,13 @@ export const saveAdminService = createServerFn({ method: "POST" })
   .validator((i: unknown) => ServiceSchema.parse(i))
   .handler(async ({ data, context }) => {
     await assertPermission(context, "content.write");
-    const payload = {
-      id: data.id,
-      number: data.number ?? null,
-      title: data.title,
-      description: data.description ?? null,
-      icon: data.icon ?? null,
-      sort_order: data.sort_order,
-      is_active: data.is_active,
-      updated_at: new Date().toISOString(),
-    };
-    const { data: row, error } = await context.supabase
-      .from("services")
-      .upsert(payload as never, { onConflict: "id" })
-      .select("*")
-      .single();
-    if (error) throw new Error(error.message);
-    return { ok: true, row };
+    return publishExistingAdminEntity(
+      context,
+      "services",
+      data.id ?? "",
+      data.title,
+      data as unknown as Record<string, unknown>,
+    );
   });
 
 export const createAdminService = createServerFn({ method: "POST" })
@@ -350,20 +340,13 @@ export const saveAdminStat = createServerFn({ method: "POST" })
   .validator((i: unknown) => StatSchema.parse(i))
   .handler(async ({ data, context }) => {
     await assertPermission(context, "content.write");
-    const { data: row, error } = await context.supabase
-      .from("stats")
-      .upsert({
-        id: data.id,
-        value: data.value,
-        label: data.label,
-        sort_order: data.sort_order,
-        is_active: data.is_active,
-        updated_at: new Date().toISOString(),
-      } as never, { onConflict: "id" })
-      .select("*")
-      .single();
-    if (error) throw new Error(error.message);
-    return { ok: true, row };
+    return publishExistingAdminEntity(
+      context,
+      "stats",
+      data.id ?? "",
+      data.label,
+      data as unknown as Record<string, unknown>,
+    );
   });
 
 export const createAdminStat = createServerFn({ method: "POST" })
@@ -402,21 +385,13 @@ export const saveAdminMethod = createServerFn({ method: "POST" })
   .validator((i: unknown) => MethodSchema.parse(i))
   .handler(async ({ data, context }) => {
     await assertPermission(context, "content.write");
-    const { data: row, error } = await context.supabase
-      .from("about_method")
-      .upsert({
-        id: data.id,
-        number: data.number,
-        title: data.title,
-        description: data.description ?? null,
-        sort_order: data.sort_order,
-        is_active: data.is_active,
-        updated_at: new Date().toISOString(),
-      } as never, { onConflict: "id" })
-      .select("*")
-      .single();
-    if (error) throw new Error(error.message);
-    return { ok: true, row };
+    return publishExistingAdminEntity(
+      context,
+      "about_method",
+      data.id ?? "",
+      data.title,
+      data as unknown as Record<string, unknown>,
+    );
   });
 
 export const createAdminMethod = createServerFn({ method: "POST" })
@@ -576,18 +551,14 @@ export const saveAdminSiteSetting = createServerFn({ method: "POST" })
     if (data.key === "invoice_settings") {
       await assertPermission(context, "finance.write");
     }
-    const payload = {
-      key: data.key,
-      value: data.value,
-      updated_at: new Date().toISOString(),
-    };
-    const { data: row, error } = await context.supabase
-      .from("site_settings")
-      .upsert(payload as never, { onConflict: "key" })
-      .select("key,value,updated_at")
-      .single();
-    if (error) throw new Error(error.message);
-    return { ok: true, row };
+    const result = await publishExistingAdminEntity(
+      context,
+      "site_settings",
+      data.key,
+      data.key,
+      data.value,
+    );
+    return { ...result, row: { key: data.key, value: data.value } };
   });
 
 export const saveAdminClient = createServerFn({ method: "POST" })
@@ -595,22 +566,13 @@ export const saveAdminClient = createServerFn({ method: "POST" })
   .validator((i: unknown) => ClientSchema.parse(i))
   .handler(async ({ data, context }) => {
     await assertPermission(context, "content.write");
-    const payload = {
-      ...data,
-      id: data.id,
-      logo_url: data.logo_url ?? null,
-      website_url: data.website_url ?? null,
-      logo_width: data.logo_width ?? null,
-      logo_height: data.logo_height ?? null,
-      updated_at: new Date().toISOString(),
-    };
-    const { data: row, error } = await context.supabase
-      .from("clients")
-      .upsert(payload as never, { onConflict: "id" })
-      .select("*")
-      .single();
-    if (error) throw new Error(error.message);
-    return { ok: true, row };
+    return publishExistingAdminEntity(
+      context,
+      "clients",
+      data.id ?? "",
+      data.name,
+      data as unknown as Record<string, unknown>,
+    );
   });
 
 export const createAdminClient = createServerFn({ method: "POST" })
@@ -643,6 +605,99 @@ export const deleteAdminClient = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+async function publishExistingAdminEntity(
+  context: { supabase: SupabaseClient<Database> },
+  entity_type: "site_settings" | "projects" | "clients" | "services" | "stats" | "about_method",
+  entity_id: string,
+  label: string,
+  payload: Record<string, unknown>,
+) {
+  await assertPermission(context, "content.write");
+  if (entity_type === "site_settings" && entity_id === "invoice_settings") {
+    await assertPermission(context, "finance.write");
+  }
+
+  const { data: live, error: liveError } =
+    entity_type === "site_settings"
+      ? await context.supabase
+          .from("site_settings")
+          .select("key,value,updated_at")
+          .eq("key", entity_id)
+          .maybeSingle()
+      : entity_type === "projects"
+        ? await context.supabase.from("projects").select("*").eq("id", entity_id).single()
+        : entity_type === "clients"
+          ? await context.supabase.from("clients").select("*").eq("id", entity_id).single()
+          : entity_type === "services"
+            ? await context.supabase.from("services").select("*").eq("id", entity_id).single()
+            : entity_type === "stats"
+              ? await context.supabase.from("stats").select("*").eq("id", entity_id).single()
+              : await context.supabase.from("about_method").select("*").eq("id", entity_id).single();
+
+  if (liveError && liveError.code !== "PGRST116") throw new Error(liveError.message);
+
+  const liveSnapshot =
+    entity_type === "site_settings"
+      ? ((live?.value ?? {}) as Record<string, unknown>)
+      : ((live ?? {}) as unknown as Record<string, unknown>);
+  const liveUpdatedAt = live?.updated_at ?? null;
+  const userId = (await context.supabase.auth.getUser()).data.user?.id ?? null;
+
+  const { data: existingDraft, error: draftReadError } = await context.supabase
+    .from("admin_drafts")
+    .select("*")
+    .eq("entity_type", entity_type)
+    .eq("entity_id", entity_id)
+    .in("status", ["draft", "review"])
+    .maybeSingle();
+  if (draftReadError) throw new Error(draftReadError.message);
+
+  let draftId = existingDraft?.id as string | undefined;
+  if (!draftId) {
+    const { data: createdDraft, error: createError } = await context.supabase
+      .from("admin_drafts")
+      .insert({
+        entity_type,
+        entity_id,
+        label,
+        payload: { ...liveSnapshot, ...payload },
+        baseline_snapshot: liveSnapshot,
+        baseline_updated_at: liveUpdatedAt,
+        status: "draft",
+        created_by: userId,
+        updated_by: userId,
+      } as never)
+      .select("id")
+      .single();
+    if (createError || !createdDraft) throw new Error(createError?.message ?? "Could not create editorial draft");
+    draftId = createdDraft.id;
+  } else {
+    const { error: updateError } = await context.supabase
+      .from("admin_drafts")
+      .update({
+        label,
+        payload: { ...(existingDraft.payload as Record<string, unknown>), ...payload },
+        status: "draft",
+        updated_by: userId,
+        updated_at: new Date().toISOString(),
+      } as never)
+      .eq("id", draftId);
+    if (updateError) throw new Error(updateError.message);
+  }
+
+  const { data: published, error: publishError } = await context.supabase.rpc("admin_publish_drafts", {
+    p_draft_ids: [draftId],
+    p_publish_note: "Immediate save from legacy CMS surface",
+  });
+  if (publishError) throw new Error(publishError.message);
+
+  return {
+    ok: true,
+    draft_id: draftId,
+    published: published ?? [],
+  };
+}
 
 function projectPayload(data: z.infer<typeof ProjectSchema>, id?: string) {
   return {
@@ -684,14 +739,13 @@ export const saveAdminProject = createServerFn({ method: "POST" })
   .validator((i: unknown) => ProjectSchema.parse(i))
   .handler(async ({ data, context }) => {
     await assertPermission(context, "content.write");
-    const payload = projectPayload(data, data.id);
-    const { data: row, error } = await context.supabase
-      .from("projects")
-      .upsert(payload as never, { onConflict: "id" })
-      .select("*")
-      .single();
-    if (error) throw new Error(error.message);
-    return { ok: true, row };
+    return publishExistingAdminEntity(
+      context,
+      "projects",
+      data.id ?? "",
+      data.title,
+      projectPayload(data, data.id) as Record<string, unknown>,
+    );
   });
 
 export const createAdminProject = createServerFn({ method: "POST" })
@@ -767,14 +821,19 @@ export const publishAdminProject = createServerFn({ method: "POST" })
   .validator(z.object({ id: z.string().uuid(), is_published: z.boolean() }))
   .handler(async ({ data, context }) => {
     await assertPermission(context, "content.write");
-    const { data: row, error } = await context.supabase
+    const { data: source, error: sourceError } = await context.supabase
       .from("projects")
-      .update({ is_published: data.is_published, updated_at: new Date().toISOString() })
-      .eq("id", data.id)
       .select("*")
+      .eq("id", data.id)
       .single();
-    if (error) throw new Error(error.message);
-    return { ok: true, row };
+    if (sourceError || !source) throw new Error(sourceError?.message ?? "Project not found");
+    return publishExistingAdminEntity(
+      context,
+      "projects",
+      data.id,
+      source.title,
+      { ...(source as unknown as Record<string, unknown>), is_published: data.is_published },
+    );
   });
 
 export const createAdminProjectsBatch = createServerFn({ method: "POST" })
