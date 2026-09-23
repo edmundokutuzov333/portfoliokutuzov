@@ -67,7 +67,13 @@ const StudioAdminPage = lazy(() =>
   })),
 );
 
-import { getAdminOverviewSnapshot } from "@/lib/admin.phase4.functions";
+import {
+  getAdminOverviewSnapshot,
+  getAdminSystemHealth,
+  globalAdminSearch,
+  getAdminAuditLogPhase4,
+  restoreAdminAuditState,
+} from "@/lib/admin.phase4.functions";
 
 import { toast } from "sonner";
 import {
@@ -230,7 +236,7 @@ function ControlRoom() {
     { id: "studioGeneration" as const, label: "Generation", group: "STUDIO", Icon: Sparkles, roles: ["owner", "admin", "editor"] },
     { id: "studioExports" as const, label: "Exports", group: "STUDIO", Icon: Upload, roles: ["owner", "admin", "editor"] },
     { id: "studioEmail" as const, label: "Email", group: "STUDIO", Icon: Mail, roles: ["owner", "admin", "editor"] },
-    { id: "digitalCards" as const, label: "Digital Cards", group: "STUDIO", Icon: ExternalLinkIcon, roles: ["owner", "admin", "editor"] },
+    { id: "digitalCards" as const, label: "Digital Cards", group: "STUDIO", Icon: Sparkles, roles: ["owner", "admin", "editor"] },
     { id: "studioAI" as const, label: "AI", group: "STUDIO", Icon: Sparkles, roles: ["owner", "admin", "editor"] },
     { id: "analytics" as const, label: "Analytics", group: "SYSTEM", Icon: BarChart3, roles: ["owner", "admin"] },
     { id: "history" as const, label: "History", group: "SYSTEM", Icon: History, roles: ["owner", "admin", "editor"] },
@@ -504,10 +510,10 @@ function ControlRoomOverview({ onNavigate }: { onNavigate: (section: string) => 
             {[
               ["Edit Homepage", "homepage", Home],
               ["Manage Services", "services", Briefcase],
-              ["Open Operations", "operations", LayoutDashboard],
-              ["Release Center", "release", Send],
+              ["Open Leads", "leads", Users],
+              ["System Health", "system", ShieldCheck],
               ["Manage Media", "media", ImageIcon],
-              ["Open Finance", "invoice", FileText],
+              ["Open Invoices", "invoices", FileText],
             ].map(([label, target, Icon]) => (
               <button key={String(target)} type="button" onClick={() => onNavigate(String(target))} className="inline-flex min-h-11 items-center gap-3 rounded-lg border border-white/[0.07] px-3 text-left text-xs text-slate-400 hover:border-sky-300/25 hover:text-white">
                 <Icon size={13} className="text-sky-300" />
@@ -1947,197 +1953,136 @@ function StudiosManager() {
 // ADVANCED - raw JSON editor (kept for power use)
 // ============================================================================
 function AdvancedJSONManager() {
-  const { data: settings } = useSiteSettings();
-  const keys = Object.keys(FALLBACK_SETTINGS);
-  const [open, setOpen] = useState<string | null>(null);
+  const { session, isAdmin } = useAdminAuth();
+  const qc = useQueryClient();
+  const systemHealth = useServerFn(getAdminSystemHealth);
+  const search = useServerFn(globalAdminSearch);
+  const audit = useServerFn(getAdminAuditLogPhase4);
+  const restore = useServerFn(restoreAdminAuditState);
+  const [health, setHealth] = useState<any>(null);
+  const [events, setEvents] = useState<any[]>([]);
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<any[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
 
-  return (
-    <div>
-      <header>
-        <h2 className="display text-2xl text-metal">Advanced</h2>
-        <p className="text-sm text-slate-500 mt-1">
-          Raw JSON editing for every setting key. Use only if you know the schema.
-        </p>
-      </header>
-
-      <div className="mt-6 space-y-2">
-        {keys.map((k) => {
-          const merged = { ...(FALLBACK_SETTINGS[k] ?? {}), ...(settings?.[k] ?? {}) };
-          const isOpen = open === k;
-          return (
-            <div key={k} className="bg-[#030814] border border-white/[0.08] rounded">
-              <button
-                onClick={() => setOpen(isOpen ? null : k)}
-                className="w-full flex items-center justify-between p-4 text-left"
-              >
-                <div className="font-mono text-sm text-slate-200">{k}</div>
-                {isOpen ? (
-                  <ChevronDown size={14} className="text-slate-500" />
-                ) : (
-                  <ChevronRight size={14} className="text-slate-500" />
-                )}
-              </button>
-              {isOpen && <RawEditor sectionKey={k} initial={merged} />}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function RawEditor({
-  sectionKey,
-  initial,
-}: {
-  sectionKey: string;
-  initial: Record<string, unknown>;
-}) {
-  const [text, setText] = useState(JSON.stringify(initial, null, 2));
-  const [saving, setSaving] = useState(false);
-  const saveAdminSetting = useServerFn(saveAdminSiteSetting);
-
-  const save = async () => {
-    let parsed: Record<string, unknown>;
+  const runHealth = async () => {
+    setBusy(true);
     try {
-      parsed = JSON.parse(text);
-    } catch {
-      toast.error("Invalid JSON");
+      const result: any = await systemHealth({ data: {} as never });
+      setHealth(result);
+      toast.success("Technical integrity check completed");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Integrity check failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const loadEvents = async () => {
+    try {
+      const result: any = await audit({ data: { limit: 25 } as never });
+      setEvents(result.rows ?? []);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Audit inspection failed");
+    }
+  };
+
+  const runSearch = async () => {
+    const needle = query.trim();
+    if (!needle) {
+      setResults([]);
       return;
     }
-    setSaving(true);
     try {
-      await saveAdminSetting({ data: { key: sectionKey, value: parsed } });
-      toast.success(`Saved ${sectionKey}`);
+      const result: any = await search({ data: { query: needle, limit: 20 } as never });
+      setResults(result.results ?? []);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Save failed");
-    } finally {
-      setSaving(false);
+      toast.error(error instanceof Error ? error.message : "Diagnostic search failed");
     }
   };
 
-  return (
-    <div className="px-4 pb-4">
-      <textarea
-        spellCheck={false}
-        rows={Math.min(24, Math.max(6, text.split("\n").length))}
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        className="w-full bg-[#01040A] border border-white/10 rounded p-3 text-[12px] font-mono text-slate-200 focus:outline-none focus:border-sky-300/50"
-      />
-      <div className="mt-2 flex justify-end">
-        <SaveButton saving={saving} onClick={save} />
-      </div>
-    </div>
-  );
-}
-
-// ============================================================================
-// INVOICE SETTINGS (branding + payment details for proforma invoices)
-// ============================================================================
-function InvoiceSettingsEditor() {
-  const s = useSectionDraft("invoice_settings");
-  const field = (
-    key: string,
-    label: string,
-    placeholder = "",
-    type: "text" | "color" | "textarea" = "text",
-  ) => {
-    const value = get<string>(s.draft, key, "");
-    return (
-      <label className="block">
-        <span className="mono text-[10px] tracking-[0.2em] text-slate-500">{label}</span>
-        {type === "textarea" ? (
-          <textarea
-            value={value}
-            onChange={(e) => s.update(key, e.target.value)}
-            placeholder={placeholder}
-            rows={3}
-            className="w-full mt-1 bg-[#01040A] border border-white/10 rounded p-3 text-[13px] text-slate-100 focus:outline-none focus:border-sky-300/50"
-          />
-        ) : type === "color" ? (
-          <div className="mt-1 flex items-center gap-2">
-            <input
-              type="color"
-              value={value || "#48A0E0"}
-              onChange={(e) => s.update(key, e.target.value)}
-              className="h-9 w-14 rounded border border-white/10 bg-transparent cursor-pointer"
-            />
-            <input
-              value={value}
-              onChange={(e) => s.update(key, e.target.value)}
-              placeholder="#48A0E0"
-              className="flex-1 bg-[#01040A] border border-white/10 rounded px-3 py-2 text-[13px] text-slate-100 focus:outline-none focus:border-sky-300/50"
-            />
-          </div>
-        ) : (
-          <input
-            value={value}
-            onChange={(e) => s.update(key, e.target.value)}
-            placeholder={placeholder}
-            className="w-full mt-1 bg-[#01040A] border border-white/10 rounded px-3 py-2 text-[13px] text-slate-100 focus:outline-none focus:border-sky-300/50"
-          />
-        )}
-      </label>
-    );
+  const invalidateAdminCache = async () => {
+    await qc.invalidateQueries();
+    toast.success("Admin query cache invalidated");
   };
 
+  const restoreSelected = async () => {
+    if (!selectedEvent?.before_data || !selectedEvent?.entity_type || !selectedEvent?.entity_id) return;
+    if (!window.confirm("Restore the selected entity to the audited previous state?")) return;
+    try {
+      await restore({
+        data: {
+          id: selectedEvent.id,
+          entity_type: selectedEvent.entity_type,
+          entity_id: selectedEvent.entity_id,
+          snapshot: selectedEvent.before_data,
+        } as never,
+      });
+      toast.success("Previous state restored");
+      setSelectedEvent(null);
+      await loadEvents();
+      await invalidateAdminCache();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Recovery operation failed");
+    }
+  };
+
+  useEffect(() => {
+    if (!session?.access_token || !isAdmin) return;
+    void Promise.all([runHealth(), loadEvents()]);
+  }, [session?.access_token, isAdmin]);
+
   return (
-    <div>
-      <header className="mb-6">
-        <h2 className="display text-2xl text-metal">Invoicing</h2>
-        <p className="text-sm text-slate-500 mt-1">
-          Branding, header/footer, legal text and payment details used in proforma invoices &amp;
-          the client portal.
+    <div className="space-y-6">
+      <header>
+        <div className="mono text-[10px] uppercase tracking-[0.28em] text-sky-300/80">System / Advanced</div>
+        <h2 className="display mt-1 text-2xl text-metal">Technical operations.</h2>
+        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-500">
+          Diagnostics, cache recovery, event inspection and controlled restore tooling. Public content is not edited here.
         </p>
       </header>
 
-      <section className="bg-white/[0.02] border border-white/10 rounded-lg p-5 mb-4">
-        <h3 className="text-sm font-semibold text-slate-100 mb-4">Identity</h3>
-        <div className="grid md:grid-cols-2 gap-4">
-          {field("studio_name", "STUDIO NAME", "Edmundo Kutuzov")}
-          {field("studio_email", "CONTACT EMAIL", "contact@…")}
-          {field("studio_address", "ADDRESS", "Rua …, Maputo")}
-          {field("studio_tax_id", "TAX ID (NUIT)", "")}
-          {field("logo_url", "LOGO URL (PNG/JPG)", "https://…")}
-          {field("brand_color", "BRAND COLOR", "#48A0E0", "color")}
-        </div>
-      </section>
+      <div className="grid gap-4 xl:grid-cols-3">
+        <section className="rounded-xl border border-white/[0.08] bg-[#030814] p-5">
+          <div className="mono text-[9px] uppercase tracking-[0.2em] text-slate-600">Integrity</div>
+          <h3 className="mt-1 text-sm font-medium text-slate-100">System diagnostics</h3>
+          <p className="mt-2 text-xs leading-relaxed text-slate-500">Database, public site and configured providers are checked through the privileged health function.</p>
+          <button type="button" onClick={() => void runHealth()} disabled={busy} className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-lg border border-sky-300/25 px-3 text-xs text-sky-200 disabled:opacity-50">
+            {busy ? <Loader2 size={13} className="animate-spin" /> : <ShieldCheck size={13} />} Run integrity check
+          </button>
+          {health ? <div className="mt-4 space-y-2 text-[11px]">{Object.entries(health.providers ?? {}).map(([key, value]: any) => <div key={key} className="flex items-center justify-between gap-3"><span className="text-slate-500">{key}</span><span className={value.status === "healthy" ? "text-emerald-200" : value.status === "warning" ? "text-amber-200" : "text-rose-200"}>{value.status}</span></div>)}</div> : null}
+        </section>
 
-      <section className="bg-white/[0.02] border border-white/10 rounded-lg p-5 mb-4">
-        <h3 className="text-sm font-semibold text-slate-100 mb-4">Header &amp; footer</h3>
-        <div className="grid md:grid-cols-2 gap-4">
-          {field("header_label", "HEADER LABEL", "PROFORMA INVOICE")}
-          {field("footer_note", "FOOTER NOTE", "Art Director")}
-        </div>
-        <div className="mt-4">
-          {field("legal_text", "LEGAL TEXT / TERMS", "This is a proforma invoice — …", "textarea")}
-        </div>
-      </section>
+        <section className="rounded-xl border border-white/[0.08] bg-[#030814] p-5">
+          <div className="mono text-[9px] uppercase tracking-[0.2em] text-slate-600">Recovery</div>
+          <h3 className="mt-1 text-sm font-medium text-slate-100">Cache and state recovery</h3>
+          <p className="mt-2 text-xs leading-relaxed text-slate-500">Invalidate the admin query cache or restore a previously captured audited state.</p>
+          <button type="button" onClick={() => void invalidateAdminCache()} className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-lg border border-white/[0.08] px-3 text-xs text-slate-300">Invalidate admin cache</button>
+          <div className="mt-4 rounded-lg border border-amber-300/10 bg-amber-300/[0.03] p-3 text-[11px] text-amber-100/70">Restore is deliberately gated by audit snapshots and an explicit confirmation.</div>
+          {selectedEvent ? <button type="button" onClick={() => void restoreSelected()} disabled={!selectedEvent.before_data} className="mt-3 inline-flex min-h-10 items-center rounded-lg border border-rose-300/20 px-3 text-xs text-rose-200 disabled:opacity-40">Restore selected snapshot</button> : null}
+        </section>
 
-      <section className="bg-white/[0.02] border border-white/10 rounded-lg p-5 mb-4">
-        <h3 className="text-sm font-semibold text-slate-100 mb-4">Payment details</h3>
-        <div className="grid md:grid-cols-2 gap-4">
-          {field("bank_name", "BANK NAME")}
-          {field("bank_account_name", "ACCOUNT NAME")}
-          {field("bank_iban", "IBAN")}
-          {field("bank_swift", "SWIFT / BIC")}
-          {field("mpesa_number", "M-PESA NUMBER")}
-        </div>
-        <div className="mt-4">
-          {field("payment_terms", "PAYMENT TERMS", "Payment within 14 days …", "textarea")}
-        </div>
-      </section>
-
-      <div className="flex justify-end gap-2">
-        <button
-          onClick={s.restore}
-          className="text-[12px] text-slate-400 hover:text-slate-100 px-3 py-2"
-        >
-          Restore defaults
-        </button>
-        <SaveButton saving={s.saving} onClick={s.save} />
+        <section className="rounded-xl border border-white/[0.08] bg-[#030814] p-5">
+          <div className="mono text-[9px] uppercase tracking-[0.2em] text-slate-600">Diagnostics</div>
+          <h3 className="mt-1 text-sm font-medium text-slate-100">Global technical search</h3>
+          <div className="mt-3 flex gap-2">
+            <input value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") void runSearch(); }} placeholder="Project, lead, invoice, media..." className="adm-input min-w-0 flex-1" />
+            <button type="button" onClick={() => void runSearch()} className="rounded-lg border border-white/[0.08] px-3 text-xs text-slate-300">Search</button>
+          </div>
+          <div className="mt-3 space-y-2">{results.map((row) => <button type="button" key={row.id} onClick={() => requestSectionFromAdvanced(row.target)} className="block w-full rounded-lg border border-white/[0.06] p-3 text-left hover:border-sky-300/20"><div className="text-xs text-slate-200">{row.title}</div><div className="mt-1 text-[10px] text-slate-600">{row.type} · {row.subtitle}</div></button>)}</div>
+        </section>
       </div>
+
+      <section className="rounded-xl border border-white/[0.08] bg-[#030814] p-5">
+        <div className="flex items-center justify-between gap-3">
+          <div><div className="mono text-[9px] uppercase tracking-[0.2em] text-slate-600">Event inspection</div><h3 className="mt-1 text-sm font-medium text-slate-100">Recent admin events</h3></div>
+          <button type="button" onClick={() => void loadEvents()} className="inline-flex min-h-9 items-center gap-2 rounded-lg border border-white/[0.08] px-3 text-xs text-slate-300"><History size={12} /> Refresh</button>
+        </div>
+        <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[760px] text-left"><thead><tr className="bg-white/[0.03] mono text-[9px] tracking-[0.14em] text-slate-600"><th className="px-3 py-2">TIME</th><th className="px-3 py-2">ACTION</th><th className="px-3 py-2">ENTITY</th><th className="px-3 py-2">ACTOR</th><th className="px-3 py-2"></th></tr></thead><tbody>{events.map((row:any) => <tr key={row.id} className="border-t border-white/[0.06] text-[11px]"><td className="px-3 py-2 text-slate-500">{new Date(row.created_at).toLocaleString()}</td><td className="px-3 py-2 text-slate-300">{row.action}</td><td className="px-3 py-2 text-slate-400">{row.entity_type} · {row.entity_label ?? row.entity_id}</td><td className="px-3 py-2 text-slate-500">{row.actor_email ?? row.actor_user_id}</td><td className="px-3 py-2 text-right"><button type="button" disabled={!row.before_data} onClick={() => setSelectedEvent(row)} className="rounded border border-white/10 px-2 py-1 disabled:opacity-30">Select</button></td></tr>)}</tbody></table></div>
+        {events.length === 0 ? <p className="mt-4 text-xs text-slate-600">No audit events available.</p> : null}
+      </section>
     </div>
   );
 }
+
