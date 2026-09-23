@@ -1,4 +1,6 @@
 import * as React from "react";
+import { useSiteSettings, useStats } from "@/hooks/useSiteData";
+import { readSetting } from "@/lib/cms";
 import {
   motion,
   useScroll,
@@ -120,7 +122,28 @@ function CountUpNumber({
 }
 
 export function HomeExperience() {
+  const { data: settings } = useSiteSettings();
+  const { data: stats = [] } = useStats();
   const reducedMotion = useReducedMotion();
+  const credentials = readSetting<any>(settings, "credentials", "experience", EXPERIENCE_DATA);
+  const fallbackCards = readSetting<any[]>(settings, "credentials", "cards", NUMBERS_DATA);
+  const experience: ExperienceItem[] = Array.isArray(credentials)
+    ? credentials.map((item) => ({
+        period: String(item?.period ?? ""),
+        role: String(item?.role ?? ""),
+        company: String(item?.company ?? ""),
+        isCurrent: String(item?.period ?? "").toLowerCase().includes("present"),
+      })).filter((item) => item.role || item.company || item.period)
+    : EXPERIENCE_DATA;
+  const parseMetric = (value: string, label: string): MetricItem => {
+    const match = value.trim().match(/(-?\\d+(?:[.,]\\d+)?)/);
+    const num = match ? Number(match[1].replace(",", ".")) : 0;
+    const suffix = match ? value.trim().slice(match[0].length) : value.trim();
+    return { num, suffix, label };
+  };
+  const metrics: MetricItem[] = stats.length
+    ? stats.filter((item) => item.is_active !== false).sort((a, b) => a.sort_order - b.sort_order).slice(0, 5).map((item) => parseMetric(String(item.value ?? ""), String(item.label ?? "")))
+    : fallbackCards.slice(0, 5).map((item) => parseMetric(String(item?.value ?? ""), String(item?.label ?? "")));
   const referenceSectionRef = React.useRef<HTMLDivElement>(null);
 
   const { scrollYProgress } = useScroll({
