@@ -173,32 +173,314 @@ export function Phase2Overview(p: { onNavigate?: (section: string) => void }) {
 }
 
 export function HomepageManager() {
-  const s = useSettingsDraft("featured_section");
+  const hero = useSettingsDraft("hero");
+  const manifesto = useSettingsDraft("manifesto");
+  const clients = useSettingsDraft("clients_section");
+  const featured = useSettingsDraft("featured_section");
+  const services = useSettingsDraft("services_section");
+  const cta = useSettingsDraft("cta_home");
+  const footer = useSettingsDraft("footer");
+  const structure = useSettingsDraft("homepage_structure");
   const { data: projects = [] } = useProjects(true);
   const setFeatured = useServerFn(setAdminProjectFeatured);
   const qc = useQueryClient();
+
+  const defaultSections = [
+    { id: "hero", label: "Hero", visible: true, order: 1 },
+    { id: "manifesto", label: "Manifesto", visible: true, order: 2 },
+    { id: "services", label: "Services", visible: true, order: 3 },
+    { id: "clients", label: "Clients", visible: true, order: 4 },
+    { id: "featured", label: "Featured Work", visible: true, order: 5 },
+    { id: "experience", label: "Experience / Numbers", visible: true, order: 6 },
+    { id: "cta", label: "CTA", visible: true, order: 7 },
+    { id: "footer", label: "Footer (global)", visible: true, order: 8 },
+  ];
+  const sections = getValue<Array<{ id: string; label: string; visible: boolean; order: number }>>(
+    structure.draft,
+    "sections",
+    defaultSections,
+  ).slice().sort((a, b) => a.order - b.order);
+
+  const setSections = (next: Array<{ id: string; label: string; visible: boolean; order: number }>) =>
+    structure.update(
+      "sections",
+      next.map((item, index) => ({ ...item, order: index + 1 })),
+    );
+
   const selected = projects.filter((p) => p.featured).length;
-  const toggle = async (id: string, featured: boolean, priority: number | undefined) => {
+  const toggle = async (id: string, isFeatured: boolean, priority: number | undefined) => {
     try {
-      await setFeatured({ data: { id, featured, featured_priority: featured ? Math.max(1, priority ?? 0) : 0 } });
+      await setFeatured({
+        data: {
+          id,
+          featured: isFeatured,
+          featured_priority: isFeatured ? Math.max(1, priority ?? 0) : 0,
+        },
+      });
       await qc.invalidateQueries({ queryKey: ["projects"] });
-      toast.success(featured ? "Added to Featured Work" : "Removed from Featured Work");
+      toast.success(isFeatured ? "Added to Featured Work" : "Removed from Featured Work");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not update Featured Work");
     }
   };
-  return <div>
-    <header><p className="mono text-[10px] tracking-[0.28em] text-sky-300/80">WEBSITE / HOMEPAGE</p><h2 className="display mt-1 text-3xl text-white">Homepage control.</h2><p className="mt-2 text-sm text-slate-500">Editorial copy plus the structured Featured Work relationship.</p></header>
-    <Card title="Featured Work" description={String(selected) + " / 3 projects selected."}>
-      <div className="grid gap-4 md:grid-cols-2">
-        <label className="space-y-2"><FieldLabel>Eyebrow</FieldLabel><Input value={getValue(s.draft, "eyebrow", "Featured work")} onChange={(e) => s.update("eyebrow", e.target.value)} /></label>
-        <label className="space-y-2"><FieldLabel>Title</FieldLabel><Input value={getValue(s.draft, "title", "Selected projects.")} onChange={(e) => s.update("title", e.target.value)} /></label>
-        <label className="space-y-2 md:col-span-2"><FieldLabel>Subtitle</FieldLabel><Textarea rows={3} value={getValue(s.draft, "subtitle", "")} onChange={(e) => s.update("subtitle", e.target.value)} /></label>
-      </div>
-      <div className="mt-5 flex justify-end"><SaveButton saving={s.saving} onClick={s.save} /></div>
-      <div className="mt-5 divide-y divide-white/[0.06] rounded-xl border border-white/[0.06]">{projects.map((project) => <div key={project.id} className="flex items-center gap-3 p-3">{project.cover_url ? <img src={project.cover_url} alt="" className="h-12 w-16 rounded object-cover" /> : <div className="grid h-12 w-16 place-items-center rounded bg-white/[0.03]"><ImageIcon size={14} className="text-slate-600" /></div>}<div className="min-w-0 flex-1"><div className="truncate text-sm text-white">{project.title}</div><div className="mono mt-1 text-[9px] uppercase tracking-wider text-slate-600">{project.category}</div></div><button type="button" onClick={() => void toggle(project.id, !project.featured, project.featured_priority)} className={"inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3 text-[10px] uppercase tracking-wider " + (project.featured ? "border-sky-300/30 bg-sky-300/10 text-sky-200" : "border-white/[0.08] text-slate-500")}><Check size={12} />{project.featured ? "Featured" : "Add"}</button></div>)}</div>
-    </Card>
-  </div>;
+
+  return (
+    <div className="space-y-7">
+      <header>
+        <p className="mono text-[10px] tracking-[0.28em] text-sky-300/80">WEBSITE / HOMEPAGE</p>
+        <h2 className="display mt-1 text-3xl text-white">Homepage control.</h2>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
+          Control every editable homepage surface, its visibility and order. Content saves are staged as drafts and published through Release Management.
+        </p>
+      </header>
+
+      <Card title="Homepage structure" description="Reorder and show/hide homepage sections without editing code. Footer copy remains global, while the footer itself stays outside the page flow.">
+        <div className="space-y-2">
+          {sections.map((item, index) => (
+            <div key={item.id} className="grid items-center gap-3 rounded-xl border border-white/[0.07] bg-black/10 p-3 md:grid-cols-[1fr_auto_auto_auto]">
+              <div className="min-w-0">
+                <div className="text-sm text-white">{item.label}</div>
+                <div className="mono mt-1 text-[9px] uppercase tracking-wider text-slate-600">{item.id}</div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSections(sections.map((row) => row.id === item.id ? { ...row, visible: !row.visible } : row))}
+                className={"rounded-lg border px-3 py-2 text-[10px] " + (item.visible ? "border-emerald-300/20 text-emerald-300" : "border-white/[0.08] text-slate-600")}
+              >
+                {item.visible ? "Visible" : "Hidden"}
+              </button>
+              <div className="flex gap-1">
+                <button
+                  type="button"
+                  aria-label={"Move " + item.label + " up"}
+                  disabled={index === 0}
+                  onClick={() => {
+                    if (index === 0) return;
+                    const next = [...sections];
+                    [next[index - 1], next[index]] = [next[index], next[index - 1]];
+                    setSections(next);
+                  }}
+                  className="grid h-9 w-9 place-items-center rounded-lg border border-white/[0.07] disabled:opacity-30"
+                ><ArrowUp size={13} /></button>
+                <button
+                  type="button"
+                  aria-label={"Move " + item.label + " down"}
+                  disabled={index === sections.length - 1}
+                  onClick={() => {
+                    if (index === sections.length - 1) return;
+                    const next = [...sections];
+                    [next[index], next[index + 1]] = [next[index + 1], next[index]];
+                    setSections(next);
+                  }}
+                  className="grid h-9 w-9 place-items-center rounded-lg border border-white/[0.07] disabled:opacity-30"
+                ><ArrowDown size={13} /></button>
+              </div>
+              <span className="mono text-[9px] text-slate-700">ORDER {item.order}</span>
+            </div>
+          ))}
+        </div>
+        <div className="mt-4 flex justify-end">
+          <SaveButton saving={structure.saving} onClick={structure.save} label="Save structure draft" />
+        </div>
+      </Card>
+
+      <Card title="Hero" description="Headline, supporting copy, availability, CTAs and disciplines.">
+        <div className="grid gap-4 md:grid-cols-2">
+          {[
+            ["top_left", "Top left badge", ""],
+            ["top_right", "Top right badge", ""],
+            ["eyebrow", "Eyebrow", ""],
+            ["year", "Year", "2026"],
+            ["title_1", "Title · line 1", ""],
+            ["title_2", "Title · line 2", ""],
+            ["title_3", "Title · line 3", ""],
+            ["title_accent", "Title · accent", ""],
+            ["status", "Availability status", ""],
+            ["status_label", "Status label", ""],
+            ["location", "Location", ""],
+            ["cta_primary", "Primary CTA label", ""],
+            ["cta_primary_route", "Primary CTA route", "/portfolio"],
+            ["cta_secondary", "Secondary CTA label", ""],
+            ["cta_secondary_route", "Secondary CTA route", "/contact"],
+          ].map(([key, label, fallback]) => (
+            <label key={key} className="space-y-2">
+              <FieldLabel>{label}</FieldLabel>
+              <Input value={getValue(hero.draft, key, fallback)} onChange={(e) => hero.update(key, e.target.value)} />
+            </label>
+          ))}
+          <label className="space-y-2 md:col-span-2">
+            <FieldLabel>Subtitle</FieldLabel>
+            <Textarea rows={4} value={getValue(hero.draft, "subtitle", "")} onChange={(e) => hero.update("subtitle", e.target.value)} />
+          </label>
+          <label className="space-y-2 md:col-span-2">
+            <FieldLabel>Disciplines · comma separated</FieldLabel>
+            <Input
+              value={getValue<string[]>(hero.draft, "disciplines", []).join(", ")}
+              onChange={(e) => hero.update("disciplines", e.target.value.split(",").map((item) => item.trim()).filter(Boolean))}
+            />
+          </label>
+        </div>
+        <div className="mt-5 flex justify-end gap-2">
+          <button type="button" onClick={hero.restore} className="rounded-lg border border-white/[0.08] px-3 py-2 text-xs text-slate-500 hover:text-white">Restore defaults</button>
+          <SaveButton saving={hero.saving} onClick={hero.save} />
+        </div>
+      </Card>
+
+      <Card title="Manifesto" description="Philosophy, title treatment, body copy and principles used by the public Manifesto component.">
+        <div className="grid gap-4 md:grid-cols-2">
+          {[
+            ["eyebrow", "Eyebrow"],
+            ["sidebar", "Sidebar text"],
+            ["title_1", "Title · line 1"],
+            ["title_accent", "Title · accent"],
+            ["title_2", "Title · line 2"],
+            ["title_muted", "Title · muted"],
+          ].map(([key, label]) => (
+            <label key={key} className="space-y-2">
+              <FieldLabel>{label}</FieldLabel>
+              <Input value={getValue(manifesto.draft, key, "")} onChange={(e) => manifesto.update(key, e.target.value)} />
+            </label>
+          ))}
+          <label className="space-y-2">
+            <FieldLabel>Paragraph 1</FieldLabel>
+            <Textarea rows={4} value={getValue(manifesto.draft, "col1", "")} onChange={(e) => manifesto.update("col1", e.target.value)} />
+          </label>
+          <label className="space-y-2">
+            <FieldLabel>Paragraph 2</FieldLabel>
+            <Textarea rows={4} value={getValue(manifesto.draft, "col2", "")} onChange={(e) => manifesto.update("col2", e.target.value)} />
+          </label>
+        </div>
+        <div className="mt-5 rounded-xl border border-white/[0.06] p-4">
+          <div className="flex items-center justify-between">
+            <FieldLabel>Principles</FieldLabel>
+            <button
+              type="button"
+              onClick={() => manifesto.update("principles", [...getValue<any[]>(manifesto.draft, "principles", []), { meta: "", key: "", value: "" }])}
+              className="inline-flex items-center gap-1 text-xs text-sky-300"
+            ><Plus size={12} /> Add principle</button>
+          </div>
+          <div className="mt-3 space-y-2">
+            {getValue<any[]>(manifesto.draft, "principles", []).map((row, index) => (
+              <div key={index} className="grid gap-2 md:grid-cols-[0.8fr_1fr_1.6fr_auto]">
+                <Input value={String(row.meta ?? "")} placeholder="01 / Strategy" onChange={(e) => manifesto.update("principles", getValue<any[]>(manifesto.draft, "principles", []).map((p, i) => i === index ? { ...p, meta: e.target.value } : p))} />
+                <Input value={String(row.key ?? "")} placeholder="Clarity" onChange={(e) => manifesto.update("principles", getValue<any[]>(manifesto.draft, "principles", []).map((p, i) => i === index ? { ...p, key: e.target.value } : p))} />
+                <Input value={String(row.value ?? "")} placeholder="Idea before aesthetic." onChange={(e) => manifesto.update("principles", getValue<any[]>(manifesto.draft, "principles", []).map((p, i) => i === index ? { ...p, value: e.target.value } : p))} />
+                <button type="button" aria-label={"Delete principle " + (index + 1)} onClick={() => manifesto.update("principles", getValue<any[]>(manifesto.draft, "principles", []).filter((_, i) => i !== index))} className="grid h-10 w-10 place-items-center rounded-lg border border-white/[0.07] text-slate-500 hover:text-red-300"><Trash2 size={13} /></button>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="mt-5 flex justify-end gap-2">
+          <button type="button" onClick={manifesto.restore} className="rounded-lg border border-white/[0.08] px-3 py-2 text-xs text-slate-500 hover:text-white">Restore defaults</button>
+          <SaveButton saving={manifesto.saving} onClick={manifesto.save} />
+        </div>
+      </Card>
+
+      <Card title="Clients section" description="Public heading, supporting copy and maximum visible client logos.">
+        <div className="grid gap-4 md:grid-cols-2">
+          {[
+            ["eyebrow", "Eyebrow"],
+            ["title", "Title"],
+            ["subtitle", "Subtitle"],
+            ["max_items", "Maximum visible clients"],
+          ].map(([key, label]) => (
+            <label key={key} className="space-y-2">
+              <FieldLabel>{label}</FieldLabel>
+              <Input
+                type={key === "max_items" ? "number" : undefined}
+                value={getValue(clients.draft, key, key === "max_items" ? 16 : "") as string | number}
+                onChange={(e) => clients.update(key, key === "max_items" ? Math.max(1, Math.min(100, Number(e.target.value) || 1)) : e.target.value)}
+              />
+            </label>
+          ))}
+        </div>
+        <div className="mt-5 flex justify-end"><SaveButton saving={clients.saving} onClick={clients.save} /></div>
+      </Card>
+
+      <Card title="Featured Work" description={selected + " / 3 projects selected. Selection is persisted as structured project relationships."}>
+        <div className="grid gap-4 md:grid-cols-2">
+          <label className="space-y-2"><FieldLabel>Eyebrow</FieldLabel><Input value={getValue(featured.draft, "eyebrow", "Featured work")} onChange={(e) => featured.update("eyebrow", e.target.value)} /></label>
+          <label className="space-y-2"><FieldLabel>Title</FieldLabel><Input value={getValue(featured.draft, "title", "Selected projects.")} onChange={(e) => featured.update("title", e.target.value)} /></label>
+          <label className="space-y-2 md:col-span-2"><FieldLabel>Subtitle</FieldLabel><Textarea rows={3} value={getValue(featured.draft, "subtitle", "")} onChange={(e) => featured.update("subtitle", e.target.value)} /></label>
+        </div>
+        <div className="mt-5 flex justify-end"><SaveButton saving={featured.saving} onClick={featured.save} /></div>
+        <div className="mt-5 divide-y divide-white/[0.06] rounded-xl border border-white/[0.06]">
+          {projects.map((project) => (
+            <div key={project.id} className="flex items-center gap-3 p-3">
+              {project.cover_url ? <img src={project.cover_url} alt="" className="h-12 w-16 rounded object-cover" /> : <div className="grid h-12 w-16 place-items-center rounded bg-white/[0.03]"><ImageIcon size={14} className="text-slate-600" /></div>}
+              <div className="min-w-0 flex-1"><div className="truncate text-sm text-white">{project.title}</div><div className="mono mt-1 text-[9px] uppercase tracking-wider text-slate-600">{project.category}</div></div>
+              <button type="button" onClick={() => void toggle(project.id, !project.featured, project.featured_priority)} className={"inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3 text-[10px] uppercase tracking-wider " + (project.featured ? "border-sky-300/30 bg-sky-300/10 text-sky-200" : "border-white/[0.08] text-slate-500")}>
+                <Check size={12} />{project.featured ? "Featured" : "Add"}
+              </button>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      <Card title="Services preview" description="Controls the homepage capabilities block while the full Services page remains managed by the Services workspace.">
+        <div className="grid gap-4 md:grid-cols-2">
+          {[
+            ["eyebrow", "Eyebrow"],
+            ["title", "Title"],
+            ["sidebar", "Sidebar"],
+            ["cta_label", "CTA label"],
+            ["cta_route", "CTA route"],
+            ["preview_limit", "Number of services shown"],
+          ].map(([key, label]) => (
+            <label key={key} className="space-y-2">
+              <FieldLabel>{label}</FieldLabel>
+              <Input
+                type={key === "preview_limit" ? "number" : undefined}
+                value={getValue(services.draft, key, key === "preview_limit" ? 6 : "") as string | number}
+                onChange={(e) => services.update(key, key === "preview_limit" ? Math.max(1, Math.min(20, Number(e.target.value) || 1)) : e.target.value)}
+              />
+            </label>
+          ))}
+        </div>
+        <div className="mt-5 flex justify-end"><SaveButton saving={services.saving} onClick={services.save} /></div>
+      </Card>
+
+      <Card title="Home CTA" description="Call-to-action content and destination used by the public homepage.">
+        <div className="grid gap-4 md:grid-cols-2">
+          {[
+            ["eyebrow", "Eyebrow"],
+            ["title_1", "Title · line 1"],
+            ["title_accent", "Title · accent"],
+            ["cta_primary", "CTA label"],
+            ["cta_route", "CTA route"],
+            ["email", "Contact email"],
+          ].map(([key, label]) => (
+            <label key={key} className="space-y-2">
+              <FieldLabel>{label}</FieldLabel>
+              <Input type={key === "email" ? "email" : undefined} value={getValue(cta.draft, key, "")} onChange={(e) => cta.update(key, e.target.value)} />
+            </label>
+          ))}
+        </div>
+        <div className="mt-5 flex justify-end"><SaveButton saving={cta.saving} onClick={cta.save} /></div>
+      </Card>
+
+      <Card title="Footer" description="Global footer copy, edited from the Homepage workspace so all homepage-related presentation content stays in one place.">
+        <div className="grid gap-4 md:grid-cols-2">
+          {[
+            ["eyebrow", "Eyebrow"],
+            ["title_1", "Title · line 1"],
+            ["title_2", "Title · line 2"],
+            ["cta", "CTA label"],
+            ["email", "Email"],
+            ["phone", "Phone"],
+            ["location", "Location"],
+            ["copyright", "Copyright"],
+          ].map(([key, label]) => (
+            <label key={key} className="space-y-2">
+              <FieldLabel>{label}</FieldLabel>
+              <Input type={key === "email" ? "email" : undefined} value={getValue(footer.draft, key, "")} onChange={(e) => footer.update(key, e.target.value)} />
+            </label>
+          ))}
+        </div>
+        <div className="mt-5 flex justify-end"><SaveButton saving={footer.saving} onClick={footer.save} /></div>
+      </Card>
+    </div>
+  );
 }
 
 export function CredentialsManager() {
