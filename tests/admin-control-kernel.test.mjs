@@ -128,3 +128,18 @@ test("Role permissions are enforced on operational and finance data", () => {
   assert.match(sql, /Admins read invoice events/);
   assert.match(sql, /Admins read invoice counters/);
 });
+
+test("History restore is draft-first and cannot bypass Release Management", () => {
+  const manager = read("src/components/admin/HistoryManager.tsx");
+  const functions = read("src/lib/admin.functions.ts");
+  assert.match(manager, /restoreAdminContentVersion/);
+  assert.match(manager, /Restore draft/);
+  assert.match(manager, /Publish it from Release Management/);
+  assert.doesNotMatch(manager, /invalidateQueries\(\{ queryKey: \["projects"\]\}\)/);
+  const start = functions.indexOf("export const restoreAdminContentVersion");
+  const end = functions.indexOf("const MediaReplaceSchema", start);
+  assert.ok(start >= 0 && end > start);
+  const restoreFn = functions.slice(start, end);
+  assert.match(restoreFn, /saveAdminEntityDraft/);
+  assert.doesNotMatch(restoreFn, /\.from\(["'](site_settings|projects|clients|services|stats|about_method)["']\)\.upsert/);
+});
