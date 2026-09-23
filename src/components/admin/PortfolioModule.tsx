@@ -904,7 +904,7 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
           <button onClick={onClose} className="text-sm text-slate-400 hover:text-white px-4 py-2">
             Cancel
           </button>
-          <SaveButton saving={saving} onClick={save} />
+          <SaveButton saving={saving} onClick={save} label="Save draft" />
         </div>
       </div>
     </div>
