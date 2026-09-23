@@ -167,6 +167,7 @@ function ControlRoom() {
   const { session, isAdmin, role, loading } = useAdminAuth();
   const [section, setSection] = useState<Section>("overview");
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [releaseOpen, setReleaseOpen] = useState(false);
   const [dirty, setDirty] = useState(hasAdminDirty());
 
   useEffect(() => {
@@ -409,13 +410,42 @@ function ControlRoom() {
 
         <Phase4AdminToolbar
           onNavigate={requestSection}
-          onOpenRelease={() => requestSection("release")}
+          onOpenRelease={() => setReleaseOpen(true)}
           onOpenSystem={() => requestSection("system")}
         />
 
         <Suspense fallback={<WorkspaceLoader label="Loading workspace..." />}>
           {renderContent()}
         </Suspense>
+
+        {releaseOpen ? (
+          <div
+            className="fixed inset-0 z-[120] flex items-start justify-center bg-black/80 p-3 backdrop-blur-sm sm:p-6"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Release management"
+          >
+            <div className="flex max-h-[calc(100vh-24px)] w-full max-w-7xl flex-col overflow-hidden rounded-2xl border border-white/[0.09] bg-[#01040A] shadow-2xl sm:max-h-[calc(100vh-48px)]">
+              <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/[0.08] px-4 py-3 sm:px-6">
+                <div>
+                  <div className="mono text-[9px] uppercase tracking-[0.22em] text-sky-300/70">Governance</div>
+                  <h2 className="display mt-1 text-lg text-metal">Manage releases.</h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setReleaseOpen(false)}
+                  className="grid h-9 w-9 place-items-center rounded-lg border border-white/[0.08] text-slate-500 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/50"
+                  aria-label="Close release management"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+              <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
+                <ReleaseCenter />
+              </div>
+            </div>
+          </div>
+        ) : null}
       </main>
     </div>
   );
