@@ -136,7 +136,7 @@ export function HomeExperience() {
       })).filter((item) => item.role || item.company || item.period)
     : EXPERIENCE_DATA;
   const parseMetric = (value: string, label: string): MetricItem => {
-    const match = value.trim().match(/(-?\\d+(?:[.,]\\d+)?)/);
+    const match = value.trim().match(/(-?\d+(?:[.,]\d+)?)/);
     const num = match ? Number(match[1].replace(",", ".")) : 0;
     const suffix = match ? value.trim().slice(match[0].length) : value.trim();
     return { num, suffix, label };
