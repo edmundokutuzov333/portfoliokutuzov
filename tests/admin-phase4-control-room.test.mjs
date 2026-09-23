@@ -6,13 +6,14 @@ const read = (path) => fs.readFileSync(path, "utf8");
 
 test("Phase 4 creates a governed release workflow", () => {
   const migration = read("supabase/migrations/20260922180000_phase4_control_room_2.sql");
+  const integrity = read("supabase/migrations/20260922190000_phase4_draft_entity_integrity.sql");
   const fn = read("src/lib/admin.phase4.functions.ts");
   const ui = read("src/components/admin/Phase4ControlRoom.tsx");
   const route = read("src/routes/admin.preview.tsx");
   assert.match(migration, /admin_drafts/);
   assert.match(migration, /admin_publish_drafts/);
   assert.match(migration, /baseline_updated_at/);
-  assert.match(migration, /20001|22023|Draft payload id does not match entity id|payload.*entity id/);
+  assert.match(integrity, /20001|22023|Draft payload id does not match entity id|payload.*entity id/);
   assert.match(migration, /40001/);
   assert.match(fn, /createAdminDraft/);
   assert.match(fn, /submitAdminDraftForReview/);
@@ -116,7 +117,7 @@ test("Phase 4 global admin shortcut is wired", () => {
   const ui = read("src/components/admin/Phase4ControlRoom.tsx");
   assert.match(ui, /event.metaKey \|\| event.ctrlKey/);
   assert.match(ui, /event\.key\.toLowerCase\(\) === "k"/);
-  assert.match(ui, /setSearchOpen(true)/);
+  assert.match(ui, /setSearchOpen\(true\)/);
 });
 
 test("Control Room navigation matches the final architecture", () => {
