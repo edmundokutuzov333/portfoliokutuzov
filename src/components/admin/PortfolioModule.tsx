@@ -36,7 +36,7 @@ import {
   Upload,
 } from "lucide-react";
 
-function PortfolioManager() {
+export function PortfolioManager() {
   const qc = useQueryClient();
   const createProject = useServerFn(createAdminProject);
   const deleteProject = useServerFn(deleteAdminProject);
