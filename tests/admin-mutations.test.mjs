@@ -32,3 +32,28 @@ test("media upload preparation is server-authorized before signed browser transf
   assert.match(ui, /prepareAdminMediaUpload/);
   assert.match(ui, /uploadToSignedUrl/);
 });
+
+test("legacy CMS save mutations cannot bypass the Phase 4 editorial boundary", () => {
+  const functions = read("src/lib/admin.functions.ts");
+  for (const name of [
+    "saveAdminSiteSetting",
+    "saveAdminClient",
+    "saveAdminProject",
+    "saveAdminService",
+    "saveAdminStat",
+    "saveAdminMethod",
+    "publishAdminProject",
+  ]) {
+    assert.match(functions, new RegExp("export const " + name + " = createServerFn"));
+  }
+  assert.match(functions, /async function publishExistingAdminEntity/);
+  assert.match(functions, /from\("admin_drafts"\)/);
+  assert.match(functions, /rpc\("admin_publish_drafts"/);
+  assert.match(functions, /status === "review"/);
+  assert.match(functions, /currently under review/);
+});
+
+test("legacy save bridge rejects invalid structured entity identifiers", () => {
+  const functions = read("src/lib/admin.functions.ts");
+  assert.match(functions, /A valid entity id is required before saving this content/);
+});
