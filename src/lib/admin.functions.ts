@@ -484,7 +484,6 @@ export const setAdminProjectFeatured = createServerFn({ method: "POST" })
       data.id,
       row.title,
       {
-        ...row,
         featured: data.featured,
         featured_priority: data.featured ? Math.max(1, data.featured_priority) : 0,
       },
