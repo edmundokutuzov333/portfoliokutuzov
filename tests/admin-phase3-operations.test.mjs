@@ -8,8 +8,11 @@ test("Phase 3 Operations OS is wired into the main Control Room", () => {
   const admin = read("src/components/admin/AdminControlRoom.tsx");
   const operations = read("src/components/admin/Phase3OperationsOS.tsx");
   assert.match(admin, /Phase3OperationsOS/);
-  assert.match(admin, /id: "operations"/);
-  assert.match(admin, /section === "operations"/);
+  assert.match(admin, /section === "leads" && <Phase3OperationsOS initialTab="leads"/);
+  assert.match(admin, /section === "bookings" && <Phase3OperationsOS initialTab="bookings"/);
+  assert.match(admin, /section === "newsletter" && <Phase3OperationsOS initialTab="audience" audienceMode="newsletter"/);
+  assert.match(admin, /section === "studioWaitlist" && <Phase3OperationsOS initialTab="audience" audienceMode="studio"/);
+  assert.match(admin, /section === "payments" && <Phase3OperationsOS initialTab="finance" financeMode="payments"/);
   for (const token of ["Unified Inbox", "Leads", "Bookings", "Audience", "Client CRM", "Finance", "Studio", "Tasks"]) {
     assert.ok(operations.includes(token), token);
   }
