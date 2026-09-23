@@ -73,29 +73,38 @@ function useSettingsDraft(key: string) {
   const merged = useMemo(() => ({ ...(FALLBACK_SETTINGS[key] || {}), ...(settings?.[key] || {}) }), [key, settings]);
   const [draft, setDraft] = useState<Record<string, unknown>>(merged);
   const [dirty, setDirty] = useState(false);
+  const [hasSavedDraft, setHasSavedDraft] = useState(false);
   const [saving, setSaving] = useState(false);
+
   useEffect(() => {
     setAdminDirty("settings:" + key, dirty);
     return () => setAdminDirty("settings:" + key, false);
   }, [dirty, key]);
-  useEffect(() => { if (!dirty) setDraft(merged); }, [dirty, merged]);
+
+  useEffect(() => {
+    if (!dirty && !hasSavedDraft) setDraft(merged);
+  }, [dirty, hasSavedDraft, merged]);
+
   const update = (field: string, value: unknown) => {
     setDirty(true);
+    setHasSavedDraft(false);
     setDraft((current) => ({ ...current, [field]: value }));
   };
+
   const save = async () => {
     setSaving(true);
     try {
       await saveServer({ data: { key, value: draft } });
-      await qc.invalidateQueries({ queryKey: ["site_settings"] });
       setDirty(false);
-      toast.success(key + " saved");
+      setHasSavedDraft(true);
+      toast.success(key + " draft saved to Release Management");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not save changes");
+      toast.error(error instanceof Error ? error.message : "Could not save draft");
     } finally {
       setSaving(false);
     }
   };
+
   return { draft, update, save, saving };
 }
 
@@ -206,28 +215,133 @@ export function CredentialsManager() {
   const deleteMethod = useServerFn(deleteAdminMethod);
   const reorderMethod = useServerFn(reorderAdminMethods);
   const qc = useQueryClient();
+
+  const [statDrafts, setStatDrafts] = useState<Record<string, any>>({});
+  const [methodDrafts, setMethodDrafts] = useState<Record<string, any>>({});
+
+  useEffect(() => {
+    setStatDrafts((current) => {
+      const next = { ...current };
+      stats.forEach((row) => { if (!next[row.id]) next[row.id] = { ...row }; });
+      return next;
+    });
+  }, [stats]);
+
+  useEffect(() => {
+    setMethodDrafts((current) => {
+      const next = { ...current };
+      methods.forEach((row) => { if (!next[row.id]) next[row.id] = { ...row }; });
+      return next;
+    });
+  }, [methods]);
+
+  const patchStat = (id: string, key: string, value: unknown) =>
+    setStatDrafts((current) => ({ ...current, [id]: { ...(current[id] || {}), [key]: value } }));
+
+  const patchMethod = (id: string, key: string, value: unknown) =>
+    setMethodDrafts((current) => ({ ...current, [id]: { ...(current[id] || {}), [key]: value } }));
+
+  const saveRow = async (
+    fn: (arg: { data: any }) => Promise<any>,
+    data: any,
+    message: string,
+    invalidate: string[] = [],
+  ) => {
+    try {
+      const result = await fn({ data });
+      for (const key of invalidate) await qc.invalidateQueries({ queryKey: [key] });
+      toast.success(message);
+      return result;
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Operation failed");
+      return null;
+    }
+  };
+
+  const saveStatDraft = async (row: any) => {
+    const result = await saveRow(saveStat, row, "Stat draft saved", ["stats"]);
+    if (result?.draft) setStatDrafts((current) => ({ ...current, [row.id]: { ...row } }));
+  };
+
+  const saveMethodDraft = async (row: any) => {
+    const result = await saveRow(saveMethod, row, "Method draft saved", ["about_method"]);
+    if (result?.draft) setMethodDrafts((current) => ({ ...current, [row.id]: { ...row } }));
+  };
+
+  const move = async (
+    ids: string[],
+    index: number,
+    direction: -1 | 1,
+    fn: (arg: { data: { ids: string[] } }) => Promise<any>,
+    message: string,
+    invalidate: string,
+  ) => {
+    const target = index + direction;
+    if (target < 0 || target >= ids.length) return;
+    const next = [...ids];
+    [next[index], next[target]] = [next[target], next[index]];
+    await saveRow(fn, { ids: next }, message, [invalidate]);
+  };
+
   const exp = getValue<Array<{ role: string; company: string; period: string }>>(s.draft, "experience", []);
   const skills = getValue<Array<{ name: string; value: number }>>(s.draft, "skills", []);
   const brands = getValue<string[]>(s.draft, "brands", []);
-  const saveRow = async (fn: (arg: { data: any }) => Promise<any>, data: any, message: string) => { try { await fn({ data }); await qc.invalidateQueries({ queryKey: ["stats"] }); await qc.invalidateQueries({ queryKey: ["about_method"] }); toast.success(message); } catch (error) { toast.error(error instanceof Error ? error.message : "Operation failed"); } };
-  const move = async (ids: string[], index: number, direction: -1 | 1, fn: (arg: { data: { ids: string[] } }) => Promise<any>) => { const target=index+direction; if(target<0||target>=ids.length)return; const next=[...ids]; const current=next[index]; next[index]=next[target]; next[target]=current; await saveRow(fn,{ids:next},"Order updated"); };
+
   return <div>
-    <header><p className="mono text-[10px] tracking-[0.28em] text-sky-300/80">WEBSITE / CREDENTIALS</p><h2 className="display mt-1 text-3xl text-white">Credentials control.</h2><p className="mt-2 text-sm text-slate-500">Experience, skills, brands, metrics and method.</p></header>
+    <header>
+      <p className="mono text-[10px] tracking-[0.28em] text-sky-300/80">WEBSITE / CREDENTIALS</p>
+      <h2 className="display mt-1 text-3xl text-white">Credentials control.</h2>
+      <p className="mt-2 text-sm text-slate-500">Experience, skills, brands, metrics and method.</p>
+    </header>
+
     <Card title="Credentials identity">
       <div className="grid gap-4 md:grid-cols-2">{[["eyebrow","Eyebrow"],["top_right","Top right"],["title_1","Title"],["title_accent","Title accent"],["email","Email"],["phone","Phone"],["location","Location"],["reference","Reference"]].map((row)=><label key={row[0]} className="space-y-2"><FieldLabel>{row[1]}</FieldLabel><Input value={getValue(s.draft,row[0],"")} onChange={(e)=>s.update(row[0],e.target.value)} /></label>)}</div>
       <div className="mt-4 grid gap-4">{["bio_p1","bio_p2","bio_p3"].map((key)=><label key={key} className="space-y-2"><FieldLabel>{key.replaceAll("_"," ")}</FieldLabel><Textarea rows={3} value={getValue(s.draft,key,"")} onChange={(e)=>s.update(key,e.target.value)} /></label>)}</div>
       <div className="mt-5 flex justify-end"><SaveButton saving={s.saving} onClick={s.save} /></div>
     </Card>
+
     <Card title="Experience"><div className="space-y-2">{exp.map((row,index)=><div key={index} className="grid gap-2 md:grid-cols-[.7fr_1.2fr_1fr_auto]"><Input value={row.period} placeholder="Period" onChange={(e)=>{const n=[...exp];n[index]={...row,period:e.target.value};s.update("experience",n);}}/><Input value={row.role} placeholder="Role" onChange={(e)=>{const n=[...exp];n[index]={...row,role:e.target.value};s.update("experience",n);}}/><Input value={row.company} placeholder="Company" onChange={(e)=>{const n=[...exp];n[index]={...row,company:e.target.value};s.update("experience",n);}}/><button type="button" onClick={()=>s.update("experience",exp.filter((_,i)=>i!==index))} className="grid h-10 w-10 place-items-center rounded-lg border border-white/[0.07] text-slate-500 hover:text-red-300"><Trash2 size={14}/></button></div>)}</div><div className="mt-4 flex justify-between"><button type="button" onClick={()=>s.update("experience",[...exp,{period:"",role:"",company:""}])} className="inline-flex items-center gap-2 text-xs text-sky-300"><Plus size={13}/>Add experience</button><SaveButton saving={s.saving} onClick={s.save}/></div></Card>
+
     <Card title="Skills"><div className="space-y-2">{skills.map((row,index)=><div key={index} className="grid gap-2 md:grid-cols-[1fr_120px_auto]"><Input value={row.name} placeholder="Skill" onChange={(e)=>{const n=[...skills];n[index]={...row,name:e.target.value};s.update("skills",n);}}/><Input type="number" min={0} max={100} value={row.value} onChange={(e)=>{const n=[...skills];n[index]={...row,value:Number(e.target.value)||0};s.update("skills",n);}}/><button type="button" onClick={()=>s.update("skills",skills.filter((_,i)=>i!==index))} className="grid h-10 w-10 place-items-center rounded-lg border border-white/[0.07] text-slate-500 hover:text-red-300"><Trash2 size={14}/></button></div>)}</div><div className="mt-4 flex justify-between"><button type="button" onClick={()=>s.update("skills",[...skills,{name:"",value:50}])} className="inline-flex items-center gap-2 text-xs text-sky-300"><Plus size={13}/>Add skill</button><SaveButton saving={s.saving} onClick={s.save}/></div></Card>
+
     <Card title="Brands"><Textarea rows={5} value={brands.join(", ")} onChange={(e)=>s.update("brands",e.target.value.split(",").map((x)=>x.trim()).filter(Boolean))}/><div className="mt-4 flex justify-end"><SaveButton saving={s.saving} onClick={s.save}/></div></Card>
+
     <Card title="Structured Stats" description="Database records used by /credentials.">
-      <div className="space-y-2">{stats.map((row)=><div key={row.id} className="grid gap-2 rounded-xl border border-white/[0.06] p-3 md:grid-cols-[110px_1fr_90px_80px_auto_auto_auto]"><Input value={row.value} onChange={(e)=>void saveRow(saveStat,{...row,value:e.target.value},"Stat saved")}/><Input value={row.label} onChange={(e)=>void saveRow(saveStat,{...row,label:e.target.value},"Stat saved")}/><Input type="number" value={row.sort_order} onChange={(e)=>void saveRow(saveStat,{...row,sort_order:Number(e.target.value)||0},"Stat saved")}/><button type="button" onClick={()=>void saveRow(saveStat,{...row,is_active:!row.is_active},"Visibility updated")} className={"rounded-lg border px-2 text-[10px] "+(row.is_active?"border-emerald-300/20 text-emerald-300":"border-white/[0.08] text-slate-600")}>{row.is_active?"Active":"Hidden"}</button><button type="button" onClick={()=>void move(stats.map((r)=>r.id),stats.findIndex((r)=>r.id===row.id),-1,reorderStat)} className="grid h-9 w-9 place-items-center rounded-lg border border-white/[0.07]"><ArrowUp size={13}/></button><button type="button" onClick={()=>void move(stats.map((r)=>r.id),stats.findIndex((r)=>r.id===row.id),1,reorderStat)} className="grid h-9 w-9 place-items-center rounded-lg border border-white/[0.07]"><ArrowDown size={13}/></button><button type="button" onClick={()=>void saveRow(deleteStat,{id:row.id},"Stat deleted")} className="grid h-9 w-9 place-items-center rounded-lg border border-white/[0.07] text-slate-500 hover:text-red-300"><Trash2 size={13}/></button></div>)}</div>
-      <div className="mt-4 flex justify-end"><button type="button" onClick={()=>void saveRow(createStat,{value:"00",label:"NEW METRIC",sort_order:stats.length+1,is_active:true},"Stat created")} className="inline-flex items-center gap-2 text-xs text-sky-300"><Plus size={13}/>Add stat</button></div>
+      <div className="space-y-2">
+        {stats.map((row) => {
+          const draft = statDrafts[row.id] || row;
+          return <div key={row.id} className="grid gap-2 rounded-xl border border-white/[0.06] p-3 md:grid-cols-[110px_1fr_90px_80px_auto_auto_auto]">
+            <Input value={draft.value} onChange={(e)=>patchStat(row.id,"value",e.target.value)} />
+            <Input value={draft.label} onChange={(e)=>patchStat(row.id,"label",e.target.value)} />
+            <Input type="number" value={draft.sort_order} onChange={(e)=>patchStat(row.id,"sort_order",Number(e.target.value)||0)} />
+            <button type="button" onClick={()=>patchStat(row.id,"is_active",!draft.is_active)} className={"rounded-lg border px-2 text-[10px] "+(draft.is_active?"border-emerald-300/20 text-emerald-300":"border-white/[0.08] text-slate-600")}>{draft.is_active?"Active":"Hidden"}</button>
+            <button type="button" onClick={()=>void saveStatDraft(draft)} className="rounded-lg border border-white/[0.08] px-3 text-[10px] text-slate-300 hover:text-white">Save draft</button>
+            <button type="button" onClick={()=>void move(stats.map((r)=>r.id),stats.findIndex((r)=>r.id===row.id),-1,reorderStat,"Order updated","stats")} className="grid h-9 w-9 place-items-center rounded-lg border border-white/[0.07]"><ArrowUp size={13}/></button>
+            <button type="button" onClick={()=>void move(stats.map((r)=>r.id),stats.findIndex((r)=>r.id===row.id),1,reorderStat,"Order updated","stats")} className="grid h-9 w-9 place-items-center rounded-lg border border-white/[0.07]"><ArrowDown size={13}/></button>
+            <button type="button" onClick={()=>void saveRow(deleteStat,{id:row.id},"Stat deleted",["stats"])} className="grid h-9 w-9 place-items-center rounded-lg border border-white/[0.07] text-slate-500 hover:text-red-300"><Trash2 size={13}/></button>
+          </div>;
+        })}
+      </div>
+      <div className="mt-4 flex justify-end"><button type="button" onClick={()=>void saveRow(createStat,{value:"00",label:"NEW METRIC",sort_order:stats.length+1,is_active:false},"Stat created",["stats"])} className="inline-flex items-center gap-2 text-xs text-sky-300"><Plus size={13}/>Add stat</button></div>
     </Card>
+
     <Card title="Method" description="Database records used by /credentials.">
-      <div className="space-y-2">{methods.map((row)=><div key={row.id} className="grid gap-2 rounded-xl border border-white/[0.06] p-3 md:grid-cols-[80px_1fr_1.6fr_80px_auto_auto_auto]"><Input value={row.number} onChange={(e)=>void saveRow(saveMethod,{...row,number:e.target.value},"Method saved")}/><Input value={row.title} onChange={(e)=>void saveRow(saveMethod,{...row,title:e.target.value},"Method saved")}/><Textarea rows={1} value={row.description||""} onChange={(e)=>void saveRow(saveMethod,{...row,description:e.target.value},"Method saved")}/><button type="button" onClick={()=>void saveRow(saveMethod,{...row,is_active:!row.is_active},"Visibility updated")} className={"rounded-lg border px-2 text-[10px] "+(row.is_active?"border-emerald-300/20 text-emerald-300":"border-white/[0.08] text-slate-600")}>{row.is_active?"Active":"Hidden"}</button><button type="button" onClick={()=>void move(methods.map((r)=>r.id),methods.findIndex((r)=>r.id===row.id),-1,reorderMethod)} className="grid h-9 w-9 place-items-center rounded-lg border border-white/[0.07]"><ArrowUp size={13}/></button><button type="button" onClick={()=>void move(methods.map((r)=>r.id),methods.findIndex((r)=>r.id===row.id),1,reorderMethod)} className="grid h-9 w-9 place-items-center rounded-lg border border-white/[0.07]"><ArrowDown size={13}/></button><button type="button" onClick={()=>void saveRow(deleteMethod,{id:row.id},"Method deleted")} className="grid h-9 w-9 place-items-center rounded-lg border border-white/[0.07] text-slate-500 hover:text-red-300"><Trash2 size={13}/></button></div>)}</div>
-      <div className="mt-4 flex justify-end"><button type="button" onClick={()=>void saveRow(createMethod,{number:String(methods.length+1).padStart(2,"0"),title:"New method",description:"",sort_order:methods.length+1,is_active:true},"Method created")} className="inline-flex items-center gap-2 text-xs text-sky-300"><Plus size={13}/>Add method</button></div>
+      <div className="space-y-2">
+        {methods.map((row) => {
+          const draft = methodDrafts[row.id] || row;
+          return <div key={row.id} className="grid gap-2 rounded-xl border border-white/[0.06] p-3 md:grid-cols-[80px_1fr_1.6fr_80px_auto_auto_auto]">
+            <Input value={draft.number} onChange={(e)=>patchMethod(row.id,"number",e.target.value)} />
+            <Input value={draft.title} onChange={(e)=>patchMethod(row.id,"title",e.target.value)} />
+            <Textarea rows={1} value={draft.description||""} onChange={(e)=>patchMethod(row.id,"description",e.target.value)} />
+            <button type="button" onClick={()=>patchMethod(row.id,"is_active",!draft.is_active)} className={"rounded-lg border px-2 text-[10px] "+(draft.is_active?"border-emerald-300/20 text-emerald-300":"border-white/[0.08] text-slate-600")}>{draft.is_active?"Active":"Hidden"}</button>
+            <button type="button" onClick={()=>void saveMethodDraft(draft)} className="rounded-lg border border-white/[0.08] px-3 text-[10px] text-slate-300 hover:text-white">Save draft</button>
+            <button type="button" onClick={()=>void move(methods.map((r)=>r.id),methods.findIndex((r)=>r.id===row.id),-1,reorderMethod,"Order updated","about_method")} className="grid h-9 w-9 place-items-center rounded-lg border border-white/[0.07]"><ArrowUp size={13}/></button>
+            <button type="button" onClick={()=>void move(methods.map((r)=>r.id),methods.findIndex((r)=>r.id===row.id),1,reorderMethod,"Order updated","about_method")} className="grid h-9 w-9 place-items-center rounded-lg border border-white/[0.07]"><ArrowDown size={13}/></button>
+            <button type="button" onClick={()=>void saveRow(deleteMethod,{id:row.id},"Method deleted",["about_method"])} className="grid h-9 w-9 place-items-center rounded-lg border border-white/[0.07] text-slate-500 hover:text-red-300"><Trash2 size={13}/></button>
+          </div>;
+        })}
+      </div>
+      <div className="mt-4 flex justify-end"><button type="button" onClick={()=>void saveRow(createMethod,{number:String(methods.length+1).padStart(2,"0"),title:"New method",description:"",sort_order:methods.length+1,is_active:false},"Method created",["about_method"])} className="inline-flex items-center gap-2 text-xs text-sky-300"><Plus size={13}/>Add method</button></div>
     </Card>
   </div>;
 }
@@ -249,7 +363,7 @@ export function ServicesManager() {
     <header><p className="mono text-[10px] tracking-[0.28em] text-sky-300/80">WEBSITE / SERVICES</p><h2 className="display mt-1 text-3xl text-white">Services manager.</h2><p className="mt-2 text-sm text-slate-500">Structured CRUD. Changes feed /services and the homepage services preview.</p></header>
     <div className="mt-6 flex justify-end"><button type="button" onClick={()=>void run(create,{number:String(services.length+1).padStart(2,"0"),title:"New service",description:"",icon:"Sparkles",sort_order:services.length+1,is_active:false},"Service created")} className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-sky-300/30 px-4 text-xs text-sky-300"><Plus size={13}/>Add service</button></div>
     <Card title="Service records">
-      <div className="space-y-3">{services.map((row,index)=>{const draft=drafts[row.id]||row;return <article key={row.id} className="rounded-xl border border-white/[0.06] p-4"><div className="grid gap-3 md:grid-cols-[90px_1fr_1.5fr_120px]"><label className="space-y-2"><FieldLabel>Number</FieldLabel><Input value={draft.number||""} onChange={(e)=>patch(row.id,"number",e.target.value)}/></label><label className="space-y-2"><FieldLabel>Title</FieldLabel><Input value={draft.title||""} onChange={(e)=>patch(row.id,"title",e.target.value)}/></label><label className="space-y-2"><FieldLabel>Description</FieldLabel><Textarea rows={2} value={draft.description||""} onChange={(e)=>patch(row.id,"description",e.target.value)}/></label><label className="space-y-2"><FieldLabel>Icon</FieldLabel><Input value={draft.icon||""} onChange={(e)=>patch(row.id,"icon",e.target.value)}/></label></div><div className="mt-3 flex flex-wrap gap-2"><button type="button" onClick={()=>patch(row.id,"is_active",!draft.is_active)} className={"rounded-full border px-3 py-1.5 text-[10px] uppercase "+(draft.is_active?"border-emerald-300/20 text-emerald-300":"border-white/[0.08] text-slate-500")}>{draft.is_active?"Published":"Hidden"}</button><button type="button" onClick={()=>void run(save,draft,"Service saved")} className="rounded-full border border-white/[0.08] px-3 py-1.5 text-[10px] text-slate-300 hover:text-white">Save</button><button type="button" onClick={()=>void run(duplicate,{id:row.id},"Service duplicated")} className="rounded-full border border-white/[0.08] px-3 py-1.5 text-[10px] text-slate-300 hover:text-white">Duplicate</button><button type="button" onClick={()=>void move(index,-1)} className="grid h-8 w-8 place-items-center rounded-full border border-white/[0.08]"><ArrowUp size={12}/></button><button type="button" onClick={()=>void move(index,1)} className="grid h-8 w-8 place-items-center rounded-full border border-white/[0.08]"><ArrowDown size={12}/></button><button type="button" onClick={()=>void run(remove,{id:row.id},"Service deleted")} className="ml-auto grid h-8 w-8 place-items-center rounded-full border border-white/[0.08] text-slate-500 hover:text-red-300"><Trash2 size={12}/></button></div></article>;})}</div>
+      <div className="space-y-3">{services.map((row,index)=>{const draft=drafts[row.id]||row;return <article key={row.id} className="rounded-xl border border-white/[0.06] p-4"><div className="grid gap-3 md:grid-cols-[90px_1fr_1.5fr_120px]"><label className="space-y-2"><FieldLabel>Number</FieldLabel><Input value={draft.number||""} onChange={(e)=>patch(row.id,"number",e.target.value)}/></label><label className="space-y-2"><FieldLabel>Title</FieldLabel><Input value={draft.title||""} onChange={(e)=>patch(row.id,"title",e.target.value)}/></label><label className="space-y-2"><FieldLabel>Description</FieldLabel><Textarea rows={2} value={draft.description||""} onChange={(e)=>patch(row.id,"description",e.target.value)}/></label><label className="space-y-2"><FieldLabel>Icon</FieldLabel><Input value={draft.icon||""} onChange={(e)=>patch(row.id,"icon",e.target.value)}/></label></div><div className="mt-3 flex flex-wrap gap-2"><button type="button" onClick={()=>patch(row.id,"is_active",!draft.is_active)} className={"rounded-full border px-3 py-1.5 text-[10px] uppercase "+(draft.is_active?"border-emerald-300/20 text-emerald-300":"border-white/[0.08] text-slate-500")}>{draft.is_active?"Published":"Hidden"}</button><button type="button" onClick={()=>void run(save,draft,"Service draft saved")} className="rounded-full border border-white/[0.08] px-3 py-1.5 text-[10px] text-slate-300 hover:text-white">Save draft</button><button type="button" onClick={()=>void run(duplicate,{id:row.id},"Service duplicated")} className="rounded-full border border-white/[0.08] px-3 py-1.5 text-[10px] text-slate-300 hover:text-white">Duplicate</button><button type="button" onClick={()=>void move(index,-1)} className="grid h-8 w-8 place-items-center rounded-full border border-white/[0.08]"><ArrowUp size={12}/></button><button type="button" onClick={()=>void move(index,1)} className="grid h-8 w-8 place-items-center rounded-full border border-white/[0.08]"><ArrowDown size={12}/></button><button type="button" onClick={()=>void run(remove,{id:row.id},"Service deleted")} className="ml-auto grid h-8 w-8 place-items-center rounded-full border border-white/[0.08] text-slate-500 hover:text-red-300"><Trash2 size={12}/></button></div></article>;})}</div>
     </Card>
   </div>;
 }
