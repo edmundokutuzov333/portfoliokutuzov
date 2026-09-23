@@ -89,7 +89,7 @@ export const Route = createFileRoute("/api/studio/email")({
     if (body.pdfDataUrl && !pdf) return jsonResponse(request, requestId, 413, { error: "PDF_TOO_LARGE_OR_INVALID" });
     if (png) attachments.push({ filename: "business-card.png", content: png, content_type: "image/png" });
     if (pdf) attachments.push({ filename: "business-card.pdf", content: pdf, content_type: "application/pdf" });
-    const displayName = safeHtmlText(name); const safeUrl = digitalUrl.replace(/[\"']/g, (char) => char === '"' ? "&quot;" : "&#39;");
+    const displayName = safeHtmlText(name); const safeUrl = digitalUrl.replace(/["']/g, (char) => char === '"' ? "&quot;" : "&#39;");
     const html = `<div style="font-family:Inter,Arial,sans-serif;max-width:620px;margin:0 auto;color:#111"><p style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#64748b">Kutuzov Studio / Digital Identity</p><h1 style="font-size:28px;margin:16px 0 8px">${displayName}</h1><p style="color:#475569">Your digital business card is ready.</p><p><a href="${safeUrl}" style="display:inline-block;padding:12px 18px;border-radius:999px;background:#0284c7;color:#fff;text-decoration:none;font-weight:700">Open digital card</a></p><p style="font-size:12px;color:#64748b">The email includes your vCard plus the available PNG and PDF exports.</p></div>`;
     const text = `Kutuzov Studio / Digital Identity\n\n${name}\n\nOpen your digital card: ${digitalUrl}\n\nAttachments: vCard${png ? ", PNG" : ""}${pdf ? ", PDF" : ""}.`;
     const providerPayload = { from, to: [to], subject: `${name} · Digital business card`, html, text, attachments };
