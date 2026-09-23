@@ -41,11 +41,6 @@ const InboxHub = lazy(() =>
     default: module.InboxHub,
   })),
 );
-const AuditManager = lazy(() =>
-  import("@/components/admin/AuditManager").then((module) => ({
-    default: module.AuditManager,
-  })),
-);
 const HistoryManager = lazy(() =>
   import("@/components/admin/HistoryManager").then((module) => ({
     default: module.HistoryManager,
@@ -166,12 +161,7 @@ type Section =
   | "users"
   | "system"
   | "advanced"
-  | "site"
-  | "studios"
-  | "studio"
-  | "operations"
-  | "invoice"
-  | "release";
+  | "advanced";
 
 function ControlRoom() {
   useAdminInputStyle();
@@ -285,9 +275,7 @@ function ControlRoom() {
       {section === "media" && (
         <Phase2WebsiteCMS section="media" onNavigate={requestSection} />
       )}
-      {section === "site" && <SiteContentManager />}
       {section === "clients" && <ClientsManager />}
-      {section === "studios" && <StudiosManager />}
       {section === "studio" && <StudioAdminPage />}
       {section === "portfolio" && <PortfolioManager />}
       {section === "about" && <AboutManager />}
@@ -311,25 +299,12 @@ function ControlRoom() {
       {section === "studioEmail" && <StudioAdminPage initialTab="email" />}
       {section === "digitalCards" && <StudioAdminPage initialTab="digital" />}
       {section === "studioAI" && <StudioAdminPage initialTab="ai" />}
-      {section === "operations" && (
-        <Phase3OperationsOS onNavigate={requestSection} />
-      )}
-      {section === "inbox" && <InboxHub />}
-      {section === "invoice" && (
-        <div className="space-y-12">
-          <Suspense fallback={<WorkspaceLoader label="Loading invoicing workspace..." />}>
-            <InvoiceWorkspace />
-          </Suspense>
-          <InvoiceSettingsEditor />
-        </div>
-      )}
       {section === "history" && <HistoryManager />}
       {section === "audit" && <AuditCenter />}
-      {section === "release" && <ReleaseCenter />}
       {section === "system" && <SystemHealthCenter />}
       {section === "analytics" && <AnalyticsCenter />}
       {section === "users" && <UsersRolesCenter />}
-      {section === "advanced" && <AdvancedJSONManager onNavigate={requestSection} />}
+      {section === "advanced" && <AdvancedControlCenter />}
     </>
   );
 
@@ -2010,9 +1985,9 @@ function StudiosManager() {
 // Categories come from src/lib/cms.ts (PROJECT_CATEGORIES).
 
 // ============================================================================
-// ADVANCED - raw JSON editor (kept for power use)
+// ADVANCED - technical operations only
 // ============================================================================
-function AdvancedJSONManager({ onNavigate }: { onNavigate?: (section: string) => void }) {
+function AdvancedControlCenter() {
   const { session, isAdmin } = useAdminAuth();
   const qc = useQueryClient();
   const systemHealth = useServerFn(getAdminSystemHealth);
@@ -2147,4 +2122,3 @@ function AdvancedJSONManager({ onNavigate }: { onNavigate?: (section: string) =>
     </div>
   );
 }
-
