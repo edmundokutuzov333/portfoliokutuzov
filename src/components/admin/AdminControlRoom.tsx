@@ -276,7 +276,6 @@ function ControlRoom() {
         <Phase2WebsiteCMS section="media" onNavigate={requestSection} />
       )}
       {section === "clients" && <ClientsManager />}
-      {section === "studio" && <StudioAdminPage />}
       {section === "portfolio" && <PortfolioManager />}
       {section === "about" && <AboutManager />}
       {section === "contact" && <ContactManager />}
@@ -304,7 +303,7 @@ function ControlRoom() {
       {section === "system" && <SystemHealthCenter />}
       {section === "analytics" && <AnalyticsCenter />}
       {section === "users" && <UsersRolesCenter />}
-      {section === "advanced" && <AdvancedControlCenter />}
+      {section === "advanced" && <AdvancedControlCenter onNavigate={requestSection} />}
     </>
   );
 
@@ -1987,7 +1986,7 @@ function StudiosManager() {
 // ============================================================================
 // ADVANCED - technical operations only
 // ============================================================================
-function AdvancedControlCenter() {
+function AdvancedControlCenter({ onNavigate }: { onNavigate?: (section: string) => void }) {
   const { session, isAdmin } = useAdminAuth();
   const qc = useQueryClient();
   const systemHealth = useServerFn(getAdminSystemHealth);
