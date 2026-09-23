@@ -422,6 +422,7 @@ export function ReleaseCenter() {
   const discard = useServerFn(discardAdminDraft);
   const publish = useServerFn(publishAdminDrafts);
   const diff = useServerFn(getAdminDraftDiff);
+  const previewLoader = useServerFn(getAdminPreviewBundle);
   const directoryLoader = useServerFn(listAdminEditableEntities);
 
   const [filter, setFilter] = useState<"all" | "draft" | "review" | "published" | "discarded">("all");
@@ -707,7 +708,7 @@ export function ReleaseCenter() {
         <CompareModal draftId={compareId} onClose={() => setCompareId(null)} diffLoader={diff} />
       ) : null}
       {previewId ? (
-        <PreviewModal draftId={previewId} onClose={() => setPreviewId(null)} previewLoader={useServerFn(getAdminPreviewBundle)} />
+        <PreviewModal draftId={previewId} onClose={() => setPreviewId(null)} previewLoader={previewLoader} />
       ) : null}
     </div>
   );
@@ -962,7 +963,7 @@ function ComplexFields({ payload, update }: { payload: Record<string, unknown>; 
         <textarea
           className="adm-input min-h-24 font-mono text-[10px]"
           value={JSON.stringify(value, null, 2)}
-          onChange={(event) => { try { const parsed = JSON.parse(event.target.value); update(key, parsed); } catch {} }}
+          onChange={(event) => { try { const parsed = JSON.parse(event.target.value); update(key, parsed); } catch { /* Invalid JSON keeps the previous value. */ } }}
         />
       </Field>
     ))}
