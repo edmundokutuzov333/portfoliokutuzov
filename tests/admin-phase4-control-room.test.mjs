@@ -118,3 +118,56 @@ test("Phase 4 global admin shortcut is wired", () => {
   assert.match(ui, /event\.key\.toLowerCase\(\) === "k"/);
   assert.match(ui, /setSearchOpen(true)/);
 });
+
+test("Control Room navigation matches the final architecture", () => {
+  const ui = read("src/components/admin/AdminControlRoom.tsx");
+  const required = [
+    "Overview",
+    "Homepage",
+    "Navigation",
+    "About",
+    "Credentials",
+    "Services",
+    "Contact",
+    "SEO",
+    "Global Settings",
+    "Portfolio",
+    "Clients",
+    "Media",
+    "Inbox",
+    "Leads",
+    "Bookings",
+    "Newsletter",
+    "Studio Waitlist",
+    "Invoices",
+    "Payments",
+    "Invoice settings",
+    "Studio Overview",
+    "Card Library",
+    "Generation",
+    "Exports",
+    "Email",
+    "Digital Cards",
+    "AI",
+    "Analytics",
+    "History",
+    "Audit Log",
+    "Users & Roles",
+    "System Health",
+    "Advanced",
+  ];
+  for (const label of required) assert.match(ui, new RegExp('label: "' + label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + '"'));
+  for (const legacy of [
+    'label: "Studio Logos"',
+    'label: "Studio Intelligence"',
+    'label: "Site Content"',
+    'label: "Operations OS"',
+    'label: "Legacy Inbox"',
+    'label: "Invoicing"',
+    'label: "Audit Center"',
+    'label: "Release Center"',
+  ]) assert.doesNotMatch(ui, new RegExp(legacy.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  assert.doesNotMatch(ui, /AdvancedJSONManager/);
+  assert.match(ui, /AdvancedControlCenter/);
+  assert.doesNotMatch(ui, /section === "(site|studios|studio|operations|invoice|release)"/);
+});
