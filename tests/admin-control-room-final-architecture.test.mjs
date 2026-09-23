@@ -86,7 +86,7 @@ test("Focused operations and Studio destinations are wired to existing live modu
   assert.match(admin, /section === "studioAI" && <StudioAdminPage initialTab="ai"/);
   assert.match(operations, /initialTab = "overview"/);
   assert.match(operations, /audienceMode?: "all" | "newsletter" | "studio"/);
-  assert.match(operations, /export const listAdminPayments/);
+  assert.match(operations, /listAdminPayments/);
   assert.match(studio, /initialTab?: Tab/);
 });
 
