@@ -170,4 +170,7 @@ test("Control Room navigation matches the final architecture", () => {
   assert.doesNotMatch(ui, /AdvancedJSONManager/);
   assert.match(ui, /AdvancedControlCenter/);
   assert.doesNotMatch(ui, /section === "(site|studios|studio|operations|invoice|release)"/);
+  assert.doesNotMatch(ui, /requestSection\("release"\)/);
+  assert.match(ui, /releaseOpen/);
+  assert.match(ui, /ReleaseCenter/);
 });
