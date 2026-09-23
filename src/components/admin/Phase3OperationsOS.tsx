@@ -192,7 +192,7 @@ export function Phase3OperationsOS({
       </div>
 
       {tab === "overview" && <OperationsOverview data={overviewQuery.data} leads={overviewLeads} onSelectLead={(id: string) => { setSelectedLeadId(id); setTab("leads"); }} onNavigate={onNavigate} />}
-      {tab === "inbox" && <UnifiedInbox search={search} setSearch={setSearch} rows={inboxRows} onSelectLead={(id) => { setSelectedLeadId(id); setTab("leads"); }} />}
+      {tab === "inbox" && <UnifiedInbox search={search} setSearch={setSearch} rows={inboxRows} onSelectLead={(id: string) => { setSelectedLeadId(id); setTab("leads"); }} />}
       {tab === "leads" && <LeadsWorkspace search={search} setSearch={setSearch} selectedLeadId={selectedLeadId} setSelectedLeadId={setSelectedLeadId} />}
       {tab === "bookings" && <BookingsWorkspace />}
       {tab === "audience" && <AudienceWorkspace mode={audienceMode} />}
@@ -419,7 +419,7 @@ function LeadDetail({ lead, detail, clients, owners, onPatch, onStage, onCreateP
           <FieldSelect label="Client" value={lead.client_id ?? ""} onChange={(value) => void onPatch({ client_id: value || null })} options={[{ value: "", label: "No client" }, ...clients.map((client: ClientRow) => ({ value: client.id, label: client.name }))]} />
         </div>
         <div className="mt-3 grid gap-3 md:grid-cols-[1fr_auto]">
-          <FieldInput label="Next action" type="datetime-local" value={toLocalInput(lead.next_action_at)} onChange={(value) => void onPatch({ next_action_at: value ? new Date(value).toISOString() : null })} />
+          <FieldInput label="Next action" type="datetime-local" value={toLocalInput(lead.next_action_at)} onChange={(value: string) => void onPatch({ next_action_at: value ? new Date(value).toISOString() : null })} />
           <button type="button" onClick={() => void onCreateProject()} className="self-end inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-sky-300/30 px-4 text-xs text-sky-200 hover:bg-sky-300/10"><Plus size={13} /> Create project draft</button>
         </div>
         <div className="mt-3"><label className="block space-y-2"><span className="mono text-[9px] uppercase tracking-[0.18em] text-slate-600">Internal notes</span><textarea value={note} onChange={(e) => setNote(e.target.value)} rows={4} className="adm-input"/><button type="button" onClick={() => void onPatch({ notes: note || null })} className="mt-2 inline-flex min-h-9 items-center gap-2 rounded-lg border border-white/[0.08] px-3 text-[10px] text-slate-300">Save notes</button></label></div>
