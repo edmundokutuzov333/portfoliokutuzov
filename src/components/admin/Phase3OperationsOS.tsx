@@ -561,6 +561,8 @@ function PaymentsWorkspace() {
     }
   };
 
+  // refresh intentionally follows the selected payment status.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { void refresh(); }, [status]);
 
   return <div className="space-y-5">
