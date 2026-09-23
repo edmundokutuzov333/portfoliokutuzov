@@ -579,10 +579,10 @@ function ControlRoomOverview({ onNavigate }: { onNavigate: (section: string) => 
           <div className="mt-3 text-sm text-white">Clients</div>
           <div className="mt-1 text-[10px] text-slate-600">Identity and relationship management</div>
         </button>
-        <button type="button" onClick={() => onNavigate("studio")} className="rounded-xl border border-white/[0.07] bg-[#030814] p-4 text-left hover:border-sky-300/25">
+        <button type="button" onClick={() => onNavigate("studioOverview")} className="rounded-xl border border-white/[0.07] bg-[#030814] p-4 text-left hover:border-sky-300/25">
           <Sparkles size={15} className="text-sky-300" />
           <div className="mt-3 text-sm text-white">Studio</div>
-          <div className="mt-1 text-[10px] text-slate-600">{data.studio ? `${data.studio.waitlist_active ?? 0} active waitlist records` : "Studio operations"} </div>
+          <div className="mt-1 text-[10px] text-slate-600">{data.studio ? `${data.studio.waitlist_active ?? 0} active waitlist records` : "Studio workspace"} </div>
         </button>
         <button type="button" onClick={() => onNavigate("system")} className="rounded-xl border border-white/[0.07] bg-[#030814] p-4 text-left hover:border-sky-300/25">
           <ShieldCheck size={15} className="text-sky-300" />
