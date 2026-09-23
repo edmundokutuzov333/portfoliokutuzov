@@ -643,7 +643,7 @@ export const globalAdminSearch = createServerFn({ method: "POST" })
       for (const row of invoices.data ?? []) results.push({ id:"invoice:"+row.id, title:row.invoice_number ?? "Invoice", subtitle:(row.company_name ?? row.email ?? "Invoice")+" · "+(row.invoice_status ?? "draft"), type:"Invoice", target:"invoices", entity_id:row.id });
     }
     if (canMediaManage) {
-      for (const row of media.data ?? []) results.push({ id:"media:"+row.id, title:row.filename, subtitle:row.kind+" · "+row.mime_type, type:"Asset", target:"media", entity_id:row.id });
+      for (const row of media.data ?? []) results.push({ id:"media:"+row.id, title:row.filename, subtitle:row.kind+" · "+String(row.mime_type ?? ""), type:"Asset", target:"media", entity_id:row.id });
     }
 
     const q = needle.toLowerCase();
