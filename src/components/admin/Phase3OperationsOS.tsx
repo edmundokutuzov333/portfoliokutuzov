@@ -41,6 +41,7 @@ import {
   listAdminLeads,
   listAdminTasks,
   listLeadOwners,
+  listAdminPayments,
   recordInvoicePayment,
   updateAdminBooking,
   updateAdminLead,
@@ -98,8 +99,18 @@ function adminCall<T>(fn: any) {
   return fn({ data: {} }) as Promise<T>;
 }
 
-export function Phase3OperationsOS({ onNavigate }: { onNavigate?: (section: string) => void }) {
-  const [tab, setTab] = useState<Tab>("overview");
+export function Phase3OperationsOS({
+  onNavigate,
+  initialTab = "overview",
+  audienceMode = "all",
+  financeMode = "full",
+}: {
+  onNavigate?: (section: string) => void;
+  initialTab?: Tab;
+  audienceMode?: "all" | "newsletter" | "studio";
+  financeMode?: "full" | "payments";
+}) {
+  const [tab, setTab] = useState<Tab>(initialTab);
   const qc = useQueryClient();
   const overview = useServerFn(getOperationsOverview);
   const inboxLoader = useServerFn(listAdminInbox);
@@ -184,9 +195,9 @@ export function Phase3OperationsOS({ onNavigate }: { onNavigate?: (section: stri
       {tab === "inbox" && <UnifiedInbox search={search} setSearch={setSearch} rows={inboxRows} onSelectLead={(id) => { setSelectedLeadId(id); setTab("leads"); }} />}
       {tab === "leads" && <LeadsWorkspace search={search} setSearch={setSearch} selectedLeadId={selectedLeadId} setSelectedLeadId={setSelectedLeadId} />}
       {tab === "bookings" && <BookingsWorkspace />}
-      {tab === "audience" && <AudienceWorkspace />}
+      {tab === "audience" && <AudienceWorkspace mode={audienceMode} />}
       {tab === "crm" && <ClientCRMWorkspace />}
-      {tab === "finance" && <FinanceWorkspace />}
+      {tab === "finance" && <FinanceWorkspace mode={financeMode} />}
       {tab === "studio" && <StudioWorkspace />}
       {tab === "tasks" && <TasksWorkspace />}
     </div>
@@ -445,7 +456,7 @@ function BookingsWorkspace() {
   return <div><SectionHeader kicker="Operations / Scheduling" title="Bookings." description="Requested, confirmed, rescheduled, completed and cancelled." /><div className="space-y-2">{rows.map((row)=><article key={row.id} className="rounded-xl border border-white/[0.07] bg-[#030814] p-4"><div className="flex flex-wrap items-start gap-3"><div className="min-w-0 flex-1"><div className="text-sm font-medium text-white">{row.name}</div><div className="mt-1 text-xs text-slate-600"><a className="hover:text-sky-200" href={`mailto:${row.email}`}>{row.email}</a>{row.timezone ? ` · ${row.timezone}` : ""}</div></div><Pill label={bookingLabels[row.booking_status as BookingStatus] ?? row.booking_status} tone={row.booking_status === "confirmed" ? "green" : row.booking_status === "cancelled" ? "muted" : "sky"} /></div><div className="mt-4 grid gap-3 md:grid-cols-[1fr_1fr_160px]"><Info label="Requested date" value={row.preferred_date} /><Info label="Preferred time" value={row.preferred_time} /><FieldSelect label="Status" value={row.booking_status} onChange={async (value) => { try { await update({ data: { id: row.id, booking_status: value as BookingStatus } }); refresh(); toast.success("Booking status updated"); } catch(error){toast.error(error instanceof Error?error.message:"Update failed");} }} options={BOOKING_STATUSES.map((status)=>({value:status,label:bookingLabels[status]}))}/></div><div className="mt-3"><FieldInput label="Internal notes" defaultValue={row.admin_notes ?? ""} onBlur={async (value: string) => { if(value !== (row.admin_notes ?? "")) { try { await update({data:{id:row.id,admin_notes:value||null}}); toast.success("Booking note saved"); refresh(); } catch(error){toast.error(error instanceof Error?error.message:"Update failed");} } }} /></div></article>)}{rows.length===0&&<EmptyState label="No bookings."/>}</div></div>;
 }
 
-function AudienceWorkspace() {
+function AudienceWorkspace({ mode = "all" }: { mode?: "all" | "newsletter" | "studio" }) {
   const load = useServerFn(listAdminAudience);
   const updateSubscriber = useServerFn(updateAdminSubscriber);
   const updateWaitlist = useServerFn(updateAdminWaitlist);
@@ -453,7 +464,7 @@ function AudienceWorkspace() {
   const [data, setData] = useState<AudienceData>({ subscribers: [], waitlist: [] });
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<"all" | "active" | "inactive" | "unsubscribed">("all");
-  const [kind, setKind] = useState<"all" | "newsletter" | "studio">("all");
+  const [kind, setKind] = useState<"all" | "newsletter" | "studio">(mode === "all" ? "all" : mode);
 
   const refresh = () => void load({ data: {} })
     .then((result: any) => setData({ subscribers: result.subscribers ?? [], waitlist: result.waitlist ?? [] }))
@@ -497,15 +508,15 @@ function AudienceWorkspace() {
     </div>
     <div className="mb-5 grid gap-2 md:grid-cols-[1fr_auto_auto]">
       <div className="relative"><Search size={13} className="absolute left-3 top-3 text-slate-600" /><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search email, name or source..." className="adm-input pl-9" /></div>
-      <select value={kind} onChange={(e) => setKind(e.target.value as any)} className="adm-input md:w-40"><option value="all">All audiences</option><option value="newsletter">Newsletter</option><option value="studio">Studio waitlist</option></select>
+      {mode === "all" ? <select value={kind} onChange={(e) => setKind(e.target.value as any)} className="adm-input md:w-40"><option value="all">All audiences</option><option value="newsletter">Newsletter</option><option value="studio">Studio waitlist</option></select> : null}
       <select value={status} onChange={(e) => setStatus(e.target.value as any)} className="adm-input md:w-40"><option value="all">All statuses</option><option value="active">Active</option><option value="inactive">Inactive</option><option value="unsubscribed">Unsubscribed</option></select>
     </div>
-    <Panel kicker="Newsletter" title={`${subscribers.length} visible · ${data.subscribers.length} total`}>
+    {mode !== "studio" ? <Panel kicker="Newsletter" title={`${subscribers.length} visible · ${data.subscribers.length} total`}>
       <div className="space-y-2">{subscribers.map((row)=><div key={row.id} className="flex flex-wrap items-center gap-3 rounded-lg border border-white/[0.06] p-3"><div className="min-w-0 flex-1"><div className="text-sm text-slate-200">{row.email}</div><div className="text-[10px] text-slate-600">{row.name ?? "No name"} · {row.source ?? "website"} · {formatDate(row.created_at)}</div></div><FieldSelect label="" value={row.status} onChange={async(value: string)=>{try{await updateSubscriber({data:{id:row.id,status:value as any}});refresh();toast.success("Subscriber updated");}catch(error){toast.error(error instanceof Error?error.message:"Update failed");}}} options={[{value:"active",label:"Active"},{value:"inactive",label:"Inactive"},{value:"unsubscribed",label:"Unsubscribed"}]}/></div>)}{subscribers.length===0&&<EmptyState label="No newsletter records match the filters."/ >}</div>
-    </Panel>
-    <div className="mt-5"><Panel kicker="Studio" title={`${waitlist.length} visible · ${data.waitlist.length} total`}>
+    </Panel> : null}
+    {mode !== "newsletter" ? <div className="mt-5"><Panel kicker="Studio" title={`${waitlist.length} visible · ${data.waitlist.length} total`}>
       <div className="space-y-2">{waitlist.map((row)=><div key={row.id} className="flex flex-wrap items-center gap-3 rounded-lg border border-white/[0.06] p-3"><div className="min-w-0 flex-1"><div className="text-sm text-slate-200">{row.email}</div><div className="text-[10px] text-slate-600">{row.source ?? "studio"} · {formatDate(row.created_at)}</div></div><FieldSelect label="" value={row.status} onChange={async(value: string)=>{try{await updateWaitlist({data:{id:row.id,status:value as any}});refresh();toast.success("Waitlist updated");}catch(error){toast.error(error instanceof Error?error.message:"Update failed");}}} options={[{value:"active",label:"Active"},{value:"inactive",label:"Inactive"}]}/></div>)}{waitlist.length===0&&<EmptyState label="No Studio waitlist records match the filters."/ >}</div>
-    </Panel></div>
+    </Panel></div> : null}
   </div>;
 }
 function ClientCRMWorkspace() {
@@ -516,7 +527,8 @@ function ClientCRMWorkspace() {
   return <div><SectionHeader kicker="Operations / CRM" title="Client relationships." description="Clients remain the canonical identity. Projects and leads attach to the client without removing legacy client_name data."/><div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{rows.map((row)=><article key={row.id} className="rounded-xl border border-white/[0.07] bg-[#030814] p-4"><div className="flex items-start justify-between gap-3"><div><div className="text-sm font-medium text-white">{row.name}</div><div className="mt-1 text-[10px] text-slate-600">{row.kind} · {row.is_active?"active":"hidden"}</div></div><Pill label={row.active_lead_count+" active leads"} tone="sky"/></div><div className="mt-4 grid grid-cols-2 gap-2"><MetricMini label="Projects" value={row.project_count}/><MetricMini label="Leads" value={row.lead_count}/></div></article>)}</div>{rows.length===0&&<EmptyState label="No client records."/ >}</div>;
 }
 
-function FinanceWorkspace() {
+function FinanceWorkspace({ mode = "full" }: { mode?: "full" | "payments" }) {
+  if (mode === "payments") return <PaymentsWorkspace />;
   const overview = useServerFn(getOperationsOverview);
   const [data, setData] = useState<any>(null);
   const refresh = () => void overview({ data: {} }).then((result: any) => setData(result)).catch((error: any) => toast.error(error?.message ?? "Finance overview could not be loaded"));
@@ -530,6 +542,47 @@ function FinanceWorkspace() {
     <InvoiceWorkspace/>
   </div>;
 }
+
+function PaymentsWorkspace() {
+  const load = useServerFn(listAdminPayments);
+  const [rows, setRows] = useState<any[]>([]);
+  const [status, setStatus] = useState<"all" | "pending" | "confirmed" | "rejected">("all");
+  const [loading, setLoading] = useState(true);
+
+  const refresh = async () => {
+    setLoading(true);
+    try {
+      const result: any = await load({ data: { status, limit: 300 } });
+      setRows(result.rows ?? []);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Payments could not be loaded");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { void refresh(); }, [status]);
+
+  return <div className="space-y-5">
+    <SectionHeader kicker="Finance / Payments" title="Payment ledger." description="Confirmed, pending and rejected payment records linked to leads and briefing submissions." />
+    <div className="flex flex-wrap items-center gap-2">
+      {(["all","pending","confirmed","rejected"] as const).map((value) => (
+        <button key={value} type="button" onClick={() => setStatus(value)} className={`mono rounded-full border px-3 py-1.5 text-[10px] transition ${status === value ? "border-sky-300/35 bg-sky-300/10 text-sky-100" : "border-white/10 text-slate-500 hover:text-white"}`}>
+          {value.toUpperCase()}
+        </button>
+      ))}
+      <button type="button" onClick={() => void refresh()} className="ml-auto inline-flex min-h-9 items-center gap-2 rounded-lg border border-white/[0.08] px-3 text-[10px] text-slate-300">
+        <RefreshCw size={12} className={loading ? "animate-spin" : ""} /> Refresh
+      </button>
+    </div>
+    <Panel kicker="Ledger" title={`${rows.length} payment records`}>
+      {loading ? <div className="grid min-h-40 place-items-center text-slate-500"><RefreshCw size={16} className="animate-spin" /></div> :
+        rows.length === 0 ? <EmptyState label="No payment records match the filter." /> :
+        <div className="overflow-x-auto"><table className="w-full min-w-[760px] text-left"><thead><tr className="bg-white/[0.03] mono text-[10px] tracking-[0.16em] text-slate-500"><th className="px-4 py-3">DATE</th><th className="px-4 py-3">CLIENT</th><th className="px-4 py-3">METHOD</th><th className="px-4 py-3">REFERENCE</th><th className="px-4 py-3 text-right">AMOUNT</th><th className="px-4 py-3">STATUS</th></tr></thead><tbody>{rows.map((row:any) => <tr key={row.id} className="border-t border-white/[0.06] text-xs"><td className="px-4 py-3 text-slate-500">{formatDate(row.paid_at ?? row.created_at)}</td><td className="px-4 py-3 text-slate-200">{row.lead?.company_name || row.briefing?.company_name || row.lead?.full_name || row.briefing?.full_name || row.lead?.email || row.briefing?.email || "Unlinked"}</td><td className="px-4 py-3 text-slate-400">{row.method ?? "unspecified"}</td><td className="px-4 py-3 mono text-slate-400">{row.reference ?? "—"}</td><td className="px-4 py-3 text-right text-slate-100">{row.currency} {Number(row.amount).toLocaleString()}</td><td className="px-4 py-3"><Pill label={row.status} tone={row.status === "confirmed" ? "green" : row.status === "rejected" ? "muted" : "sky"} /></td></tr>)}</tbody></table></div>}
+    </Panel>
+  </div>;
+}
+
 
 function StudioWorkspace() {
   const load=useServerFn(getStudioOperationsSnapshot);
