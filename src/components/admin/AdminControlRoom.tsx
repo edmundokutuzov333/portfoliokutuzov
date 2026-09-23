@@ -128,28 +128,42 @@ type Section =
   | "overview"
   | "homepage"
   | "navigation"
+  | "about"
   | "credentials"
   | "services"
-  | "global"
-  | "seo"
-  | "media"
-  | "site"
-  | "clients"
-  | "studios"
-  | "portfolio"
-  | "studio"
-  | "about"
   | "contact"
-  | "operations"
+  | "seo"
+  | "global"
+  | "portfolio"
+  | "clients"
+  | "media"
   | "inbox"
-  | "invoice"
+  | "leads"
+  | "bookings"
+  | "newsletter"
+  | "studioWaitlist"
+  | "invoices"
+  | "payments"
+  | "invoiceSettings"
+  | "studioOverview"
+  | "studioLibrary"
+  | "studioGeneration"
+  | "studioExports"
+  | "studioEmail"
+  | "digitalCards"
+  | "studioAI"
   | "history"
   | "audit"
-  | "release"
-  | "system"
   | "analytics"
   | "users"
-  | "advanced";
+  | "system"
+  | "advanced"
+  | "site"
+  | "studios"
+  | "studio"
+  | "operations"
+  | "invoice"
+  | "release";
 
 function ControlRoom() {
   useAdminInputStyle();
@@ -193,7 +207,7 @@ function ControlRoom() {
   const allItems = [
     { id: "overview" as const, label: "Overview", group: "CONTROL", Icon: LayoutDashboard, roles: ["owner", "admin", "editor", "finance"] },
     { id: "homepage" as const, label: "Homepage", group: "WEBSITE", Icon: Home, roles: ["owner", "admin", "editor"] },
-    { id: "navigation" as const, label: "Navigation", group: "WEBSITE", Icon: ArrowUp, roles: ["owner", "admin", "editor"] },
+    { id: "navigation" as const, label: "Navigation", group: "WEBSITE", Icon: Menu, roles: ["owner", "admin", "editor"] },
     { id: "about" as const, label: "About", group: "WEBSITE", Icon: UserIcon, roles: ["owner", "admin", "editor"] },
     { id: "credentials" as const, label: "Credentials", group: "WEBSITE", Icon: UserIcon, roles: ["owner", "admin", "editor"] },
     { id: "services" as const, label: "Services", group: "WEBSITE", Icon: Briefcase, roles: ["owner", "admin", "editor"] },
@@ -202,19 +216,27 @@ function ControlRoom() {
     { id: "global" as const, label: "Global Settings", group: "WEBSITE", Icon: Settings2, roles: ["owner", "admin", "editor"] },
     { id: "portfolio" as const, label: "Portfolio", group: "CONTENT", Icon: Briefcase, roles: ["owner", "admin", "editor"] },
     { id: "clients" as const, label: "Clients", group: "CONTENT", Icon: Users, roles: ["owner", "admin", "editor"] },
-    { id: "studios" as const, label: "Studio Logos", group: "CONTENT", Icon: Users, roles: ["owner", "admin", "editor"] },
-    { id: "studio" as const, label: "Studio Intelligence", group: "STUDIO", Icon: Sparkles, roles: ["owner", "admin", "editor"] },
-    { id: "media" as const, label: "Media Library", group: "CONTENT", Icon: ImageIcon, roles: ["owner", "admin", "editor"] },
-    { id: "site" as const, label: "Site Content", group: "CONTENT", Icon: Home, roles: ["owner", "admin", "editor"] },
-    { id: "operations" as const, label: "Operations OS", group: "OPERATIONS", Icon: LayoutDashboard, roles: ["owner", "admin", "finance"] },
-    { id: "inbox" as const, label: "Legacy Inbox", group: "OPERATIONS", Icon: Inbox, roles: ["owner", "admin", "finance"] },
-    { id: "invoice" as const, label: "Invoicing", group: "FINANCE", Icon: FileText, roles: ["owner", "admin", "finance"] },
-    { id: "history" as const, label: "History", group: "SYSTEM", Icon: History, roles: ["owner", "admin", "editor"] },
-    { id: "audit" as const, label: "Audit Center", group: "SYSTEM", Icon: History, roles: ["owner", "admin"] },
-    { id: "release" as const, label: "Release Center", group: "SYSTEM", Icon: Send, roles: ["owner", "admin", "editor"] },
-    { id: "system" as const, label: "System Health", group: "SYSTEM", Icon: ShieldCheck, roles: ["owner", "admin"] },
+    { id: "media" as const, label: "Media", group: "CONTENT", Icon: ImageIcon, roles: ["owner", "admin", "editor"] },
+    { id: "inbox" as const, label: "Inbox", group: "OPERATIONS", Icon: Inbox, roles: ["owner", "admin", "finance"] },
+    { id: "leads" as const, label: "Leads", group: "OPERATIONS", Icon: Users, roles: ["owner", "admin", "finance"] },
+    { id: "bookings" as const, label: "Bookings", group: "OPERATIONS", Icon: FileText, roles: ["owner", "admin", "finance"] },
+    { id: "newsletter" as const, label: "Newsletter", group: "OPERATIONS", Icon: Mail, roles: ["owner", "admin", "finance"] },
+    { id: "studioWaitlist" as const, label: "Studio Waitlist", group: "OPERATIONS", Icon: Sparkles, roles: ["owner", "admin", "finance"] },
+    { id: "invoices" as const, label: "Invoices", group: "FINANCE", Icon: FileText, roles: ["owner", "admin", "finance"] },
+    { id: "payments" as const, label: "Payments", group: "FINANCE", Icon: CircleDollarSign, roles: ["owner", "admin", "finance"] },
+    { id: "invoiceSettings" as const, label: "Invoice settings", group: "FINANCE", Icon: Settings2, roles: ["owner", "admin", "finance"] },
+    { id: "studioOverview" as const, label: "Studio Overview", group: "STUDIO", Icon: LayoutDashboard, roles: ["owner", "admin", "editor"] },
+    { id: "studioLibrary" as const, label: "Card Library", group: "STUDIO", Icon: ImageIcon, roles: ["owner", "admin", "editor"] },
+    { id: "studioGeneration" as const, label: "Generation", group: "STUDIO", Icon: Sparkles, roles: ["owner", "admin", "editor"] },
+    { id: "studioExports" as const, label: "Exports", group: "STUDIO", Icon: Upload, roles: ["owner", "admin", "editor"] },
+    { id: "studioEmail" as const, label: "Email", group: "STUDIO", Icon: Mail, roles: ["owner", "admin", "editor"] },
+    { id: "digitalCards" as const, label: "Digital Cards", group: "STUDIO", Icon: ExternalLinkIcon, roles: ["owner", "admin", "editor"] },
+    { id: "studioAI" as const, label: "AI", group: "STUDIO", Icon: Sparkles, roles: ["owner", "admin", "editor"] },
     { id: "analytics" as const, label: "Analytics", group: "SYSTEM", Icon: BarChart3, roles: ["owner", "admin"] },
+    { id: "history" as const, label: "History", group: "SYSTEM", Icon: History, roles: ["owner", "admin", "editor"] },
+    { id: "audit" as const, label: "Audit Log", group: "SYSTEM", Icon: History, roles: ["owner", "admin"] },
     { id: "users" as const, label: "Users & Roles", group: "SYSTEM", Icon: Users, roles: ["owner", "admin"] },
+    { id: "system" as const, label: "System Health", group: "SYSTEM", Icon: ShieldCheck, roles: ["owner", "admin"] },
     { id: "advanced" as const, label: "Advanced", group: "SYSTEM", Icon: Code2, roles: ["owner", "admin"] },
   ] as const;
   const items = allItems.filter((item) => item.roles.includes(role as never));
@@ -257,6 +279,25 @@ function ControlRoom() {
       {section === "portfolio" && <PortfolioManager />}
       {section === "about" && <AboutManager />}
       {section === "contact" && <ContactManager />}
+      {section === "inbox" && <InboxHub />}
+      {section === "leads" && <Phase3OperationsOS initialTab="leads" />}
+      {section === "bookings" && <Phase3OperationsOS initialTab="bookings" />}
+      {section === "newsletter" && <Phase3OperationsOS initialTab="audience" audienceMode="newsletter" />}
+      {section === "studioWaitlist" && <Phase3OperationsOS initialTab="audience" audienceMode="studio" />}
+      {section === "payments" && <Phase3OperationsOS initialTab="finance" financeMode="payments" />}
+      {section === "invoices" && (
+        <Suspense fallback={<WorkspaceLoader label="Loading invoices workspace..." />}>
+          <InvoiceWorkspace />
+        </Suspense>
+      )}
+      {section === "invoiceSettings" && <InvoiceSettingsEditor />}
+      {section === "studioOverview" && <StudioAdminPage initialTab="overview" />}
+      {section === "studioLibrary" && <StudioAdminPage initialTab="library" />}
+      {section === "studioGeneration" && <StudioAdminPage initialTab="generation" />}
+      {section === "studioExports" && <StudioAdminPage initialTab="export" />}
+      {section === "studioEmail" && <StudioAdminPage initialTab="email" />}
+      {section === "digitalCards" && <StudioAdminPage initialTab="digital" />}
+      {section === "studioAI" && <StudioAdminPage initialTab="ai" />}
       {section === "operations" && (
         <Phase3OperationsOS onNavigate={requestSection} />
       )}
