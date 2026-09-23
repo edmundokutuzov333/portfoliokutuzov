@@ -260,9 +260,6 @@ export const saveAdminService = createServerFn({ method: "POST" })
   .validator((i: unknown) => ServiceSchema.parse(i))
   .handler(async ({ data, context }) => {
     await assertPermission(context, "content.write");
-    if (data.key === "invoice_settings") {
-      await assertPermission(context, "finance.write");
-    }
     const payload = {
       id: data.id,
       number: data.number ?? null,
@@ -576,6 +573,9 @@ export const saveAdminSiteSetting = createServerFn({ method: "POST" })
   .validator((i: unknown) => SiteSettingSchema.parse(i))
   .handler(async ({ data, context }) => {
     await assertPermission(context, "content.write");
+    if (data.key === "invoice_settings") {
+      await assertPermission(context, "finance.write");
+    }
     const payload = {
       key: data.key,
       value: data.value,
