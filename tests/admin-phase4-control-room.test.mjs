@@ -58,8 +58,10 @@ test("Phase 4 integrates Studio Intelligence and global Analytics into the Contr
   const ui = read("src/components/admin/Phase4ControlRoom.tsx");
   const studioRoute = read("src/routes/admin.studio.tsx");
   const studioSurface = read("src/components/admin/StudioIntelligenceSurface.tsx");
-  assert.match(admin, /StudioIntelligenceSurface/);
-  assert.match(admin, /Studio Intelligence/);
+  assert.match(admin, /StudioAdminPage/);
+  assert.match(admin, /studioOverview/);
+  assert.match(admin, /studioLibrary/);
+  assert.match(admin, /studioAI/);
   assert.match(admin, /Analytics/);
   assert.match(ui, /AnalyticsCenter/);
   assert.match(ui, /getAdminAnalyticsOverview/);
@@ -112,7 +114,7 @@ test("Phase 4 final hardening keeps finance drafts private and realtime coverage
 
 test("Phase 4 global admin shortcut is wired", () => {
   const ui = read("src/components/admin/Phase4ControlRoom.tsx");
-  assert.match(ui, /event.metaKey || event.ctrlKey/);
-  assert.match(ui, /event.key.toLowerCase() === "k"/);
+  assert.match(ui, /event.metaKey \|\| event.ctrlKey/);
+  assert.match(ui, /event\.key\.toLowerCase\(\) === "k"/);
   assert.match(ui, /setSearchOpen(true)/);
 });
