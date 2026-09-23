@@ -160,7 +160,10 @@ function useAdminDirtyState() {
   const [dirty, setDirty] = useState(hasAdminDirty());
 
   useEffect(() => {
-    return subscribeAdminDirty(() => setDirty(hasAdminDirty()));
+    const unsubscribe = subscribeAdminDirty(() => setDirty(hasAdminDirty()));
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   return { dirty, keys: getAdminDirtyKeys() };
