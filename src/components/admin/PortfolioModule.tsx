@@ -610,7 +610,7 @@ function ProjectEditor({ project, onClose }: { project: DbProject; onClose: () =
                   checked={form.is_published}
                   onChange={(e) => set("is_published", e.target.checked)}
                 />{" "}
-                Published (live)
+                Publish on release
               </label>
               <label className="inline-flex items-center gap-2 text-sm text-slate-300">
                 <input
