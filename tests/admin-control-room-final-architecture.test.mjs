@@ -87,7 +87,7 @@ test("Focused operations and Studio destinations are wired to existing live modu
   assert.match(operations, /initialTab = "overview"/);
   assert.match(operations, /audienceMode?: "all" | "newsletter" | "studio"/);
   assert.match(operations, /listAdminPayments/);
-  assert.match(studio, /initialTab?: Tab/);
+  assert.match(studio, /initialTab = "overview"/);
 });
 
 test("Global search routes to canonical Control Room destinations", () => {
