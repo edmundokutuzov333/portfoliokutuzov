@@ -278,7 +278,7 @@ export const createAdminService = createServerFn({ method: "POST" })
     await assertPermission(context, "content.write");
     const { data: row, error } = await context.supabase
       .from("services")
-      .insert(data)
+      .insert({ ...data, is_active: false })
       .select("*")
       .single();
     if (error) throw new Error(error.message);
@@ -354,7 +354,11 @@ export const createAdminStat = createServerFn({ method: "POST" })
   .validator((i: unknown) => StatSchema.omit({ id: true }).parse(i))
   .handler(async ({ data, context }) => {
     await assertPermission(context, "content.write");
-    const { data: row, error } = await context.supabase.from("stats").insert(data).select("*").single();
+    const { data: row, error } = await context.supabase
+      .from("stats")
+      .insert({ ...data, is_active: false })
+      .select("*")
+      .single();
     if (error) throw new Error(error.message);
     return { ok: true, row };
   });
@@ -399,7 +403,11 @@ export const createAdminMethod = createServerFn({ method: "POST" })
   .validator((i: unknown) => MethodSchema.omit({ id: true }).parse(i))
   .handler(async ({ data, context }) => {
     await assertPermission(context, "content.write");
-    const { data: row, error } = await context.supabase.from("about_method").insert(data).select("*").single();
+    const { data: row, error } = await context.supabase
+      .from("about_method")
+      .insert({ ...data, is_active: false })
+      .select("*")
+      .single();
     if (error) throw new Error(error.message);
     return { ok: true, row };
   });
@@ -589,7 +597,7 @@ export const createAdminClient = createServerFn({ method: "POST" })
     await assertPermission(context, "content.write");
     const { data: row, error } = await context.supabase
       .from("clients")
-      .insert(data)
+      .insert({ ...data, is_active: false })
       .select("*")
       .single();
     if (error) throw new Error(error.message);
