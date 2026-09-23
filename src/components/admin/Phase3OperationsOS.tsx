@@ -453,6 +453,7 @@ function BookingsWorkspace() {
   const [rows, setRows] = useState<BookingRow[]>([]);
   const refresh = () => void load({ data: {} }).then((result: any) => setRows(result.rows ?? [])).catch((error: any) => toast.error(error?.message ?? "Bookings could not be loaded"));
   useEffect(() => { refresh(); }, []);
+  if (mode === "payments") return <PaymentsWorkspace />;
   return <div><SectionHeader kicker="Operations / Scheduling" title="Bookings." description="Requested, confirmed, rescheduled, completed and cancelled." /><div className="space-y-2">{rows.map((row)=><article key={row.id} className="rounded-xl border border-white/[0.07] bg-[#030814] p-4"><div className="flex flex-wrap items-start gap-3"><div className="min-w-0 flex-1"><div className="text-sm font-medium text-white">{row.name}</div><div className="mt-1 text-xs text-slate-600"><a className="hover:text-sky-200" href={`mailto:${row.email}`}>{row.email}</a>{row.timezone ? ` · ${row.timezone}` : ""}</div></div><Pill label={bookingLabels[row.booking_status as BookingStatus] ?? row.booking_status} tone={row.booking_status === "confirmed" ? "green" : row.booking_status === "cancelled" ? "muted" : "sky"} /></div><div className="mt-4 grid gap-3 md:grid-cols-[1fr_1fr_160px]"><Info label="Requested date" value={row.preferred_date} /><Info label="Preferred time" value={row.preferred_time} /><FieldSelect label="Status" value={row.booking_status} onChange={async (value) => { try { await update({ data: { id: row.id, booking_status: value as BookingStatus } }); refresh(); toast.success("Booking status updated"); } catch(error){toast.error(error instanceof Error?error.message:"Update failed");} }} options={BOOKING_STATUSES.map((status)=>({value:status,label:bookingLabels[status]}))}/></div><div className="mt-3"><FieldInput label="Internal notes" defaultValue={row.admin_notes ?? ""} onBlur={async (value: string) => { if(value !== (row.admin_notes ?? "")) { try { await update({data:{id:row.id,admin_notes:value||null}}); toast.success("Booking note saved"); refresh(); } catch(error){toast.error(error instanceof Error?error.message:"Update failed");} } }} /></div></article>)}{rows.length===0&&<EmptyState label="No bookings."/>}</div></div>;
 }
 
@@ -528,7 +529,6 @@ function ClientCRMWorkspace() {
 }
 
 function FinanceWorkspace({ mode = "full" }: { mode?: "full" | "payments" }) {
-  if (mode === "payments") return <PaymentsWorkspace />;
   const overview = useServerFn(getOperationsOverview);
   const [data, setData] = useState<any>(null);
   const refresh = () => void overview({ data: {} }).then((result: any) => setData(result)).catch((error: any) => toast.error(error?.message ?? "Finance overview could not be loaded"));
