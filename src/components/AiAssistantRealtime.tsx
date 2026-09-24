@@ -464,10 +464,11 @@ export function AiAssistantRealtime() {
           trackEvent({ action: "ai_open", element: "realtime_assistant" });
         }}
         aria-label={ui.title}
-        className="fixed bottom-6 right-6 z-[1100] grid h-14 w-14 place-items-center rounded-full bg-[var(--color-text-primary)] text-[var(--color-bg)] shadow-2xl transition hover:scale-105 focus-visible:outline-2 focus-visible:outline-[var(--color-accent-hover)]"
+        ref={fabRef}
+        className="fixed bottom-5 right-5 z-[1100] inline-flex min-h-12 items-center gap-2 border-2 border-cal bg-cal px-4 py-3 text-sm font-semibold text-preto transition hover:bg-[var(--work)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--work)] focus-visible:ring-offset-2 focus-visible:ring-offset-preto sm:right-6"
       >
-        <Bot size={24} aria-hidden="true" />
-        <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-sky-400" />
+        <Bot size={18} aria-hidden="true" />
+        <span>Talk to Kutuzov</span>
       </button>
     );
   }
@@ -476,35 +477,40 @@ export function AiAssistantRealtime() {
     <section
       id="ai-assistant-container"
       aria-label={ui.title}
-      className={`fixed bottom-6 right-4 z-[1100] flex flex-col overflow-hidden rounded-[26px] border border-white/10 bg-[#040a14]/[0.97] shadow-[0_24px_80px_rgba(0,0,0,0.5)] backdrop-blur-2xl sm:right-6 ${minimized ? "h-14 w-80" : "h-[min(720px,86vh)] w-[min(500px,calc(100vw-24px))]"}`}
+      aria-modal="true"
+      role="dialog"
+      aria-labelledby="ai-assistant-title"
+      ref={panelRef}
+      data-ai-phase13="true"
+      className={`fixed bottom-4 right-4 z-[1100] flex flex-col overflow-hidden border-2 border-cal bg-preto text-cal sm:right-6 ${minimized ? "h-14 w-80" : "h-[min(720px,86vh)] w-[min(500px,calc(100vw-24px))]"}`}
     >
-      <header className="relative flex items-center justify-between border-b border-white/10 px-5 py-4">
+      <header className="flex items-center justify-between border-b-2 border-cal/20 px-5 py-4">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,rgba(56,189,248,0.10),transparent_42%)]" />
         <div className="relative min-w-0">
-          <div className="flex items-center gap-2 text-sm font-medium text-white">
-            <span className="grid h-7 w-7 place-items-center rounded-full border border-sky-300/20 bg-sky-300/10 text-sky-200">
+          <div className="flex items-center gap-2 text-sm font-semibold text-cal">
+            <span className="grid h-10 w-10 place-items-center border-2 border-cal/25 text-[var(--work)]">
               <Bot size={15} aria-hidden="true" />
             </span>
             <span>{ui.title}</span>
           </div>
-          <div className="mono mt-1 text-[9px] uppercase tracking-[0.16em] text-sky-300">
+          <div className="mt-2 text-sm text-fumo">
             {ui.subtitle}
             {voiceState !== "idle" ? ` · ${status}` : ""}
           </div>
         </div>
         <div className="relative flex items-center gap-1">
           {voiceState !== "idle" && (
-            <div className="mr-2 flex h-6 items-center gap-0.5" aria-label={status}>
+            <div className="mr-2 flex min-h-11 items-center gap-1 text-sm" aria-label={status}>
               {[0, 1, 2, 3, 4].map((bar) => (
                 <span
                   key={bar}
-                  className="w-0.5 rounded-full bg-sky-300 transition-transform duration-75"
+                  className="w-0.5 bg-[var(--work)] transition-transform duration-75"
                   style={{ height: `${6 + Math.round(audioLevel * (bar + 2) * 7)}px` }}
                 />
               ))}
             </div>
           )}
-          <button type="button" onClick={() => setMinimized((value) => !value)} aria-label={minimized ? ui.max : ui.min} className="grid h-8 w-8 place-items-center rounded-full hover:bg-white/5">
+          <button type="button" onClick={() => setMinimized((value) => !value)} aria-label={minimized ? ui.max : ui.min} className="grid min-h-11 min-w-11 place-items-center border-2 border-cal/25 hover:border-[var(--work)]">
             {minimized ? <Maximize2 size={14} aria-hidden="true" /> : <Minimize2 size={14} aria-hidden="true" />}
           </button>
           <button
@@ -528,13 +534,13 @@ export function AiAssistantRealtime() {
               {messages.map((message) => (
                 <article
                   key={message.id}
-                  className={`rounded-[22px] ${message.id === "welcome" ? "mr-2 border border-sky-300/10 bg-[linear-gradient(145deg,rgba(14,30,50,0.96),rgba(4,13,25,0.96))] p-5" : message.role === "user" ? "ml-10 bg-white/[0.06] p-3" : "mr-4 bg-sky-500/[0.06] p-3"}`}
+                  className={message.role === "user" ? "ml-10 border-2 border-cal/20 bg-cal p-3 text-preto" : "mr-4 border-2 border-cal/20 bg-black p-4 text-cal"}
                 >
                   {message.id === "welcome" ? (
                     <>
-                      <div className="mono text-[9px] uppercase tracking-[0.22em] text-sky-300">{ui.welcomeEyebrow}</div>
-                      <h2 className="mt-3 max-w-[22rem] text-[25px] font-medium leading-[1.05] tracking-[-0.035em] text-white">{ui.welcomeTitle}</h2>
-                      <p className="mt-4 max-w-[30rem] text-[14px] leading-6 text-slate-300">{message.text}</p>
+                      <div className="text-sm font-semibold text-[var(--work)]">{ui.welcomeEyebrow}</div>
+                      <h2 className="mt-3 max-w-[32rem] font-cartaz text-2xl font-semibold leading-tight text-cal">{ui.welcomeTitle}</h2>
+                      <p className="mt-4 max-w-[34rem] text-sm leading-6 text-fumo">{message.text}</p>
                       <div className="mt-5 grid gap-2 sm:grid-cols-2">
                         {(message.quickPrompts ?? []).map((prompt) => (
                           <button
@@ -542,7 +548,7 @@ export function AiAssistantRealtime() {
                             type="button"
                             onClick={() => submitQuickPrompt(prompt)}
                             disabled={streaming}
-                            className="group flex min-h-12 items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.025] px-3.5 py-3 text-left text-[11px] font-medium text-slate-200 transition hover:border-sky-300/30 hover:bg-sky-300/[0.06] disabled:opacity-50"
+                            className="group flex min-h-12 items-center justify-between gap-3 border-2 border-cal/20 px-3.5 py-3 text-left text-sm font-medium text-cal transition hover:border-[var(--work)] hover:text-[var(--work)] disabled:opacity-50"
                           >
                             <span>{prompt}</span>
                             <ArrowUpRight size={13} className="shrink-0 text-sky-300 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden="true" />
@@ -552,7 +558,7 @@ export function AiAssistantRealtime() {
                     </>
                   ) : (
                     <>
-                      <div className="whitespace-pre-wrap text-[13px] leading-6 text-slate-200">
+                      <div className="whitespace-pre-wrap text-sm leading-6 text-cal">
                         {message.text}
                         {message.streaming ? <span className="ml-1 inline-block h-3 w-1 animate-pulse bg-sky-300" /> : null}
                       </div>
@@ -563,23 +569,23 @@ export function AiAssistantRealtime() {
                               key={project.id}
                               type="button"
                               onClick={() => navigate({ to: "/portfolio/$slug", params: { slug: project.slug } })}
-                              className="flex w-full items-center gap-3 rounded-xl border border-white/8 bg-black/10 p-2 text-left hover:bg-white/5"
+                              className="flex w-full items-center gap-3 border-2 border-cal/15 bg-black p-2 text-left hover:border-[var(--work)]"
                             >
-                              <div className="h-12 w-16 shrink-0 overflow-hidden rounded-lg bg-white/5">
+                              <div className="h-12 w-16 shrink-0 overflow-hidden bg-betao">
                                 {project.thumbnail ? <img src={project.thumbnail} alt="" className="h-full w-full object-cover" loading="lazy" /> : null}
                               </div>
                               <div className="min-w-0">
-                                <div className="truncate text-xs font-medium text-white">{project.client || project.title}</div>
-                                <div className="truncate text-[11px] text-slate-400">{project.title}</div>
+                                <div className="truncate text-sm font-medium text-cal">{project.client || project.title}</div>
+                                <div className="truncate text-sm text-fumo">{project.title}</div>
                               </div>
                               <ArrowUpRight size={14} className="ml-auto shrink-0 text-slate-500" aria-hidden="true" />
                             </button>
                           ))}
                         </div>
                       ) : null}
-                      {message.role === "assistant" && message.text ? (
-                        <button type="button" onClick={() => speak(message.id, message.text)} aria-label={speakingId === message.id ? ui.stopSpeak : ui.speak} className="mt-2 inline-flex items-center gap-1.5 text-[10px] text-slate-500 hover:text-white">
-                          <span aria-hidden="true">{speakingId === message.id ? <VolumeX size={12} /> : <Volume2 size={12} />}</span>
+                      {message.citations?.length ? (\n                        <div className="mt-4 border-t-2 border-cal/15 pt-3">\n                          <div className="text-sm font-semibold text-cal">{ui.sources}</div>\n                          <div className="mt-2 space-y-2">\n                            {message.citations.slice(0, 6).map((citation) => (\n                              <a key={citation.id} href={citation.url} className="flex items-center gap-2 text-sm text-fumo underline decoration-[var(--work)] underline-offset-4 hover:text-cal">\n                                <FileText size={14} aria-hidden="true" />\n                                <span className="truncate">{citation.title}</span>\n                                <ExternalLink size={13} className="ml-auto shrink-0" aria-hidden="true" />\n                              </a>\n                            ))}\n                          </div>\n                        </div>\n                      ) : null}\n                      {message.role === "assistant" && message.text ? (
+                        <button type="button" onClick={() => speak(message.id, message.text)} aria-label={speakingId === message.id ? ui.stopSpeak : ui.speak} className="mt-3 inline-flex min-h-11 items-center gap-2 border-2 border-cal/20 px-3 text-sm text-fumo hover:border-[var(--work)] hover:text-cal">
+                          <span aria-hidden="true">{speakingId === message.id ? <VolumeX size={14} /> : <Volume2 size={14} />}</span>
                           {speakingId === message.id ? ui.stopSpeak : ui.speak}
                         </button>
                       ) : null}
@@ -591,18 +597,19 @@ export function AiAssistantRealtime() {
             </div>
           </div>
 
-          <footer className="border-t border-white/10 p-3.5 sm:p-4">
-            <div className="mb-2 flex items-center justify-between text-[10px] text-slate-500">
+          <footer className="border-t-2 border-cal/20 p-4 sm:p-5">
+            <div className="mb-3 flex items-center justify-between text-sm text-fumo">
               <span>{locale === "pt-PT" ? "Português (Portugal) · Inglês" : "English · European Portuguese"}</span>
               {voiceState !== "idle" ? (
-                <span className="inline-flex items-center gap-1 text-sky-300">
-                  <span className="h-1.5 w-1.5 rounded-full bg-sky-300" />
+                <span className="inline-flex items-center gap-2 text-sm text-[var(--work)]">
+                  <span className="h-2 w-2 bg-[var(--work)]" />
                   {status}
                 </span>
               ) : null}
             </div>
-            <div className="flex items-end gap-2 rounded-[20px] border border-white/10 bg-black/20 p-2 focus-within:border-sky-300/30">
+            <div className="flex items-end gap-2 border-2 border-cal/25 bg-black p-2 focus-within:border-[var(--work)]">
               <textarea
+                ref={inputRef}
                 value={input}
                 onChange={(event) => setInput(event.target.value)}
                 onKeyDown={(event) => {
@@ -612,7 +619,7 @@ export function AiAssistantRealtime() {
                   }
                 }}
                 rows={2}
-                maxLength={8000}
+                maxLength={2000}
                 placeholder={ui.placeholder}
                 aria-label={ui.placeholder}
                 className="min-h-12 flex-1 resize-none bg-transparent px-2 py-2 text-sm text-white outline-none placeholder:text-slate-500"
@@ -630,7 +637,7 @@ export function AiAssistantRealtime() {
                 onClick={() => void sendText()}
                 disabled={!input.trim() || streaming}
                 aria-label={ui.send}
-                className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-slate-950 transition hover:bg-slate-100 disabled:opacity-40"
+                className="grid min-h-11 min-w-11 shrink-0 place-items-center border-2 border-cal bg-cal text-preto transition hover:bg-[var(--work)] disabled:opacity-40"
               >
                 <Send size={16} aria-hidden="true" />
               </button>
