@@ -47,9 +47,8 @@ try {
     page.on("response", (response) => {
       const url = response.url();
       const pathname = new URL(url).pathname;
-      if (url.startsWith("http://127.0.0.1:4173/") && !isReelChunk(url)) {
-        resources.push({ response, url, pathname });
-      }
+      const isAsset = /\.(m?js|css|woff2?|ttf|otf|png|jpe?g|webp|avif)$/i.test(pathname);
+      if (isAsset && !isReelChunk(url)) resources.push({ response, url, pathname });
     });
 
     await page.goto(`http://127.0.0.1:4173${route}`, { waitUntil: "networkidle", timeout: 60_000 });
