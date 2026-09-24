@@ -2,7 +2,7 @@ import { Outlet, createRootRouteWithContext, HeadContent, Scripts, useRouter, us
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
 import { SpeedInsights } from "@vercel/speed-insights/react";
-import { useEffect, type ReactNode } from "react";
+import { Suspense, useEffect, type ReactNode } from "react";
 import { AppErrorBoundary, AppErrorFallback } from "@/components/AppErrorBoundary";
 import { DeferredAiAssistant } from "@/components/DeferredAiAssistant";
 import { CommandPalette } from "@/components/CommandPalette";
@@ -72,6 +72,22 @@ function RootShell({ children }: { children: ReactNode }) {
   return <html lang={lang} suppressHydrationWarning><head suppressHydrationWarning><HeadContent /><script dangerouslySetInnerHTML={{ __html: earlyLocaleScript }} /><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: structuredData }} /></head><body suppressHydrationWarning><script dangerouslySetInnerHTML={{ __html: earlyRecoveryScript }} />{children}<Scripts /></body></html>;
 }
 
+function RouteShellLoader() {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="grid min-h-[50vh] place-items-center bg-black px-6 text-[#f2f2ef]"
+    >
+      <div className="w-full max-w-[1000px]">
+        <div className="h-3 w-24 bg-[#f2f2ef] animate-pulse" />
+        <div className="mt-8 h-[clamp(4rem,10vw,8rem)] w-[88%] bg-[#171717] animate-pulse" />
+        <div className="mt-4 h-[clamp(4rem,10vw,8rem)] w-[64%] bg-[#171717] animate-pulse" />
+      </div>
+    </div>
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
@@ -89,5 +105,5 @@ function RootComponent() {
     const cleanupPrimary = installSiteLocaleDomBridge();
     return () => cleanupPrimary();
   }, []);
-  return <AppErrorBoundary onReset={() => queryClient.clear()}><QueryClientProvider client={queryClient}><RouteTimingInstaller /><SeoRuntimeSync />{!isAdmin && <ProjectEntitySchema />}{!isAdmin && <ContactDraftRecovery />}{!isAdmin && <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-[var(--color-text-primary)] focus:px-4 focus:py-3 focus:text-sm focus:font-semibold focus:text-[var(--color-bg)]">Skip to content</a>}{!isAdmin && <div className="fixed inset-0 z-0 bg-[var(--color-bg)]" aria-hidden="true" />}<div className="ek-shell relative z-10" data-public-shell={isPublic ? "true" : "false"}>{!isAdmin && <Navbar />}<main id="main-content" data-ek-app-root="true"><AppErrorBoundary label="route content" minimal onReset={() => queryClient.clear()}><Outlet /></AppErrorBoundary></main>{!isAdmin && <ContextualRelatedWork />}{!isAdmin && <Footer />}</div>{!isAdmin && <ScrollToTop />}<SpeedInsights /><AppErrorBoundary label="notifications" minimal><Toaster theme="dark" position="bottom-right" toastOptions={{ style: { background: "#06111f", border: "1px solid rgba(148,163,184,0.14)", color: "#f5f8ff" } }} /></AppErrorBoundary>{!isAdmin && <CommandPalette />}{!isAdmin && <DeferredAiAssistant />}</QueryClientProvider></AppErrorBoundary>;
+  return <AppErrorBoundary onReset={() => queryClient.clear()}><QueryClientProvider client={queryClient}><RouteTimingInstaller /><SeoRuntimeSync />{!isAdmin && <ProjectEntitySchema />}{!isAdmin && <ContactDraftRecovery />}{!isAdmin && <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-[var(--color-text-primary)] focus:px-4 focus:py-3 focus:text-sm focus:font-semibold focus:text-[var(--color-bg)]">Skip to content</a>}{!isAdmin && <div className="fixed inset-0 z-0 bg-[var(--color-bg)]" aria-hidden="true" />}<div className="ek-shell relative z-10" data-public-shell={isPublic ? "true" : "false"}>{!isAdmin && <Navbar />}<main id="main-content" data-ek-app-root="true"><AppErrorBoundary label="route content" minimal onReset={() => queryClient.clear()}><Suspense fallback={<RouteShellLoader />}><Outlet /></Suspense></AppErrorBoundary></main>{!isAdmin && <ContextualRelatedWork />}{!isAdmin && <Footer />}</div>{!isAdmin && <ScrollToTop />}<SpeedInsights /><AppErrorBoundary label="notifications" minimal><Toaster theme="dark" position="bottom-right" toastOptions={{ style: { background: "#06111f", border: "1px solid rgba(148,163,184,0.14)", color: "#f5f8ff" } }} /></AppErrorBoundary>{!isAdmin && <CommandPalette />}{!isAdmin && <DeferredAiAssistant />}</QueryClientProvider></AppErrorBoundary>;
 }
