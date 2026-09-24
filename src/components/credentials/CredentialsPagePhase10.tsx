@@ -4,6 +4,7 @@ import { Download, ExternalLink, Mail, MapPin, Phone } from "lucide-react";
 import { useClients, useSiteSettings, useStats } from "@/hooks/useSiteData";
 import { readSetting } from "@/lib/cms";
 import { whatsappLink } from "@/lib/whatsapp";
+import { ClientWall } from "@/components/design-system/ClientWall";
 import {
   FALLBACK_CAPABILITY_GROUPS,
   FALLBACK_EXPERIENCE,
@@ -366,17 +367,7 @@ export function CredentialsPage() {
             {selectedClients.length} active client records are available in the public source. No logo files are currently present, so names are the accessible representation.
           </p>
 
-          <div className="mt-10 grid grid-cols-2 border-t-2 border-cal/25 md:grid-cols-4">
-            {selectedClients.map((client, index) => (
-              <div
-                key={client.id}
-                className="border-b-2 border-r-2 border-cal/20 px-4 py-5 text-lg font-semibold text-cal md:px-6 md:py-6 md:text-2xl"
-              >
-                <span className="mr-4 text-fumo tabular-nums">{String(index + 1).padStart(2, "0")}</span>
-                {client.name}
-              </div>
-            ))}
-          </div>
+          <ClientWall clients={selectedClients} />
         </div>
       </section>
 
