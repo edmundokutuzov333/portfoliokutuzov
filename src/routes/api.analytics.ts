@@ -3,6 +3,17 @@ import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { getRequestId } from "@/lib/observability";
 
+const jsonValue = z.lazy(() =>
+  z.union([
+    z.string(),
+    z.number().finite(),
+    z.boolean(),
+    z.null(),
+    z.array(jsonValue),
+    z.record(z.string(), jsonValue),
+  ]),
+);
+
 const eventSchema = z.object({
   page: z.string().trim().min(1).max(300),
   element: z.string().trim().max(120).nullable().optional(),
@@ -13,7 +24,7 @@ const eventSchema = z.object({
   viewport_height: z.number().int().min(1).max(10000).nullable().optional(),
   device: z.enum(["mobile", "tablet", "desktop"]).nullable().optional(),
   session_id: z.string().trim().max(160).nullable().optional(),
-  meta: z.record(z.string(), z.unknown()).default({}),
+  meta: z.record(z.string(), jsonValue).default({}),
 });
 
 const payloadSchema = z.union([eventSchema, z.array(eventSchema).min(1).max(25)]);
