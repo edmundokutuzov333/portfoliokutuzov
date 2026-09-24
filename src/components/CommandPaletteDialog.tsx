@@ -42,7 +42,6 @@ export function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
   const { pathname } = useLocation();
   const locale = useSiteLocale();
   const copy = UI_COPY[locale];
-  const open = true;
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [recent, setRecent] = useState<SearchResult[]>([]);
@@ -129,20 +128,6 @@ export function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
     ] as const,
     [copy],
   );
-
-  return (
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="fixed bottom-5 left-5 z-40 hidden min-h-11 items-center gap-2 border-2 border-[var(--color-text-secondary)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text-secondary)] transition hover:border-[var(--work)] hover:text-[var(--color-text-primary)] md:flex"
-        aria-label={copy.searchPortfolio}
-      >
-        <Search size={14} aria-hidden="true" />
-        <span>{copy.searchPortfolio}</span>
-        <kbd className="ml-2 border-l-2 border-current pl-2 text-[11px]">⌘K</kbd>
-      </button>
-    );
-  }
 
   return (
     <div className="fixed inset-0 z-[1200] bg-black/75 p-4 md:p-8" role="presentation" onMouseDown={close}>
