@@ -907,7 +907,48 @@ Phase 14 code is implemented but remains BLOCKED-EXTERNAL under R1/R3.
 - Supabase Backup remains FAILURE. No Phase 14 migration has been applied. No production DB/Storage writes occurred.
 - `phase-14-green` was not created.
 
+
 ## Phase 15 execution log
+
+### Scope executed
+- Final release QA infrastructure for EN/PT public routes.
+- Vitest maintained final regression suite.
+- Cross-route axe WCAG 2.2 checks and 44px interaction target audit.
+- Security release gates: npm audit + Gitleaks.
+- Lighthouse desktop/mobile thresholds and explicit CWV assertion script.
+- Safe autocannon rate-limit smoke without production writes.
+- Awwwards screenshots/video capture for desktop and mobile.
+- Consolidated CHANGELOG and Awwwards package documentation.
+- Final CSP already enforcing in `vercel.json`.
+- No production DB or Storage mutation.
+
+### Current truth
+- Published projects: 16.
+- Active clients: 16.
+- Experience: 5.
+- Competency groups: 3.
+- Skills: 5.
+- Credential metrics: 5.
+- Service disciplines: 4.
+- Production DB writes during rebuild: 0.
+- Production Storage writes during rebuild: 0.
+
+### Gate evidence
+- Typecheck/build/lint/regression/parity/change-gate/contrast: observed GREEN in the maintained CI path before the final performance harness adjustment.
+- Security gates: GREEN (npm audit + Gitleaks).
+- Safe rate-limit load smoke: GREEN.
+- Awwwards capture: GREEN on the dedicated capture harness before the 60s timeout adjustment; current HEAD capture is re-running.
+- Lighthouse: not yet final.
+- Cross-browser Playwright: not yet final.
+- Performance budget: current HEAD re-running after switching the harness to Nitro preview.
+- Phase 1 production HTTP audit: FAIL with 6 SEO assertions; zero 5xx/network/noindex/apex-redirect/missing-route failures. This is recorded as live production divergence.
+- Supabase Backup: FAILURE.
+
+### Release decision
+Phase 15 remains **BLOCKED-EXTERNAL**.
+No `phase-15-green`, no `pre-release-YYYYMMDD`, no merge to `main`, no production deployment.
+
+
 
 ### Completed
 - Finalized enforcing CSP.
