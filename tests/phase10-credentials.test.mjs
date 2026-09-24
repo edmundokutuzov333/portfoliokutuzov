@@ -15,6 +15,7 @@ test("Phase 10 mounts the dossier Credentials page", async () => {
   assert.match(page, /Strategy, craft and a sharp/);
   assert.match(page, /Press kit \\/ CV/);
   assert.match(page, /whatsappLink/);
+  assert.match(page, /ClientWall/);
 });
 
 test("Phase 10 removes the legacy percentage skill bars and monolithic card patterns", async () => {
@@ -67,6 +68,8 @@ test("Phase 10 press kit is a Node server route using pdf-lib and qrcode-generat
   assert.match(pdf, /from "qrcode-generator"/);
   assert.match(pdf, /https:\/\/edmundokutuzov\.art/);
   assert.match(pdf, /fetchClients/);
+  assert.match(pdf, /fetchCredentialSource/);
+  assert.match(pdf, /site_settings/);
 });
 
 test("Phase 10 public implementation has no production writes", async () => {
