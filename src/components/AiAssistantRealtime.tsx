@@ -61,8 +61,8 @@ const copy = {
     ],
   },
   pt: {
-    title: "Falar com Kutuzov em Tempo Real",
-    subtitle: "Assistente de Direcção Criativa com IA",
+    title: "Talk to Kutuzov in Real Time",
+    subtitle: "AI Creative Director Assistant",
     placeholder: "Pergunta sobre o trabalho, serviços, Edmundo ou um projecto...",
     send: "Enviar",
     voice: "Voz",
