@@ -12,9 +12,11 @@ const limits = {
   lcpImage: 150 * 1024,
 };
 
-const server = spawn("npm", ["run", "dev", "--", "--host", "127.0.0.1", "--port", "4173"], {
+const server = spawn("npm", ["start"], {
+
   stdio: ["ignore", "pipe", "pipe"],
-  env: { ...process.env },
+  stdio: ["ignore", "pipe", "pipe"],
+  env: { ...process.env, PORT: "4173", HOST: "127.0.0.1" },
 });
 let serverOutput = "";
 server.stdout.on("data", (chunk) => (serverOutput += chunk.toString()));
