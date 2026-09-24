@@ -48,7 +48,8 @@ jobs:
         run: npx --yes @lhci/cli@0.15.1 assert --config=lighthouserc.mobile.cjs
       - name: Preserve mobile reports
         if: always()
-        run: cp -R .lighthouseci .lighthouseci-mobile || true
+        run: |
+          if test -d .lighthouseci; then cp -R .lighthouseci .lighthouseci-mobile; fi
       - name: Inspect Lighthouse reports
         if: always()
         run: node scripts/inspect-lighthouse.mjs .lighthouseci-desktop .lighthouseci-mobile
