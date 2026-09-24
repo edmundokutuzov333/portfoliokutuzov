@@ -19,12 +19,21 @@ function RoutePage() {
 export const Route = createFileRoute("/portfolio/$slug")({
   head: ({ params }) => {
     const title = humanize(params.slug);
-    return createSeo({
+    const seo = createSeo({
       title: title + " — Portfolio · Edmundo Kutuzov",
       description: "Case study: " + title + " — published work by Edmundo Kutuzov.",
       path: "/portfolio/" + params.slug,
       image: caseStudyOgImageUrl(params.slug),
     });
+    return {
+      ...seo,
+      meta: [
+        ...seo.meta,
+        { property: "og:image:type", content: "image/svg+xml" },
+        { property: "og:image:width", content: "1200" },
+        { property: "og:image:height", content: "630" },
+      ],
+    };
   },
   component: RoutePage,
   notFoundComponent: () => (
