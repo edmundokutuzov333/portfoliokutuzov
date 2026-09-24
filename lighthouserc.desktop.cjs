@@ -1,8 +1,8 @@
 module.exports = {
   ci: {
     collect: {
-      startServerCommand: "npm run dev -- --host 127.0.0.1 --port 4173",
-      startServerReadyPattern: "Local:",
+      startServerCommand: "npm run build && npx nitro preview --host 127.0.0.1 --port 4173",
+      startServerReadyPattern: "Listening on",
       startServerReadyTimeout: 120000,
       url: [
         "http://127.0.0.1:4173/",
