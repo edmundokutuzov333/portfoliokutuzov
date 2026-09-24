@@ -1,14 +1,8 @@
 import { Outlet, createRootRouteWithContext, HeadContent, Scripts, useRouter, useRouterState } from "@tanstack/react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
-import { SpeedInsights } from "@vercel/speed-insights/react";
-import { Suspense, useEffect, type ReactNode } from "react";
+import { Suspense, lazy, useEffect, type ReactNode } from "react";
 import { AppErrorBoundary, AppErrorFallback } from "@/components/AppErrorBoundary";
-import { DeferredAiAssistant } from "@/components/DeferredAiAssistant";
-import { CommandPalette } from "@/components/CommandPalette";
-import { ProjectEntitySchema } from "@/components/ProjectEntitySchema";
-import { ContextualRelatedWork } from "@/components/ContextualRelatedWork";
-import { ContactDraftRecovery } from "@/components/ContactDraftRecovery";
 import { RouteTimingInstaller } from "@/components/RouteTimingInstaller";
 import { Navbar } from "@/components/layout/Navbar";
 import { SeoRuntimeSync } from "@/components/SeoRuntimeSync";
@@ -27,6 +21,14 @@ import "../styles/global-shell.css";
 interface RouterContext {
   queryClient: QueryClient;
 }
+
+const DeferredAiAssistant = lazy(() => import("@/components/DeferredAiAssistant").then((m) => ({ default: m.DeferredAiAssistant })));
+const CommandPalette = lazy(() => import("@/components/CommandPalette").then((m) => ({ default: m.CommandPalette })));
+const ProjectEntitySchema = lazy(() => import("@/components/ProjectEntitySchema").then((m) => ({ default: m.ProjectEntitySchema })));
+const ContextualRelatedWork = lazy(() => import("@/components/ContextualRelatedWork").then((m) => ({ default: m.ContextualRelatedWork })));
+const ContactDraftRecovery = lazy(() => import("@/components/ContactDraftRecovery").then((m) => ({ default: m.ContactDraftRecovery })));
+const SpeedInsights = lazy(() => import("@vercel/speed-insights/react").then((m) => ({ default: m.SpeedInsights })));
+
 
 function NotFoundComponent() {
   return (
@@ -57,7 +59,7 @@ const structuredData = JSON.stringify({"@context":"https://schema.org","@graph":
 export const Route = createRootRouteWithContext<RouterContext>()({
   head: () => {
     const seo = createSeo({ title: "Edmundo Kutuzov - Designer & Art Director", description: "Visual identities, art direction and digital experiences built with strategic clarity and technical precision.", path: "/" });
-    return { meta: [{ charSet: "utf-8" }, { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" }, { name: "theme-color", content: "#02050c" }, { name: "color-scheme", content: "dark" }, ...seo.meta], links: [{ rel: "stylesheet", href: appCss }, { rel: "preconnect", href: "https://fonts.googleapis.com" }, { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" }, { rel: "icon", type: "image/webp", href: "/favicon.webp" }, { rel: "apple-touch-icon", href: "/favicon.webp" }, { rel: "manifest", href: "/site.webmanifest" }] };
+    return { meta: [{ charSet: "utf-8" }, { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" }, { name: "theme-color", content: "#02050c" }, { name: "color-scheme", content: "dark" }, ...seo.meta], links: [{ rel: "stylesheet", href: appCss }, { rel: "icon", type: "image/webp", href: "/favicon.webp" }, { rel: "apple-touch-icon", href: "/favicon.webp" }, { rel: "manifest", href: "/site.webmanifest" }] };
   },
   shellComponent: RootShell,
   component: RootComponent,
