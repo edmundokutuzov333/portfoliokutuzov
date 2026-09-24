@@ -168,3 +168,50 @@ A Fase 15 está implementada tecnicamente, mas permanece BLOCKED-EXTERNAL e não
 **FASE 15: BLOCKED-EXTERNAL.**
 
 The release gate remains closed because the required reversible backup is not confirmed and the final performance/Lighthouse/browser gates are not all GREEN. Under A.3/R1/R3, no production promotion is allowed.
+
+
+## Final closeout — 2026-09-24T14:30Z
+
+### Current HEAD
+- Branch: `awwwards-rebuild`
+- HEAD: `aaca4ad3e67c7ab64403c74c596091c5c2d22ea7`
+- No merge to `main`
+- No production deployment
+- No `pre-release-20260924` tag
+- No `phase-15-green` tag
+
+### Verified gate evidence
+- Typecheck: PASS on current CI cycle before Performance budget.
+- Production build: PASS on current CI cycle.
+- ESLint: PASS on current CI cycle.
+- Regression suite: PASS.
+- Contrast gate: PASS.
+- Foundation parity: PASS.
+- Foundation change gate: PASS.
+- Security gates: PASS — npm audit and Gitleaks.
+- Safe rate-limit/load smoke: PASS.
+- Awwwards Capture: PASS.
+- Supabase Backup: FAILURE.
+- Phase 1 Production HTTP audit: FAILURE only on SEO/canonical assertions (0 network/5xx failures, 0 noindex failures, 0 redirect failures, 0 missing-route failures, 6 SEO failures against the current live production origin).
+- Browser QA matrix: still running at snapshot; no GREEN claim.
+- Lighthouse: FAIL. Desktop Home Performance = 0.75 against required >=0.90. The threshold therefore remains objectively unmet.
+- Performance budget: FAIL on 7 public routes. Current critical-resource measurements were approximately JS gzip 436,983–443,269 bytes against 174,080 bytes, fonts gzip 222,093 bytes against 122,880 bytes; CSS 30,135 bytes remained within the 30,720-byte limit.
+- LCP image budget reported 0 because these routes remain text/HTML-led at the measured point; this does not compensate for the failed JS/font limits.
+
+### Engineering conclusion
+The remaining performance failure is structural, not a measurement-only defect. Build inspection shows large shared client assets, including TanStack Router, Framer Motion, Recharts, pdf-lib and the generated application entry bundle, while the self-hosted Archivo/Newsreader output still includes multiple normal/italic subset files. The attempted command-palette split, deferred Supabase client and deferred analytics client reduced route-specific work but did not bring the initial-resource budget below the specified 170 KB gzip / 120 KB font limits.
+
+Per A.3, the final release gate is not allowed to be bypassed or redefined. No production promotion is performed.
+
+### Safety conclusion
+- Production DB writes by rebuild: 0.
+- Production Storage writes by rebuild: 0.
+- Phase 14 migrations remain unapplied.
+- No test traffic was manufactured against production.
+- R1 remains satisfied.
+
+### Release decision
+**FASE 15: BLOCKED-EXTERNAL / NOT PROMOTED.**
+
+The release is intentionally left on the preview branch. The remaining blockers are: confirmed reversible Supabase backup, final Browser QA GREEN evidence, Lighthouse threshold failure, performance-budget failure, and the live-production SEO divergence reported by the Phase 1 audit.
+
