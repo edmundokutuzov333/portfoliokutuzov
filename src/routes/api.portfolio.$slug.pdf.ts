@@ -5,6 +5,7 @@ import { getRequestId } from "@/lib/observability";
 
 export const runtime = "nodejs";
 
+// @ts-expect-error Server-only TanStack route is intentionally outside generated FileRoutesByPath.
 export const Route = createFileRoute("/api/portfolio/$slug/pdf")({
   server: {
     handlers: {
