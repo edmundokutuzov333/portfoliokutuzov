@@ -28,7 +28,6 @@ import {
 } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useSiteData";
 import { readSetting, SITE_EMAIL, SITE_PHONE, LINKEDIN_URL } from "@/lib/cms";
-import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { sendBriefingEmails } from "@/lib/briefing.functions";
 import { toast } from "sonner";
@@ -178,16 +177,20 @@ function ContactPage() {
           toast.error(`${file.name} is not an image file`);
           continue;
         }
-        const safe = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
-        const path = `briefing-uploads/${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safe}`;
-        const { error: upErr } = await supabase.storage
-          .from("site-assets")
-          .upload(path, file, { upsert: false });
-        if (upErr) {
-          toast.error(`${file.name}: ${upErr.message}`);
+        const formData = new FormData();
+        formData.append("file", file);
+        const uploadResponse = await fetch("/api/contact/upload", {
+          method: "POST",
+          body: formData,
+        });
+        const uploadPayload = (await uploadResponse.json().catch(() => null)) as
+          | { url?: string; error?: string }
+          | null;
+        if (!uploadResponse.ok || !uploadPayload?.url) {
+          toast.error(`${file.name}: ${uploadPayload?.error ?? "Upload failed"}`);
           continue;
         }
-        const { data } = supabase.storage.from("site-assets").getPublicUrl(path);
+        const data = { publicUrl: uploadPayload.url };
         const dims = await new Promise<{ w?: number; h?: number }>((resolve) => {
           const img = new Image();
           img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
@@ -340,26 +343,32 @@ function ContactPage() {
         user_agent: typeof navigator !== "undefined" ? navigator.userAgent.slice(0, 240) : null,
       };
 
-      const { data: inserted, error } = await supabase
-        .from("briefing_submissions")
-        .insert(insertRow as never)
-        .select("id")
-        .single();
+      const response = await fetch("/api/contact/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          briefing: clean,
+          attachments: files,
+          reference_links: refLinks,
+          honeypot: "",
+        }),
+      });
+      const payload = (await response.json().catch(() => null)) as
+        | { ok?: boolean; briefing_id?: string; error?: string }
+        | null;
 
-      if (error) {
-        toast.error(`Submission failed: ${error.message}. Your data is preserved.`);
+      if (!response.ok || !payload?.ok || !payload.briefing_id) {
+        toast.error(`Submission failed: ${payload?.error ?? "Unable to save the briefing"}. Your data is preserved.`);
         setSubmitting(false);
         return;
       }
 
-      setSubmissionId(inserted?.id || null);
+      setSubmissionId(payload.briefing_id);
       trackEvent({ action: "submit", element: "briefing" });
 
-      if (inserted?.id) {
-        sendEmails({ data: { briefing_id: inserted.id } }).catch(() => {
-          /* silent background notification */
-        });
-      }
+      sendEmails({ data: { briefing_id: payload.briefing_id } }).catch(() => {
+        /* silent background notification */
+      });
 
       setDone(true);
       toast.success("Brief received. I'll be in touch within 48h.");
