@@ -30,3 +30,5 @@ Clean clone, direct curl matrix, full Playwright, axe, Lighthouse rerun, CWV, 60
 
 ## Repetição
 Run npm run audit:all from a clean clone. Evidence remains under docs/audit/.
+
+Tracking: issue #25 = P0 RLS/Storage deployment boundary; issue #26 = P1 performance budgets.
