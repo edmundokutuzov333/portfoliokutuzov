@@ -980,7 +980,7 @@ export const replaceAdminMediaAsset = createServerFn({ method: "POST" })
     await assertPermission(context, "media.manage");
     const { data: oldAsset, error: readError } = await context.supabase
       .from("media_assets")
-      .select("storage_path")
+      .select("*")
       .eq("id", data.id)
       .single();
 
@@ -998,22 +998,38 @@ export const replaceAdminMediaAsset = createServerFn({ method: "POST" })
         width: data.width ?? null,
         height: data.height ?? null,
         size_bytes: data.size_bytes,
+        dominant_color: data.dominant_color ?? null,
+        optimized_webp_path: data.optimized_webp_path ?? null,
+        optimized_webp_url: data.optimized_webp_url ?? null,
+        optimized_avif_path: data.optimized_avif_path ?? null,
+        optimized_avif_url: data.optimized_avif_url ?? null,
+        optimized_width: data.optimized_width ?? null,
+        optimized_height: data.optimized_height ?? null,
         updated_at: new Date().toISOString(),
       } as never)
       .eq("id", data.id);
 
     if (error) {
       await context.supabase.storage.from("site-assets").remove([data.storage_path]);
+      const staleVariants = [data.optimized_webp_path, data.optimized_avif_path].filter(Boolean) as string[];
+      if (staleVariants.length) await context.supabase.storage.from("site-assets").remove(staleVariants);
       throw new Error(error.message);
     }
 
-    if (oldAsset.storage_path !== data.storage_path) {
-      const { error: storageError } = await context.supabase.storage
-        .from("site-assets")
-        .remove([oldAsset.storage_path]);
-      if (storageError) {
-        throw new Error(storageError.message);
-      }
+    const oldPaths = [
+      String((oldAsset as Record<string, unknown>).storage_path ?? ""),
+      String((oldAsset as Record<string, unknown>).optimized_webp_path ?? ""),
+      String((oldAsset as Record<string, unknown>).optimized_avif_path ?? ""),
+    ].filter(Boolean);
+    const newPaths = new Set([
+      data.storage_path,
+      data.optimized_webp_path ?? "",
+      data.optimized_avif_path ?? "",
+    ]);
+    const stale = oldPaths.filter((path) => !newPaths.has(path));
+    if (stale.length) {
+      const { error: storageError } = await context.supabase.storage.from("site-assets").remove(stale);
+      if (storageError) throw new Error(storageError.message);
     }
 
     return { ok: true };
