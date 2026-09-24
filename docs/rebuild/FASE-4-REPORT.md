@@ -22,7 +22,7 @@ A migração de newsletter é versionada e reversível, mas não foi aplicada à
 - 9a44abc208fd0f24478e13f23299a339e8ba4580 — command palette
 - 874b50e889ac0b2e0bbcf6bb01a32dd47fae6944 — AI palette bridge
 - db4bb06deac71a1947ef29d6006de31f29839128 — availability admin editor
-- ddBC7720bb1de2fc9b7ec8bc98af7d1aae06189 — Control Room availability navigation
+- ddbc7720bb1de2fc9b7ec8bc98af7d1aae06189 — Control Room availability navigation
 - e084ddc384edde72a9dac8f3772c7ec7e9ea1b8d — self-hosted root fonts and 404
 - 9ab1e0226086d018859ff98d26523aa4f3c5fae2 — error shell
 - 3ccede7b7527dda83de26859cb335e08713656a0 — web manifest
