@@ -47,7 +47,7 @@ export const Route = createFileRoute("/api/contact/upload")({
           const path = "contact-uploads/" + crypto.randomUUID() + extension.toLowerCase();
           const bytes = new Uint8Array(await file.arrayBuffer());
           const { error } = await supabaseAdmin.storage
-            .from("site-assets")
+            .from("contact-uploads")
             .upload(path, bytes, {
               cacheControl: "3600",
               upsert: false,
