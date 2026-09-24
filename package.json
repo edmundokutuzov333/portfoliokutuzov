@@ -30,7 +30,9 @@
     "test:phase11:resend": "node scripts/phase11-resend-check.mjs",
     "test:phase14": "node --test tests/phase14-admin.test.mjs",
     "test:legacy": "node --test tests/*.test.mjs",
-    "test:phase15": "vitest run tests/phase15-final.test.ts"
+    "test:phase15": "vitest run tests/phase15-final.test.ts",
+    "audit:all": "bash scripts/audit/run-all.sh",
+    "test:audit-contract": "node --test tests/audit/phase1-audit-contract.test.mjs"
   },
   "dependencies": {
     "@exodus/bytes": "^1.1.0",
