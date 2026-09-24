@@ -1,7 +1,7 @@
 import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Download, ExternalLink, Mail, MapPin, Phone } from "lucide-react";
-import { useClients, useSiteSettings, useStats } from "@/hooks/useSiteData";
+import { useClients, useSiteMetrics, useSiteSettings, useStats } from "@/hooks/useSiteData";
 import { readSetting } from "@/lib/cms";
 import { whatsappLink } from "@/lib/whatsapp";
 import { ClientWall } from "@/components/design-system/ClientWall";
@@ -69,6 +69,7 @@ export function CredentialsPage() {
   const { data: settings } = useSiteSettings();
   const { data: clients = [] } = useClients();
   const { data: stats = [] } = useStats();
+  const { data: siteMetrics = [] } = useSiteMetrics();
 
   const legacy = <T,>(field: string, fallback: T) =>
     readSetting<T>(settings, "about", field, fallback);
@@ -82,12 +83,14 @@ export function CredentialsPage() {
   );
 
   const metrics = (
-    stats.length
-      ? stats
+    siteMetrics.length
+      ? siteMetrics.map((item) => ({ value: item.value ?? "", label: item.label }))
+      : stats.length
+        ? stats
           .filter((item) => item.is_active !== false)
           .sort((a, b) => a.sort_order - b.sort_order)
-          .map((item) => ({ value: item.value, label: item.label }))
-      : readCredentials<CredentialMetric[]>("cards", FALLBACK_METRICS)
+            .map((item) => ({ value: item.value, label: item.label }))
+        : readCredentials<CredentialMetric[]>("cards", FALLBACK_METRICS)
   ).filter((item) => String(item.value ?? "").trim() && String(item.label ?? "").trim());
 
   const skills = normalizeSkills(
