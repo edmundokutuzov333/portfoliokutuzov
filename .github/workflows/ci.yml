@@ -4,6 +4,7 @@ on:
     branches:
       - awwwards-rebuild
       - main
+      - phase2-closeout
       - phase1-hardening
       - phase2-final-exec
       - phase3-ai-intelligence
