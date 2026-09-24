@@ -1,5 +1,19 @@
 # CHANGELOG — Rebuild edmundokutuzov.art
 
+## Phase 2 — Independent audit correction and release hardening
+- Reconciled the Phase 15 rebuild into the production-derived qa-hardening branch without changing the real content set.
+- Removed the inline eslint-disable exception from the router and scoped the rule exception in eslint.config.js.
+- Removed swallowed performance workflow commands using || true.
+- Raised desktop Lighthouse assertions to the v3 acceptance thresholds.
+- Expanded desktop Lighthouse coverage to the public EN/PT route set.
+- Added audit:all and a fail-closed audit runner.
+- Deferred optional root modules and removed unused Google Fonts preconnect/CSP origins.
+- Prepared a P0 server-side write boundary for contact, booking, analytics and contact uploads.
+- Merged the P0 hotfix to main at commit 4612414968494d0db853c6232eae9f2f14a1c937.
+- Prepared migration 20260924160000_phase2_p0_rls_boundary.sql.
+- Production deployment of the P0 hotfix and migration remains NOT-VERIFIED.
+- Release gate remains NO-GO.
+
 ## Phase 15 — Final release engineering
 - Enforced production CSP.
 - Added maintained Vitest final regression suite.
