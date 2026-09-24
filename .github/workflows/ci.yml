@@ -48,6 +48,8 @@ jobs:
         run: npm run lint
       - name: Regression tests
         run: npm test
+      - name: Contrast token gate
+        run: npm run contrast:check
       - name: Foundation parity
         run: npm run test:parity
       - name: Foundation change gate
