@@ -10,7 +10,7 @@ Master execution state for SUPERPROMPT v2. This file is operational, not an appr
 | 4 | BLOCKED-EXTERNAL | — | Global shell / i18n / SEO executed; external runner and Vercel build-rate limit remain |
 | 5 | BLOCKED-EXTERNAL | — | Home rebuilt; page gates cannot be verified because external runners/Vercel latest build evidence are blocked |
 | 6 | BLOCKED-EXTERNAL | — | Reel 3D evoluído e testado por contratos; migration/analytics preparados mas não aplicados por R1 e gates predecessores |
-| 7 | TODO | — | Portfolio |
+| 7 | BLOCKED-EXTERNAL | — | Portfolio archive rebuilt with Grid/Index, URL filters, pagination and Work Colour; execution gates remain external |
 | 8 | TODO | — | Case study |
 | 9 | TODO | — | Services |
 | 10 | TODO | — | Credentials |
@@ -404,3 +404,58 @@ Phase 6 technical scope was executed on awwwards-rebuild. The protected Selected
 Phase 6 remains BLOCKED-EXTERNAL because Phase 5 is BLOCKED-EXTERNAL. The implementation is committed as technical groundwork, but the phase cannot be promoted to GREEN under R3/A.3 until predecessor and external execution gates are verified.
 
 - e21dee5162406a5a0960be45d9d0157001280429 — Phase 6 report
+
+
+## Phase 7 execution log
+
+Phase 7 was executed independently, as allowed by the plan. The public /portfolio archive was rebuilt without mutating Supabase data or Storage.
+
+### Completed
+- New Betao / Portfolio route composition with the exact "Selected Work." heading.
+- Two URL-persisted views: grid and index.
+- Grid uses deterministic justified rows from real project aspect metadata; no artwork is cropped.
+- Index presents Year / Project / Client / Discipline and an interactive Work Colour preview on hover/focus.
+- Existing category taxonomy is preserved and exposed as rectangular multi-select toggles.
+- Year and Client filters added.
+- Search state is debounced and persisted through q in the URL.
+- Server query supports d/y/c/q + page/limit and returns live facet counts.
+- useInfiniteQuery loads 24 projects per page with an IntersectionObserver sentinel.
+- Scroll restoration uses sessionStorage keyed by the current filter state.
+- Project links prefetch their real record through the portfolio endpoint.
+- First-page ItemList JSON-LD emitted from the archive.
+- Existing route SEO preserved.
+- No DB migration or production data mutation.
+
+### Truth-terrain
+- Published projects: 16.
+- Featured projects: 6.
+- Distinct project client_name values: 16.
+- Distinct project years: 4 (2023, 2024, 2025, 2026).
+- Normalised public categories: Social Media 1; Ad Campaigns 4; Digital Design 8; Offline Actions 0; Clothes Design 0; Videos 1; Web Design 2.
+- Production media remains empty for the projects inspected in Phase 6, so the archive uses Work Colour metadata posters when artwork is unavailable.
+
+### Parity / safety
+- No rows inserted, updated or deleted.
+- No Storage writes.
+- The archive still resolves project records from the same public projects source.
+- The requested 106-project expectation in the visual brief is not the current DB truth; the real count of published projects is 16 and the UI reflects 16.
+
+### Gate status
+- Static Phase 7 contract checks: 14/14 repository checks passed after final corrections.
+- Executable local npm/Playwright run: BLOCKED-EXTERNAL. The execution container cannot resolve github.com, so a fresh checkout could not be obtained.
+- Lint/typecheck/Vitest/Playwright: NOT CLAIMED GREEN.
+- Gate de Mudança: NOT CLAIMED GREEN because the required browser/screenshot runner is unavailable.
+- Gate de Paridade: data count preserved at 16 published projects before → after, with no DB write.
+- Vercel/GitHub external status remains subject to the branch's external runner; not used to manufacture green.
+- phase-7-green tag: not created.
+- Production promotion: not attempted.
+
+### Phase 7 decisions
+1. The server archive remains source-driven rather than replacing the existing projects data with a new content model.
+2. Multi-selection is encoded as comma-separated query parameters in d/y/c to keep URLs shareable and deterministic.
+3. The Index preview uses Work Colour and a fixed preview panel on keyboard focus; no cursor-only behavior is required.
+4. Because source media is absent, placeholders use the real project palette instead of invented images.
+5. No new dependency was installed; native URLSearchParams, IntersectionObserver and sessionStorage provide the required infrastructure.
+
+### Dependency decision
+Phase 7 is an independent page phase under A.3, but it remains BLOCKED-EXTERNAL because its formal quality gates cannot be verified from this execution surface.
