@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { ArrowLeft, ArrowRight, Download, ExternalLink, Image as ImageIcon, Link2, Share2, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Download, Link2, Share2, X } from "lucide-react";
 import { useProjects } from "@/hooks/useSiteData";
 import { usePortfolioCase, type PortfolioCaseMedia, type PortfolioCaseSection } from "@/hooks/usePortfolioCase";
 import { SITE_EMAIL, normalizeCategory, type DbProject } from "@/lib/cms";
@@ -336,7 +336,6 @@ export function ProjectDetailPage() {
   const { slug } = Route.useParams();
   const { data: rawProjects = [], isLoading: isProjectsLoading } = useProjects();
   const { data, isLoading: isCaseLoading } = usePortfolioCase(slug);
-  const [shareStatus, setShareStatus] = useState("");
 
   const project = data?.project ?? null;
   const images = useMemo(() => (project ? imageList(project, data?.media ?? []) : []), [data?.media, project]);
@@ -395,7 +394,6 @@ export function ProjectDetailPage() {
   const processHeading = sectionHeading(sections, ["process", "approach", "method"], "Process");
   const resultHeading = sectionHeading(sections, ["result", "results", "outcome", "impact"], "Results");
   const hasStructuredProcess = Boolean(process);
-  const hasResults = Boolean(result) || metrics.length > 0 || credits.length > 0;
   const style = {
     "--work": work,
     "--work-dark": workDark,
@@ -584,9 +582,9 @@ export function ProjectDetailPage() {
               <p className="mt-6 max-w-2xl font-livro text-xl leading-[1.55]">Use this case as the starting reference for a new brief.</p>
             </div>
             <div className="col-span-4 flex flex-col items-start justify-end gap-3 md:col-span-4 md:items-end">
-              <Link to="/contact" search={{ ref: project.slug || project.id }} className="inline-flex min-h-11 items-center gap-3 border-2 border-current bg-current px-5 py-3 text-sm font-semibold text-[var(--work)] transition-colors hover:bg-transparent hover:text-current focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current">
+              <a href={"/contact?ref=" + encodeURIComponent(project.slug || project.id)} className="inline-flex min-h-11 items-center gap-3 border-2 border-current bg-current px-5 py-3 text-sm font-semibold text-[var(--work)] transition-colors hover:bg-transparent hover:text-current focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current">
                 Start a project
-              </Link>
+              </a>
               <div className="flex flex-wrap gap-3">
                 <ShareButton projectTitle={project.title} />
                 <a href={"/api/portfolio-pdf/" + encodeURIComponent(project.slug || project.id)} className="inline-flex min-h-11 items-center gap-3 border-2 border-current px-4 py-3 text-sm font-semibold hover:bg-black/10 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current" download>
