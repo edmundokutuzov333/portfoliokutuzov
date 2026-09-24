@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
@@ -55,7 +56,7 @@ function WorkPoster({ project, className = "" }: { project: DbProject; className
   );
 }
 
-function ProjectLink({ project, children }: { project: DbProject; children: React.ReactNode }) {
+function ProjectLink({ project, children }: { project: DbProject; children: ReactNode }) {
   const queryClient = useQueryClient();
   const slug = project.slug || project.id;
   return (
@@ -79,7 +80,6 @@ function GridView({ projects }: { projects: DbProject[] }) {
   return (
     <div data-testid="portfolio-project-grid" className="space-y-5 md:space-y-6">
       {rows.map((row, rowIndex) => {
-        const totalRatio = row.reduce((sum, project) => sum + projectAspect(project), 0);
         return (
           <div key={"row-" + rowIndex} className="flex gap-3 md:gap-5">
             {row.map((project) => {
@@ -112,7 +112,7 @@ function IndexView({ projects }: { projects: DbProject[] }) {
     <div className="relative">
       <div className="hidden md:block" aria-hidden={!preview}>
         {preview ? (
-          <div className="pointer-events-none fixed z-[80] w-[min(28vw,360px)] border-2 border-black bg-[#d6d4ce] shadow-none" style={{ left: Math.min(preview.x + 20, window.innerWidth - 390), top: Math.min(preview.y + 20, window.innerHeight - 310) }}>
+          <div className="pointer-events-none fixed z-[80] w-[min(28vw,360px)] border-2 border-black bg-[#d6d4ce] shadow-none" style={{ left: typeof window === "undefined" ? 20 : Math.min(preview.x + 20, window.innerWidth - 390), top: typeof window === "undefined" ? 120 : Math.min(preview.y + 20, window.innerHeight - 310) }}>
             <div className="aspect-[4/3] w-full"><WorkPoster project={preview.project} /></div>
             <div className="border-t-2 border-black bg-[#d6d4ce] p-4 text-black"><div className="font-cartaz text-3xl font-extrabold leading-none">{preview.project.title}</div><div className="mt-2 text-sm">{[preview.project.client_name, preview.project.year, preview.project.category].filter(Boolean).join(" · ")}</div></div>
           </div>
