@@ -191,7 +191,7 @@ function ReelStage({
 
   React.useEffect(() => {
     if (fanMode) return;
-    const node = rootRef.current?.querySelector<HTMLElement>('[data-reel-index="' + active + '"]');
+    const node = rootRef.current?.querySelector<HTMLElement>('[data-reel-index="' + activeItem.caseSlug + '"]');
     node?.scrollIntoView({
       behavior: reducedMotion ? "auto" : "smooth",
       block: "nearest",
