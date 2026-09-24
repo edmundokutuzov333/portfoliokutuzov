@@ -171,3 +171,45 @@ O CI foi actualizado para incluir o browser suite da Fase 14.
 ## Estado
 
 Phase 14 está implementada em código mas permanece BLOCKED-EXTERNAL sob R1/R3 até backup, typecheck, lint e browser gates serem verificáveis.
+## Addendum — Gate diagnostics and CI
+
+### Typecheck
+
+Three diagnostic cycles were used for the Fase 14 implementation:
+1. Cycle 1 found the missing closing AdminMfaGate in AdminControlRoom.tsx.
+2. Cycle 2 found generated-Supabase typing failures around the new mfa_required column in Users & Roles.
+3. Cycle 3 isolated that pre-migration schema boundary in admin.phase4.functions.ts and Phase4ControlRoom.tsx.
+
+The final Phase 14 typecheck contains no Fase 14-specific errors. Remaining errors are pre-existing debt already present before Phase 14: Phase2WebsiteCMS restore, HomePhase5 effects, CaseStudyPage, PortfolioArchive, PortfolioGrid, cinematic reel typing, admin.functions historical serialization, case-study.server, site-locale-completion and API FileRoutesByPath issues.
+
+### Browser QA
+
+The first Browser QA run exposed two syntax errors in browser tests:
+- tests/browser/ai-assistant-phase13.spec.ts: missing closing object brace in the citation fixture.
+- tests/browser/credentials.spec.ts: invalid escaping in the Press Kit / CV regex.
+
+Both were corrected without changing production code:
+- 723511a5ec813d73537378ec5e3db6ec13e93e00
+- be43216a9cc50a96380125888bae48b0c66a5d96
+
+A Browser QA run for the current test head is in progress. Its result is not claimed GREEN until the workflow completes.
+
+### Vercel
+
+The latest READY deployment verified before the final test-fix push is:
+- deployment dpl_8TSBsUVCuF44h6XjkwqbVSLRTaNN
+- commit 723511a5ec813d73537378ec5e3db4d...REDACTED
+- preview portfoliokutuzov-642r7e51a-kutuzov.vercel.app
+
+No production promotion occurred.
+
+### Final gate state
+
+- Typecheck: BLOCKED by pre-existing repository debt, with no remaining Fase 14-specific type errors.
+- Lint: NOT CLAIMED GREEN because CI stops at typecheck.
+- Vitest/node:test: NOT CLAIMED GREEN for the same reason.
+- Playwright: NOT CLAIMED GREEN while the current browser workflow is still in progress.
+- Gate de Paridade: PASS by zero production writes.
+- Gate de Mudança: not applicable to public page redesign in Fase 14; Admin Studio received only scoped tokens/noindex.
+- Supabase Backup: FAILURE / R1 blocked.
+- phase-14-green: not created.
