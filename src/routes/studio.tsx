@@ -18,7 +18,7 @@ export const Route = createFileRoute("/studio")({
   component: StudioLanding,
 });
 
-function StudioLanding() {
+export function StudioLanding() {
   const reducedMotion = useReducedMotion() ?? false;
 
   useEffect(() => {
