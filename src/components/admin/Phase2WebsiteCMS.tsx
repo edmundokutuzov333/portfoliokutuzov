@@ -91,6 +91,12 @@ function useSettingsDraft(key: string) {
     setDraft((current) => ({ ...current, [field]: value }));
   };
 
+  const restore = () => {
+    setDraft(merged);
+    setDirty(false);
+    setHasSavedDraft(false);
+  };
+
   const save = async () => {
     setSaving(true);
     try {
@@ -105,7 +111,7 @@ function useSettingsDraft(key: string) {
     }
   };
 
-  return { draft, update, save, saving };
+  return { draft, update, save, restore, saving };
 }
 
 export function Phase2Overview(p: { onNavigate?: (section: string) => void }) {
