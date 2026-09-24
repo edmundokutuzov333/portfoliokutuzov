@@ -611,7 +611,7 @@ const saveAdminSiteSettingHandler = async ({
 export const saveAdminSiteSetting = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((i: unknown) => SiteSettingSchema.parse(i))
-  .handler(saveAdminSiteSettingHandler);
+  .handler(saveAdminSiteSettingHandler as any);
 
 export const saveAdminClient = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
