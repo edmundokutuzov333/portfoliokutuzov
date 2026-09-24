@@ -3,7 +3,9 @@ import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { getRequestId } from "@/lib/observability";
 
-const jsonValue = z.lazy(() =>
+type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
+
+const jsonValue: z.ZodType<JsonValue> = z.lazy(() =>
   z.union([
     z.string(),
     z.number().finite(),
