@@ -189,6 +189,16 @@ function ReelStage({
     return () => setWorkColor(DEFAULT_WORK);
   }, [activeItem]);
 
+  React.useEffect(() => {
+    if (fanMode) return;
+    const node = rootRef.current?.querySelector<HTMLElement>('[data-reel-index="' + active + '"]');
+    node?.scrollIntoView({
+      behavior: reducedMotion ? "auto" : "smooth",
+      block: "nearest",
+      inline: "center",
+    });
+  }, [active, fanMode, reducedMotion]);
+
   const jump = React.useCallback(
     (index: number) => {
       const next = Math.max(0, Math.min(items.length - 1, index));
@@ -449,6 +459,7 @@ function ReelCard({
       aria-roledescription="slide"
       aria-label={[item.title, item.client, item.year].filter(Boolean).join(" · ")}
       aria-current={active ? "true" : undefined}
+      data-reel-index={item.caseSlug}
       onMouseEnter={onHover}
       className={
         fanMode
