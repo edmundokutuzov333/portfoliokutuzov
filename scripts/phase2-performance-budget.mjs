@@ -15,7 +15,6 @@ const limits = {
 const server = spawn("npm", ["start"], {
 
   stdio: ["ignore", "pipe", "pipe"],
-  stdio: ["ignore", "pipe", "pipe"],
   env: { ...process.env, PORT: "4173", HOST: "127.0.0.1" },
 });
 let serverOutput = "";
