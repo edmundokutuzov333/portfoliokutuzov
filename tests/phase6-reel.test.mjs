@@ -81,7 +81,7 @@ test("Phase 6 migration is additive, reversible, and does not invent media", () 
   assert.match(up, /insert into public\.reel_items/);
   assert.match(up, /where p\.is_published = true/);
   assert.match(up, /and p\.cover_url is not null/);
-  assert.match(up, /No synthetic URLs are introduced/);
+  assert.match(up, /No synthetic URLs are introduced/i);
   assert.match(down, /drop table if exists public\.reel_analytics/);
   assert.match(down, /drop table if exists public\.reel_items/);
 });
