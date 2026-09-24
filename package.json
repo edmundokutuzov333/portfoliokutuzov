@@ -26,7 +26,8 @@
     "test:parity": "node scripts/parity.mjs",
     "test:performance": "node scripts/phase2-performance-budget.mjs",
     "format:check": "prettier --check .",
-    "contrast:check": "node scripts/contrast-report.mjs"
+    "contrast:check": "node scripts/contrast-report.mjs",
+    "test:phase11:resend": "node scripts/phase11-resend-check.mjs"
   },
   "dependencies": {
     "@exodus/bytes": "^1.1.0",
