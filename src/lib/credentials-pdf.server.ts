@@ -16,6 +16,59 @@ import { SITE_EMAIL, SITE_PHONE, SITE_PHONE_DIGITS } from "@/lib/cms";
 
 type PdfClient = { name: string };
 
+type CredentialPdfSource = {
+  cards: CredentialMetric[];
+  skills: CredentialSkill[];
+  experience: typeof FALLBACK_EXPERIENCE;
+  principles: typeof FALLBACK_PRINCIPLES;
+};
+
+async function fetchCredentialSource(): Promise<CredentialPdfSource> {
+  const url = process.env.VITE_SUPABASE_URL ?? DEFAULT_SUPABASE_URL;
+  const key = process.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? DEFAULT_SUPABASE_PUBLISHABLE_KEY;
+
+  try {
+    const response = await fetch(
+      url + "/rest/v1/site_settings?select=value&key=eq.credentials&limit=1",
+      { headers: { apikey: key, Accept: "application/json" } },
+    );
+
+    if (!response.ok) {
+      return {
+        cards: FALLBACK_METRICS,
+        skills: FALLBACK_SKILLS,
+        experience: FALLBACK_EXPERIENCE,
+        principles: FALLBACK_PRINCIPLES,
+      };
+    }
+
+    const rows = (await response.json()) as Array<{ value?: unknown }>;
+    const value = rows[0]?.value as Record<string, unknown> | undefined;
+
+    return {
+      cards: Array.isArray(value?.cards)
+        ? (value.cards as CredentialMetric[]).filter((item) => item?.value && item?.label)
+        : FALLBACK_METRICS,
+      skills: Array.isArray(value?.skills)
+        ? (value.skills as CredentialSkill[]).filter((item) => item?.name)
+        : FALLBACK_SKILLS,
+      experience: Array.isArray(value?.experience)
+        ? (value.experience as typeof FALLBACK_EXPERIENCE).filter((item) => item?.role || item?.company)
+        : FALLBACK_EXPERIENCE,
+      principles: Array.isArray(value?.principles)
+        ? (value.principles as typeof FALLBACK_PRINCIPLES).filter((item) => item?.key && item?.value)
+        : FALLBACK_PRINCIPLES,
+    };
+  } catch {
+    return {
+      cards: FALLBACK_METRICS,
+      skills: FALLBACK_SKILLS,
+      experience: FALLBACK_EXPERIENCE,
+      principles: FALLBACK_PRINCIPLES,
+    };
+  }
+}
+
 const PAGE_W = 595.28;
 const PAGE_H = 841.89;
 const MARGIN = 46;
@@ -124,8 +177,8 @@ async function fetchClients(): Promise<PdfClient[]> {
   }
 }
 
-function metricSource(): CredentialMetric[] {
-  return FALLBACK_METRICS;
+function metricSource(source: CredentialPdfSource): CredentialMetric[] {
+  return source.cards.length ? source.cards : FALLBACK_METRICS;
 }
 
 function skillLevel(skill: CredentialSkill) {
@@ -146,6 +199,7 @@ export async function renderCredentialsPdf() {
   pdf.setCreator("edmundokutuzov.art");
 
   const pages: PDFPage[] = [];
+  const source = await fetchCredentialSource();
   const concrete = rgb(0.839, 0.831, 0.808);
   const paper = rgb(0.949, 0.949, 0.937);
   const black = rgb(0, 0, 0);
@@ -277,7 +331,7 @@ export async function renderCredentialsPdf() {
   };
 
   section("Numbers");
-  for (const metric of metricSource()) {
+  for (const metric of metricSource(source)) {
     page.drawText(metric.value + "  " + metric.label, {
       x: MARGIN,
       y: cursor,
@@ -291,7 +345,7 @@ export async function renderCredentialsPdf() {
   cursor -= 12;
   section("Experience");
 
-  for (const item of sortExperience(FALLBACK_EXPERIENCE)) {
+  for (const item of sortExperience(source.experience)) {
     page.drawText(item.period, {
       x: MARGIN,
       y: cursor,
@@ -324,7 +378,7 @@ export async function renderCredentialsPdf() {
   }
 
   section("Toolbelt");
-  const skills = FALLBACK_SKILLS;
+  const skills = source.skills.length ? source.skills : FALLBACK_SKILLS;
 
   for (const level of ["Core", "Fluent", "Exploring"]) {
     const items = skills.filter((skill) => skillLevel(skill) === level);
@@ -408,7 +462,7 @@ export async function renderCredentialsPdf() {
   }
 
   section("Principles");
-  for (const principle of FALLBACK_PRINCIPLES) {
+  for (const principle of source.principles) {
     page.drawText(principle.key, {
       x: MARGIN,
       y: cursor,
