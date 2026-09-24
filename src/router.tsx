@@ -1,4 +1,3 @@
-/* eslint-disable react-refresh/only-export-components */
 import { createRouter, useRouter } from "@tanstack/react-router";
 import { QueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
