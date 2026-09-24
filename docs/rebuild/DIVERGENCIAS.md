@@ -27,3 +27,7 @@ R12 applies: the live repository, production response and production database wi
 
 ## Decisions
 Nenhuma correcção de dados ou migração foi feita apenas para alinhar a Parte B. A realidade será a fonte dos gates seguintes.
+
+12. **DV-13 — Canonical SSR:** produção em /portfolio, /services, /credentials e /contact responde 200 mas emite canonical para /. O código raiz era responsável por injectar o canonical global; hotfix preparado.
+13. **DV-14 — Studio robots:** /studio responde 200 mas emitia noindex,nofollow apesar de ser uma rota pública de Studio. Hotfix preparado para index,follow.
+14. **DV-15 — 404 SEO:** a resposta 404 ainda inclui robots index,follow e canonical da Home. Registado para a fase de Error/SEO, sem alterar agora além do escopo do hotfix público.
