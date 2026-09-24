@@ -22,7 +22,6 @@ import { installSiteLocaleDomBridge } from "@/lib/site-locale";
 import appCss from "../styles.css?url";
 import "@fontsource-variable/archivo/wdth.css";
 import "@fontsource-variable/newsreader/opsz.css";
-import "@fontsource-variable/newsreader/opsz-italic.css";
 import "../styles/global-shell.css";
 
 interface RouterContext {
