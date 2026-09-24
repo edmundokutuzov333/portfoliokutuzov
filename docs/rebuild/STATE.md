@@ -6,7 +6,7 @@ Master execution state for SUPERPROMPT v2. This file is operational, not an appr
 |---|---|---|---|
 | 1 | BLOCKED-EXTERNAL | — | Truth-terrain, stability, SEO hotfix and safety baseline executed; external runner evidence still unavailable |
 | 2 | BLOCKED-EXTERNAL | — | Technical foundation, CI/CD and guardrails implemented; final runner gates cannot be verified from this execution surface |
-| 3 | TODO | — | Design system / Betão & Cor |
+| 3 | BLOCKED-EXTERNAL | — | Design system / Betão & Cor technical scope executed; predecessor gates remain unresolved |
 | 4 | TODO | — | Global shell / i18n / SEO |
 | 5 | TODO | — | Home |
 | 6 | TODO | — | Selected Portfolio Reel |
@@ -105,7 +105,7 @@ Phase 2 technical scope was executed on the canonical awwwards-rebuild branch wi
 - GitHub Actions execution result: BLOCKED-EXTERNAL because workflow runs/artifacts are not exposed by the available connector.
 - Final lint/typecheck/Vitest/Playwright/performance result: NOT CLAIMED GREEN without runner evidence.
 - phase-2-green tag: not created.
-- Phase 3 must not be started from this session until the dependency chain is green or an explicit external gate is restored.
+- Phase 3 is dependency-blocked by Fases 1/2. Technical work was executed conservatively because the requested task was explicit; promotion to green remains prohibited until the predecessor gate evidence exists.
 
 ### Phase 2 commits
 - 7ae2747857dcb3728da65ee164329c123f4536df
@@ -135,3 +135,65 @@ The technical work for Phase 2 is committed, but the phase cannot be promoted to
 - Ground-truth counts conflict with the visual audit; see docs/rebuild/DIVERGENCIAS.md.
 - 404 currently carries generic public robots/canonical metadata; reserved for the dedicated error/SEO pass.
 - Vercel-side Observability dashboard activation remains external account configuration; code instrumentation is committed.
+
+
+## Phase 3 execution log
+
+Phase 3 technical scope was executed on awwwards-rebuild without applying public-page styling and without mutating production data.
+
+### Completed
+- Betão & Cor token layer isolated in src/styles/design-system.css.
+- Self-hosted Archivo Variable and Newsreader Variable dependencies added.
+- Design system primitives created under src/components/design-system.
+- Headline contract prevents duplicate text rendering and exposes one accessible label.
+- Work Colour contrast/OKLab utility created.
+- Authenticated /admin/design-system showcase registered in the route tree.
+- Desktop G grid overlay and contextual cursor utility added.
+- Additive projects dominant_color/accent_color migration committed with rollback; not applied.
+- Local backfill and AA contrast gate scripts added.
+- CI contrast gate added.
+- Design plan, anti-template review, contrast report and architecture boundary documented.
+- Phase 3 contract tests added.
+
+### Production safety
+- No Supabase rows changed.
+- No Storage objects changed.
+- No migration executed.
+- No public route imported the Phase 3 CSS.
+- No change to the protected Reel component.
+
+### Gate status
+- Contrast token gate: designed to PASS; external runner execution is still unavailable.
+- Lint/typecheck/npm test/Playwright: NOT CLAIMED GREEN without runner evidence.
+- Gate de Mudança: NOT APPLICABLE because Phase 3 does not change public composition.
+- Phase 3: BLOCKED-EXTERNAL because Fases 1 and 2 are still BLOCKED-EXTERNAL and no green tags exist.
+
+### Phase 3 commits
+- 5485336490c7e651c8586abffaae85eec2e21689
+- 0720a32aaf6cb3751d4d0876abc418bfbd1f2343
+- 2e29f32fdac95c5f53947b3c0f100db4e501fc2d
+- 391cd6887f98b3b7906101fa013f91114a330406
+- cd6735d1a0aea4fc13c4fed6b24fd8af36740518
+- d736447f232f91307dadd285b4cc20bd3c7cca1e
+- 2893feab774d117a50a1354fd8a436aa3efa157b
+- 3fc7e8f65f96a228f5c94434279959961134cbb7
+- d8dc5060b6f3c0a60b32a6487d05ae8649a7ea96
+- f26aefffed099b11485dbfa32a50f2a567277b1e
+- 84b58345d56b44db0a49dab98ec284877e9fd42e
+- 2ffef8dfffa5fa0b70a00fedf77361ded22b06c6
+- f8661447f9692662e1e7eb5db0867759f8344214
+- a5b6694b93d6b91c681dc19b6c0cdbc11f0fed8f
+- 1bab4eb2f8cde02b1f14e2647821a90f11ce00ee
+- 4a6f47cff3fc0114963a693db2c029803fc7dfdd
+- ec5f44bf6fc0ef3db669c1dc65a82335c80dd536
+- 9e25e8772990a4ece23cb73d091a66cbc0920f4d
+- d220f5ae743472e6b2493508288a565464baf01b
+- 17e7e00bfbd885105ca13159088889269a59a66b
+
+## Current gate decision
+
+Phase 1: BLOCKED-EXTERNAL.
+Phase 2: BLOCKED-EXTERNAL.
+Phase 3: BLOCKED-EXTERNAL.
+
+The design-system work is committed to awwwards-rebuild, but the execution record must not manufacture a green state while predecessor runner and backup evidence remains missing.
