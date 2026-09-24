@@ -31,17 +31,17 @@ function guardSession(sessionId: string, inputTokens: number) {
   const current = sessionGuard.get(sessionId);
   if (!current || current.resetAt <= now || current.day !== day) {
     sessionGuard.set(sessionId, { count: 1, resetAt: now + SESSION_REQUEST_WINDOW_MS, day, tokens: inputTokens });
-    return { allowed: true as const };
+    return { allowed: true as const, remaining: Math.max(1, DAILY_TOKEN_LIMIT - inputTokens) };
   }
-  if (current.count >= SESSION_REQUEST_LIMIT) return { allowed: false as const, reason: "rate" as const };
-  if (current.tokens + inputTokens > DAILY_TOKEN_LIMIT) return { allowed: false as const, reason: "daily" as const };
+  if (current.count >= SESSION_REQUEST_LIMIT) return { allowed: false as const, reason: "rate" as const, remaining: 0 };
+  if (current.tokens + inputTokens > DAILY_TOKEN_LIMIT) return { allowed: false as const, reason: "daily" as const, remaining: 0 };
   current.count += 1;
   current.tokens += inputTokens;
-  return { allowed: true as const };
+  return { allowed: true as const, remaining: Math.max(1, DAILY_TOKEN_LIMIT - current.tokens) };
 }
 
 function isSensitiveRequest(text: string) {
-  return /(api\s*key|secret\s*key|password|system\s+prompt|hidden\s+prompt|private\s+token|access\s+token)/i.test(text);
+  return /(api\s*key|secret\s*key|password|system\s+prompt|hidden\s+prompt|private\s+token|access\s+token|prompt\s+injection|malware|ransomware|weapon|bomb|suicide|self[-\s]?harm)/i.test(text);
 }
 
 function isWithinPortfolioScope(text: string, context: ChatContext) {
@@ -120,7 +120,7 @@ export async function processChatStream(requestId: string, sessionId: string | u
       let iterations = 0;
       const activeContents: Content[] = [...contents];
       while (iterations++ < 3) {
-        const responseStream = await ai.models.generateContentStream({ model: modelName, contents: activeContents, config: { systemInstruction: buildSystemPrompt(context, activeSessionId, knowledgeText) + "\n\nRAG RULES:\n- Cite only retrieved source URLs supplied in the context.\n- If retrieved sources do not support a claim, say the portfolio records do not contain it.", tools: [{ functionDeclarations: allTools }], toolConfig: { includeServerSideToolInvocations: true }, temperature: 0.2, maxOutputTokens: 700 } });
+        const responseStream = await ai.models.generateContentStream({ model: modelName, contents: activeContents, config: { systemInstruction: buildSystemPrompt(context, activeSessionId, knowledgeText) + "\n\nRAG RULES:\n- Cite only retrieved source URLs supplied in the context.\n- If retrieved sources do not support a claim, say the portfolio records do not contain it.", tools: [{ functionDeclarations: allTools }], toolConfig: { includeServerSideToolInvocations: true }, temperature: 0.2, maxOutputTokens: outputBudget } });
         const toolCalls: ToolCallLike[] = [];
         let finalCandidates: Array<{ content?: Content }> = [];
         for await (const chunk of responseStream) {
@@ -164,11 +164,26 @@ export async function processChatStream(requestId: string, sessionId: string | u
         intent: session.profile.detectedIntent,
         model: diagnostics.modelUsed,
         userText: lastUserMessage,
+        assistantText: "",
+        role: "user",
+        citations: [],
+        tools: [],
+      });
+      void logAiTurn({
+        sessionId: activeSessionId,
+        locale: context.userLanguage === "pt" || context.userLanguage === "pt-PT" ? "pt-PT" : "en",
+        pathname: context.pathname,
+        intent: session.profile.detectedIntent,
+        model: diagnostics.modelUsed,
+        userText: lastUserMessage,
         assistantText: fullAssistantResponse,
         role: "assistant",
         citations: rag.citations,
         tools: toolsInvoked,
       });
+      const consumedOutput = Math.ceil(fullAssistantResponse.length / 4);
+      const guardState = sessionGuard.get(activeSessionId);
+      if (guardState) guardState.tokens += consumedOutput;
     }
     emit({ type: "done", modelUsed: diagnostics.modelUsed, latencyMs: diagnostics.latencyMs });
   } catch (error: unknown) {
