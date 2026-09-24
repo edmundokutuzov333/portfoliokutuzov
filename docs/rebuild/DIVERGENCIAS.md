@@ -39,3 +39,11 @@ Nenhuma correcção de dados ou migração foi feita apenas para alinhar a Parte
 16. **DV-17 — Newsletter schema:** public.newsletter_subscribers já existe e studio_waitlist continua a conter os registos históricos. A Fase 4 adiciona a migration de unificação, mas não a aplica enquanto o backup R1 não estiver confirmado.
 17. **DV-18 — Availability:** não havia um campo dedicado de disponibilidade na fonte única usada pelo shell. Foi criado um setting aditivo em site_settings e um editor administrativo; a alteração só passa a controlar produção depois de publicação pelo Release Management.
 18. **DV-19 — Public shell rollout:** as páginas internas continuam com o styling antigo nesta fase, de acordo com o contrato da Fase 4. O novo shell, navegação, footer, idioma, SEO e acessibilidade global são aplicados na camada raiz sem reescrever ainda o conteúdo interno das páginas.
+
+
+## Fase 5 — Home
+
+20. **DV-20 — Portfolio count:** Parte B/Phase 5 describe 106 projects; truth-terrain has 16 published rows. The Home displays the real 16 count, not 106.
+21. **DV-21 — Featured media:** six published projects are marked featured, but all six have no cover_url and empty gallery arrays. The Home uses their real title/client/category/year metadata and the existing palette colour, without fabricating media.
+22. **DV-22 — Client logos:** 16 active clients exist, but all logo_url values are null. The Home ClientWall therefore uses accessible text names rather than invented logo assets.
+23. **DV-23 — Metrics/services:** public.stats and public.services both contain zero active rows. The Home uses existing CMS credential metric cards and the existing four Services page discipline definitions as fallbacks; no production rows were created.
