@@ -28,7 +28,7 @@ export const Route = createFileRoute("/api/analytics")({
         if (!parsed.success) return new Response(JSON.stringify({ok:false,error:"VALIDATION_FAILED"}),{status:422,headers:{"Content-Type":"application/json"}});
         const { error } = await supabaseAdmin.from("analytics_events").insert(parsed.data.events as never);
         if (error) return new Response(JSON.stringify({ok:false,error:"ANALYTICS_FAILED"}),{status:500,headers:{"Content-Type":"application/json"}});
-        return new Response(JSON.stringify({ok:true,count:parsed.data.events.length}),{status:204});
+        return new Response(JSON.stringify({ok:true,count:parsed.data.events.length}),{status:200,headers:{"Content-Type":"application/json"}});
       },
     },
   },
