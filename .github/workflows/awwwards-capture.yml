@@ -1,0 +1,37 @@
+name: Awwwards Capture
+
+on:
+  push:
+    branches: [awwwards-rebuild]
+  workflow_dispatch:
+
+concurrency:
+  group: awwwards-capture-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm install --no-save @playwright/test
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test tests/browser/awwwards-capture.spec.ts --project=chromium
+      - name: Upload Awwwards package evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: awwwards-capture-${{ github.sha }}
+          path: |
+            docs/awwwards/*.png
+            test-results/
+          retention-days: 30
+          if-no-files-found: warn
