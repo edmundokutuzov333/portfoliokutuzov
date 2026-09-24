@@ -5,18 +5,16 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { GenesisVisual } from "@/components/studio/GenesisVisual";
 import { WaitlistForm } from "@/components/studio/WaitlistForm";
 import { trackStudioClientEvent } from "@/lib/studio/analytics";
+import { createSeo } from "@/lib/seo";
 
 export const Route = createFileRoute("/studio")({
-  head: () => ({
-    meta: [
-      { title: "Kutuzov Studio | Edmundo Kutuzov" },
-      {
-        name: "description",
-        content: "Kutuzov Studio is being composed privately, line by line, before its public release.",
-      },
-      { name: "robots", content: "noindex,nofollow" },
-    ],
-  }),
+  head: () =>
+    createSeo({
+      title: "Kutuzov Studio | Edmundo Kutuzov",
+      description:
+        "Kutuzov Studio is being composed privately, line by line, before its public release.",
+      path: "/studio",
+    }),
   component: StudioLanding,
 });
 
