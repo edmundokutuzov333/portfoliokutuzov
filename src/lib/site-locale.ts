@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useRouterState } from "@tanstack/react-router";
 
 export type SiteLocale = "en" | "pt-PT";
 
@@ -59,19 +60,13 @@ export function subscribeSiteLocale(listener: (locale: SiteLocale) => void): () 
 }
 
 export function useSiteLocale(): SiteLocale {
-  const [locale, setLocale] = useState<SiteLocale>(() =>
-    localeFromPath(typeof window === "undefined" ? "/" : window.location.pathname),
-  );
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const locale = localeFromPath(pathname);
+
   useEffect(() => {
-    const onPath = () => {
-      const next = localeFromPath(window.location.pathname);
-      setSiteLocale(next);
-      setLocale(next);
-    };
-    onPath();
-    window.addEventListener("popstate", onPath);
-    return () => window.removeEventListener("popstate", onPath);
-  }, []);
+    setSiteLocale(locale);
+  }, [locale]);
+
   return locale;
 }
 
