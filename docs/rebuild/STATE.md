@@ -17,8 +17,8 @@ Master execution state for SUPERPROMPT v2. This file is operational, not an appr
 | 11 | BLOCKED-EXTERNAL | — | Contact rebuilt; production migration and formal gates remain blocked by R1/external runner evidence |
 | 12 | BLOCKED-EXTERNAL | — | Kutuzov Studio rebuilt; formal gates and unified newsletter production migration remain blocked |
 | 13 | BLOCKED-EXTERNAL | — | AI assistant evolved with RAG-ready grounding, citations, guardrails, tools, Live Voice context and accessible panel |
-| 14 | TODO | — | Admin / operations |
-| 15 | TODO | — | Final release |
+| 14 | BLOCKED-EXTERNAL | — | Admin / operations executado; gates formais e backup permanecem bloqueados |
+| 15 | BLOCKED-EXTERNAL | — | Release engineering executado; promoção bloqueada por R1 e gates externos ainda sem GREEN final |
 
 ## Execution rules
 - Canonical branch: awwwards-rebuild.
@@ -906,3 +906,55 @@ Phase 14 code is implemented but remains BLOCKED-EXTERNAL under R1/R3.
 - Latest independently verified READY Vercel preview before the final documentation pushes: deployment `dpl_8TSBsUVCuF44h6XjkwqbVSLRTaNN`, commit `723511a5ec813d73537378ec5e3db6ec13e93e00`.
 - Supabase Backup remains FAILURE. No Phase 14 migration has been applied. No production DB/Storage writes occurred.
 - `phase-14-green` was not created.
+
+## Phase 15 execution log
+
+### Completed
+- Finalized enforcing CSP.
+- Added maintained Vitest final regression suite: 12 tests.
+- Phase 14 regression contract: 9 tests.
+- Added cross-route axe WCAG 2.2 audit for EN/PT public routes using @axe-core/playwright 4.13.0 as a CI-only dependency.
+- Added final Lighthouse CI configs for desktop/mobile and explicit LCP/CLS/INP threshold script.
+- Added npm audit and Gitleaks release-security workflow.
+- Added safe autocannon load smoke for chatbot rate limiting and contact oversized payload rejection.
+- Added explicit Node runtime to Reel analytics.
+- Added Awwwards technical, credits, developer note and capture package.
+- Added explicit Playwright video recording for the Awwwards 30–60s evidence flow.
+- Added consolidated CHANGELOG.md.
+- No production DB or Storage writes.
+- No production promotion.
+
+### Truth terrain / parity
+- Projects: 16 -> 16.
+- Active clients: 16 -> 16.
+- Experience: 5 -> 5.
+- Competency groups: 3 -> 3.
+- Skills: 5 -> 5.
+- Credential metrics: 5 -> 5.
+- Service disciplines: 4 -> 4.
+- Production DB writes during rebuild: 0.
+- Production Storage writes during rebuild: 0.
+
+### Verified gates observed before final HEAD
+- Typecheck: PASS.
+- Production build: PASS.
+- ESLint: PASS, warnings only.
+- Maintained Vitest suite: 12/12 PASS.
+- Phase 14 node:test regression: 9/9 PASS.
+- Contrast token gate: PASS.
+- Security workflow: npm audit PASS, Gitleaks PASS.
+- Parity parser was corrected to use the shared credentials-data.ts source of truth for experience.
+- Final HEAD workflows were still executing at the time of this state entry.
+
+### External blockers
+- Supabase Backup: FAILURE at Verify backup secrets exist.
+- Because no reversible production backup is confirmed, R1 prohibits database/storage writes and Phase 15 promotion.
+- Phase 1 baseline still has an external HTTP audit failure and therefore cannot provide complete fresh baseline screenshot evidence.
+- Final Browser QA, Lighthouse and Awwwards capture evidence depends on the final HEAD workflows.
+
+### Release decision
+- phase-15-green: not created.
+- pre-release tag: not created.
+- merge to main: not executed.
+- production deployment: not executed.
+- Phase 15: BLOCKED-EXTERNAL under R1/R3.
