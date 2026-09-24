@@ -1,6 +1,5 @@
 // Privacy-conscious, lightweight first-party analytics.
 // The canonical event vocabulary is small, while legacy callers remain source-compatible.
-import { supabase } from "@/integrations/supabase/client";
 import { safeSessionStorageGet, safeSessionStorageSet } from "@/lib/browser-safe";
 
 export const ANALYTICS_ACTIONS = [
@@ -60,7 +59,12 @@ async function flush() {
   if (queue.length === 0) return;
   const batch = queue.splice(0, queue.length);
   try {
-    await supabase.from("analytics_events").insert(batch as never);
+    await fetch("/api/analytics", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ events: batch }),
+      keepalive: true,
+    });
   } catch {
     // Analytics is strictly non-blocking. A broken telemetry path must never break UX.
   }

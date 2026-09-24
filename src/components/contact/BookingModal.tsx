@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { CalendarDays, Loader2, X, Check } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import { bookingSchema } from "@/lib/contact-schema";
 import { trackEvent } from "@/lib/analytics";
 
@@ -54,9 +53,16 @@ export function BookingModal({
       return;
     }
     setBusy(true);
-    const { error } = await supabase.from("booking_requests").insert(parsed.data);
+    const response = await fetch("/api/booking/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(parsed.data),
+    });
+    const payload = (await response.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (!response.ok || !payload?.ok) {
+      return toast.error(payload?.error ?? "Booking request failed.");
+    }
     trackEvent({ action: "submit", element: "booking" });
     setDone(true);
     toast.success("Booking request sent.");
