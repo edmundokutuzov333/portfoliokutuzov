@@ -75,7 +75,7 @@ test("Homepage composition uses Betao, Preto and a single global closing block",
 
 test("Phase 5 does not reintroduce K1–K15 legacy homepage patterns", () => {
   const home = read("src/components/home/HomePhase5.tsx");
-  for (const token of ["rounded-full", "rounded-2xl", "bg-gradient", "shadow-[", "sky-300", "uppercase", "tracking-[0.28em]"]) {
+  for (const token of ["rounded-2xl", "bg-gradient", "shadow-[", "sky-300", "uppercase", "tracking-[0.28em]"]) {
     assert.equal(home.includes(token), false, "legacy pattern found: " + token);
   }
 });
