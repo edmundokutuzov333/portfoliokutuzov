@@ -31,3 +31,11 @@ Nenhuma correcção de dados ou migração foi feita apenas para alinhar a Parte
 12. **DV-13 — Canonical SSR:** produção em /portfolio, /services, /credentials e /contact responde 200 mas emite canonical para /. O código raiz era responsável por injectar o canonical global; hotfix preparado.
 13. **DV-14 — Studio robots:** /studio responde 200 mas emitia noindex,nofollow apesar de ser uma rota pública de Studio. Hotfix preparado para index,follow.
 14. **DV-15 — 404 SEO:** a resposta 404 ainda inclui robots index,follow e canonical da Home. Registado para a fase de Error/SEO, sem alterar agora além do escopo do hotfix público.
+
+
+## Fase 4 — decisões de verdade-terreno
+
+15. **DV-16 — PT content source:** não existe uma fonte de conteúdo PT-PT comprovada para as páginas públicas. /pt/* reutiliza o conteúdo factual existente e traduz apenas o chrome/UI. Nenhuma tradução editorial foi inventada.
+16. **DV-17 — Newsletter schema:** public.newsletter_subscribers já existe e studio_waitlist continua a conter os registos históricos. A Fase 4 adiciona a migration de unificação, mas não a aplica enquanto o backup R1 não estiver confirmado.
+17. **DV-18 — Availability:** não havia um campo dedicado de disponibilidade na fonte única usada pelo shell. Foi criado um setting aditivo em site_settings e um editor administrativo; a alteração só passa a controlar produção depois de publicação pelo Release Management.
+18. **DV-19 — Public shell rollout:** as páginas internas continuam com o styling antigo nesta fase, de acordo com o contrato da Fase 4. O novo shell, navegação, footer, idioma, SEO e acessibilidade global são aplicados na camada raiz sem reescrever ainda o conteúdo interno das páginas.
