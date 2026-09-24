@@ -77,7 +77,7 @@ test("Availability has an admin-controlled source", () => {
 test("Command palette keeps search and adds navigation/action/recent groups", () => {
   const source = read("src/components/CommandPalette.tsx");
   assert.match(source, /cmdk/);
-  for (const token of ["Recent", "navigation", "startProject", "openChat", "RECENT_KEY"]) {
+  for (const token of ["recent", "navigation", "startProject", "openChat", "RECENT_KEY"]) {
     assert.ok(source.includes(token), "Missing command-palette capability: " + token);
   }
   assert.match(source, /viewTransition/);
