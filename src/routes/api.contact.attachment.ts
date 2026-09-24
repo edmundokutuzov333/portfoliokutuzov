@@ -5,12 +5,11 @@ import { getRequestId } from "@/lib/observability";
 export const runtime = "nodejs";
 
 async function isAdminRequest(request: Request) {
-  const { supabase } = await import("@/integrations/supabase/client");
   const authHeader = request.headers.get("authorization");
   if (!authHeader?.startsWith("Bearer ")) return false;
   const token = authHeader.slice(7).trim();
   if (!token) return false;
-  const { data } = await supabase.auth.getUser(token);
+  const { data } = await supabaseAdmin.auth.getUser(token);
   if (!data.user) return false;
   const { data: admin } = await supabaseAdmin
     .from("admin_users")
@@ -46,7 +45,7 @@ export const Route = createFileRoute("/api/contact/attachment")({
         if (error || !data?.signedUrl) {
           return new Response(JSON.stringify({ error: "NOT_FOUND" }), {
             status: 404,
-            headers: { "Content-Type": "application/json", "X-Request-Id": requestId, "Cache-Control": "no-store", "X-Request-Id": requestId },
+            headers: { "Content-Type": "application/json", "X-Request-Id": requestId, "Cache-Control": "no-store" },
           });
         }
 
