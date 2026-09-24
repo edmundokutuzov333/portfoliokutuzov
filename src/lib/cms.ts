@@ -136,6 +136,17 @@ export type DbStat = {
   is_active: boolean;
 };
 
+export type DbSiteMetric = {
+  id: string;
+  metric_key: string;
+  value: string | null;
+  value_pt: string | null;
+  label: string;
+  label_pt: string | null;
+  sort_order: number;
+  is_active: boolean;
+};
+
 export type DbMethod = {
   id: string;
   number: string;
