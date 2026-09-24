@@ -101,10 +101,22 @@ export function AiAssistantRealtime() {
   const [speakingId, setSpeakingId] = useState<string | null>(null);
 
   useEffect(() => {
-    const onOpenRequest = () => {
+    const onOpenRequest = (event: Event) => {
+      const prompt =
+        event instanceof CustomEvent &&
+        event.detail &&
+        typeof event.detail.prompt === "string"
+          ? event.detail.prompt.trim()
+          : "";
+
       setOpen(true);
       setMinimized(false);
+
+      if (prompt) {
+        setInput(prompt);
+      }
     };
+
     window.addEventListener("ek:open-chat", onOpenRequest as EventListener);
     return () => window.removeEventListener("ek:open-chat", onOpenRequest as EventListener);
   }, []);
