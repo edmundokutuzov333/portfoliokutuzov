@@ -55,4 +55,16 @@ test("Phase one verification commands exist", () => {
   assert.equal(typeof pkg.scripts?.diagnose, "string");
   assert.equal(typeof pkg.scripts?.check, "string");
 });
-\n\ntest("Public SEO routes own their canonical URL in SSR metadata", () => {\n  const root = read("src/routes/__root.tsx");\n  const credentials = read("src/routes/credentials.tsx");\n  const studio = read("src/routes/studio.tsx");\n  const project = read("src/routes/portfolio.$slug.tsx");\n  assert.doesNotMatch(root, /links:\\s*\\[\.\.\.seo\\.links/);\n  assert.match(credentials, /createSeo\\([\\s\\S]*path:\\s*"\\/credentials"/);\n  assert.match(studio, /createSeo\\([\\s\\S]*path:\\s*"\\/studio"/);\n  assert.match(project, /createSeo\\([\\s\\S]*path:\\s*`\\/portfolio\\/\\$\\{params\\.slug\\}`/);\n  assert.doesNotMatch(studio, /noindex,nofollow/i);\n});\n
+
+
+test("Public SEO routes own their canonical URL in SSR metadata", () => {
+  const root = read("src/routes/__root.tsx");
+  const credentials = read("src/routes/credentials.tsx");
+  const studio = read("src/routes/studio.tsx");
+  const project = read("src/routes/portfolio.$slug.tsx");
+  assert.doesNotMatch(root, /links:\\s*\\[\.\.\.seo\\.links/);
+  assert.match(credentials, /createSeo\\([\\s\\S]*path:\\s*"\\/credentials"/);
+  assert.match(studio, /createSeo\\([\\s\\S]*path:\\s*"\\/studio"/);
+  assert.match(project, /createSeo\\([\\s\\S]*path:\\s*`\\/portfolio\\/\\$\\{params\\.slug\\}`/);
+  assert.doesNotMatch(studio, /noindex,nofollow/i);
+});
