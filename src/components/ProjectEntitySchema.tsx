@@ -1,7 +1,8 @@
 import { useMemo } from "react";
 import { useRouterState } from "@tanstack/react-router";
 import { useProjects } from "@/hooks/useSiteData";
-import { SITE_ORIGIN, socialImageUrl } from "@/lib/seo";
+import { SITE_ORIGIN } from "@/lib/seo";
+import { caseStudyOgImageUrl } from "@/lib/case-study";
 
 export function ProjectEntitySchema() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
@@ -13,7 +14,7 @@ export function ProjectEntitySchema() {
     const project = projects.find((item) => (item.slug || item.id) === slug && item.is_published !== false);
     if (!project) return null;
 
-    const image = project.cover_url || socialImageUrl();
+    const image = project.cover_url || caseStudyOgImageUrl(project.slug || project.id);
     return {
       "@context": "https://schema.org",
       "@type": "CreativeWork",

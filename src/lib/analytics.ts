@@ -1,22 +1,10 @@
 // Privacy-conscious, lightweight first-party analytics.
-// The canonical event vocabulary is small, while legacy callers remain source-compatible.
 import { safeSessionStorageGet, safeSessionStorageSet } from "@/lib/browser-safe";
 
 export const ANALYTICS_ACTIONS = [
-  "page_view",
-  "portfolio_open",
-  "case_open",
-  "case_complete",
-  "case_next",
-  "cta_click",
-  "contact_start",
-  "contact_submit",
-  "contact_success",
-  "ai_open",
-  "ai_message",
-  "search_open",
-  "search_select",
-  "search_filter",
+  "page_view","portfolio_open","case_open","case_complete","case_next","cta_click",
+  "contact_start","contact_submit","contact_success","ai_open","ai_message","ai_handoff",
+  "reel_view","reel_select","reel_open","search_open","search_select","search_filter",
 ] as const;
 
 export type AnalyticsAction = (typeof ANALYTICS_ACTIONS)[number];
@@ -56,17 +44,17 @@ function deviceFromWidth(width: number): "mobile" | "tablet" | "desktop" {
 }
 
 async function flush() {
-  if (queue.length === 0) return;
+  if (!queue.length) return;
   const batch = queue.splice(0, queue.length);
   try {
     await fetch("/api/analytics", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ events: batch }),
+      body: JSON.stringify(batch),
       keepalive: true,
     });
   } catch {
-    // Analytics is strictly non-blocking. A broken telemetry path must never break UX.
+    // Analytics remains strictly non-blocking.
   }
 }
 

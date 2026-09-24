@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [main, phase3-ai-intelligence]
   push:
-    branches: [phase3-ai-intelligence, ai-realtime-i18n, main, feat/studio-qa-final]
+    branches: [phase3-ai-intelligence, ai-realtime-i18n, main, feat/studio-qa-final, awwwards-rebuild, phase2-closeout]
 
 concurrency:
   group: control-room-browser-qa-${{ github.workflow }}-${{ github.ref }}
@@ -21,6 +21,6 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - run: npm install --no-save @playwright/test
+      - run: npm install --no-save @playwright/test @axe-core/playwright@4.13.0
       - run: npx playwright install --with-deps chromium firefox webkit msedge
       - run: npx playwright test

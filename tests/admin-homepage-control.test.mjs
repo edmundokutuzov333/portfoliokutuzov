@@ -42,8 +42,8 @@ test("Homepage Admin controls the complete public homepage surface", () => {
 test("Public homepage consumes CMS-controlled order and visibility with safe fallbacks", () => {
   const index = read("src/routes/index.tsx");
   assert.match(index, /readSetting<HomeSection[]>/);
-  assert.match(index, /.filter((item) => item.visible/);
-  assert.match(index, /.sort((a, b) => Number(a.order/);
+  assert.match(index, /\.filter\(\(item\) => item\.visible/);
+  assert.match(index, /\.sort\(\(a, b\) => Number\(a\.order/);
   assert.match(index, /item.id !== "footer"/);
 });
 
@@ -69,7 +69,7 @@ test("Homepage control structure has a production migration", () => {
   assert.match(migration, /title_3/);
   assert.match(migration, /preview_limit/);
 });
-\ntest("Navbar brand field edited in Admin is the same field rendered publicly", () => {
+test("Navbar brand field edited in Admin is the same field rendered publicly", () => {
   const admin = read("src/components/admin/AdminControlRoom.tsx");
   const navbar = read("src/components/layout/Navbar.tsx");
   assert.match(admin, /get\(s\.draft, "brand"/);

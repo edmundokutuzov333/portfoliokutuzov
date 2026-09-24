@@ -1,0 +1,115 @@
+name: Phase 1 Baseline
+
+on:
+  push:
+    branches:
+      - awwwards-rebuild
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: phase1-baseline-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: awwwards-rebuild
+
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run regression tests
+        run: npm test
+
+      - name: Run diagnostics
+        run: npm run diagnose
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Production build
+        run: npm run build
+
+      - name: Install browser audit tooling
+        run: npm install --no-save @playwright/test @axe-core/playwright
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Start local production-like server
+        run: |
+          npm run dev -- --host 127.0.0.1 --port 4173 > /tmp/phase1-dev.log 2>&1 &
+          echo $! > /tmp/phase1-dev.pid
+          node - <<'NODE'
+          const deadline = Date.now() + 120000;
+          const url = 'http://127.0.0.1:4173/';
+          async function wait() {
+            while (Date.now() < deadline) {
+              try {
+                const response = await fetch(url);
+                if (response.status < 500) process.exit(0);
+              } catch {}
+              await new Promise((resolve) => setTimeout(resolve, 1000));
+            }
+            console.error('Local server did not become ready');
+            process.exit(1);
+          }
+          wait();
+          NODE
+
+      - name: Production HTTP audit
+        run: node scripts/phase1-http-audit.mjs
+
+      - name: Browser screenshots and axe
+        run: node scripts/phase1-baseline.mjs
+
+      - name: Stop baseline server
+        run: kill "$(cat /tmp/phase1-dev.pid)" || true
+
+      - name: Existing Playwright suite
+        run: npx playwright test
+
+      - name: Bundle size baseline
+        run: node scripts/phase1-bundle-size.mjs
+
+      - name: Lighthouse baseline
+        run: node scripts/phase1-lighthouse.mjs
+
+      - name: Upload baseline artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-1-baseline-${{ github.sha }}
+          path: |
+            docs/baseline/
+            /tmp/phase1-dev.log
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Commit baseline evidence
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/baseline/
+          if git diff --cached --quiet; then
+            echo "No generated baseline changes to commit."
+            exit 0
+          fi
+          git commit -m "chore(rebuild): capture Phase 1 baseline [skip ci]"
+          git push origin HEAD:awwwards-rebuild

@@ -32,6 +32,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { generateUuid } from "@/lib/utils";
 import { setAdminDirty } from "@/lib/admin-dirty";
 import { readImageDimensions } from "@/lib/image-utils";
+import { blobToFile, optimizeImageForLibrary } from "@/lib/media-optimization";
 
 function Card(p: { title: string; description?: string; children: ReactNode }) {
   return <section className="mt-6 overflow-hidden rounded-2xl border border-white/[0.08] bg-[#030814]">
@@ -90,6 +91,12 @@ function useSettingsDraft(key: string) {
     setDraft((current) => ({ ...current, [field]: value }));
   };
 
+  const restore = () => {
+    setDraft(merged);
+    setDirty(false);
+    setHasSavedDraft(false);
+  };
+
   const save = async () => {
     setSaving(true);
     try {
@@ -104,7 +111,7 @@ function useSettingsDraft(key: string) {
     }
   };
 
-  return { draft, update, save, saving };
+  return { draft, update, save, restore, saving };
 }
 
 export function Phase2Overview(p: { onNavigate?: (section: string) => void }) {
@@ -688,6 +695,61 @@ export function GlobalSettingsManager() {
   </div>;
 }
 
+export function AvailabilityManager() {
+  const availability = useSettingsDraft("availability");
+  const enabled = Boolean(getValue(availability.draft, "enabled", true));
+  const label = String(getValue(
+    availability.draft,
+    "label",
+    "Available for projects",
+  ));
+  const year = Number(getValue(availability.draft, "year", new Date().getFullYear()));
+
+  return (
+    <div className="space-y-6">
+      <header>
+        <p className="mono text-[10px] tracking-[0.28em] text-sky-300/80">WEBSITE / AVAILABILITY</p>
+        <h2 className="display mt-1 text-3xl text-white">Availability control.</h2>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
+          One source for the public availability state and year. The footer and future page labels read this setting instead of hard-coded dates.
+        </p>
+      </header>
+
+      <Card title="Public availability" description="Changes are staged through the existing Release Management pipeline.">
+        <div className="grid gap-5 md:grid-cols-2">
+          <label className="flex min-h-12 items-center gap-3 border-2 border-white/[0.12] px-3 text-sm text-white">
+            <input
+              type="checkbox"
+              checked={enabled}
+              onChange={(event) => availability.update("enabled", event.target.checked)}
+              className="h-4 w-4 accent-sky-300"
+            />
+            Publicly available
+          </label>
+          <div className="grid gap-2">
+            <FieldLabel>Label</FieldLabel>
+            <Input value={label} onChange={(event) => availability.update("label", event.target.value)} />
+          </div>
+          <div className="grid gap-2">
+            <FieldLabel>Year</FieldLabel>
+            <Input
+              type="number"
+              min={2024}
+              max={2100}
+              value={year}
+              onChange={(event) => availability.update("year", Number(event.target.value))}
+            />
+          </div>
+        </div>
+        <div className="mt-5 flex items-center justify-between gap-4">
+          <p className="text-xs text-slate-500">Current public label: {enabled ? label + " " + year : "Not available"}</p>
+          <SaveButton saving={availability.saving} onClick={() => void availability.save()} />
+        </div>
+      </Card>
+    </div>
+  );
+}
+
 export function SeoManager() {
   const global=useSettingsDraft("seo_global");
   const pages=useSettingsDraft("seo_pages");
@@ -701,7 +763,16 @@ export function SeoManager() {
   </div>;
 }
 
-type MediaAsset = { id:string; storage_path:string; public_url:string; filename:string; mime_type:string; width:number|null; height:number|null; size_bytes:number; kind:"image"|"video"|"logo"|"document"; alt_text:string|null; entity_type:string|null; entity_id:string|null; is_public:boolean; created_at:string; };
+type MediaAsset = {
+  id:string; storage_path:string; public_url:string; filename:string; mime_type:string;
+  width:number|null; height:number|null; size_bytes:number;
+  kind:"image"|"video"|"logo"|"document"; alt_text:string|null;
+  entity_type:string|null; entity_id:string|null; is_public:boolean; created_at:string;
+  dominant_color?: string|null;
+  optimized_webp_path?: string|null; optimized_webp_url?: string|null;
+  optimized_avif_path?: string|null; optimized_avif_url?: string|null;
+  optimized_width?: number|null; optimized_height?: number|null;
+};
 
 export function MediaLibrary() {
   const qc=useQueryClient();
@@ -714,18 +785,79 @@ export function MediaLibrary() {
   const [kind,setKind]=useState<MediaAsset["kind"]|"all">("all");
   const [busy,setBusy]=useState(false);
   const {data:assets=[],isFetching}=useQuery({queryKey:["admin","media-library",query,kind],queryFn:async()=>{const result=await list({data:{search:query||undefined,kind}});return result.rows||[];},staleTime:10000});
-  const upload=async(file:File)=>{setBusy(true);try{const allowed=["image/png","image/jpeg","image/webp","image/svg+xml","video/mp4","video/webm","video/ogg","application/pdf"];if(!allowed.includes(file.type))throw new Error("Unsupported media type");const id=generateUuid();let width:number|null=null;let height:number|null=null;if(file.type.startsWith("image/")){const dims=await readImageDimensions(file);width=dims.width;height=dims.height;}const detected=file.type==="application/pdf"?"document":file.type.startsWith("video/")?"video":kind==="logo"?"logo":"image";const signed=await prepare({data:{entity_id:id,kind:"library",filename:file.name,content_type:file.type,size_bytes:file.size}});const put=await supabase.storage.from("site-assets").uploadToSignedUrl(signed.path,signed.token,file);if(put.error)throw new Error(put.error.message);await create({data:{id,storage_path:signed.path,public_url:signed.publicUrl,filename:file.name,mime_type:file.type,width,height,size_bytes:file.size,kind:detected as "image"|"video"|"logo"|"document",alt_text:null,entity_type:null,entity_id:null,is_public:true}});await qc.invalidateQueries({queryKey:["admin","media-library"]});toast.success("Asset added");}catch(error){toast.error(error instanceof Error?error.message:"Upload failed");}finally{setBusy(false);}};
+  const upload=async(file:File)=>{
+    setBusy(true);
+    try{
+      const allowed=["image/png","image/jpeg","image/webp","image/svg+xml","video/mp4","video/webm","video/ogg","application/pdf"];
+      if(!allowed.includes(file.type)) throw new Error("Unsupported media type");
+      const id=generateUuid();
+      let width:number|null=null; let height:number|null=null;
+      let optimized:{dominantColor:string|null;width:number;height:number;webp:Blob|null;avif:Blob|null}|null=null;
+      if(file.type.startsWith("image/")){
+        const dims=await readImageDimensions(file); width=dims.width; height=dims.height;
+        if(file.type!=="image/svg+xml") optimized=await optimizeImageForLibrary(file);
+      }
+      const detected=file.type==="application/pdf"?"document":file.type.startsWith("video/")?"video":kind==="logo"?"logo":"image";
+      const signed=await prepare({data:{entity_id:id,kind:"library",filename:file.name,content_type:file.type,size_bytes:file.size}});
+      const put=await supabase.storage.from("site-assets").uploadToSignedUrl(signed.path,signed.token,file);
+      if(put.error) throw new Error(put.error.message);
+      let webpPath:string|null=null, webpUrl:string|null=null, avifPath:string|null=null, avifUrl:string|null=null;
+      if(optimized?.webp){
+        const variantFile=await blobToFile(optimized.webp,file.name.replace(/\.[^.]+$/,"")+".webp");
+        const variant=await prepare({data:{entity_id:id,kind:"library",filename:variantFile.name,content_type:"image/webp",size_bytes:variantFile.size}});
+        const uploaded=await supabase.storage.from("site-assets").uploadToSignedUrl(variant.path,variant.token,variantFile);
+        if(!uploaded.error){webpPath=variant.path;webpUrl=variant.publicUrl;}
+      }
+      if(optimized?.avif){
+        const variantFile=await blobToFile(optimized.avif,file.name.replace(/\.[^.]+$/,"")+".avif");
+        const variant=await prepare({data:{entity_id:id,kind:"library",filename:variantFile.name,content_type:"image/avif",size_bytes:variantFile.size}});
+        const uploaded=await supabase.storage.from("site-assets").uploadToSignedUrl(variant.path,variant.token,variantFile);
+        if(!uploaded.error){avifPath=variant.path;avifUrl=variant.publicUrl;}
+      }
+      await create({data:{
+        id,storage_path:signed.path,public_url:signed.publicUrl,filename:file.name,mime_type:file.type,width,height,size_bytes:file.size,
+        kind:detected as "image"|"video"|"logo"|"document",alt_text:null,entity_type:null,entity_id:null,is_public:true,
+        dominant_color:optimized?.dominantColor ?? null,optimized_webp_path:webpPath,optimized_webp_url:webpUrl,
+        optimized_avif_path:avifPath,optimized_avif_url:avifUrl,optimized_width:optimized?.width ?? width,optimized_height:optimized?.height ?? height,
+      }});
+      await qc.invalidateQueries({queryKey:["admin","media-library"]});
+      toast.success("Asset added");
+    }catch(error){toast.error(error instanceof Error?error.message:"Upload failed");}
+    finally{setBusy(false);}
+  };
   const del=async(id:string)=>{if(!window.confirm("Delete this asset and its stored file?"))return;try{await remove({data:{id}});await qc.invalidateQueries({queryKey:["admin","media-library"]});toast.success("Asset deleted");}catch(error){toast.error(error instanceof Error?error.message:"Delete failed");}};
   const replaceAsset=async(asset:MediaAsset,file:File)=>{
     try{
       const allowed=asset.kind==="document"?["application/pdf"]:asset.kind==="video"?["video/mp4","video/webm","video/ogg"]:["image/png","image/jpeg","image/webp","image/svg+xml"];
       if(!allowed.includes(file.type)) throw new Error("Replacement format does not match the asset type.");
       let width:number|null=null; let height:number|null=null;
-      if(file.type.startsWith("image/")){const dims=await readImageDimensions(file);width=dims.width;height=dims.height;}
+      let optimized:{dominantColor:string|null;width:number;height:number;webp:Blob|null;avif:Blob|null}|null=null;
+      if(file.type.startsWith("image/")){
+        const dims=await readImageDimensions(file);width=dims.width;height=dims.height;
+        if(file.type!=="image/svg+xml") optimized=await optimizeImageForLibrary(file);
+      }
       const signed=await prepare({data:{entity_id:asset.id,kind:"library",filename:file.name,content_type:file.type,size_bytes:file.size}});
       const put=await supabase.storage.from("site-assets").uploadToSignedUrl(signed.path,signed.token,file);
       if(put.error) throw new Error(put.error.message);
-      await replace({data:{id:asset.id,storage_path:signed.path,public_url:signed.publicUrl,filename:file.name,mime_type:file.type,width,height,size_bytes:file.size}});
+      let webpPath:string|null=null,webpUrl:string|null=null,avifPath:string|null=null,avifUrl:string|null=null;
+      if(optimized?.webp){
+        const variantFile=await blobToFile(optimized.webp,file.name.replace(/\.[^.]+$/,"")+".webp");
+        const variant=await prepare({data:{entity_id:asset.id,kind:"library",filename:variantFile.name,content_type:"image/webp",size_bytes:variantFile.size}});
+        const uploaded=await supabase.storage.from("site-assets").uploadToSignedUrl(variant.path,variant.token,variantFile);
+        if(!uploaded.error){webpPath=variant.path;webpUrl=variant.publicUrl;}
+      }
+      if(optimized?.avif){
+        const variantFile=await blobToFile(optimized.avif,file.name.replace(/\.[^.]+$/,"")+".avif");
+        const variant=await prepare({data:{entity_id:asset.id,kind:"library",filename:variantFile.name,content_type:"image/avif",size_bytes:variantFile.size}});
+        const uploaded=await supabase.storage.from("site-assets").uploadToSignedUrl(variant.path,variant.token,variantFile);
+        if(!uploaded.error){avifPath=variant.path;avifUrl=variant.publicUrl;}
+      }
+      await replace({data:{
+        id:asset.id,storage_path:signed.path,public_url:signed.publicUrl,filename:file.name,mime_type:file.type,width,height,size_bytes:file.size,
+        dominant_color:optimized?.dominantColor ?? asset.dominant_color ?? null,
+        optimized_webp_path:webpPath,optimized_webp_url:webpUrl,optimized_avif_path:avifPath,optimized_avif_url:avifUrl,
+        optimized_width:optimized?.width ?? width,optimized_height:optimized?.height ?? height,
+      }});
       await qc.invalidateQueries({queryKey:["admin","media-library"]});
       toast.success("Asset replaced");
     }catch(error){toast.error(error instanceof Error?error.message:"Replacement failed");}

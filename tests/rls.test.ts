@@ -74,25 +74,51 @@ describe("anon SELECT access", () => {
 });
 
 // ---------- INSERT access ----------
-describe("anon INSERT access is denied after P0 hardening", () => {
-  const rows: Array<[string, Record<string, unknown>]> = [
-    ["contact_requests", { name: "[AUDIT] RLS Test", email: "delivered@resend.dev", message: "[AUDIT] automated rls test" }],
-    ["briefing_submissions", { full_name: "[AUDIT] RLS Test", email: "delivered@resend.dev", project_type: "[AUDIT] test", message: "[AUDIT] automated rls test" }],
-    ["booking_requests", { name: "[AUDIT] RLS Test", email: "delivered@resend.dev", preferred_date: "2099-01-01" }],
-    ["newsletter_subscribers", { email: "delivered@resend.dev" }],
-    ["analytics_events", { page: "/[AUDIT]-rls-test", action: "[AUDIT] test" }],
-  ];
-
-  for (const [table, row] of rows) {
-    it(`anon cannot insert into ${table}`, async () => {
-      const { error } = await anon.from(table).insert(row as never);
-      expect(isDenied(error), `expected ${table} insert to be denied`).toBe(true);
+describe("anon INSERT access (public submission endpoints)", () => {
+  it("anon can submit contact_requests", async () => {
+    const { error } = await anon.from("contact_requests").insert({
+      name: "RLS Test",
+      email: "rls-test@example.com",
+      message: "automated rls test",
     });
-  }
+    expect(error, error?.message).toBeNull();
+  });
+
+  it("anon can submit briefing_submissions", async () => {
+    const { error } = await anon.from("briefing_submissions").insert({
+      full_name: "RLS Test",
+      email: "rls-test@example.com",
+      project_type: "test",
+      message: "automated rls test",
+    });
+    expect(error, error?.message).toBeNull();
+  });
+
+  it("anon can submit booking_requests", async () => {
+    const { error } = await anon.from("booking_requests").insert({
+      name: "RLS Test",
+      email: "rls-test@example.com",
+    });
+    expect(error, error?.message).toBeNull();
+  });
+
+  it("anon can subscribe to newsletter_subscribers", async () => {
+    const { error } = await anon.from("newsletter_subscribers").insert({
+      email: `rls-${Date.now()}@example.com`,
+    });
+    expect(error, error?.message).toBeNull();
+  });
+
+  it("anon can log analytics_events", async () => {
+    const { error } = await anon.from("analytics_events").insert({
+      page: "/rls-test",
+      action: "test",
+    });
+    expect(error, error?.message).toBeNull();
+  });
 });
 
 // ---------- INSERT denied ----------
-
 describe("anon INSERT denied (admin-only tables)", () => {
   const adminWriteOnly: Array<[string, Record<string, unknown>]> = [
     ["clients", { name: "rls-test-client" }],

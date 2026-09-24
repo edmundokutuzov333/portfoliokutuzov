@@ -2,7 +2,9 @@ name: CI
 on:
   push:
     branches:
+      - awwwards-rebuild
       - main
+      - phase2-closeout
       - phase1-hardening
       - phase2-final-exec
       - phase3-ai-intelligence
@@ -45,5 +47,19 @@ jobs:
         run: npm run build
       - name: Lint
         run: npm run lint
-      - name: Regression tests A-H
-        run: npm test
+      - name: Regression tests
+        run: npm test && npm run test:phase14
+      - name: Contrast token gate
+        run: npm run contrast:check
+      - name: Foundation parity
+        run: npm run test:parity
+      - name: Foundation change gate
+        run: npm run test:change-gate
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save @playwright/test
+          npx playwright install --with-deps chromium
+      - name: Performance budget
+        run: npm run test:performance
+      - name: Playwright smoke
+        run: npx playwright test tests/browser/portfolio.spec.ts tests/browser/case-study.spec.ts tests/browser/services.spec.ts tests/browser/credentials.spec.ts tests/browser/contact.spec.ts tests/browser/studio-phase12.spec.ts tests/browser/ai-assistant-phase13.spec.ts tests/browser/admin-phase14.spec.ts --project=chromium --grep "home renders|portfolio archive renders|contact page validates|case study|services|credentials|contact renders|contact validates|contact preserves|contact draft|contact uses|studio shows|studio constellation|studio confirmation|AI assistant|AI assistant opens|AI assistant keeps|AI assistant renders"

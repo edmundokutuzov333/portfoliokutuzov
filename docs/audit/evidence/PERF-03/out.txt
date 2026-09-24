@@ -1,0 +1,1 @@
+Phase15 measured critical JavaScript approximately 437-443 KB gzip versus 170 KB budget, and fonts approximately 222 KB gzip versus 120 KB budget. Phase2 source changes defer optional root modules and remove external Google font preconnects; no new performance measurement was available.

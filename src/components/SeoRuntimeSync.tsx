@@ -41,16 +41,52 @@ export function SeoRuntimeSync() {
   const { data: settings } = useSiteSettings();
 
   useEffect(() => {
+    const pageType =
+      pathname === "/studio" || pathname === "/pt/studio"
+        ? "WebPage"
+        : pathname.startsWith("/portfolio/") || pathname.startsWith("/pt/portfolio/")
+          ? "Article"
+          : "ProfilePage";
+
+    const json = {
+      "@context": "https://schema.org",
+      "@type": pageType,
+      url: SITE_ORIGIN + pathname,
+      name: document.title || "Edmundo Kutuzov",
+      inLanguage: pathname === "/pt" || pathname.startsWith("/pt/") ? "pt-PT" : "en",
+      isPartOf: { "@id": SITE_ORIGIN + "/#website" },
+    };
+
+    let node = document.head.querySelector("#ek-route-jsonld") as HTMLScriptElement | null;
+    if (!node) {
+      node = document.createElement("script");
+      node.id = "ek-route-jsonld";
+      node.type = "application/ld+json";
+      document.head.appendChild(node);
+    }
+    node.textContent = JSON.stringify(json).replace(/</g, "\\u003c");
+  }, [pathname]);
+
+  useEffect(() => {
     const global = (settings?.seo_global || {}) as Record<string, unknown>;
     const pages = (settings?.seo_pages?.pages || {}) as Record<string, Record<string, unknown>>;
     const page = pages[pathname] || {};
-    const title = String(page.title || global.title || "Edmundo Kutuzov - Designer & Art Director");
-    const description = String(page.description || global.description || "Visual identities, art direction and digital experiences built with strategic clarity and technical precision.");
+    const title = String(
+      page.title || global.title || "Edmundo Kutuzov - Designer & Art Director",
+    );
+    const description = String(
+      page.description ||
+        global.description ||
+        "Visual identities, art direction and digital experiences built with strategic clarity and technical precision.",
+    );
     const ogTitle = String(page.og_title || global.og_title || title);
     const ogDescription = String(page.og_description || global.og_description || description);
     const ogImage = String(page.og_image || global.og_image || SOCIAL_IMAGE);
     const canonicalPath = String(page.canonical || pathname || "/");
-    const canonical = canonicalPath.startsWith("http") ? canonicalPath : SITE_ORIGIN + (canonicalPath === "/" ? "/" : "/" + canonicalPath.replace(/^\/+/, ""));
+    const canonical = canonicalPath.startsWith("http")
+      ? canonicalPath
+      : SITE_ORIGIN +
+        (canonicalPath === "/" ? "/" : "/" + canonicalPath.replace(/^\/+/, ""));
     const robots = String(global.robots_meta || "index,follow,max-image-preview:large");
     const twitterCard = String(global.twitter_card || "summary_large_image");
     const favicon = String((settings?.global || {}).favicon_url || "/favicon.webp");

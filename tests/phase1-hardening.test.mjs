@@ -55,3 +55,19 @@ test("Phase one verification commands exist", () => {
   assert.equal(typeof pkg.scripts?.diagnose, "string");
   assert.equal(typeof pkg.scripts?.check, "string");
 });
+
+
+test("Public SEO routes own their canonical URL in SSR metadata", () => {
+  const root = read("src/routes/__root.tsx");
+  const credentials = read("src/routes/credentials.tsx");
+  const studio = read("src/routes/studio.tsx");
+  const project = read("src/routes/portfolio.$slug.tsx");
+  assert.equal(root.includes("links: [...seo.links"), false);
+  assert.match(credentials, /createSeo/);
+  assert.match(credentials, /path: "\/credentials"/);
+  assert.match(studio, /createSeo/);
+  assert.match(studio, /path: "\/studio"/);
+  assert.match(project, /createSeo/);
+  assert.match(project, /path: `\/portfolio\/\$\{params\.slug\}`/);
+  assert.doesNotMatch(studio, /noindex,nofollow/i);
+});

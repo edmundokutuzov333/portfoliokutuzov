@@ -1,0 +1,85 @@
+name: Phase 15 Security and Performance
+
+on:
+  push:
+    branches: [awwwards-rebuild, phase2-closeout]
+  workflow_dispatch:
+
+concurrency:
+  group: phase15-security-performance-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  security:
+    name: Security gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: npm audit
+        run: npm audit --audit-level=high
+      - name: Gitleaks
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  lighthouse:
+    name: Lighthouse thresholds
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: Lighthouse CI desktop
+        run: npx --yes @lhci/cli@0.15.x autorun --config=lighthouserc.desktop.cjs
+      - name: Lighthouse CI mobile
+        run: npx --yes @lhci/cli@0.15.x autorun --config=lighthouserc.mobile.cjs
+      - name: Final Lighthouse and CWV assertion
+        run: |
+          npm run build
+          npm run dev -- --host 127.0.0.1 --port 4173 > /tmp/phase15-lighthouse.log 2>&1 &
+          echo $! > /tmp/phase15-lighthouse.pid
+          node -e "const deadline=Date.now()+120000; (async function wait(){while(Date.now()<deadline){try{const r=await fetch('http://127.0.0.1:4173/'); if(r.status<500)process.exit(0)}catch{} await new Promise(r=>setTimeout(r,1000))} process.exit(1)})()"
+          npx --yes --package autocannon@8.0.0 node scripts/phase15-lighthouse.mjs
+          if test -f /tmp/phase15-lighthouse.pid; then kill "$(cat /tmp/phase15-lighthouse.pid)" 2>/dev/null || { code=$?; test "$code" -eq 1; }; fi
+
+  load:
+    name: Safe rate-limit load smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: Build and start local server
+        run: |
+          npm run build
+          npm run dev -- --host 127.0.0.1 --port 4173 > /tmp/phase15-load.log 2>&1 &
+          echo $! > /tmp/phase15-load.pid
+          node -e "const deadline=Date.now()+120000; (async function wait(){while(Date.now()<deadline){try{const r=await fetch('http://127.0.0.1:4173/'); if(r.status<500)process.exit(0)}catch{} await new Promise(r=>setTimeout(r,1000))} process.exit(1)})()"
+          npm install --no-save autocannon@8.0.0
+      - name: Run load smoke
+        run: npm exec -- node scripts/phase15-load-test.mjs
+      - name: Stop server
+        if: always()
+        run: kill $(cat /tmp/phase15-load.pid) || true

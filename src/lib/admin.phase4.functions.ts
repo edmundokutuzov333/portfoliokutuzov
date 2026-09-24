@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { runAiKnowledgeReindex } from "@/lib/ai/rag-index.functions";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -161,9 +162,9 @@ export const listAdminUsersPhase4 = createServerFn({ method: "POST" })
   .validator(() => ({}))
   .handler(async ({ context }) => {
     await assertPermission(context, "system.users.manage");
-    const { data, error } = await context.supabase
+    const { data, error } = await (context.supabase as any)
       .from("admin_users")
-      .select("id,user_id,email,role,created_at")
+      .select("id,user_id,email,role,created_at,mfa_required")
       .order("email");
     if (error) throw new Error(error.message);
     return { ok: true, rows: data ?? [] };
@@ -175,6 +176,7 @@ export const updateAdminUserRolePhase4 = createServerFn({ method: "POST" })
     z.object({
       user_id: z.string().uuid(),
       role: AdminRoleSchema,
+      mfa_required: z.boolean().optional(),
     }).parse(i),
   )
   .handler(async ({ data, context }) => {
@@ -190,9 +192,12 @@ export const updateAdminUserRolePhase4 = createServerFn({ method: "POST" })
     }
     const { data: row, error } = await context.supabase
       .from("admin_users")
-      .update({ role: data.role })
+      .update({
+        role: data.role,
+        ...(data.mfa_required === undefined ? {} : { mfa_required: data.mfa_required }),
+      } as never)
       .eq("user_id", data.user_id)
-      .select("id,user_id,email,role,created_at")
+      .select("id,user_id,email,role,created_at,mfa_required")
       .single();
     if (error) throw new Error(error.message);
     return { ok: true, row };
@@ -309,47 +314,57 @@ export const getAdminAnalyticsOverview = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertPermission(context, "system.audit.read");
     const since = new Date(Date.now() - data.days * 86400000).toISOString();
-    const { data: rows, error } = await context.supabase
-      .from("analytics_events")
-      .select("action,page,device,element,session_id,created_at")
-      .gte("created_at", since)
-      .order("created_at", { ascending: true })
-      .limit(20000);
-    if (error) throw new Error(error.message);
+    const [eventResult, leadResult, subscriberResult] = await Promise.all([
+      context.supabase.from("analytics_events").select("action,page,device,element,session_id,created_at").gte("created_at", since).order("created_at", { ascending: true }).limit(20000),
+      context.supabase.from("crm_leads").select("created_at").gte("created_at", since).order("created_at", { ascending: true }).limit(20000),
+      context.supabase.from("newsletter_subscribers").select("created_at").gte("created_at", since).order("created_at", { ascending: true }).limit(20000),
+    ]);
+    if (eventResult.error) throw new Error(eventResult.error.message);
+    if (leadResult.error) throw new Error(leadResult.error.message);
+    if (subscriberResult.error) throw new Error(subscriberResult.error.message);
 
-    const events = rows ?? [];
+    const events = eventResult.data ?? [];
     const pages = new Map<string, number>();
     const actions = new Map<string, number>();
     const devices = new Map<string, number>();
     const daily = new Map<string, number>();
+    const leadsDaily = new Map<string, number>();
+    const subscribersDaily = new Map<string, number>();
+    const reelDaily = new Map<string, number>();
+    const chatbotDaily = new Map<string, number>();
+    let reelViews = 0; let reelSelections = 0; let reelOpens = 0;
+    let aiOpens = 0; let aiMessages = 0; let aiHandoffs = 0;
 
+    const bump = (map: Map<string, number>, key: string, amount = 1) => map.set(key, (map.get(key) ?? 0) + amount);
     for (const event of events) {
       pages.set(event.page, (pages.get(event.page) ?? 0) + 1);
       actions.set(event.action, (actions.get(event.action) ?? 0) + 1);
-      const device = event.device ?? "unknown";
-      devices.set(device, (devices.get(device) ?? 0) + 1);
-      const day = event.created_at.slice(0, 10);
-      daily.set(day, (daily.get(day) ?? 0) + 1);
+      devices.set(event.device ?? "unknown", (devices.get(event.device ?? "unknown") ?? 0) + 1);
+      const day = event.created_at.slice(0, 10); bump(daily, day);
+      if (event.action === "reel_view") { reelViews += 1; bump(reelDaily, day); }
+      if (event.action === "reel_select") { reelSelections += 1; bump(reelDaily, day); }
+      if (event.action === "reel_open") { reelOpens += 1; bump(reelDaily, day); }
+      if (event.action === "ai_open") { aiOpens += 1; bump(chatbotDaily, day); }
+      if (event.action === "ai_message") { aiMessages += 1; bump(chatbotDaily, day); }
+      if (event.action === "ai_handoff") { aiHandoffs += 1; bump(chatbotDaily, day); }
     }
-
-    const top = (map: Map<string, number>) =>
-      [...map.entries()].sort((a, b) => b[1] - a[1]).slice(0, 12).map(([name, count]) => ({ name, count }));
-
+    for (const row of leadResult.data ?? []) bump(leadsDaily, row.created_at.slice(0, 10));
+    for (const row of subscriberResult.data ?? []) bump(subscribersDaily, row.created_at.slice(0, 10));
+    const top = (map: Map<string, number>) => [...map.entries()].sort((a,b)=>b[1]-a[1]).slice(0,12).map(([name,count])=>({name,count}));
+    const daysBetween = (startDate: Date, endDate: Date) => { const output: string[] = []; const cursor = new Date(startDate); cursor.setUTCHours(0,0,0,0); const finish = new Date(endDate); finish.setUTCHours(0,0,0,0); while(cursor <= finish){ output.push(cursor.toISOString().slice(0,10)); cursor.setUTCDate(cursor.getUTCDate()+1); } return output; };
+    const dayAxis = daysBetween(new Date(since), new Date());
+    const timeline = dayAxis.map((day)=>({ day, events: daily.get(day) ?? 0, leads: leadsDaily.get(day) ?? 0, subscribers: subscribersDaily.get(day) ?? 0, reel: reelDaily.get(day) ?? 0, chatbot: chatbotDaily.get(day) ?? 0 }));
     return {
       ok: true,
-      summary: {
-        events: events.length,
-        sessions: new Set(events.map((event) => event.session_id).filter(Boolean)).size,
-        pages: pages.size,
-        actions: actions.size,
-      },
-      top_pages: top(pages),
-      top_actions: top(actions),
-      devices: top(devices),
-      daily: [...daily.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([day, count]) => ({ day, count })),
+      summary: { events: events.length, sessions: new Set(events.map((event)=>event.session_id).filter(Boolean)).size, pages: pages.size, actions: actions.size, leads: leadResult.data?.length ?? 0, subscribers: subscriberResult.data?.length ?? 0 },
+      top_pages: top(pages), top_actions: top(actions), devices: top(devices), daily: timeline.map((row)=>({name:row.day,count:row.events})),
+      timeline,
+      leads_daily: timeline.map((row)=>({ day: row.day, count: row.leads })),
+      subscribers_daily: timeline.map((row)=>({ day: row.day, count: row.subscribers })),
+      reel: { views: reelViews, selections: reelSelections, opens: reelOpens, daily: timeline.map((row)=>({day:row.day,count:row.reel})) },
+      chatbot: { opens: aiOpens, messages: aiMessages, handoffs: aiHandoffs, handoff_rate: aiMessages ? (aiHandoffs / aiMessages) * 100 : 0, daily: timeline.map((row)=>({day:row.day,count:row.chatbot})) },
     };
   });
-
 export const createAdminDraft = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((i: unknown) => DraftCreateSchema.parse(i))
@@ -400,6 +415,11 @@ export const listAdminDrafts = createServerFn({ method: "POST" })
     if (!financeRead.error && !financeRead.data) query = query.neq("entity_type", "site_settings").or("entity_type.neq.site_settings,entity_id.neq.invoice_settings");
     const { data: rows, error } = await query;
     if (error) throw new Error(error.message);
+    if (process.env.AI_RAG_ENABLED === "true") {
+      void runAiKnowledgeReindex("en").catch((reindexError) => {
+        console.error("[AI RAG] publish reindex failed", reindexError);
+      });
+    }
     return { ok: true, rows: rows ?? [] };
   });
 

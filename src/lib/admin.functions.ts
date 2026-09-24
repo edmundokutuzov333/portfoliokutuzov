@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database } from "@/integrations/supabase/types";
+import { runAiKnowledgeReindex } from "@/lib/ai/rag-index.functions";
 
 export type AdminPermission =
   | "content.read"
@@ -150,6 +151,7 @@ const MEDIA_MIME_ALLOWLIST = new Set([
   "image/jpeg",
   "image/webp",
   "image/svg+xml",
+  "image/avif",
   "application/pdf",
   "video/mp4",
   "video/webm",
@@ -248,6 +250,13 @@ const MediaAssetSchema = z.object({
   entity_type: z.string().trim().max(120).nullable().optional(),
   entity_id: z.string().trim().max(160).nullable().optional(),
   is_public: z.boolean(),
+  dominant_color: z.string().regex(/^#[0-9a-fA-F]{6}$/).nullable().optional(),
+  optimized_webp_path: z.string().trim().max(500).nullable().optional(),
+  optimized_webp_url: z.string().url().nullable().optional(),
+  optimized_avif_path: z.string().trim().max(500).nullable().optional(),
+  optimized_avif_url: z.string().url().nullable().optional(),
+  optimized_width: z.number().int().positive().nullable().optional(),
+  optimized_height: z.number().int().positive().nullable().optional(),
 });
 
 const MediaQuerySchema = z.object({
@@ -578,23 +587,31 @@ export const deleteAdminMediaAsset = createServerFn({ method: "POST" })
     return { ok: true, filename: asset.filename };
   });
 
+const saveAdminSiteSettingHandler = async ({
+  data,
+  context,
+}: {
+  data: z.infer<typeof SiteSettingSchema>;
+  context: { supabase: SupabaseClient<Database> };
+}) => {
+  await assertPermission(context, "content.write");
+  if (data.key === "invoice_settings") {
+    await assertPermission(context, "finance.write");
+  }
+  const result = await saveAdminEntityDraft(
+    context,
+    "site_settings",
+    data.key,
+    data.key,
+    data.value,
+  );
+  return { ...result, row: { key: data.key, value: data.value } };
+};
+
 export const saveAdminSiteSetting = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((i: unknown) => SiteSettingSchema.parse(i))
-  .handler(async ({ data, context }) => {
-    await assertPermission(context, "content.write");
-    if (data.key === "invoice_settings") {
-      await assertPermission(context, "finance.write");
-    }
-    const result = await saveAdminEntityDraft(
-      context,
-      "site_settings",
-      data.key,
-      data.key,
-      data.value,
-    );
-    return { ...result, row: { key: data.key, value: data.value } };
-  });
+  .handler(saveAdminSiteSettingHandler as any);
 
 export const saveAdminClient = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -677,9 +694,9 @@ async function saveAdminEntityDraft(
 
   const liveSnapshot =
     entity_type === "site_settings"
-      ? ((live?.value ?? {}) as Record<string, unknown>)
+      ? (((live as { value?: unknown } | null)?.value ?? {}) as Record<string, unknown>)
       : ((live ?? {}) as unknown as Record<string, unknown>);
-  const liveUpdatedAt = live?.updated_at ?? null;
+  const liveUpdatedAt = (live as { updated_at?: string | null } | null)?.updated_at ?? null;
   const userId = (await context.supabase.auth.getUser()).data.user?.id ?? null;
 
   const { data: existingDraft, error: draftReadError } = await context.supabase
@@ -873,6 +890,11 @@ export const publishAdminProject = createServerFn({ method: "POST" })
       p_publish_note: data.is_published ? "Published from portfolio control" : "Unpublished from portfolio control",
     });
     if (publishError) throw new Error(publishError.message);
+    if (process.env.AI_RAG_ENABLED === "true") {
+      void runAiKnowledgeReindex("en").catch((reindexError) => {
+        console.error("[AI RAG] publish reindex failed", reindexError);
+      });
+    }
     return { ok: true, draft: saved.draft, published: published ?? [] };
   });
 
@@ -950,6 +972,13 @@ const MediaReplaceSchema = z.object({
   width: z.number().int().positive().nullable().optional(),
   height: z.number().int().positive().nullable().optional(),
   size_bytes: z.number().int().positive().max(200 * 1024 * 1024),
+  dominant_color: z.string().regex(/^#[0-9a-fA-F]{6}$/).nullable().optional(),
+  optimized_webp_path: z.string().trim().max(500).nullable().optional(),
+  optimized_webp_url: z.string().url().nullable().optional(),
+  optimized_avif_path: z.string().trim().max(500).nullable().optional(),
+  optimized_avif_url: z.string().url().nullable().optional(),
+  optimized_width: z.number().int().positive().nullable().optional(),
+  optimized_height: z.number().int().positive().nullable().optional(),
 });
 
 export const replaceAdminMediaAsset = createServerFn({ method: "POST" })
@@ -959,7 +988,7 @@ export const replaceAdminMediaAsset = createServerFn({ method: "POST" })
     await assertPermission(context, "media.manage");
     const { data: oldAsset, error: readError } = await context.supabase
       .from("media_assets")
-      .select("storage_path")
+      .select("*")
       .eq("id", data.id)
       .single();
 
@@ -977,22 +1006,38 @@ export const replaceAdminMediaAsset = createServerFn({ method: "POST" })
         width: data.width ?? null,
         height: data.height ?? null,
         size_bytes: data.size_bytes,
+        dominant_color: data.dominant_color ?? null,
+        optimized_webp_path: data.optimized_webp_path ?? null,
+        optimized_webp_url: data.optimized_webp_url ?? null,
+        optimized_avif_path: data.optimized_avif_path ?? null,
+        optimized_avif_url: data.optimized_avif_url ?? null,
+        optimized_width: data.optimized_width ?? null,
+        optimized_height: data.optimized_height ?? null,
         updated_at: new Date().toISOString(),
       } as never)
       .eq("id", data.id);
 
     if (error) {
       await context.supabase.storage.from("site-assets").remove([data.storage_path]);
+      const staleVariants = [data.optimized_webp_path, data.optimized_avif_path].filter(Boolean) as string[];
+      if (staleVariants.length) await context.supabase.storage.from("site-assets").remove(staleVariants);
       throw new Error(error.message);
     }
 
-    if (oldAsset.storage_path !== data.storage_path) {
-      const { error: storageError } = await context.supabase.storage
-        .from("site-assets")
-        .remove([oldAsset.storage_path]);
-      if (storageError) {
-        throw new Error(storageError.message);
-      }
+    const oldPaths = [
+      String((oldAsset as Record<string, unknown>).storage_path ?? ""),
+      String((oldAsset as Record<string, unknown>).optimized_webp_path ?? ""),
+      String((oldAsset as Record<string, unknown>).optimized_avif_path ?? ""),
+    ].filter(Boolean);
+    const newPaths = new Set([
+      data.storage_path,
+      data.optimized_webp_path ?? "",
+      data.optimized_avif_path ?? "",
+    ]);
+    const stale = oldPaths.filter((path) => !newPaths.has(path));
+    if (stale.length) {
+      const { error: storageError } = await context.supabase.storage.from("site-assets").remove(stale);
+      if (storageError) throw new Error(storageError.message);
     }
 
     return { ok: true };

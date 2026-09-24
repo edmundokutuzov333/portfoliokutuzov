@@ -1,0 +1,1 @@
+Production Supabase truth: site_metrics table was absent in the live database at Phase1 snapshot; credentials cards contained 6+, 150+, 30+, 3, 360º. Phase2 adds site_metrics hook, Home/Credentials source usage, and a reversible backfill migration from the existing credentials cards. Production migration remains unapplied.

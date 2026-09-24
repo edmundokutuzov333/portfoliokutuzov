@@ -1,3 +1,5 @@
+import { ReelManager } from "@/components/admin/ReelManager";
+import { ContentRegistryManager } from "@/components/admin/ContentRegistryManager";
 import { createLazyFileRoute } from "@tanstack/react-router";
 import { lazy, Suspense, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -71,6 +73,7 @@ import {
 } from "@/lib/admin.phase4.functions";
 
 import { toast } from "sonner";
+import { AdminMfaGate, AdminMfaSecurity } from "@/components/admin/AdminMfaSecurity";
 import {
   createAdminProject,
   createAdminProjectsBatch,
@@ -121,6 +124,7 @@ import {
   BarChart3,
   CircleDollarSign,
   RefreshCw,
+  Play,
 } from "lucide-react";
 
 export const Route = createLazyFileRoute("/admin")({
@@ -136,10 +140,13 @@ type Section =
   | "services"
   | "contact"
   | "seo"
+  | "availability"
   | "global"
   | "portfolio"
   | "clients"
   | "media"
+  | "reel"
+  | "contentRegistry"
   | "inbox"
   | "leads"
   | "bookings"
@@ -206,6 +213,9 @@ function ControlRoom() {
     );
   }
   if (!session || !isAdmin) return <LoginForm hasSession={!!session} />;
+  if (section === "users") {
+    // MFA setup remains inside the existing Users & Roles workspace; the gate below is global when enforced.
+  }
 
   const allItems = [
     { id: "overview" as const, label: "Overview", group: "CONTROL", Icon: LayoutDashboard, roles: ["owner", "admin", "editor", "finance"] },
@@ -216,10 +226,13 @@ function ControlRoom() {
     { id: "services" as const, label: "Services", group: "WEBSITE", Icon: Briefcase, roles: ["owner", "admin", "editor"] },
     { id: "contact" as const, label: "Contact", group: "WEBSITE", Icon: Mail, roles: ["owner", "admin", "editor"] },
     { id: "seo" as const, label: "SEO", group: "WEBSITE", Icon: Globe2, roles: ["owner", "admin", "editor"] },
+    { id: "availability" as const, label: "Availability", group: "WEBSITE", Icon: Globe2, roles: ["owner", "admin", "editor"] },
     { id: "global" as const, label: "Global Settings", group: "WEBSITE", Icon: Settings2, roles: ["owner", "admin", "editor"] },
     { id: "portfolio" as const, label: "Portfolio", group: "CONTENT", Icon: Briefcase, roles: ["owner", "admin", "editor"] },
+    { id: "reel" as const, label: "Selected Reel", group: "CONTENT", Icon: Play, roles: ["owner", "admin", "editor"] },
     { id: "clients" as const, label: "Clients", group: "CONTENT", Icon: Users, roles: ["owner", "admin", "editor"] },
     { id: "media" as const, label: "Media", group: "CONTENT", Icon: ImageIcon, roles: ["owner", "admin", "editor"] },
+    { id: "contentRegistry" as const, label: "Structured Content", group: "CONTENT", Icon: FileText, roles: ["owner", "admin", "editor"] },
     { id: "inbox" as const, label: "Inbox", group: "OPERATIONS", Icon: Inbox, roles: ["owner", "admin", "finance"] },
     { id: "leads" as const, label: "Leads", group: "OPERATIONS", Icon: Users, roles: ["owner", "admin", "finance"] },
     { id: "bookings" as const, label: "Bookings", group: "OPERATIONS", Icon: FileText, roles: ["owner", "admin", "finance"] },
@@ -272,11 +285,16 @@ function ControlRoom() {
       {section === "seo" && (
         <Phase2WebsiteCMS section="seo" onNavigate={requestSection} />
       )}
+      {section === "availability" && (
+        <Phase2WebsiteCMS section="availability" onNavigate={requestSection} />
+      )}
       {section === "media" && (
         <Phase2WebsiteCMS section="media" onNavigate={requestSection} />
       )}
+      {section === "contentRegistry" && <ContentRegistryManager />}
       {section === "clients" && <ClientsManager />}
       {section === "portfolio" && <PortfolioManager />}
+      {section === "reel" && <ReelManager />}
       {section === "about" && <AboutManager />}
       {section === "contact" && <ContactManager />}
       {section === "inbox" && <InboxHub />}
@@ -302,13 +320,15 @@ function ControlRoom() {
       {section === "audit" && <AuditCenter />}
       {section === "system" && <SystemHealthCenter />}
       {section === "analytics" && <AnalyticsCenter />}
-      {section === "users" && <UsersRolesCenter />}
+      {section === "users" && <><UsersRolesCenter /><AdminMfaSecurity /></>}
       {section === "advanced" && <AdvancedControlCenter onNavigate={requestSection} />}
     </>
   );
 
+
   return (
-    <div className="min-h-screen bg-[#01040A] text-slate-200 flex">
+    <AdminMfaGate>
+      <div className="min-h-screen bg-[#01040A] text-slate-200 flex">
       <a
         href="#control-room-main"
         className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[140] focus:rounded-lg focus:bg-sky-300 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-[#01040A]"
@@ -447,7 +467,8 @@ function ControlRoom() {
           </div>
         ) : null}
       </main>
-    </div>
+      </div>
+    </AdminMfaGate>
   );
 }
 

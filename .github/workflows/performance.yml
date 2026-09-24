@@ -38,7 +38,8 @@ jobs:
         run: npx --yes @lhci/cli@0.15.1 assert --config=lighthouserc.cjs
       - name: Preserve desktop reports
         if: always()
-        run: cp -R .lighthouseci .lighthouseci-desktop || true
+        run: |
+          if test -d .lighthouseci; then cp -R .lighthouseci .lighthouseci-desktop; fi
       - name: Collect Lighthouse mobile
         run: |
           rm -rf .lighthouseci
@@ -47,7 +48,8 @@ jobs:
         run: npx --yes @lhci/cli@0.15.1 assert --config=lighthouserc.mobile.cjs
       - name: Preserve mobile reports
         if: always()
-        run: cp -R .lighthouseci .lighthouseci-mobile || true
+        run: |
+          if test -d .lighthouseci; then cp -R .lighthouseci .lighthouseci-mobile; fi
       - name: Inspect Lighthouse reports
         if: always()
         run: node scripts/inspect-lighthouse.mjs .lighthouseci-desktop .lighthouseci-mobile
@@ -61,4 +63,5 @@ jobs:
             .lighthouseci-mobile
       - name: Server log
         if: always()
-        run: cat /tmp/portfolio-server.log || true
+        run: |
+          if test -f /tmp/portfolio-server.log; then cat /tmp/portfolio-server.log; fi
