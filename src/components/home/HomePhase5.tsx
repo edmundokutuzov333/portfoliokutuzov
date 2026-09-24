@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { Link } from "@tanstack/react-router";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowDown, Plus } from "lucide-react";
-import { useClients, useProjects, useSiteSettings, useStats } from "@/hooks/useSiteData";
+import { useClients, useProjects, useSiteMetrics, useSiteSettings, useStats } from "@/hooks/useSiteData";
 import { readSetting, type DbProject, type DbStat } from "@/lib/cms";
 import { setWorkColor, darkenWorkColor, pickFg } from "@/lib/work-color";
 import { DeferredReel } from "@/components/home/DeferredReel";
@@ -326,13 +326,16 @@ function ProofBlock() {
   const { data: settings } = useSiteSettings();
   const { data: clients = [] } = useClients();
   const { data: stats = [] } = useStats();
+  const { data: siteMetrics = [] } = useSiteMetrics();
   const metrics = metricCards(settings);
   const experience = experienceRows(settings);
   const currentRole = experience.find((row) => row.current) ?? experience[0];
   const dbMetrics: DbStat[] = stats.filter((row) => row.is_active);
-  const resolvedMetrics = dbMetrics.length
-    ? dbMetrics.slice(0, 5).map((row) => ({ value: row.value, label: row.label }))
-    : metrics;
+  const resolvedMetrics = siteMetrics.length
+    ? siteMetrics.slice(0, 5).map((row) => ({ value: row.value ?? "", label: row.label }))
+    : dbMetrics.length
+      ? dbMetrics.slice(0, 5).map((row) => ({ value: row.value, label: row.label }))
+      : metrics;
 
   return (
     <section
