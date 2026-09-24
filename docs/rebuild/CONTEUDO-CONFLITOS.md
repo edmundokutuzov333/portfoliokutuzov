@@ -68,3 +68,16 @@ Regra: não escolher um valor “bonito” quando as fontes divergem. Registar, 
 12. Clientes
    - A fonte pública actual contém 16 clientes activos.
    - Como os `logo_url` são nulos, a representação usa nomes acessíveis através do ClientWall.
+
+
+## Resolução Fase 11
+
+13. Contact / Leads
+   - A fonte existente de submissões é briefing_submissions; o CRM já deriva crm_leads/crm_lead_profiles.
+   - A Fase 11 não cria uma tabela de leads paralela.
+   - O formulário passa a escrever apenas através do server route /api/contact/submit.
+   - A policy pública de INSERT fica preparada para remoção por migration, mas não é aplicada sem backup confirmado.
+
+14. Contact / Response promise
+   - Não existe site_settings com key='contact' na produção auditada.
+   - O Contact mantém os fallbacks editoriais existentes e aceita response_hours quando a configuração vier a existir.
