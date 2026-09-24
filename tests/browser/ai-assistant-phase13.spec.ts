@@ -30,7 +30,7 @@ test("AI assistant renders streamed citations and keeps Escape focus-safe", asyn
       return;
     }
     const stream = [
-      "data: " + JSON.stringify({ type: "citations", citations: [{ id: "chunk-1", title: "Selected project", url: "/portfolio/example", sourceTable: "case_studies" }]) + "\n\n",
+      "data: " + JSON.stringify({ type: "citations", citations: [{ id: "chunk-1", title: "Selected project", url: "/portfolio/example", sourceTable: "case_studies" }] }) + "\n\n",
       "data: " + JSON.stringify({ type: "chunk", text: "Grounded answer." }) + "\n\n",
       "data: " + JSON.stringify({ type: "done", modelUsed: "test", latencyMs: 1 }) + "\n\n",
     ].join("");
