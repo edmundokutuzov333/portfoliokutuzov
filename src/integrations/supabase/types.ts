@@ -1428,6 +1428,45 @@ export type Database = {
         }
         Relationships: []
       }
+      site_metrics: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          label: string
+          label_pt: string | null
+          metric_key: string
+          sort_order: number
+          updated_at: string
+          value: string | null
+          value_pt: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          label: string
+          label_pt?: string | null
+          metric_key: string
+          sort_order?: number
+          updated_at?: string
+          value?: string | null
+          value_pt?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          label?: string
+          label_pt?: string | null
+          metric_key?: string
+          sort_order?: number
+          updated_at?: string
+          value?: string | null
+          value_pt?: string | null
+        }
+        Relationships: []
+      }
       stats: {
         Row: {
           id: string
