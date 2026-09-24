@@ -69,7 +69,7 @@ test("Homepage control structure has a production migration", () => {
   assert.match(migration, /title_3/);
   assert.match(migration, /preview_limit/);
 });
-\ntest("Navbar brand field edited in Admin is the same field rendered publicly", () => {
+test("Navbar brand field edited in Admin is the same field rendered publicly", () => {
   const admin = read("src/components/admin/AdminControlRoom.tsx");
   const navbar = read("src/components/layout/Navbar.tsx");
   assert.match(admin, /get\(s\.draft, "brand"/);
