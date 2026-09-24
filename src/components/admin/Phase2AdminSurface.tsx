@@ -7,6 +7,7 @@ import {
   NavigationManager,
   GlobalSettingsManager,
   SeoManager,
+  AvailabilityManager,
   MediaLibrary,
 } from "@/components/admin/Phase2WebsiteCMS";
 
@@ -18,6 +19,7 @@ type Surface =
   | "services"
   | "global"
   | "seo"
+  | "availability"
   | "media";
 
 const surfaces: Record<Surface, ComponentType<any>> = {
@@ -28,6 +30,7 @@ const surfaces: Record<Surface, ComponentType<any>> = {
   services: ServicesManager,
   global: GlobalSettingsManager,
   seo: SeoManager,
+  availability: AvailabilityManager,
   media: MediaLibrary,
 };
 
