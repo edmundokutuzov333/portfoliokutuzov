@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import {
   FALLBACK_SETTINGS,
   normalizeCategory,
@@ -12,44 +11,56 @@ import {
   type DbStat,
   type SiteSettings,
 } from "@/lib/cms";
-import { projects as staticProjects } from "@/data/projects";
-import { clients as staticClients } from "@/data/clients";
 import { toDeterministicUuid } from "@/lib/utils";
 
 const PUBLIC_READ_TIMEOUT_MS = 4_000;
+let supabasePromise: Promise<typeof import("@/integrations/supabase/client")> | null = null;
+
+function loadSupabase() {
+  return (supabasePromise ??= import("@/integrations/supabase/client"));
+}
+
 function boundedSignal(signal: AbortSignal) {
   if (typeof AbortSignal.timeout !== "function") return signal;
   return AbortSignal.any([signal, AbortSignal.timeout(PUBLIC_READ_TIMEOUT_MS)]);
 }
 
-const FALLBACK_PROJECTS: DbProject[] = staticProjects.map((p) => ({
-  id: toDeterministicUuid("00000004", p.id),
-  slug: p.title.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-  title: p.title,
-  subtitle: p.subtitle,
-  category: normalizeCategory(p.category),
-  year: p.year,
-  description: p.description,
-  cover_url: p.coverUrl ?? null,
-  gallery: [],
-  tags: p.tags ?? [],
-  palette: p.palette,
-  span: p.span ?? null,
-  sort_order: p.id,
-  is_published: true,
-  featured: p.id <= 3,
-  featured_priority: 4 - p.id,
-  client_name: p.title,
-}));
-const FALLBACK_CLIENTS: DbClient[] = staticClients.map((name, index) => ({
-  id: toDeterministicUuid("00000003", index + 1),
-  name,
-  logo_url: null,
-  website_url: null,
-  sort_order: index + 1,
-  is_active: true,
-  kind: "client",
-}));
+async function getFallbackProjects(): Promise<DbProject[]> {
+  const [{ projects: staticProjects }] = await Promise.all([import("@/data/projects")]);
+  return staticProjects.map((p) => ({
+    id: toDeterministicUuid("00000004", p.id),
+    slug: p.title.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+    title: p.title,
+    subtitle: p.subtitle,
+    category: normalizeCategory(p.category),
+    year: p.year,
+    description: p.description,
+    cover_url: p.coverUrl ?? null,
+    gallery: [],
+    tags: p.tags ?? [],
+    palette: p.palette,
+    span: p.span ?? null,
+    sort_order: p.id,
+    is_published: true,
+    featured: p.id <= 3,
+    featured_priority: 4 - p.id,
+    client_name: p.title,
+  }));
+}
+
+async function getFallbackClients(): Promise<DbClient[]> {
+  const [{ clients: staticClients }] = await Promise.all([import("@/data/clients")]);
+  return staticClients.map((name, index) => ({
+    id: toDeterministicUuid("00000003", index + 1),
+    name,
+    logo_url: null,
+    website_url: null,
+    sort_order: index + 1,
+    is_active: true,
+    kind: "client",
+  }));
+}
+
 const FALLBACK_STUDIOS: DbClient[] = [
   {
     id: toDeterministicUuid("00000002", 1),
@@ -79,6 +90,7 @@ const FALLBACK_STUDIOS: DbClient[] = [
     kind: "studio",
   },
 ];
+
 type RealtimeEntry = {
   channel: RealtimeChannel;
   listeners: Set<() => void>;
@@ -87,43 +99,51 @@ type RealtimeEntry = {
 };
 const realtimeEntries = new Map<string, RealtimeEntry>();
 function subscribeToTable(table: string, listener: () => void) {
-  try {
-    let entry = realtimeEntries.get(table);
-    if (!entry) {
-      const listeners = new Set<() => void>();
-      const channel = supabase
-        .channel(`public-${table}`)
-        .on("postgres_changes", { event: "*", schema: "public", table }, () =>
-          listeners.forEach((notify) => notify()),
-        )
-        .subscribe();
-      entry = { channel, listeners, references: 0 };
-      realtimeEntries.set(table, entry);
-    }
-    if (entry.removalTimer) clearTimeout(entry.removalTimer);
-    entry.references += 1;
-    entry.listeners.add(listener);
-    return () => {
-      const current = realtimeEntries.get(table);
-      if (!current) return;
-      current.listeners.delete(listener);
-      current.references = Math.max(0, current.references - 1);
-      if (current.references > 0) return;
-      current.removalTimer = setTimeout(() => {
-        const latest = realtimeEntries.get(table);
-        if (!latest || latest.references > 0) return;
-        realtimeEntries.delete(table);
-        try {
-          void supabase.removeChannel(latest.channel);
-        } catch (_error) {
-          void _error;
-        }
-      }, 1000);
-    };
-  } catch (_error) {
-    void _error;
-    return () => {};
-  }
+  let cancelled = false;
+  let release = () => {};
+  void loadSupabase()
+    .then(({ supabase }) => {
+      if (cancelled) return;
+      let entry = realtimeEntries.get(table);
+      if (!entry) {
+        const listeners = new Set<() => void>();
+        const channel = supabase
+          .channel(`public-${table}`)
+          .on("postgres_changes", { event: "*", schema: "public", table }, () =>
+            listeners.forEach((notify) => notify()),
+          )
+          .subscribe();
+        entry = { channel, listeners, references: 0 };
+        realtimeEntries.set(table, entry);
+      }
+      if (!entry) return;
+      if (entry.removalTimer) clearTimeout(entry.removalTimer);
+      entry.references += 1;
+      entry.listeners.add(listener);
+      release = () => {
+        const current = realtimeEntries.get(table);
+        if (!current) return;
+        current.listeners.delete(listener);
+        current.references = Math.max(0, current.references - 1);
+        if (current.references > 0) return;
+        current.removalTimer = setTimeout(() => {
+          const latest = realtimeEntries.get(table);
+          if (!latest || latest.references > 0) return;
+          realtimeEntries.delete(table);
+          try {
+            void supabase.removeChannel(latest.channel);
+          } catch (_error) {
+            void _error;
+          }
+        }, 1000);
+      };
+    })
+    .catch(() => {});
+
+  return () => {
+    cancelled = true;
+    release();
+  };
 }
 function useRealtimeInvalidate(table: string, queryKey: unknown[]) {
   const qc = useQueryClient();
@@ -139,7 +159,7 @@ export function useSiteSettings() {
     queryKey: ["site_settings"],
     queryFn: async ({ signal }): Promise<SiteSettings> => {
       try {
-        const { data, error } = await supabase
+        const { data, error } = await (await loadSupabase()).supabase
           .from("site_settings")
           .select("key,value")
           .abortSignal(boundedSignal(signal));
@@ -165,10 +185,10 @@ export function useClients(includeInactive = false, kind = "client") {
     queryKey: ["clients", includeInactive, kind],
     queryFn: async ({ signal }): Promise<DbClient[]> => {
       try {
-        let q = supabase.from("clients").select("*").eq("kind", kind).order("sort_order");
+        let q = (await loadSupabase()).supabase.from("clients").select("*").eq("kind", kind).order("sort_order");
         if (!includeInactive) q = q.eq("is_active", true);
         const { data, error } = await q.abortSignal(boundedSignal(signal));
-        if (error || !data?.length) return kind === "studio" ? FALLBACK_STUDIOS : FALLBACK_CLIENTS;
+        if (error || !data?.length) return kind === "studio" ? FALLBACK_STUDIOS : await getFallbackClients();
         return data as DbClient[];
       } catch (_error) {
         void _error;
@@ -190,7 +210,7 @@ export function useProjects(includeUnpublished = false) {
         if (!includeUnpublished) q = q.eq("is_published", true);
         const { data, error } = await q.abortSignal(boundedSignal(signal));
         if (error || !data || data.length === 0) {
-          return FALLBACK_PROJECTS;
+          return await getFallbackProjects();
         }
         return (data ?? []).map((p) => ({
           ...p,
