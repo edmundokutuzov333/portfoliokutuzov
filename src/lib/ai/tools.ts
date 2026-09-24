@@ -200,9 +200,46 @@ export const navigateActionDecl: FunctionDeclaration = {
   },
 };
 
+export const searchPortfolioDecl: FunctionDeclaration = {
+  name: "searchPortfolio",
+  description: "Search Edmundo Kutuzov published portfolio by project, client, category, year, discipline or tag.",
+  parameters: {
+    type: Type.OBJECT,
+    properties: {
+      query: { type: Type.STRING }, client: { type: Type.STRING }, year: { type: Type.STRING },
+      category: { type: Type.STRING }, discipline: { type: Type.STRING }, tag: { type: Type.STRING },
+    },
+  },
+};
+
+export const getCaseStudyDetailsDecl: FunctionDeclaration = {
+  name: "getCaseStudyDetails",
+  description: "Retrieve factual details for a published case study by slug or title.",
+  parameters: { type: Type.OBJECT, properties: { slugOrTitle: { type: Type.STRING } }, required: ["slugOrTitle"] },
+};
+
+export const sendContactRequestDecl: FunctionDeclaration = {
+  name: "sendContactRequest",
+  description: "Prepare a handoff to the existing five-step contact wizard without inventing or auto-submitting missing lead details.",
+  parameters: { type: Type.OBJECT, properties: { projectType: { type: Type.STRING }, message: { type: Type.STRING } } },
+};
+
+export const generateOnePagePDFDecl: FunctionDeclaration = {
+  name: "generateOnePagePDF",
+  description: "Return the existing one-page portfolio PDF endpoint or the credentials press-kit endpoint.",
+  parameters: { type: Type.OBJECT, properties: { projectSlug: { type: Type.STRING } } },
+};
+
+export const checkAvailabilityDecl: FunctionDeclaration = {
+  name: "checkAvailability",
+  description: "Return the current published availability information from the site.",
+  parameters: { type: Type.OBJECT, properties: {} },
+};
 export const allTools: FunctionDeclaration[] = [
   searchProjectsDecl,
+  searchPortfolioDecl,
   getProjectDecl,
+  getCaseStudyDetailsDecl,
   filterProjectsDecl,
   getRelatedProjectsDecl,
   getClientDecl,
@@ -212,6 +249,9 @@ export const allTools: FunctionDeclaration[] = [
   getSiteInfoDecl,
   getAvailabilityDecl,
   getContactMethodsDecl,
+  checkAvailabilityDecl,
+  sendContactRequestDecl,
+  generateOnePagePDFDecl,
   startBriefDecl,
   navigateActionDecl,
 ];
@@ -477,6 +517,22 @@ export const toolHandlers: Record<string, ToolHandlerFn> = {
         "Guided briefing activated. Ask the user about their vision and deliverables step by step.",
     };
   },
+
+  searchPortfolio: async (args) => toolHandlers.searchProjects(args),
+  getCaseStudyDetails: async (args) => toolHandlers.getProject(args),
+  sendContactRequest: async (args) => {
+    const projectType = typeof args.projectType === "string" ? args.projectType.trim().slice(0, 120) : "";
+    const message = typeof args.message === "string" ? args.message.trim().slice(0, 1000) : "";
+    const params = new URLSearchParams();
+    if (projectType) params.set("service", projectType);
+    if (message) params.set("message", message);
+    return { status: "contact_handoff", action: "open_contact", url: "/contact" + (params.toString() ? "?" + params.toString() : ""), message: "The existing contact wizard is ready. Ask for any missing details before submission." };
+  },
+  generateOnePagePDF: async (args) => {
+    const slug = typeof args.projectSlug === "string" ? args.projectSlug.trim() : "";
+    return { status: "pdf_ready", url: slug ? "/api/portfolio/" + encodeURIComponent(slug) + "/pdf" : "/api/credentials/press-kit.pdf" };
+  },
+  checkAvailability: async () => toolHandlers.getAvailability({}),
 
   navigateAction: async (args) => {
     return {
