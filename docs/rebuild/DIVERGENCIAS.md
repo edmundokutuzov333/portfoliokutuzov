@@ -117,3 +117,20 @@ DV-57 — Não existe API de agendamento exposta além do booking_url existente 
 DV-58 — O conteúdo de site/credentials ainda contém fallbacks hard-coded históricos no módulo AI. O RAG passa a ser feature-flagged e dá prioridade a dados publicados; a execução em produção fica dependente da migration + reindex.
 DV-59 — O logging de conversas guarda apenas hash da sessão e mensagens necessárias ao histórico operacional, com RLS admin-only. Não há PII adicional ou cookies novos.
 DV-60 — O reindex automático do publish está ligado às funções administrativas existentes mas é zero-op enquanto AI_RAG_ENABLED estiver desligado. Isto mantém R1 e o comportamento actual seguros.
+## Fase 14 — Admin / CMS / Segurança / Analytics
+
+DV-61 — A produção já tem admin_users + is_admin/admin_has_permission e app roles. O problema real era que quatro tabelas de submissions ainda expunham INSERT ao papel public; a migration Phase 14 fecha esses writes e preserva os server functions existentes.
+
+DV-62 — booking_requests é escrito directamente pelo BookingModal actual. A Phase 14 introduz submit_booking_request SECURITY DEFINER e altera o cliente para RPC, sem alterar o fluxo visual.
+
+DV-63 — Supabase MFA já não estava implementado na UI administrativa. A Phase 14 adiciona TOTP via Supabase Auth com gate configurável e mfa_required por admin. A migration não é aplicada sem backup.
+
+DV-64 — media_assets existe e já tem auditoria por trigger, mas não tem dominant_color nem variantes WebP/AVIF. A Phase 14 adiciona metadata e pipeline nativo Web APIs, sem sharp.
+
+DV-65 — O endpoint /api/reel-analytics já existe e espera reel_analytics, mas essa tabela não existe no production truth. A Phase 14 prepara reel_items + reel_analytics e um fallback no Reel para continuar a usar projects enquanto a migration não for aplicada.
+
+DV-66 — Não existe tabela FAQ/testimonials/site_metrics na produção auditada. A Phase 14 cria registries vazios, RLS + audit triggers e CRUD administrativo, mas não cria conteúdo.
+
+DV-67 — A analytics_events table está vazia na produção auditada. O dashboard Phase 14 é real e baseado em analytics_events + crm_leads + newsletter_subscribers; até haver tráfego, gráficos podem aparecer vazios.
+
+DV-68 — /admin/studio já tem lógica operacional independente. A Phase 14 aplica apenas um token bridge visual e noindex; nenhum fluxo interno do Studio foi redesenhado.
