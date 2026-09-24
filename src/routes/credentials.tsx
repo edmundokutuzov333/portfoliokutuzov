@@ -1,9 +1,10 @@
 import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowUpRight, CheckCircle2, Globe, Mail, MapPin, Phone, Sparkles } from "lucide-react";
+import { ArrowUpRight, CheckCircle2, Globe, Mail, MapPin, Phone } from "lucide-react";
 import { useSiteSettings, useClients, useStats, useMethod } from "@/hooks/useSiteData";
 import { readSetting } from "@/lib/cms";
+import { Manifesto } from "@/components/home/Manifesto";
 
 export const Route = createFileRoute("/credentials")({
   head: () => ({
@@ -492,18 +493,8 @@ function CredentialsPage() {
         </div>
       </section>
 
-      {/* 6. REFERENCE TYPOGRAPHIC SIGNATURE */}
-      <section className="relative px-4 md:px-8 py-16 border-t border-white/[0.08] bg-[#02050c]">
-        <div className="max-w-[var(--width-wide)] mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Sparkles size={14} className="text-sky-400" />
-            <p className="mono text-[10px] tracking-[0.28em] text-slate-400 uppercase">Reference</p>
-          </div>
-          <p className="display text-3xl md:text-4xl tracking-[0.04em] text-sky-300 font-medium italic">
-            r("reference", "GOD")
-          </p>
-        </div>
-      </section>
+      {/* FINAL: MANIFESTO */}
+      <Manifesto />
     </div>
   );
 }
