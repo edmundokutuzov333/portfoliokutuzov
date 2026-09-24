@@ -99,6 +99,15 @@ export function AiAssistantRealtime() {
   const [voiceState, setVoiceState] = useState<VoiceState>("idle");
   const [audioLevel, setAudioLevel] = useState(0);
   const [speakingId, setSpeakingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const onOpenRequest = () => {
+      setOpen(true);
+      setMinimized(false);
+    };
+    window.addEventListener("ek:open-chat", onOpenRequest as EventListener);
+    return () => window.removeEventListener("ek:open-chat", onOpenRequest as EventListener);
+  }, []);
   const voiceRef = useRef<LiveVoiceSession | null>(null);
   const ttsRef = useRef<TTSController | null>(null);
   const abortRef = useRef<AbortController | null>(null);
