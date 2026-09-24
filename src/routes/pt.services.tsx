@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ServicesPage } from "@/routes/services";
 import { createSeo } from "@/lib/seo";
 
 export const Route = createFileRoute("/pt/services")({
@@ -8,5 +7,4 @@ export const Route = createFileRoute("/pt/services")({
     description: "Capabilities and visual disciplines by Edmundo Kutuzov.",
     path: "/pt/services",
   }),
-  component: ServicesPage,
 });
