@@ -97,3 +97,12 @@ Nenhuma correcção de dados ou migração foi feita apenas para alinhar a Parte
 45. DV-45 — Contact settings: não existe row site_settings com key='contact' na produção auditada. A página usa os fallbacks já publicados para email, localização, booking e resposta, sem inventar novos valores; response_hours permanece configurável quando a chave existir.
 46. DV-46 — Lead counts: produção auditada antes da implementação tem 0 briefing_submissions, 0 booking_requests, 0 crm_leads, 0 crm_lead_profiles e 0 newsletter_subscribers. Nenhum registo foi criado durante a Fase 11.
 47. DV-47 — Attachments: o bucket site-assets já é utilizado pelo Contact existente. A nova página preserva o upload de imagens e envia apenas URLs/metadata para briefing_submissions; não foi executado upload durante a fase.
+
+
+## Fase 12 — Kutuzov Studio
+
+48. DV-48 — Studio tools: a produção possui a estrutura interna de Studio (studio_cards e APIs protegidas), mas a tabela studio_cards está vazia. R11/R12 vencem: a constelação usa nós anónimos; não são inventados nomes de ferramentas.
+49. DV-49 — Studio analytics: a implementação de analytics existe no repositório, mas a tabela public.studio_events não foi encontrada na produção auditada. A Fase 12 não cria nem altera analytics; isso permanece âmbito do backend/admin já existente.
+50. DV-50 — Waitlist: produção tem 2 registos em studio_waitlist e 0 newsletter_subscribers. A Fase 12 reutiliza o contrato unificado newsletter source='studio' preparado na Fase 4, preservando a lista existente através da migration já commitada. A migration não é aplicada sem backup confirmado.
+51. DV-51 — Double opt-in: o código agora falha fechado para novos registos Studio enquanto UNIFIED_NEWSLETTER_ENABLED estiver desligado, evitando converter silenciosamente a waitlist em single opt-in. Depois da migration + flag, a confirmação usa /studio?newsletter_confirm=... e confirmNewsletter.
+52. DV-52 — Visual source: o componente GenesisVisual anterior era uma composição SVG animada, mas não reaccionava ao cursor. A Fase 12 substitui apenas a implementação visual pública da constelação por SVG com pointer interaction e estado reduced-motion; nenhuma ferramenta interna do Studio foi alterada.
