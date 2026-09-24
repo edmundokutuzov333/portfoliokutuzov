@@ -1197,7 +1197,7 @@ export function AuditCenter() {
 export function UsersRolesCenter() {
   const load = useServerFn(listAdminUsersPhase4);
   const updateRole = useServerFn(updateAdminUserRolePhase4);
-  const [rows, setRows] = useState<Array<{ id:string; user_id:string; email:string; role:string; created_at:string }>>([]);
+  const [rows, setRows] = useState<Array<{ id:string; user_id:string; email:string; role:string; created_at:string; mfa_required?: boolean }>>([]);
   const [busy, setBusy] = useState(false);
 
   const refresh = async () => {
@@ -1239,7 +1239,7 @@ export function UsersRolesCenter() {
               value={row.role}
               onChange={async (event) => {
                 try {
-                  const result = await updateRole({ data: { user_id: row.user_id, role: event.target.value as "owner"|"admin"|"editor"|"finance" } });
+                  const result = await updateRole({ data: { user_id: row.user_id, role: event.target.value as "owner"|"admin"|"editor"|"finance", mfa_required: row.mfa_required } });
                   setRows((current) => current.map((item) => item.id === row.id ? { ...item, role: result.row.role } : item));
                   toast.success("Role updated");
                 } catch (error) {
@@ -1253,6 +1253,23 @@ export function UsersRolesCenter() {
               <option value="editor">Editor</option>
               <option value="finance">Finance</option>
             </select>
+            <label className="inline-flex items-center gap-2 text-xs text-slate-400">
+              <input
+                type="checkbox"
+                checked={Boolean(row.mfa_required)}
+                onChange={async (event) => {
+                  try {
+                    const result = await updateRole({ data: { user_id: row.user_id, role: row.role as "owner"|"admin"|"editor"|"finance", mfa_required: event.target.checked } });
+                    setRows((current) => current.map((item) => item.id === row.id ? { ...item, mfa_required: Boolean(result.row.mfa_required) } : item));
+                    toast.success(event.target.checked ? "MFA requirement enabled" : "MFA requirement disabled");
+                  } catch (error) {
+                    toast.error(error instanceof Error ? error.message : "MFA setting failed");
+                  }
+                }}
+                className="h-4 w-4"
+              />
+              Require MFA
+            </label>
             <StatusBadge status={row.role}/>
           </div>
         ))}
