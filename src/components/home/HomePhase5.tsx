@@ -238,11 +238,7 @@ function FeaturedWorkBlock() {
                     (hasMedia ? "bg-[var(--work-local)]" : "border-2 border-dashed border-black/20")
                   }
                 >
-                  {hasMedia ? (
-                    <span className="text-sm font-semibold text-white">View work</span>
-                  ) : (
-                    <span className="text-sm font-medium text-black/55">Media not supplied in current CMS</span>
-                  )}
+                  <span className={hasMedia ? "text-sm font-semibold text-white" : "sr-only"}>{hasMedia ? "View work" : "Featured project"}</span>
                 </span>
               </Link>
             );
