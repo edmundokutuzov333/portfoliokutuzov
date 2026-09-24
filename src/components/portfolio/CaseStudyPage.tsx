@@ -15,6 +15,7 @@ import {
 } from "@/lib/case-study";
 import { CaseStudyLightbox } from "@/components/portfolio/CaseStudyLightbox";
 import { CaseStudyShareButton } from "@/components/portfolio/CaseStudyShareButton";
+import { darkenWorkColor, pickFg, setWorkColor } from "@/lib/work-color";
 
 function blockHeading(type: string): string {
   const labels: Record<string, string> = {
@@ -73,7 +74,7 @@ function FallbackSections({ payload }: { payload: CaseStudyPayload }) {
   const project = payload.project;
   const context = project.concept || project.description;
   const process = project.idea;
-  const outcome = project.notes || project.subtitle;
+  const outcome = project.notes;
 
   return (
     <div className="space-y-20 md:space-y-28">
@@ -317,16 +318,16 @@ function RelatedProjects({ projects }: { projects: CaseStudyPayload["related"] }
               to="/portfolio/$slug"
               params={{ slug: project.slug || project.id }}
               className="group border-b-2 border-black px-5 py-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--case-work)] md:border-r-2"
-              style={{ backgroundColor: work }}
+              style={{ backgroundColor: darkWork, color: foreground }}
             >
               <p className="text-sm text-black/70">{project.year || "Project"}</p>
               <h3
-                className="mt-16 text-3xl font-extrabold leading-none tracking-[-0.04em] text-[var(--case-work-fg)] transition-transform duration-200 group-hover:-translate-y-1 md:text-4xl"
+                className="mt-16 text-3xl font-extrabold leading-none tracking-[-0.04em] transition-transform duration-200 group-hover:-translate-y-1 md:text-4xl"
                 style={{ fontFamily: '"Archivo Variable", sans-serif' }}
               >
                 {projectDisplayName(project)}
               </h3>
-              <p className="mt-3 text-sm text-[var(--case-work-fg)]/80">
+              <p className="mt-3 text-sm opacity-80">
                 {project.category}
               </p>
             </Link>
