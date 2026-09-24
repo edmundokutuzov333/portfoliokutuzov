@@ -33,7 +33,7 @@
     "test:phase15": "vitest run tests/phase15-final.test.ts",
     "audit:all": "bash scripts/audit/run-all.sh",
     "test:audit-contract": "node --test tests/audit/phase1-audit-contract.test.mjs",
-    "routes:generate": "npx --yes @tanstack/router-cli@1.170.27 generate"
+    "routes:generate": "npx --yes @tanstack/router-cli@1.167.36 generate"
   },
   "dependencies": {
     "@exodus/bytes": "^1.1.0",
