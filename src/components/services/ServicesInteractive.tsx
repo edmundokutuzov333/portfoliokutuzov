@@ -18,7 +18,7 @@ export interface Discipline {
   defaultProjectTitle: string;
 }
 
-const STATIC_DISCIPLINES: Discipline[] = [
+export const STATIC_DISCIPLINES: Discipline[] = [
   {
     id: "identity",
     number: "01",
