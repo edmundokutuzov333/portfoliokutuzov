@@ -50,7 +50,6 @@ export function Navbar() {
   const ctaFallback = readSetting(settings, "navbar", "cta", "Start a project");
   const visibleLinks = items.filter((item) => item.visible && !item.cta);
   const cta = items.find((item) => item.visible && item.cta);
-  const studioActive = pathname === "/studio" || pathname.startsWith("/studio/");
 
   useEffect(() => setOpen(false), [pathname]);
 
@@ -72,7 +71,16 @@ export function Navbar() {
               {visibleLinks.map((item) => {
                 const active = !isExternal(item) && (pathname === item.route || (item.route !== "/" && pathname.startsWith(item.route)));
                 const content = <><span className="relative z-10">{item.label}</span>{active ? <motion.span layoutId="navActiveIndicator" transition={{ type: "spring", bounce: 0.15, duration: 0.6 }} className="absolute -bottom-1 left-1/2 h-[2px] w-4 -translate-x-1/2 rounded-full bg-[var(--color-accent-base)] opacity-80" /> : null}</>;
-                return <li key={item.id}>{isExternal(item) ? <a href={item.route} target="_blank" rel="noreferrer" className={clsx("relative flex items-center px-3 py-1.5 text-[13px] font-medium transition-colors duration-300", "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]")}>{content}</a> : <InternalLink item={item} className={clsx("relative flex items-center px-3 py-1.5 text-[13px] font-medium transition-colors duration-300", active ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]")}>{content}</InternalLink>}</li>;
+                return <li key={item.id}>{item.id === "studio" && !isExternal(item) ? (
+                  <ShinyButton to={item.route as never} className="!px-4 !py-2 !text-[13px]">
+                    {item.label}
+                    <ArrowUpRight size={14} strokeWidth={2} />
+                  </ShinyButton>
+                ) : isExternal(item) ? (
+                  <a href={item.route} target="_blank" rel="noreferrer" className={clsx("relative flex items-center px-3 py-1.5 text-[13px] font-medium transition-colors duration-300", "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]")}>{content}</a>
+                ) : (
+                  <InternalLink item={item} className={clsx("relative flex items-center px-3 py-1.5 text-[13px] font-medium transition-colors duration-300", active ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]")}>{content}</InternalLink>
+                )}</li>;
               })}
             </ul>
           </LayoutGroup>
@@ -82,7 +90,7 @@ export function Navbar() {
           </div>
         </nav>
         {open ? <div id="mobile-navigation" className="relative z-[1000] mt-2 overflow-hidden rounded-3xl border border-[var(--color-border-subtle)] bg-[var(--color-surface-elevated)]/95 p-3 shadow-2xl backdrop-blur-xl md:hidden"><div className="flex flex-col gap-1">
-          {items.filter((item) => item.visible).map((item) => isExternal(item) ? <a key={item.id} href={item.route} target="_blank" rel="noreferrer" className="rounded-2xl px-4 py-3 text-[15px] font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-highlight)] hover:text-[var(--color-text-primary)]">{item.label}</a> : item.cta ? <InternalLink key={item.id} item={item} className="mt-1 flex items-center justify-between rounded-2xl bg-[var(--color-text-primary)] px-4 py-3 text-[15px] font-semibold text-[var(--color-bg)]">{item.label}<ArrowUpRight size={15}/></InternalLink> : <InternalLink key={item.id} item={item} className={clsx("rounded-2xl px-4 py-3 text-[15px] font-medium", pathname === item.route || (item.route !== "/" && pathname.startsWith(item.route)) ? "bg-[var(--color-accent-subtle)] text-[var(--color-text-primary)]" : "text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-highlight)] hover:text-[var(--color-text-primary)]")}>{item.label}</InternalLink>)}
+          {items.filter((item) => item.visible).map((item) => isExternal(item) ? <a key={item.id} href={item.route} target="_blank" rel="noreferrer" className="rounded-2xl px-4 py-3 text-[15px] font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-highlight)] hover:text-[var(--color-text-primary)]">{item.label}</a> : item.id === "studio" ? <ShinyButton key={item.id} to={item.route as never} className="mt-1 w-full !px-4 !py-3 !text-[15px]">{item.label}<ArrowUpRight size={15}/></ShinyButton> : item.cta ? <InternalLink key={item.id} item={item} className="mt-1 flex items-center justify-between rounded-2xl bg-[var(--color-text-primary)] px-4 py-3 text-[15px] font-semibold text-[var(--color-bg)]">{item.label}<ArrowUpRight size={15}/></InternalLink> : <InternalLink key={item.id} item={item} className={clsx("rounded-2xl px-4 py-3 text-[15px] font-medium", pathname === item.route || (item.route !== "/" && pathname.startsWith(item.route)) ? "bg-[var(--color-accent-subtle)] text-[var(--color-text-primary)]" : "text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-highlight)] hover:text-[var(--color-text-primary)]")}>{item.label}</InternalLink>)}
         </div></div> : null}
       </div>
     </motion.header>
