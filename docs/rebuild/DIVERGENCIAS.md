@@ -77,3 +77,13 @@ Nenhuma correcção de dados ou migração foi feita apenas para alinhar a Parte
 34. **DV-34 — Method source:** `public.about_method` contém 0 rows. Apesar de existir seed histórico em migrations, não é considerado conteúdo publicado actual. A secção "How the studio works" fica oculta até existir fonte editorial activa; Credentials passa a apontar para Services.
 35. **DV-35 — FAQ source:** não existe tabela pública de FAQ no schema actual. A estrutura Radix Accordion foi preparada, mas permanece oculta enquanto não houver perguntas/respostas reais.
 36. **DV-36 — Service work media:** os 16 projectos publicados têm `cover_url = null`. A ligação entre Services e Portfolio usa títulos, clientes, anos, categorias, tags e cores reais, sem inventar thumbnails ou imagens.
+
+
+
+## Fase 10 — Credentials
+
+37. **DV-37 — Métricas:** o plano prevê uma fonte `site_metrics`, mas a produção actual não tem essa tabela. A fonte factual disponível para Credentials é `site_settings.credentials.cards`, com 5 métricas: 6+, 150+, 30+, 3 e 360º. A Fase 10 usa essa fonte existente e não cria uma nova tabela sem backup/migration.
+38. **DV-38 — Experiência:** não existe uma tabela pública `experience`. A fonte actual é `site_settings.credentials.experience` com 5 registos. A Home tinha uma variante hard-coded com "Senior Graphic Designer" para Ikigai; a verdade-terreno conservadora é "Graphic Designer", e a Fase 10 centraliza essa versão.
+39. **DV-39 — Skills:** a auditoria visual refere seis skills, mas a fonte actual contém cinco: Adobe Photoshop 95, Adobe Illustrator 75, Adobe Premiere 75, Adobe After Effects 45 e Artificial Intelligence 95. "Vibe Coding" não foi encontrado na fonte actual. A Fase 10 não inventa o sexto skill; o Toolbelt renderiza os cinco reais.
+40. **DV-40 — Clientes:** a produção tem 16 clientes activos e nenhum `logo_url`. A Fase 10 usa os 16 nomes como representação acessível e não fabrica logótipos.
+41. **DV-41 — PDF:** não existia Press Kit/CV específico de Credentials. A Fase 10 adiciona uma rota Node read-only que gera o documento a partir das fontes actuais e inclui QR para o portfolio. Nenhuma persistência é criada.
