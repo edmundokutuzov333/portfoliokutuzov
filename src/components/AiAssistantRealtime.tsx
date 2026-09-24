@@ -237,6 +237,37 @@ export function AiAssistantRealtime() {
     });
   }, [open, ui.intro, ui.quickPrompts]);
 
+  const executeAction = useCallback((action: string, projectSlug?: string | null, payload?: Record<string, unknown>) => {
+    if (action === "open_project" && projectSlug) {
+      void navigate({ to: "/portfolio/$slug", params: { slug: projectSlug } });
+      return;
+    }
+    if (action === "open_portfolio") {
+      void navigate({ to: "/portfolio" });
+      return;
+    }
+    if (action === "open_services") {
+      void navigate({ to: "/services" });
+      return;
+    }
+    if (action === "open_credentials") {
+      void navigate({ to: "/credentials" });
+      return;
+    }
+    if (action === "open_contact" || action === "start_brief") {
+      const url = typeof payload?.url === "string" ? payload.url : "/contact";
+      window.location.assign(url);
+      return;
+    }
+    if (action === "open_whatsapp") {
+      window.open("https://wa.me/258876013121", "_blank", "noopener,noreferrer");
+      return;
+    }
+    if (action === "open_external" && typeof payload?.url === "string") {
+      window.open(String(payload.url), "_blank", "noopener,noreferrer");
+    }
+  }, [navigate]);
+
   const sendText = async (requestedText?: string) => {
     const text = (requestedText ?? input).trim();
     if (!text || streaming) return;
@@ -270,6 +301,7 @@ export function AiAssistantRealtime() {
       let buffer = "";
       let textAcc = "";
       let projects: Project[] = [];
+      let citations: RagCitation[] = [];
 
       while (true) {
         const { done, value } = await reader.read();
@@ -289,6 +321,13 @@ export function AiAssistantRealtime() {
               projects = [...projects, ...event.projects];
               setMessages((prev) => prev.map((message) => (message.id === assistantId ? { ...message, projects } : message)));
             }
+            if (event.type === "citations" && Array.isArray(event.citations)) {
+              citations = event.citations as RagCitation[];
+              setMessages((prev) => prev.map((message) => (message.id === assistantId ? { ...message, citations } : message)));
+            }
+            if (event.type === "action" && event.action) {
+              executeAction(String(event.action), event.projectSlug ? String(event.projectSlug) : null, event.payload);
+            }
           } catch {
             // Ignore malformed stream frames without breaking the active conversation.
           }
@@ -301,6 +340,8 @@ export function AiAssistantRealtime() {
             ? {
                 ...message,
                 text: textAcc || (locale === "pt-PT" ? "Estou pronto para a próxima pergunta." : "I am ready for the next question."),
+                projects,
+                citations,
                 streaming: false,
               }
             : message,
