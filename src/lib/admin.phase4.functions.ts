@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { runAiKnowledgeReindex } from "@/lib/ai/rag-index.functions";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -400,6 +401,11 @@ export const listAdminDrafts = createServerFn({ method: "POST" })
     if (!financeRead.error && !financeRead.data) query = query.neq("entity_type", "site_settings").or("entity_type.neq.site_settings,entity_id.neq.invoice_settings");
     const { data: rows, error } = await query;
     if (error) throw new Error(error.message);
+    if (process.env.AI_RAG_ENABLED === "true") {
+      void runAiKnowledgeReindex("en").catch((reindexError) => {
+        console.error("[AI RAG] publish reindex failed", reindexError);
+      });
+    }
     return { ok: true, rows: rows ?? [] };
   });
 
