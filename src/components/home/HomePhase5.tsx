@@ -6,7 +6,7 @@ import { useClients, useProjects, useSiteSettings, useStats } from "@/hooks/useS
 import { readSetting, type DbProject, type DbStat } from "@/lib/cms";
 import { setWorkColor, darkenWorkColor, pickFg } from "@/lib/work-color";
 import { DeferredReel } from "@/components/home/DeferredReel";
-import { STATIC_DISCIPLINES, type Discipline } from "@/components/services/ServicesInteractive";
+import { STATIC_DISCIPLINES, type Discipline } from "@/data/disciplines";
 
 const DEFAULT_WORK = "#2f4bff";
 const HERO_COPY = "I shape ideas that cut through noise, stay in memory, and move people.";
