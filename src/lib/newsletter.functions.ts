@@ -77,8 +77,14 @@ async function sendResendEmail(email: string, subject: string, html: string) {
   }
 }
 
-async function sendDoubleOptIn(email: string, name: string | undefined, token: string) {
-  const url = new URL("/contact", resolvePublicSiteUrl());
+async function sendDoubleOptIn(
+  email: string,
+  name: string | undefined,
+  token: string,
+  source: z.infer<typeof SubscribeInput>["source"],
+) {
+  const confirmationPath = source === "studio" ? "/studio" : "/contact";
+  const url = new URL(confirmationPath, resolvePublicSiteUrl());
   url.searchParams.set("newsletter_confirm", token);
   const greeting = name ? `Hi ${name.split(" ")[0]},` : "Hi there,";
   return sendResendEmail(
@@ -104,6 +110,13 @@ export const subscribeNewsletter = createServerFn({ method: "POST" })
 
     const { supabaseAdmin } = await import("@/integrations/supabase/server/index.server");
     const source = normalizeSource(data.source);
+
+    // Studio must never silently fall back to single-step subscription.
+    // Until the unified audience migration is applied, fail closed for Studio
+    // while preserving the existing legacy newsletter behaviour elsewhere.
+    if (!UNIFIED_NEWSLETTER_ENABLED && source === "studio") {
+      throw new Error("Studio waitlist requires the unified newsletter migration.");
+    }
 
     // Keep the current production schema safe until the additive Phase 4
     // migration is applied and explicitly enabled by deployment configuration.
@@ -186,7 +199,7 @@ export const subscribeNewsletter = createServerFn({ method: "POST" })
       if (error) throw new Error(error.message);
     }
 
-    const sent = await sendDoubleOptIn(data.email, data.name, token);
+    const sent = await sendDoubleOptIn(data.email, data.name, token, data.source);
     if (!sent) {
       return { ok: true, pendingEmail: true };
     }
