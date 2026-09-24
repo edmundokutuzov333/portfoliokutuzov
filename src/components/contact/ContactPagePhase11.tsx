@@ -208,6 +208,7 @@ export function ContactPagePhase11() {
     const params = new URLSearchParams(window.location.search);
     const ref = params.get("ref")?.trim() || "";
     const service = params.get("service")?.trim() || "";
+    const aiMessage = params.get("message")?.trim() || "";
 
     if (service) {
       setPrefilledService(service);
@@ -220,6 +221,18 @@ export function ContactPagePhase11() {
         setState((v) => ({ ...v, projectType: "Web Design" }));
       }
       setStep(2);
+    }
+
+    if (aiMessage) {
+      setState((current) =>
+        current.message.trim()
+          ? current
+          : {
+              ...current,
+              message: aiMessage.slice(0, 4000),
+            },
+      );
+      setStep(5);
     }
 
     if (!ref) return;
