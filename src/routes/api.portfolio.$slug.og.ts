@@ -20,6 +20,7 @@ function shorten(value: string, max = 180): string {
   return text.length > max ? text.slice(0, max - 1) + "…" : text;
 }
 
+// @ts-expect-error Server-only TanStack route is intentionally outside generated FileRoutesByPath.
 export const Route = createFileRoute("/api/portfolio/$slug/og")({
   server: {
     handlers: {
