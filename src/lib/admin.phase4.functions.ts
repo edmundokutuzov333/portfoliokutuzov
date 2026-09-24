@@ -164,7 +164,7 @@ export const listAdminUsersPhase4 = createServerFn({ method: "POST" })
     await assertPermission(context, "system.users.manage");
     const { data, error } = await context.supabase
       .from("admin_users")
-      .select("id,user_id,email,role,created_at")
+      .select("id,user_id,email,role,created_at,mfa_required")
       .order("email");
     if (error) throw new Error(error.message);
     return { ok: true, rows: data ?? [] };
@@ -176,6 +176,7 @@ export const updateAdminUserRolePhase4 = createServerFn({ method: "POST" })
     z.object({
       user_id: z.string().uuid(),
       role: AdminRoleSchema,
+      mfa_required: z.boolean().optional(),
     }).parse(i),
   )
   .handler(async ({ data, context }) => {
@@ -191,9 +192,12 @@ export const updateAdminUserRolePhase4 = createServerFn({ method: "POST" })
     }
     const { data: row, error } = await context.supabase
       .from("admin_users")
-      .update({ role: data.role })
+      .update({
+        role: data.role,
+        ...(data.mfa_required === undefined ? {} : { mfa_required: data.mfa_required }),
+      } as never)
       .eq("user_id", data.user_id)
-      .select("id,user_id,email,role,created_at")
+      .select("id,user_id,email,role,created_at,mfa_required")
       .single();
     if (error) throw new Error(error.message);
     return { ok: true, row };
