@@ -15,7 +15,7 @@ Master execution state for SUPERPROMPT v2. This file is operational, not an appr
 | 9 | BLOCKED-EXTERNAL | — | Services rebuilt; external execution/change-gate evidence still pending |
 | 10 | BLOCKED-EXTERNAL | — | Credentials dossier rebuilt; formal runner and change-gate evidence not yet GREEN |
 | 11 | BLOCKED-EXTERNAL | — | Contact rebuilt; production migration and formal gates remain blocked by R1/external runner evidence |
-| 12 | TODO | — | Kutuzov Studio |
+| 12 | BLOCKED-EXTERNAL | — | Kutuzov Studio rebuilt; formal gates and unified newsletter production migration remain blocked |
 | 13 | TODO | — | Chatbot / AI |
 | 14 | TODO | — | Admin / operations |
 | 15 | TODO | — | Final release |
@@ -722,3 +722,52 @@ The execution container could not resolve github.com, so local npm install/build
 
 ### Decision
 Phase 11 is code-complete but remains BLOCKED-EXTERNAL under R1/R3. No production promotion.
+
+
+## Phase 12 execution log
+
+Phase 12 rebuilt /studio as a standalone prelaunch/lab surface.
+
+### Completed
+- Preserved the exact Studio prelaunch content required by the brief.
+- Permanent black tone with fixed mint --work identity.
+- Cartaz/Livro typography applied to the Studio hierarchy.
+- Rectangular controls and 2px borders replace the former rounded visual system.
+- SVG constellation rebuilt with pointer-reactive nodes.
+- reduced-motion produces a static constellation.
+- Studio nodes remain anonymous because studio_cards is empty in production.
+- /admin/studio logic and internal tool data were not changed.
+- Existing Explore the portfolio cross-link preserved without duplicating the navigation CTA.
+- Waitlist continues through the unified newsletter source=studio path.
+- Newsletter confirmation now returns to /studio?newsletter_confirm=...
+- Studio fails closed until the unified newsletter migration is active, avoiding an unintended single-opt-in path.
+- Confirmation, success and error states added to the Studio route.
+- Existing reversible Phase 4 newsletter migration and rollback reused; no new audience schema created.
+- Static and browser tests added.
+- CI browser smoke extended for Studio.
+- No production DB or Storage writes.
+
+### Truth-terrain
+- studio_waitlist: 2
+- studio_waitlist active: 2
+- newsletter_subscribers: 0
+- studio_cards: 0
+- public.studio_events: not found in production audit
+
+### Migration status
+The existing Phase 4 migration 20260924093000_phase4_newsletter_unified.sql remains unapplied because the Supabase backup gate is not confirmed. No data migration or schema write was executed.
+
+### Gate status
+- Lint: NOT CLAIMED GREEN.
+- Typecheck: NOT CLAIMED GREEN.
+- Vitest/node:test: NOT CLAIMED GREEN.
+- Playwright: NOT CLAIMED GREEN.
+- Gate de Paridade: PASS by preservation of Studio and global content counts.
+- Gate de Mudança: NOT CLAIMED GREEN pending formal screenshot edge-diff.
+- Supabase Backup: BLOCKED-EXTERNAL.
+- Vercel final preview: not verified as READY for final Phase 12 HEAD.
+- phase-12-green: not created.
+- Production promotion: not attempted.
+
+### Decision
+Phase 12 is code-complete but remains BLOCKED-EXTERNAL under R1/R3.
