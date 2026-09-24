@@ -6,18 +6,15 @@ import clsx from "clsx";
 import { useProjects } from "@/hooks/useSiteData";
 import { SITE_EMAIL, type DbProject } from "@/lib/cms";
 import { ContextualCursor } from "@/components/portfolio/ContextualCursor";
+import { createSeo } from "@/lib/seo";
 
 export const Route = createFileRoute("/portfolio/$slug")({
-  head: ({ params }) => ({
-    meta: [
-      { title: `${humanize(params.slug)} — Portfolio · Edmundo Kutuzov` },
-      {
-        name: "description",
-        content: `Case study: ${humanize(params.slug)} — art direction and visual systems by Edmundo Kutuzov.`,
-      },
-      { property: "og:title", content: `${humanize(params.slug)} — Edmundo Kutuzov` },
-    ],
-  }),
+  head: ({ params }) =>
+    createSeo({
+      title: `${humanize(params.slug)} — Portfolio · Edmundo Kutuzov`,
+      description: `Case study: ${humanize(params.slug)} — art direction and visual systems by Edmundo Kutuzov.`,
+      path: `/portfolio/${params.slug}`,
+    }),
   component: ProjectDetailPage,
   notFoundComponent: () => (
     <section className="px-5 md:px-8 pt-36 pb-24 bg-[var(--color-bg)] min-h-screen grid place-items-center">
