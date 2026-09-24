@@ -80,6 +80,9 @@ jobs:
       - name: Browser screenshots and axe
         run: node scripts/phase1-baseline.mjs
 
+      - name: Stop baseline server
+        run: kill "$(cat /tmp/phase1-dev.pid)" || true
+
       - name: Existing Playwright suite
         run: npx playwright test
 
