@@ -54,7 +54,7 @@ function projectFromRow(row: RawProject): DbProject {
     tools_used: Array.isArray(row.tools_used) ? (row.tools_used as string[]).filter(Boolean) : [],
     deliverables: Array.isArray(row.deliverables) ? (row.deliverables as string[]).filter(Boolean) : [],
     gallery_meta: Array.isArray(row.gallery_meta)
-      ? (row.gallery_meta as DbProject["gallery_meta"]).filter((item) => Boolean(item?.url))
+      ? (row.gallery_meta as Array<{ url?: string | null }>).filter((item) => Boolean(item?.url))
       : [],
   };
 }
