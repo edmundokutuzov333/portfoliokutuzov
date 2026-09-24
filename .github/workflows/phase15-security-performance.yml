@@ -2,7 +2,7 @@ name: Phase 15 Security and Performance
 
 on:
   push:
-    branches: [awwwards-rebuild]
+    branches: [awwwards-rebuild, phase2-closeout]
   workflow_dispatch:
 
 concurrency:
