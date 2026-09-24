@@ -66,6 +66,11 @@ export function Footer() {
         <h2 id="footer-close-heading" className="ek-footer__headline">
           {isHome ? homeClosing : <>{String(availabilityLabel)}{availability ? <> <em>{availabilityYear}</em>.</> : null}</>}
         </h2>
+        {isHome && availability ? (
+          <p className="text-sm" style={{ margin: 0, color: "#b9b7b0" }}>
+            {String(availabilityLabel)} {availabilityYear}
+          </p>
+        ) : null}
         <div className="ek-footer__actions">
           <Link to={localizePath("/contact", locale) as never} viewTransition className="ek-nav__cta">{copy.startProject}</Link>
           <a href={`mailto:${email}`} className="ek-nav__cta" style={{ background: "transparent", color: "inherit" }}>{email}</a>
