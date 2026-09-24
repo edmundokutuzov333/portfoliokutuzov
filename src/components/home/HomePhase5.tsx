@@ -235,7 +235,7 @@ function FeaturedWorkBlock() {
                   aria-hidden
                   className={
                     "col-span-4 mt-3 hidden min-h-[9rem] items-center justify-center px-6 transition-[background-color] duration-500 md:col-span-3 md:mt-0 md:flex " +
-                    (hasMedia ? "bg-[var(--work-local)]" : "border-2 border-dashed border-black/20")
+                    (hasMedia ? "bg-[var(--work-local)]" : "bg-[var(--work-local)] opacity-40")
                   }
                 >
                   <span className={hasMedia ? "text-sm font-semibold text-white" : "sr-only"}>{hasMedia ? "View work" : "Featured project"}</span>
