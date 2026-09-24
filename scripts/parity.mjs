@@ -9,12 +9,12 @@ function read(file) {
 const inventory = read("docs/baseline/INVENTARIO.md");
 const projects = read("src/data/projects.ts");
 const clients = read("src/data/clients.ts");
-const homeExperience = read("src/components/home/HomeExperience.tsx");
+const credentialsData = read("src/lib/credentials-data.ts");
 const credentials = read("src/routes/credentials.tsx");
 
 const staticProjects = (projects.match(/^\s+id:\s*\d+,/gm) ?? []).length;
 const staticClients = (clients.match(/^\s+['"][^'"]+['"],?$/gm) ?? []).length;
-const experienceItems = (homeExperience.match(/^\s+period:\s*"/gm) ?? []).length;
+const experienceItems = (credentialsData.match(/^\s+period:\s*"/gm) ?? []).length;
 const competencyGroups = (credentials.match(/category:\s*"/g) ?? []).length;
 
 const checks = [
