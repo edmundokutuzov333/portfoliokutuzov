@@ -125,7 +125,6 @@ function ReelStage({
   const [width, setWidth] = React.useState(0);
   const progress = useMotionValue(0);
   const rootRef = React.useRef<HTMLDivElement>(null);
-  const dragStart = React.useRef(0);
   const sessionSeed = React.useRef("");
   const batch = React.useRef<Array<{ itemId: string; event: ReelEvent; occurredAt: number }>>([]);
   const activeItem = items[active];
@@ -246,9 +245,6 @@ function ReelStage({
     }
   };
 
-  const dragStartHandler = () => {
-    dragStart.current = active;
-  };
 
   const dragEndHandler = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     const shift = Math.max(-3, Math.min(3, Math.round(-info.offset.x / Math.max(width / 5, 160) - info.velocity.x / 900)));
@@ -259,6 +255,7 @@ function ReelStage({
     <>
       <section
         ref={rootRef}
+        role="region"
         aria-labelledby="portfolio-reel-title"
         aria-roledescription="carousel"
         className="relative isolate w-full overflow-hidden bg-black py-10 text-[#f2f2ef] md:py-14"
@@ -298,7 +295,6 @@ function ReelStage({
           drag={fanMode ? "x" : false}
           dragConstraints={{ left: 0, right: 0 }}
           dragElastic={0.15}
-          onDragStart={dragStartHandler}
           onDragEnd={dragEndHandler}
           onKeyDown={onKeyDown}
           style={{ touchAction: fanMode ? "pan-y" : "pan-x" }}
@@ -346,9 +342,6 @@ function ReelStage({
             {active + 1} / {items.length} · {activeItem.title}
           </div>
         </div>
-        <span className="sr-only" aria-live="polite">
-          {activeItem.title} is active
-        </span>
       </section>
 
       <CinemaDialog
