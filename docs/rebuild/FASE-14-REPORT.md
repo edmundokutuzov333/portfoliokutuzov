@@ -198,7 +198,7 @@ A Browser QA run for the current test head is in progress. Its result is not cla
 
 The latest READY deployment verified before the final test-fix push is:
 - deployment dpl_8TSBsUVCuF44h6XjkwqbVSLRTaNN
-- commit 723511a5ec813d73537378ec5e3db4d...REDACTED
+- commit 723511a5ec813d73537378ec5e3db6ec13e93e00
 - preview portfoliokutuzov-642r7e51a-kutuzov.vercel.app
 
 No production promotion occurred.
