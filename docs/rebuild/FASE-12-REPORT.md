@@ -133,3 +133,7 @@ A medição formal do diff estrutural >= 0.45 depende do runner Playwright.
 A implementação da Fase 12 está concluída em código, mas a fase permanece BLOCKED-EXTERNAL sob R1/R3.
 
 Não houve promoção para produção.
+
+## Addendum — type boundary
+
+Após o primeiro typecheck, foi identificado que os tipos Supabase gerados ainda representam o schema legado de newsletter e não incluem as colunas da migration unificada. Foi aplicado o commit 01a26bec7ad6b7c614c8539fe7d16113d8a3d5c5 para isolar esse boundary através do client server-side, mantendo as colunas da migration sem escrever schema ou produção.
