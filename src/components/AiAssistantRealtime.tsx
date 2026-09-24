@@ -89,6 +89,30 @@ const copy = {
   },
 } as const;
 
+function contextualPrompts(pathname: string, language: "en" | "pt-PT") {
+  if (pathname.startsWith("/portfolio/")) {
+    return language === "pt-PT"
+      ? ["O que estava a resolver este projecto?", "Quem foi o cliente?", "Que trabalhos estão relacionados?", "Iniciar um projecto semelhante"]
+      : ["What problem was this project solving?", "Who was the client?", "What other work is related?", "Start a similar project"];
+  }
+  if (pathname === "/services" || pathname === "/pt/services") {
+    return language === "pt-PT"
+      ? ["O que inclui esta disciplina?", "Mostre trabalhos relacionados", "Que serviço se adequa a um lançamento?", "Iniciar um projecto"]
+      : ["What does this discipline include?", "Show related work", "Which service fits a launch?", "Start a project"];
+  }
+  if (pathname === "/credentials" || pathname === "/pt/credentials") {
+    return language === "pt-PT"
+      ? ["Qual é a experiência do Edmundo?", "Que clientes estão listados?", "Como funciona o processo?", "Como iniciar um projecto?"]
+      : ["What is Edmundo's experience?", "Which clients are listed?", "How does the process work?", "How do I start a project?"];
+  }
+  if (pathname === "/contact" || pathname === "/pt/contact") {
+    return language === "pt-PT"
+      ? ["O que devo incluir num briefing?", "Que informação precisa primeiro?", "Que serviços posso pedir?", "Abrir o briefing"]
+      : ["What should I include in a brief?", "What information do you need first?", "Which services can I ask about?", "Open the brief"];
+  }
+  return [];
+}
+
 export function AiAssistantRealtime() {
   const locale = useSiteLocale();
   const ui = locale === "pt-PT" ? copy.pt : copy.en;
@@ -162,6 +186,41 @@ export function AiAssistantRealtime() {
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, streaming]);
+
+  useEffect(() => {
+    if (!open) return;
+    const timer = window.setTimeout(() => inputRef.current?.focus(), 80);
+    return () => window.clearTimeout(timer);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open || !panelRef.current) return;
+    const root = panelRef.current;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        voiceRef.current?.stop();
+        setOpen(false);
+        window.setTimeout(() => fabRef.current?.focus(), 0);
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const focusable = Array.from(root.querySelectorAll<HTMLElement>('button, a[href], textarea, input, select, [tabindex]:not([tabindex="-1"])'))
+        .filter((item) => !item.hasAttribute("disabled") && item.getAttribute("aria-hidden") !== "true");
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    root.addEventListener("keydown", onKeyDown);
+    return () => root.removeEventListener("keydown", onKeyDown);
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
