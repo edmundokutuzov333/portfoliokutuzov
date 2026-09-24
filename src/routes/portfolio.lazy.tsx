@@ -1,0 +1,6 @@
+import { createLazyFileRoute } from "@tanstack/react-router";
+import { PortfolioRoutePage } from "@/components/portfolio/PortfolioRoutePage";
+
+export const Route = createLazyFileRoute("/portfolio")({
+  component: PortfolioRoutePage,
+});
