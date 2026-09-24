@@ -79,7 +79,7 @@ const CAPABILITY_GROUPS = [
 
 const EASE_EDITORIAL = [0.16, 1, 0.3, 1] as const;
 
-function CredentialsPage() {
+export function CredentialsPage() {
   const { data: settings } = useSiteSettings();
   const { data: clients = [] } = useClients();
   const { data: stats = [] } = useStats();
