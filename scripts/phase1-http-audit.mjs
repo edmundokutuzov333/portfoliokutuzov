@@ -59,6 +59,7 @@ async function checkSeo() {
     ["robots", "https://edmundokutuzov.art/robots.txt"],
     ["sitemap", "https://edmundokutuzov.art/sitemap.xml"],
     ["home", "https://edmundokutuzov.art/"],
+    ...routes.slice(0, 7).map((route) => [`page:${route}`, new URL(route, "https://edmundokutuzov.art").toString()]),
   ];
   for (const [name, url] of checks) {
     const started = performance.now();
@@ -78,11 +79,12 @@ async function checkSeo() {
         contentType: response.headers.get("content-type"),
         hasNoindex: /noindex/i.test(body),
       };
-      if (name === "home") {
+      if (name === "home" || name.startsWith("page:")) {
         const robots = body.match(/<meta[^>]+name=["']robots["'][^>]+content=["']([^"']+)/i);
         const canonical = body.match(/<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']+)/i);
         record.metaRobots = robots?.[1] ?? null;
         record.canonical = canonical?.[1] ?? null;
+        record.expectedCanonical = new URL(name === "home" ? "/" : name.slice(5), "https://edmundokutuzov.art").toString();
       }
       seoChecks.push(record);
     } catch (error) {
@@ -121,7 +123,16 @@ const lines = [
 await fs.writeFile(path.join(dir, "http-audit.md"), lines.join("\n") + "\n");
 
 const hardFailures = results.filter((r) => r.status === null || (r.status >= 500 && r.route !== "/__phase1_missing__"));
-const seoFailures = seoChecks.filter((r) => r.status === null || (r.name === "robots" && r.status !== 200) || (r.name === "sitemap" && r.status !== 200) || (r.name === "home" && (r.status !== 200 || r.hasNoindex || (r.metaRobots ?? "").toLowerCase().includes("noindex") || r.canonical !== "https://edmundokutuzov.art/")));
+const seoFailures = seoChecks.filter((r) =>
+  r.status === null ||
+  (r.name === "robots" && r.status !== 200) ||
+  (r.name === "sitemap" && r.status !== 200) ||
+  ((r.name === "home" || r.name.startsWith("page:")) &&
+    (r.status !== 200 ||
+      r.hasNoindex ||
+      (r.metaRobots ?? "").toLowerCase().includes("noindex") ||
+      r.canonical !== r.expectedCanonical))
+);
 
 const accidentalNoindex = results.filter((r) => r.origin.includes("edmundokutuzov.art") && !r.origin.includes("www.") && (r.xRobotsTag ?? "").toLowerCase().includes("noindex"));
 const badApexRedirect = results.filter((r) => !r.origin.includes("www.") && r.route !== "/__phase1_missing__" && r.status >= 300 && r.status < 400);
