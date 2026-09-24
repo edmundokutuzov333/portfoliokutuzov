@@ -45,3 +45,26 @@ Regra: não escolher um valor “bonito” quando as fontes divergem. Registar, 
 8. Method
    - public.about_method: 0 rows.
    - A estrutura existe no frontend/admin mas não há conteúdo de produção para substituir vazio.
+
+
+## Resolução Fase 10
+
+9. Métricas públicas
+   - Não existe a tabela `site_metrics` na produção.
+   - `site_settings.credentials.cards` contém a fonte actualmente publicada: 6+ / 150+ / 30+ / 3 / 360º.
+   - A Fase 10 adopta esta fonte real para Credentials e Home; não cria `site_metrics` nem altera dados.
+   - O conflito histórico com 8 / 120+ / 16 / 03 permanece registado como divergência visual, mas não é tratado como dado actual.
+
+10. Experiência
+   - A fonte actual continua a ser `site_settings.credentials.experience`.
+   - A Fase 10 centraliza os cinco registos num módulo único.
+   - Ikigai é normalizado para "Graphic Designer" conforme D-05.
+
+11. Skills
+   - A fonte actual contém cinco skills.
+   - A Fase 10 não cria "Vibe Coding" sem fonte de dados real.
+   - O Toolbelt agrupa as cinco skills por valor, preservando os scores.
+
+12. Clientes
+   - A fonte pública actual contém 16 clientes activos.
+   - Como os `logo_url` são nulos, a representação usa nomes acessíveis através do ClientWall.
