@@ -142,7 +142,7 @@ export const Route = createFileRoute("/api/portfolio-projects")({
           return response(request, requestId, 502, { error: "PORTFOLIO_READ_FAILED" });
         }
 
-        const projects = (data ?? []).map((project) => ({
+        const projects = (data ?? []).map((project: ProjectRecord) => ({
           ...project,
           gallery: Array.isArray(project.gallery) ? project.gallery : [],
           tags: Array.isArray(project.tags) ? project.tags : [],
@@ -153,7 +153,7 @@ export const Route = createFileRoute("/api/portfolio-projects")({
         }));
 
         if (slug) {
-          const project = projects.find((item) => String(item.slug ?? item.id) === slug);
+          const project = projects.find((item: ProjectRecord) => String(item.slug ?? item.id) === slug);
           return response(request, requestId, 200, {
             projects: project ? [project] : [],
             count: project ? 1 : 0,
