@@ -134,3 +134,18 @@ DV-66 — Não existe tabela FAQ/testimonials/site_metrics na produção auditad
 DV-67 — A analytics_events table está vazia na produção auditada. O dashboard Phase 14 é real e baseado em analytics_events + crm_leads + newsletter_subscribers; até haver tráfego, gráficos podem aparecer vazios.
 
 DV-68 — /admin/studio já tem lógica operacional independente. A Phase 14 aplica apenas um token bridge visual e noindex; nenhum fluxo interno do Studio foi redesenhado.
+
+
+## Fase 15 — Release / QA divergences
+
+DV-69 — O plano visual menciona 106 projectos, mas a verdade-terrain da produção é 16. O gate de paridade foi actualizado para a fonte real e continua a exigir 16 -> 16 sem mutação.
+
+DV-70 — O baseline Phase 1 continua bloqueado por falha no Production HTTP audit workflow, logo não existe um novo conjunto verificável de screenshots baseline que permita certificar o Change Gate.
+
+DV-71 — O Supabase Backup workflow termina em failure na verificação de segredos. Nenhum migration ou write de produção foi aplicado para contornar R1.
+
+DV-72 — A fase final adiciona @axe-core/playwright como dependência CI-only. Não entra no runtime de produção.
+
+DV-73 — Os thresholds Lighthouse finais são executados sobre a matriz EN/PT pública. Os scores finais só entram no release report depois de existir artefacto de CI.
+
+DV-74 — A captura Awwwards produz screenshots e vídeo através de Playwright, mas permanece evidência externa até o workflow final terminar e publicar os artefactos.
