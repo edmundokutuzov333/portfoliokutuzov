@@ -15,7 +15,7 @@ const limits = {
 const server = spawn("npm", ["start"], {
 
   stdio: ["ignore", "pipe", "pipe"],
-  env: { ...process.env, PORT: "4173", HOST: "127.0.0.1" },
+  env: { ...process.env, PORT: "4173", HOST: "127.0.0.1", NITRO_PORT: "4173", NITRO_HOST: "127.0.0.1" },
 });
 let serverOutput = "";
 server.stdout.on("data", (chunk) => (serverOutput += chunk.toString()));
