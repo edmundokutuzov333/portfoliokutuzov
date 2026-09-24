@@ -47,3 +47,10 @@ Nenhuma correcção de dados ou migração foi feita apenas para alinhar a Parte
 21. **DV-21 — Featured media:** six published projects are marked featured, but all six have no cover_url and empty gallery arrays. The Home uses their real title/client/category/year metadata and the existing palette colour, without fabricating media.
 22. **DV-22 — Client logos:** 16 active clients exist, but all logo_url values are null. The Home ClientWall therefore uses accessible text names rather than invented logo assets.
 23. **DV-23 — Metrics/services:** public.stats and public.services both contain zero active rows. The Home uses existing CMS credential metric cards and the existing four Services page discipline definitions as fallbacks; no production rows were created.
+
+
+## Fase 6 — Selected Portfolio Reel
+
+24. **DV-24 — Reel media:** the visual audit describes a real 3D reel with roughly 15 image cards, but the current production project source has 16 published projects with 0 cover_url values, 0 gallery rows and 0 gallery_meta rows. R12 therefore wins: the Phase 6 component cannot fabricate image/video URLs. It renders truthful project metadata and Work Colour posters when real media is unavailable.
+25. **DV-25 — Reel persistence schema:** production has no reel_items or reel_analytics tables. A reversible migration was prepared but deliberately not applied because R1 backup evidence is not confirmed and Phase 5 remains BLOCKED-EXTERNAL.
+26. **DV-26 — Reel ordering:** the planned DR-09 round-robin ordering is implemented deterministically at runtime from the existing project categories. Admin-pinned ordering remains reserved for Phase 14.
