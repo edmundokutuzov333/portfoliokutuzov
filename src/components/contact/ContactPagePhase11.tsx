@@ -20,7 +20,6 @@ import { toast } from "sonner";
 import { useSiteSettings } from "@/hooks/useSiteData";
 import { readSetting, SITE_EMAIL, SITE_PHONE } from "@/lib/cms";
 import { whatsappLink } from "@/lib/whatsapp";
-import { supabase } from "@/integrations/supabase/client";
 import { BookingModal } from "@/components/contact/BookingModal";
 import {
   CURRENCIES,
@@ -412,49 +411,61 @@ export function ContactPagePhase11() {
       return;
     }
 
-    for (const file of incoming) {
-      if (file.size > MAX_FILE_SIZE) {
-        toast.error(file.name + " is larger than 8 MB.");
-        continue;
-      }
+    const form = new FormData();
+    incoming.forEach((file) => form.append("file", file, file.name));
 
-      const extension = file.name.includes(".") ? "." + file.name.split(".").pop() : "";
-      const path = "briefings/" + crypto.randomUUID() + extension;
-
-      const { error } = await supabase.storage
-        .from("site-assets")
-        .upload(path, file, { cacheControl: "3600", upsert: false, contentType: file.type });
-
-      if (error) {
-        toast.error(file.name + ": " + error.message);
-        continue;
-      }
-
-      const { data } = supabase.storage.from("site-assets").getPublicUrl(path);
-      const dimensions = await new Promise<{ width?: number; height?: number }>((resolve) => {
-        const image = new Image();
-        image.onload = () =>
-          resolve({
-            width: image.naturalWidth || undefined,
-            height: image.naturalHeight || undefined,
-          });
-        image.onerror = () => resolve({});
-        image.src = URL.createObjectURL(file);
+    try {
+      const response = await fetch("/api/contact/upload", {
+        method: "POST",
+        body: form,
       });
+      const payload = (await response.json().catch(() => ({}))) as {
+        ok?: boolean;
+        files?: Array<{ url: string; name: string; size: number }>;
+      };
 
-      setState((current) => ({
-        ...current,
-        attachments: [
-          ...current.attachments,
-          {
-            url: data.publicUrl,
-            name: file.name,
-            size: file.size,
-            width: dimensions.width,
-            height: dimensions.height,
-          },
-        ],
-      }));
+      if (!response.ok || !payload.ok || !payload.files?.length) {
+        toast.error("Could not upload the reference files.");
+        return;
+      }
+
+      const byName = new Map(payload.files.map((item) => [item.name, item]));
+      for (const file of incoming) {
+        const uploaded = byName.get(file.name);
+        if (!uploaded) continue;
+
+        const dimensions = await new Promise<{ width?: number; height?: number }>((resolve) => {
+          const image = new Image();
+          image.onload = () => {
+            resolve({
+              width: image.naturalWidth || undefined,
+              height: image.naturalHeight || undefined,
+            });
+            URL.revokeObjectURL(image.src);
+          };
+          image.onerror = () => {
+            URL.revokeObjectURL(image.src);
+            resolve({});
+          };
+          image.src = URL.createObjectURL(file);
+        });
+
+        setState((current) => ({
+          ...current,
+          attachments: [
+            ...current.attachments,
+            {
+              url: uploaded.url,
+              name: uploaded.name,
+              size: uploaded.size,
+              width: dimensions.width,
+              height: dimensions.height,
+            },
+          ],
+        }));
+      }
+    } catch {
+      toast.error("Network error while uploading reference files.");
     }
   };
 
