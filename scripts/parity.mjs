@@ -14,7 +14,7 @@ const credentials = read("src/routes/credentials.tsx");
 
 const staticProjects = (projects.match(/^\s+id:\s*\d+,/gm) ?? []).length;
 const staticClients = (clients.match(/^\s+['"][^'"]+['"],?$/gm) ?? []).length;
-const experienceItems = (credentialsData.match(/^\s+period:\s*"/gm) ?? []).length;
+const experienceItems = (credentialsData.match(/\bperiod:\s*"/g) ?? []).length;
 const competencyGroups = (credentials.match(/category:\s*"/g) ?? []).length;
 
 const checks = [
