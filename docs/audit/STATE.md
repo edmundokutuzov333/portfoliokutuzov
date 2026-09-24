@@ -21,6 +21,10 @@ BLOCKED-EXTERNAL / NO-GO. See MATRIZ, DEFEITOS and RELATORIO-AUDITORIA.
 - [ ] 2.11 Release gate
 - [x] 2.12 Documentação parcial
 
+## Tracking
+- GitHub issue #25: P0 RLS/Storage deployment verification
+- GitHub issue #26: P1 Lighthouse and JS/font budgets
+
 ## Estado actual
 NO-GO / BLOCKED-EXTERNAL.
 
