@@ -47,7 +47,7 @@ jobs:
       - name: Lint
         run: npm run lint
       - name: Regression tests
-        run: npm test
+        run: npm test && npm run test:phase14
       - name: Contrast token gate
         run: npm run contrast:check
       - name: Foundation parity
