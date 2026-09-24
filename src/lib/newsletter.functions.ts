@@ -108,7 +108,7 @@ export const subscribeNewsletter = createServerFn({ method: "POST" })
       throw new Error("Too many subscription attempts. Please try again later.");
     }
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/server/index.server");
+    const { db } = await import("@/integrations/supabase/server/index.server");
     const source = normalizeSource(data.source);
 
     // Studio must never silently fall back to single-step subscription.
@@ -121,14 +121,14 @@ export const subscribeNewsletter = createServerFn({ method: "POST" })
     // Keep the current production schema safe until the additive Phase 4
     // migration is applied and explicitly enabled by deployment configuration.
     if (!UNIFIED_NEWSLETTER_ENABLED) {
-      const { data: existingLegacy } = await supabaseAdmin
+      const { data: existingLegacy } = await db
         .from("newsletter_subscribers")
         .select("id,is_active")
         .eq("email", data.email)
         .maybeSingle();
 
       if (existingLegacy) {
-        await supabaseAdmin
+        await db
           .from("newsletter_subscribers")
           .update({
             is_active: true,
@@ -140,7 +140,7 @@ export const subscribeNewsletter = createServerFn({ method: "POST" })
         return { ok: true, alreadySubscribed: true, legacySchema: true };
       }
 
-      const { error: legacyError } = await supabaseAdmin.from("newsletter_subscribers").insert({
+      const { error: legacyError } = await db.from("newsletter_subscribers").insert({
         email: data.email,
         name: data.name ?? null,
         source,
@@ -150,7 +150,7 @@ export const subscribeNewsletter = createServerFn({ method: "POST" })
       if (legacyError) throw new Error(legacyError.message);
       return { ok: true, alreadySubscribed: false, legacySchema: true };
     }
-    const { data: existing } = await supabaseAdmin
+    const { data: existing } = await db
       .from("newsletter_subscribers")
       .select("id,is_active,confirmed_at")
       .eq("email", data.email)
@@ -161,7 +161,7 @@ export const subscribeNewsletter = createServerFn({ method: "POST" })
     const expires = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
 
     if (existing?.confirmed_at) {
-      await supabaseAdmin
+      await db
         .from("newsletter_subscribers")
         .update({
           is_active: true,
@@ -174,7 +174,7 @@ export const subscribeNewsletter = createServerFn({ method: "POST" })
     }
 
     if (existing) {
-      await supabaseAdmin
+      await db
         .from("newsletter_subscribers")
         .update({
           is_active: true,
@@ -186,7 +186,7 @@ export const subscribeNewsletter = createServerFn({ method: "POST" })
         })
         .eq("id", existing.id);
     } else {
-      const { error } = await supabaseAdmin.from("newsletter_subscribers").insert({
+      const { error } = await db.from("newsletter_subscribers").insert({
         email: data.email,
         name: data.name ?? null,
         source,
@@ -210,9 +210,9 @@ export const subscribeNewsletter = createServerFn({ method: "POST" })
 export const confirmNewsletter = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => ConfirmInput.parse(input))
   .handler(async ({ data }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/server/index.server");
+    const { db } = await import("@/integrations/supabase/server/index.server");
     const hash = tokenHash(data.token);
-    const { data: subscriber, error } = await supabaseAdmin
+    const { data: subscriber, error } = await db
       .from("newsletter_subscribers")
       .select("id,confirmation_expires_at")
       .eq("confirmation_token_hash", hash)
@@ -223,7 +223,7 @@ export const confirmNewsletter = createServerFn({ method: "POST" })
       throw new Error("This confirmation link has expired.");
     }
 
-    const { error: updateError } = await supabaseAdmin
+    const { error: updateError } = await db
       .from("newsletter_subscribers")
       .update({
         confirmed_at: new Date().toISOString(),
