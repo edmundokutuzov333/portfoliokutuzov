@@ -160,6 +160,7 @@ export function PortfolioArchive() {
   const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage, isError } = usePortfolioArchive(filters);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const restoreRef = useRef(false);
+  const initialScrollKeyRef = useRef<string | null>(null);
   const pages = data?.pages ?? [];
   const projects = pages.flatMap((page) => page.projects);
   const total = pages[0]?.total ?? 0;
@@ -168,10 +169,32 @@ export function PortfolioArchive() {
   const clientsList = useMemo(() => Object.keys(facets?.clients ?? {}).sort((a, b) => a.localeCompare(b)), [facets?.clients]);
 
   useEffect(() => { setInputQuery(urlQuery); }, [urlQuery]);
-  useEffect(() => { setMounted(true); const key = "portfolio-scroll:" + searchKey(filters); const saved = sessionStorage.getItem(key); if (saved) requestAnimationFrame(() => window.scrollTo(0, Number(saved))); return () => { sessionStorage.setItem(key, String(window.scrollY)); }; }, []);
+  useEffect(() => {
+    setMounted(true);
+    if (!initialScrollKeyRef.current) initialScrollKeyRef.current = "portfolio-scroll:" + searchKey(filters);
+    const saved = sessionStorage.getItem(initialScrollKeyRef.current);
+    if (saved) requestAnimationFrame(() => window.scrollTo(0, Number(saved)));
+    return () => {
+      if (initialScrollKeyRef.current) sessionStorage.setItem(initialScrollKeyRef.current, String(window.scrollY));
+    };
+  }, []);
   useEffect(() => { const onScroll = () => { if (!restoreRef.current) return; sessionStorage.setItem("portfolio-scroll:" + searchKey(filters), String(window.scrollY)); }; restoreRef.current = true; window.addEventListener("scroll", onScroll, { passive: true }); return () => window.removeEventListener("scroll", onScroll); }, [filters]);
   useEffect(() => { if (!sentinelRef.current || !hasNextPage) return; const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) void fetchNextPage(); }, { rootMargin: "800px 0px" }); observer.observe(sentinelRef.current); return () => observer.disconnect(); }, [fetchNextPage, hasNextPage]);
-  useEffect(() => { const timeout = window.setTimeout(() => { if (inputQuery === urlQuery) return; void navigate({ to: "/portfolio", search: { ...search, q: inputQuery.trim() || undefined }, replace: true }); }, 280); return () => window.clearTimeout(timeout); }, [inputQuery]);
+  const baseSearch = useMemo(
+    () => ({ view: search.view, d: search.d, y: search.y, c: search.c }),
+    [search.c, search.d, search.view, search.y],
+  );
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      if (inputQuery === urlQuery) return;
+      void navigate({
+        to: "/portfolio",
+        search: { ...baseSearch, q: inputQuery.trim() || undefined },
+        replace: true,
+      });
+    }, 280);
+    return () => window.clearTimeout(timeout);
+  }, [baseSearch, inputQuery, navigate, urlQuery]);
 
   const updateSearch = (patch: Partial<SearchState>) => {
     void navigate({ to: "/portfolio", search: { ...search, ...patch }, replace: true });
