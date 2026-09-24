@@ -9,6 +9,7 @@ export const runtime = "nodejs";
 const MAX_BODY_BYTES = 900_000;
 const MAX_HONEYPOT = 180;
 const RESEND_URL = "https://api.resend.com/emails";
+const fallbackRateLimits = new Map<string, { count: number; resetAt: number }>();
 
 const submitSchema = z.object({
   briefing: briefingSchema,
@@ -173,7 +174,14 @@ export const Route = createFileRoute("/api/contact/submit")({
         }
 
         const rateKey = await hashKey(cleanIp(request));
-        const { data: rate, error: rateError } = await supabaseAdmin.rpc(
+        const rpcClient = supabaseAdmin as unknown as {
+          rpc: (name: string, args: Record<string, unknown>) => Promise<{
+            data: unknown;
+            error: { message?: string } | null;
+          }>;
+        };
+
+        const { data: rate, error: rateError } = await rpcClient.rpc(
           "check_contact_rate_limit",
           {
             p_key: rateKey,
@@ -182,21 +190,34 @@ export const Route = createFileRoute("/api/contact/submit")({
           },
         );
 
-        if (rateError) {
-          return response(request, requestId, 503, {
-            error: "RATE_LIMIT_PROVIDER_UNAVAILABLE",
-          });
+        let rateAllowed = true;
+        let retryAfterSeconds = 900;
+
+        if (!rateError) {
+          const rateRow = Array.isArray(rate) ? rate[0] : rate;
+          rateAllowed = Boolean(rateRow?.allowed);
+          retryAfterSeconds = Number(rateRow?.retry_after_seconds ?? 900);
+        } else {
+          const now = Date.now();
+          const current = fallbackRateLimits.get(rateKey);
+          if (!current || current.resetAt <= now) {
+            fallbackRateLimits.set(rateKey, { count: 1, resetAt: now + 15 * 60 * 1000 });
+          } else if (current.count >= 5) {
+            rateAllowed = false;
+            retryAfterSeconds = Math.max(1, Math.ceil((current.resetAt - now) / 1000));
+          } else {
+            current.count += 1;
+          }
         }
 
-        const rateRow = Array.isArray(rate) ? rate[0] : rate;
-        if (!rateRow?.allowed) {
+        if (!rateAllowed) {
           return response(
             request,
             requestId,
             429,
             { error: "RATE_LIMITED" },
             {
-              "Retry-After": String(rateRow?.retry_after_seconds ?? 900),
+              "Retry-After": String(retryAfterSeconds),
             },
           );
         }
