@@ -74,8 +74,18 @@ const PAGE_H = 841.89;
 const MARGIN = 46;
 
 function sanitize(value: string) {
-  return String(value ?? "")
-    .replace(/[^\x09\x0a\x20-\x7e\u00a1-\u00ff\u20ac]/g, "");
+  return [...String(value ?? "")]
+    .filter((character) => {
+      const code = character.codePointAt(0) ?? 0;
+      return (
+        code === 0x09 ||
+        code === 0x0a ||
+        (code >= 0x20 && code <= 0x7e) ||
+        (code >= 0xa1 && code <= 0xff) ||
+        code === 0x20ac
+      );
+    })
+    .join("");
 }
 
 function wrap(text: string, font: PDFFont, size: number, width: number) {
