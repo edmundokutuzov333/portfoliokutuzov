@@ -12,7 +12,7 @@ test("credentials dossier exposes its seven chapters and primary actions", async
   }
 
   await expect(page.getByRole("link", { name: "Start a project", exact: true }).first()).toBeVisible();
-  await expect(page.getByRole("link", { name: /Press kit \\/ CV/i })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Press kit / CV", exact: true })).toBeVisible();
 });
 
 test("credentials uses rectangular chapter navigation and no percentage bars", async ({ page }) => {
