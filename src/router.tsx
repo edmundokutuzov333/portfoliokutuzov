@@ -65,6 +65,10 @@ export const getRouter = () => {
     context: { queryClient },
     scrollRestoration: true,
     defaultPreloadStaleTime: 30_000,
+    defaultViewTransition: {
+      types: ({ fromLocation, toLocation }) =>
+        fromLocation?.pathname === toLocation.pathname ? ["search"] : ["page"],
+    },
     defaultErrorComponent: DefaultErrorComponent,
   });
 };
