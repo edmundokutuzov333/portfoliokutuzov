@@ -126,3 +126,45 @@ Para reverter o trabalho da Fase 15 no branch, o ponto seguro é o commit imedia
 ## Conclusão
 
 A Fase 15 está implementada tecnicamente, mas permanece BLOCKED-EXTERNAL e não pode ser promovida para produção sob R1/R3. O pacote de submissão Awwwards e os gates de segurança/performance estão preparados; a decisão de release permanece negativa até existirem todas as evidências exigidas.
+
+
+## Addendum — Final execution snapshot — 2026-09-24T13:59:15.878Z
+
+### HEAD
+- Branch: `awwwards-rebuild`
+- Latest HEAD at snapshot: `eac76acc534d40b30973660e349da0a41ea4cdb8`
+- No production promotion, no merge to `main`, no pre-release tag and no `phase-15-green` tag.
+
+### Verified GREEN evidence observed during Phase 15
+- Typecheck: PASS on the maintained CI path before the final performance-harness adjustment.
+- Production build: PASS on the maintained CI path before the final performance-harness adjustment.
+- ESLint: PASS, warnings only, on the maintained CI path before the final performance-harness adjustment.
+- Maintained regression suite: PASS.
+- Phase 14 regression contract: PASS.
+- Contrast token gate: PASS.
+- Foundation parity gate: PASS.
+- Foundation change gate: PASS.
+- npm audit: PASS.
+- Gitleaks: PASS.
+- Safe rate-limit/load smoke: PASS.
+- Awwwards desktop/mobile capture workflow reached GREEN on commit `274806bd91cabb713108da985286479e41f3d210`; the capture harness was then extended to a 60s test budget and re-triggered on the current HEAD.
+- Cross-browser Browser QA and Lighthouse remained in progress at this snapshot.
+
+### Current blockers
+- Supabase Backup: FAILURE on the current HEAD. No reversible production backup is therefore confirmed.
+- R1 consequently blocks every production DB/Storage mutation and the Phase 15 promotion sequence.
+- Phase 1 baseline still fails the production HTTP audit with `5xx/network=0, noindex=0, apex-redirect=0, missing-route=0, seo=6`. The audit targets the live production origin, not the preview branch, so the result is recorded as an external production-state divergence rather than hidden.
+- The performance-budget harness previously failed because it attempted to boot the Vercel serverless function as a standalone server. The harness was changed to `nitro preview` on HEAD `eac76acc...`; the resulting performance gate had not yet produced a final GREEN/FAIL result at this snapshot.
+- Lighthouse desktop/mobile thresholds had not yet produced final scores at this snapshot.
+- Browser QA cross-browser matrix had not yet produced final GREEN at this snapshot.
+
+### Production safety
+- Production database rows mutated by rebuild: 0.
+- Production Storage objects mutated by rebuild: 0.
+- No Phase 11/12/13/14 migration was applied.
+- No production write was used to manufacture test traffic or bypass R1.
+
+### Release decision
+**FASE 15: BLOCKED-EXTERNAL.**
+
+The release gate remains closed because the required reversible backup is not confirmed and the final performance/Lighthouse/browser gates are not all GREEN. Under A.3/R1/R3, no production promotion is allowed.
