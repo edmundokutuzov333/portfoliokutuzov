@@ -587,23 +587,31 @@ export const deleteAdminMediaAsset = createServerFn({ method: "POST" })
     return { ok: true, filename: asset.filename };
   });
 
+const saveAdminSiteSettingHandler = async ({
+  data,
+  context,
+}: {
+  data: z.infer<typeof SiteSettingSchema>;
+  context: { supabase: SupabaseClient<Database> };
+}) => {
+  await assertPermission(context, "content.write");
+  if (data.key === "invoice_settings") {
+    await assertPermission(context, "finance.write");
+  }
+  const result = await saveAdminEntityDraft(
+    context,
+    "site_settings",
+    data.key,
+    data.key,
+    data.value,
+  );
+  return { ...result, row: { key: data.key, value: data.value } };
+};
+
 export const saveAdminSiteSetting = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((i: unknown) => SiteSettingSchema.parse(i))
-  .handler((async ({ data, context }) => {
-    await assertPermission(context, "content.write");
-    if (data.key === "invoice_settings") {
-      await assertPermission(context, "finance.write");
-    }
-    const result = await saveAdminEntityDraft(
-      context,
-      "site_settings",
-      data.key,
-      data.key,
-      data.value,
-    );
-    return { ...result, row: { key: data.key, value: data.value } };
-  }) as any);
+  .handler(saveAdminSiteSettingHandler);
 
 export const saveAdminClient = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
