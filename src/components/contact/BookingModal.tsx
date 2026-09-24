@@ -54,9 +54,20 @@ export function BookingModal({
       return;
     }
     setBusy(true);
-    const { error } = await supabase.from("booking_requests").insert(parsed.data);
+    const { data: bookingId, error } = await (supabase.rpc as unknown as (
+      fn: string,
+      args: Record<string, unknown>,
+    ) => Promise<{ data: string | null; error: { message: string } | null }>)("submit_booking_request", {
+      p_name: parsed.data.name,
+      p_email: parsed.data.email,
+      p_preferred_date: parsed.data.preferred_date,
+      p_preferred_time: parsed.data.preferred_time || null,
+      p_timezone: parsed.data.timezone || null,
+      p_note: parsed.data.note || null,
+    });
     setBusy(false);
     if (error) return toast.error(error.message);
+    if (!bookingId) return toast.error("Booking request could not be created.");
     trackEvent({ action: "submit", element: "booking" });
     setDone(true);
     toast.success("Booking request sent.");
