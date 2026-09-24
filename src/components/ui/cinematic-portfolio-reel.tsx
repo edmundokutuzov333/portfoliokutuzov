@@ -4,6 +4,7 @@ import { motion, useMotionValue, useReducedMotion, animate, type PanInfo } from 
 import { ArrowLeft, ArrowRight, Maximize2, Pause, Play } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { useProjects } from "@/hooks/useSiteData";
+import { supabase } from "@/integrations/supabase/client";
 import { type DbProject } from "@/lib/cms";
 import { darkenWorkColor, pickFg, setWorkColor } from "@/lib/work-color";
 import { trackEvent } from "@/lib/analytics";
@@ -94,9 +95,36 @@ function supports3d() {
 export function CinematicPortfolioReel() {
   const { data } = useProjects();
   const reducedMotion = useReducedMotion();
+  const [reelRegistry, setReelRegistry] = React.useState<ReelItem[] | null>(null);
+  React.useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const { data: rows, error } = await (supabase as any).from("reel_items").select("*").eq("is_published", true).order("display_order");
+      if (!cancelled) {
+        if (!error && Array.isArray(rows) && rows.length) {
+          setReelRegistry(rows.map((row: any) => ({
+            id: String(row.id),
+            title: String(row.title),
+            client: row.client || undefined,
+            discipline: row.discipline || undefined,
+            year: typeof row.year === "number" ? row.year : undefined,
+            mediaUrl: row.cover_media_url || undefined,
+            mediaType: row.cover_media_type === "video" ? "video" : "image",
+            posterUrl: row.poster_url || undefined,
+            dominantColor: row.dominant_color || undefined,
+            accentColor: row.accent_color || undefined,
+            caseSlug: String(row.case_slug || row.source_project_id || row.id),
+          })));
+        } else {
+          setReelRegistry(null);
+        }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
   const items = React.useMemo(
-    () => roundRobin((data ?? []).filter((project) => project.is_published !== false)).map(mapItem),
-    [data],
+    () => reelRegistry?.length ? reelRegistry : roundRobin((data ?? []).filter((project) => project.is_published !== false)).map(mapItem),
+    [data, reelRegistry],
   );
   const [fanMode, setFanMode] = React.useState(false);
 
