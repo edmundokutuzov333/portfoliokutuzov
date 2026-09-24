@@ -84,3 +84,14 @@ test("Phase 10 public implementation has no production writes", async () => {
     }
   }
 });
+
+
+test("Phase 10 keeps Home and Credentials on the same credential metrics source", async () => {
+  const home = await read("src/components/home/HomeExperience.tsx");
+  const data = await read("src/lib/credentials-data.ts");
+
+  assert.match(home, /const metrics/);
+  assert.match(home, /metrics\.map/);
+  assert.doesNotMatch(home, /NUMBERS_DATA\.map/);
+  assert.match(data, /FALLBACK_METRICS/);
+});
