@@ -106,3 +106,14 @@ Nenhuma correcção de dados ou migração foi feita apenas para alinhar a Parte
 50. DV-50 — Waitlist: produção tem 2 registos em studio_waitlist e 0 newsletter_subscribers. A Fase 12 reutiliza o contrato unificado newsletter source='studio' preparado na Fase 4, preservando a lista existente através da migration já commitada. A migration não é aplicada sem backup confirmado.
 51. DV-51 — Double opt-in: o código agora falha fechado para novos registos Studio enquanto UNIFIED_NEWSLETTER_ENABLED estiver desligado, evitando converter silenciosamente a waitlist em single opt-in. Depois da migration + flag, a confirmação usa /studio?newsletter_confirm=... e confirmNewsletter.
 52. DV-52 — Visual source: o componente GenesisVisual anterior era uma composição SVG animada, mas não reaccionava ao cursor. A Fase 12 substitui apenas a implementação visual pública da constelação por SVG com pointer interaction e estado reduced-motion; nenhuma ferramenta interna do Studio foi alterada.
+
+## Fase 13 — Agente de IA
+
+DV-53 — A produção actual não possui knowledge_chunks, ai_conversations, ai_messages nem studio_events. A Fase 13 prepara o schema RAG/logging mas não aplica a migration sem backup reversível confirmado.
+DV-54 — A extensão vector está disponível no projecto Supabase mas não está instalada na produção auditada. A migration Phase 13 cria vector de forma idempotente quando for aplicada.
+DV-55 — Não existe tabela FAQ no schema público auditado. O reindexer deixa FAQ=0 em vez de inventar conteúdo.
+DV-56 — O chatbot já tinha Gemini, SSE, tool-calling e Live Voice com token efémero. A Fase 13 evolui essa arquitectura em vez de a substituir.
+DV-57 — Não existe API de agendamento exposta além do booking_url existente no Contact. bookIntro não foi criado; checkAvailability permanece.
+DV-58 — O conteúdo de site/credentials ainda contém fallbacks hard-coded históricos no módulo AI. O RAG passa a ser feature-flagged e dá prioridade a dados publicados; a execução em produção fica dependente da migration + reindex.
+DV-59 — O logging de conversas guarda apenas hash da sessão e mensagens necessárias ao histórico operacional, com RLS admin-only. Não há PII adicional ou cookies novos.
+DV-60 — O reindex automático do publish está ligado às funções administrativas existentes mas é zero-op enquanto AI_RAG_ENABLED estiver desligado. Isto mantém R1 e o comportamento actual seguros.
