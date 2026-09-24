@@ -90,3 +90,11 @@ test("Phase 6 remains blocked until predecessor and external gates are green", (
   const state = read("docs/rebuild/STATE.md");
   assert.match(state, /\| 5 \| BLOCKED-EXTERNAL/);
 });
+
+
+test("Phase 6 keeps the active item visible in reduced-motion row mode", () => {
+  const source = read("src/components/ui/cinematic-portfolio-reel.tsx");
+  assert.match(source, /scrollIntoView/);
+  assert.match(source, /data-reel-index=/);
+  assert.match(source, /inline: "center"/);
+});
