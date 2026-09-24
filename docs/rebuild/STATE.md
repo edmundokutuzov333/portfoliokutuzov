@@ -836,3 +836,11 @@ R1 remains blocking because Supabase Backup has not produced confirmed reversibl
 
 ### Decision
 Phase 13 is code-complete but remains BLOCKED-EXTERNAL under R1/R3. The next phase may proceed independently only under the documented resilience rules.
+
+
+### Phase 13 gate addendum
+- First CI typecheck cycle found one Phase 13 error: outputBudget scope in src/lib/ai/agent.ts.
+- Commit c0e8ce3bdb72785616ee8351d4ecf2fd64bf49c2 fixed it.
+- Second typecheck cycle confirms the Phase 13 AI layer introduces no remaining type errors; CI still fails on the previously documented Admin/Home/Portfolio/API debt.
+- Browser QA for the same HEAD reached browser installation and had not yet produced a GREEN conclusion.
+- Supabase Backup for the Phase 13 HEAD remains FAILURE, so R1 stays blocked.
