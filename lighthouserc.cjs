@@ -22,9 +22,8 @@ module.exports = {
       },
     },
     assert: {
-      // Lighthouse is a regression detector in CI. Category floors are warnings so
-      // lab-score variance cannot block a merge, while concrete stability budgets
-      // remain blocking. The product target remains 95+ across all four categories.
+      // Lighthouse thresholds are release gates. They are aligned with SUPERPROMPT v3
+      // and must not be lowered to accommodate lab variance.
       assertions: {
         "categories:performance": ["error", { minScore: 0.9 }],
         "categories:accessibility": ["error", { minScore: 0.95 }],
