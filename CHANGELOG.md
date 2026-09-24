@@ -90,3 +90,14 @@
 
 ## Performance evidence
 Final Lighthouse/CWV values are only considered authoritative once the Phase 15 security/performance workflow writes its CI artifact. No score is fabricated in source control.
+
+
+## Phase 15 — measured closeout
+- CI technical gates verified through parity/change-gate and production build; final release remains blocked.
+- Lighthouse desktop Home: 0.75 Performance, below the required 0.90 threshold.
+- Performance budget: approximately 437–443 KB gzip critical JavaScript and 222 KB gzip fonts on the seven measured public routes; CSS stayed within budget.
+- Security gates and safe rate-limit/load smoke passed.
+- Awwwards capture workflow passed.
+- Supabase reversible backup remained unavailable; no production DB/Storage mutation was performed.
+- Production HTTP audit retained six SEO/canonical failures against the live origin; no 5xx/noindex/redirect/missing-route failure was observed.
+- Production promotion was not executed.
