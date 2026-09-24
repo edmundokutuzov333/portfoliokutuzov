@@ -1,6 +1,9 @@
 name: Supabase Backup
 
 on:
+  push:
+    branches:
+      - awwwards-rebuild
   schedule:
     - cron: "17 1 * * *"
   workflow_dispatch:
