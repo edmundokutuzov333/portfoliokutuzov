@@ -21,7 +21,11 @@
     "check": "npm run test && npm run diagnose && npm run typecheck && npm run lint && npm run build",
     "start": "node .vercel/output/functions/__server.func/index.mjs",
     "lint": "eslint . --rule 'prettier/prettier: off'",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "test:change-gate": "node scripts/change-gate.mjs",
+    "test:parity": "node scripts/parity.mjs",
+    "test:performance": "node scripts/phase2-performance-budget.mjs",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "@exodus/bytes": "^1.1.0",
