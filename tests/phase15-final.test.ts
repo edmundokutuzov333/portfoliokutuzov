@@ -46,7 +46,8 @@ describe("Phase 15 final product regression", () => {
   it("keeps the Studio prelaunch contract exact and minimal", async () => {
     const source = await read("src/routes/studio.tsx");
     expect(source).toContain("A studio still finding its lines.");
-    expect(source).toContain("Kutuzov Studio is where the tools I build for myself live - composed privately, tested in full, and released only once every line holds up in public.");
+    const normalized = source.replace(/\s+/g, " ");
+expect(normalized).toContain("Kutuzov Studio is where the tools I build for myself live - composed privately, tested in full, and released only once every line holds up in public.");
     expect(source).toContain("Private, by invitation");
     expect(source).toContain("Maputo / 2026");
   });
@@ -58,7 +59,7 @@ describe("Phase 15 final product regression", () => {
     expect(source).toContain("onKeyDown");
     expect(source).toContain("sendBeacon");
     expect(source).toContain("IntersectionObserver");
-    expect(source).toContain("prefers-reduced-motion");
+    expect(source).toContain("useReducedMotion");
   });
 
   it("keeps server-only API routes on Node runtime", async () => {
@@ -121,18 +122,18 @@ describe("Phase 15 final product regression", () => {
     expect(source).toContain("supabase.auth.mfa.enroll");
     expect(source).toContain("supabase.auth.mfa.challenge");
     expect(source).toContain("supabase.auth.mfa.verify");
-    expect(source).toContain(`autocomplete="one-time-code"`);
+    expect(source).toContain(`autoComplete="one-time-code"`);
   });
 
   it("keeps the contact dossier at five explicit steps", async () => {
-    const source = await read("src/routes/contact.tsx");
+    const source = await read("src/components/contact/ContactPagePhase11.tsx");
     for (const step of ["Identity", "Project", "Budget", "Timing", "References"]) {
       expect(source).toContain(step);
     }
   });
 
   it("keeps the four service disciplines and the empty-safe FAQ contract", async () => {
-    const services = await read("src/routes/services.tsx");
+    const services = await read("src/components/services/ServicesPagePhase9.tsx");
     const migration = await read("supabase/migrations/20260924153000_phase14_content_registry.sql");
     expect(services).toContain("Visual capabilities");
     expect(migration).toContain("faq_entries");
