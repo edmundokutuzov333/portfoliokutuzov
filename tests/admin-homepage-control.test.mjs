@@ -13,9 +13,7 @@ test("Homepage Admin controls the complete public homepage surface", () => {
     "homepage_structure",
     "Homepage structure",
     "Hero",
-    "Manifesto",
     "Clients section",
-    "Featured Work",
     "Services preview",
     "Home CTA",
     "Footer",
@@ -28,14 +26,13 @@ test("Homepage Admin controls the complete public homepage surface", () => {
   for (const token of [
     "DeferredReel",
     "Hero",
-    "Manifesto",
     "CapabilitiesShort",
     "ClientLogos",
-    "FeaturedWork",
     "HomeExperience",
     "HomeCTA",
-    "homepage_structure",
   ]) assert.ok(index.includes(token), token);
+  assert.doesNotMatch(index, /Manifesto/);
+  assert.doesNotMatch(index, /FeaturedWork/);
 
   assert.match(cms, /homepage_structure:/);
   assert.match(cms, /title_3:/);
@@ -79,3 +76,12 @@ test("Homepage control structure has a production migration", () => {
   assert.match(navbar, /"navbar", "brand"/);
 });
 
+
+
+test("Credentials keeps the homepage Reference but removes its broken credentials renderer", () => {
+  const credentials = read("src/routes/credentials.tsx");
+  const homepage = read("src/components/home/HomeExperience.tsx");
+  assert.match(homepage, /label: "Years of experience"/);
+  assert.doesNotMatch(credentials, /r\("reference", "GOD"\)/);
+  assert.match(credentials, /<Manifesto \/>/);
+});
