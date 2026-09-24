@@ -70,6 +70,15 @@ function projectCategoryToBriefType(category: string): string | null {
   return null;
 }
 
+function serviceToBriefProjectType(service: string): string | null {
+  const value = service.trim().toLowerCase();
+  if (value.includes("identity")) return "Brand Identity";
+  if (value.includes("art direction")) return "Art Direction";
+  if (value.includes("editorial") || value.includes("print")) return "Visual Systems";
+  if (value.includes("digital")) return "Web Design";
+  return null;
+}
+
 const STEPS = [
   {
     id: 1,
@@ -166,11 +175,24 @@ export function ContactPage() {
   const [submissionId, setSubmissionId] = useState<string | null>(null);
   const [caseRef, setCaseRef] = useState("");
   const [caseTitle, setCaseTitle] = useState("");
+  const [serviceRef, setServiceRef] = useState("");
 
   useEffect(() => {
     trackEvent({ action: "view", element: "contact" });
 
-    const ref = new URLSearchParams(window.location.search).get("ref")?.trim();
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get("ref")?.trim();
+    const service = params.get("service")?.trim();
+
+    if (service) {
+      setServiceRef(service);
+      const mappedType = serviceToBriefProjectType(service);
+      if (mappedType) {
+        setProjectType(mappedType);
+        setStep(2);
+      }
+    }
+
     if (!ref) return;
 
     let cancelled = false;
@@ -188,7 +210,10 @@ export function ContactPage() {
 
         setCaseTitle(project.title || ref);
         const mappedType = projectCategoryToBriefType(project.category || "");
-        if (mappedType) setProjectType(mappedType);
+        if (mappedType) {
+          setProjectType(mappedType);
+          setStep(2);
+        }
 
         setMessage((current) =>
           current.trim()
@@ -204,131 +229,6 @@ export function ContactPage() {
       cancelled = true;
     };
   }, []);
-
-  useEffect(() => {
-    const ref = new URLSearchParams(window.location.search).get("ref")?.trim();
-    if (!ref || !publishedProjects.length) return;
-    const reference = publishedProjects.find((project) => (project.slug || project.id) === ref);
-    if (!reference) return;
-    const haystack = [reference.category, ...(reference.tags ?? [])].join(" ").toLowerCase();
-    const mapped = haystack.includes("social")
-      ? "Social Media"
-      : haystack.includes("web")
-        ? "Web Design"
-        : haystack.includes("video")
-          ? "Video Direction"
-          : haystack.includes("campaign") || haystack.includes("ad campaigns")
-            ? "Campaign Design"
-            : haystack.includes("art direction")
-              ? "Art Direction"
-              : haystack.includes("brand") || haystack.includes("identity")
-                ? "Brand Identity"
-                : "Visual Systems";
-    setProjectType(mapped as (typeof PROJECT_TYPES)[number]);
-    setStep(2);
-  }, [publishedProjects]);
-
-  const brackets = CURRENCY_META[currency].brackets;
-  const selectedBudget = brackets[budgetIdx] ?? brackets[0];
-
-  const onFiles = async (list: FileList | null) => {
-    if (!list) return;
-    const incoming = Array.from(list);
-    if (files.length + incoming.length > MAX_FILES) {
-      toast.error(`Maximum ${MAX_FILES} reference files allowed`);
-      return;
-    }
-    setUploading(true);
-    try {
-      const uploads: BriefingAttachment[] = [];
-      for (const file of incoming) {
-        if (file.size > MAX_SIZE) {
-          toast.error(`${file.name} exceeds 8 MB limit`);
-          continue;
-        }
-        if (!file.type.startsWith("image/")) {
-          toast.error(`${file.name} is not an image file`);
-          continue;
-        }
-        const safe = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
-        const path = `briefing-uploads/${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safe}`;
-        const { error: upErr } = await supabase.storage
-          .from("site-assets")
-          .upload(path, file, { upsert: false });
-        if (upErr) {
-          toast.error(`${file.name}: ${upErr.message}`);
-          continue;
-        }
-        const { data } = supabase.storage.from("site-assets").getPublicUrl(path);
-        const dims = await new Promise<{ w?: number; h?: number }>((resolve) => {
-          const img = new Image();
-          img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
-          img.onerror = () => resolve({});
-          img.src = data.publicUrl;
-        });
-        uploads.push({
-          url: data.publicUrl,
-          name: file.name,
-          size: file.size,
-          width: dims.w,
-          height: dims.h,
-        });
-      }
-      setFiles((f) => [...f, ...uploads]);
-      toast.success("Attachments uploaded successfully");
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const removeFile = (i: number) => setFiles((f) => f.filter((_, j) => j !== i));
-
-  const validateStep = (n: number): boolean => {
-    const e: Record<string, string> = {};
-    if (n === 1) {
-      if (!fullName.trim()) e.full_name = "Your full name is required";
-      if (!emailVal.trim()) {
-        e.email = "Your email address is required";
-      } else if (!/.+@.+\..+/.test(emailVal.trim())) {
-        e.email = "Please enter a valid email address (e.g. name@company.com)";
-      }
-    }
-    if (n === 2) {
-      if (!projectType) e.project_type = "Please select a project discipline";
-    }
-    if (n === 5) {
-      if (message.trim().length < 10) {
-        e.message =
-          "Please share a few more details about your project goals (at least 10 characters)";
-      }
-    }
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  };
-
-  const clearFieldError = (key: string) => {
-    if (errors[key]) {
-      setErrors((prev) => {
-        const next = { ...prev };
-        delete next[key];
-        return next;
-      });
-    }
-  };
-
-  const goToStep = (targetStep: number) => {
-    if (targetStep === step) return;
-    if (targetStep > step) {
-      if (!validateStep(step)) {
-        toast.error("Please complete the required fields to continue");
-        return;
-      }
-      setDirection(1);
-    } else {
-      setDirection(-1);
-    }
-    setStep(targetStep);
-  };
 
   const next = () => {
     if (!validateStep(step)) {
@@ -916,6 +816,11 @@ export function ContactPage() {
                       {/* STEP 2: PROJECT */}
                       {step === 2 && (
                         <div className="space-y-8">
+                          {serviceRef ? (
+                            <div className="border-2 border-sky-400/40 bg-sky-950/20 px-4 py-3 text-sm text-slate-200">
+                              Selected discipline: <span className="font-semibold text-white">{serviceRef}</span>
+                            </div>
+                          ) : null}
                           {caseRef ? (
                             <div className="border-2 border-sky-400/50 bg-sky-950/20 px-4 py-3 text-sm text-slate-200">
                               <span className="text-slate-400">Selected case</span>
