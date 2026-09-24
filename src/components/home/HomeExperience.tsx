@@ -54,7 +54,7 @@ interface MetricItem {
 
 const NUMBERS_DATA: MetricItem[] = [
   {
-    num: 6,
+    num: 7,
     suffix: "+",
     label: "Years of experience",
   },
