@@ -58,6 +58,18 @@ export const Route = createLazyFileRoute("/contact")({
 const MAX_FILES = 5;
 const MAX_SIZE = 8 * 1024 * 1024;
 
+function projectCategoryToBriefType(category: string): string | null {
+  const value = category.toLowerCase();
+  if (value.includes("social")) return "Social Media";
+  if (value.includes("video")) return "Video Direction";
+  if (value.includes("web") || value.includes("digital")) return "Web Design";
+  if (value.includes("brand")) return "Brand Identity";
+  if (value.includes("campaign")) return "Campaign Design";
+  if (value.includes("editorial")) return "Visual Systems";
+  if (value.includes("experimental")) return "Art Direction";
+  return null;
+}
+
 const STEPS = [
   {
     id: 1,
@@ -152,9 +164,45 @@ export function ContactPage() {
   const [bookingOpen, setBookingOpen] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submissionId, setSubmissionId] = useState<string | null>(null);
+  const [caseRef, setCaseRef] = useState("");
+  const [caseTitle, setCaseTitle] = useState("");
 
   useEffect(() => {
     trackEvent({ action: "view", element: "contact" });
+
+    const ref = new URLSearchParams(window.location.search).get("ref")?.trim();
+    if (!ref) return;
+
+    let cancelled = false;
+    setCaseRef(ref);
+
+    fetch("/api/portfolio-case-study?slug=" + encodeURIComponent(ref))
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload) => {
+        if (cancelled || !payload?.project) return;
+
+        const project = payload.project as {
+          title?: string;
+          category?: string;
+        };
+
+        setCaseTitle(project.title || ref);
+        const mappedType = projectCategoryToBriefType(project.category || "");
+        if (mappedType) setProjectType(mappedType);
+
+        setMessage((current) =>
+          current.trim()
+            ? current
+            : "Portfolio case reference: " + (project.title || ref),
+        );
+      })
+      .catch(() => {
+        if (!cancelled) setCaseTitle(ref);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -358,6 +406,7 @@ export function ContactPage() {
 
       const insertRow = {
         ...clean,
+        source_case_slug: caseRef || null,
         attachments: files,
         reference_links: refLinks,
         source: "website",
@@ -867,6 +916,15 @@ export function ContactPage() {
                       {/* STEP 2: PROJECT */}
                       {step === 2 && (
                         <div className="space-y-8">
+                          {caseRef ? (
+                            <div className="border-2 border-sky-400/50 bg-sky-950/20 px-4 py-3 text-sm text-slate-200">
+                              <span className="text-slate-400">Selected case</span>
+                              <span className="ml-2 font-semibold text-white">
+                                {caseTitle || caseRef}
+                              </span>
+                            </div>
+                          ) : null}
+
                           <Field
                             label="Project Discipline"
                             required
