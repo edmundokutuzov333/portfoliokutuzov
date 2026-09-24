@@ -42,6 +42,26 @@ export function SeoRuntimeSync() {
 
   useEffect(() => {
     const global = (settings?.seo_global || {}) as Record<string, unknown>;
+    const pageType = pathname === "/studio" || pathname === "/pt/studio" ? "WebPage" : pathname.startsWith("/portfolio/") || pathname.startsWith("/pt/portfolio/") ? "Article" : "ProfilePage";
+    const json = {
+      "@context": "https://schema.org",
+      "@type": pageType,
+      url: SITE_ORIGIN + pathname,
+      name: document.title || "Edmundo Kutuzov",
+      inLanguage: pathname === "/pt" || pathname.startsWith("/pt/") ? "pt-PT" : "en",
+      isPartOf: { "@id": SITE_ORIGIN + "/#website" },
+    };
+    let node = document.head.querySelector("#ek-route-jsonld") as HTMLScriptElement | null;
+    if (!node) {
+      node = document.createElement("script");
+      node.id = "ek-route-jsonld";
+      node.type = "application/ld+json";
+      document.head.appendChild(node);
+    }
+    node.textContent = JSON.stringify(json).replace(/</g, "\\u003c");
+  }, [pathname]);
+
+    const global = (settings?.seo_global || {}) as Record<string, unknown>;
     const pages = (settings?.seo_pages?.pages || {}) as Record<string, Record<string, unknown>>;
     const page = pages[pathname] || {};
     const title = String(page.title || global.title || "Edmundo Kutuzov - Designer & Art Director");
