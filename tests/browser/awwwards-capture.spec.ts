@@ -2,8 +2,9 @@ import { test } from "@playwright/test";
 
 const routes = ["/", "/portfolio", "/services", "/credentials", "/contact", "/studio"];
 
+test.use({ video: "on" });
+
 test.describe("Awwwards capture", () => {
-  test.use({ video: "on" });
   test("desktop walkthrough", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/", { waitUntil: "networkidle" });
