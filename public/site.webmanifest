@@ -1,0 +1,17 @@
+{
+  "name": "Edmundo Kutuzov",
+  "short_name": "EK.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "description": "Edmundo Kutuzov — Art Director.",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/favicon.webp",
+      "sizes": "any",
+      "type": "image/webp"
+    }
+  ]
+}
