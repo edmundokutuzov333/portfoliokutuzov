@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowUpRight, Bot, ExternalLink, FileText, Loader2, Maximize2, Mic, MicOff, Minimize2, Send, Volume2, VolumeX, X } from "lucide-react";
+import { Bot, ExternalLink, FileText, Loader2, Maximize2, Mic, MicOff, Minimize2, Send, Volume2, VolumeX, X } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { LiveVoiceSession, type VoiceState } from "@/lib/voice/live";
 import { TTSController } from "@/lib/voice/tts";
@@ -551,7 +551,6 @@ export function AiAssistantRealtime() {
                             className="group flex min-h-12 items-center justify-between gap-3 border-2 border-cal/20 px-3.5 py-3 text-left text-sm font-medium text-cal transition hover:border-[var(--work)] hover:text-[var(--work)] disabled:opacity-50"
                           >
                             <span>{prompt}</span>
-                            <ArrowUpRight size={13} className="shrink-0 text-[var(--work)] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden="true" />
                           </button>
                         ))}
                       </div>
@@ -578,7 +577,6 @@ export function AiAssistantRealtime() {
                                 <div className="truncate text-sm font-medium text-cal">{project.client || project.title}</div>
                                 <div className="truncate text-sm text-fumo">{project.title}</div>
                               </div>
-                              <ArrowUpRight size={14} className="ml-auto shrink-0 text-slate-500" aria-hidden="true" />
                             </button>
                           ))}
                         </div>
