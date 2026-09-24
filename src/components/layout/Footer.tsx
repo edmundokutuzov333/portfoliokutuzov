@@ -55,14 +55,16 @@ export function Footer() {
   const copyright = readSetting(settings, "global", "copyright", copy.allRights);
   const availability = readSetting(settings, "availability", "enabled", true);
   const availabilityLabel = readSetting(settings, "availability", "label", locale === "pt-PT" ? "Disponível para projectos" : "Available for projects");
-  const availabilityYear = readSetting(settings, "availability", "year", new Date().getFullYear());
+  const availabilityYear = readSetting(settings, "availability", "year", new Date().getFullYear());\n  const isHome = pathname === localizePath("/", locale);
+  const homeClosing = "Tell me what you're building. I'll show you how to make it impossible to ignore.";
+
 
   return (
     <footer className="ek-global-footer">
       <section className="ek-footer__close" aria-labelledby="footer-close-heading">
         <p className="ek-footer__label">{footer("eyebrow", "Edmundo Kutuzov - Art Director")}</p>
         <h2 id="footer-close-heading" className="ek-footer__headline">
-          {String(availabilityLabel)}{availability ? <> <em>{availabilityYear}</em>.</> : null}
+          {isHome ? homeClosing : <>{String(availabilityLabel)}{availability ? <> <em>{availabilityYear}</em>.</> : null}</>}
         </h2>
         <div className="ek-footer__actions">
           <Link to={localizePath("/contact", locale) as never} viewTransition className="ek-nav__cta">{copy.startProject}</Link>
