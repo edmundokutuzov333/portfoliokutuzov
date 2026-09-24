@@ -94,3 +94,15 @@ Phase 2 does not change public content or production data. All current content-c
 - No production DB/Storage mutation is performed by Phase 2.
 - No migration is introduced by Phase 2.
 - Public UI remains visually unchanged by this phase.
+
+## Phase 3 design-system boundary
+
+- Public routes keep their existing visual CSS in Phase 3; no public route imports the design-system stylesheet.
+- /admin/design-system is an authenticated Control Room surface and is the only route that imports the Phase 3 design-system CSS and self-hosted variable fonts.
+- Design tokens live in src/styles/design-system.css and are intentionally namespaced through semantic variables such as --bg, --fg, --muted, --rule and --work.
+- Radix/CVA/tailwind-merge primitives live under src/components/design-system/ so the existing public UI primitives remain unchanged until the global shell phase.
+- Work Colour runtime logic is pure browser-safe TypeScript in src/lib/work-color.ts. It has no production-only image-processing dependency.
+- public.projects receives nullable dominant_color and accent_color through a versioned additive migration. The migration is committed but not applied to production while the prior backup gate remains BLOCKED-EXTERNAL.
+- reel_items is deliberately not created in Phase 3; the Reel schema remains owned by Phase 6.
+- The local colour backfill tool is an optional developer utility and is not part of the Vercel serverless runtime.
+
