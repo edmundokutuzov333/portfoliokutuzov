@@ -26,7 +26,7 @@ import {
   ShieldCheck,
   Clock,
 } from "lucide-react";
-import { useSiteSettings } from "@/hooks/useSiteData";
+import { useProjects, useSiteSettings } from "@/hooks/useSiteData";
 import { readSetting, SITE_EMAIL, SITE_PHONE, LINKEDIN_URL } from "@/lib/cms";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
@@ -110,6 +110,7 @@ const EASE_EDITORIAL = [0.16, 1, 0.3, 1] as const;
 
 export function ContactPage() {
   const { data: settings } = useSiteSettings();
+  const { data: publishedProjects = [] } = useProjects();
   const sendEmails = useServerFn(sendBriefingEmails);
   const reducedMotion = useReducedMotion();
 
@@ -155,6 +156,29 @@ export function ContactPage() {
   useEffect(() => {
     trackEvent({ action: "view", element: "contact" });
   }, []);
+
+  useEffect(() => {
+    const ref = new URLSearchParams(window.location.search).get("ref")?.trim();
+    if (!ref || !publishedProjects.length) return;
+    const reference = publishedProjects.find((project) => (project.slug || project.id) === ref);
+    if (!reference) return;
+    const haystack = [reference.category, ...(reference.tags ?? [])].join(" ").toLowerCase();
+    const mapped = haystack.includes("social")
+      ? "Social Media"
+      : haystack.includes("web")
+        ? "Web Design"
+        : haystack.includes("video")
+          ? "Video Direction"
+          : haystack.includes("campaign") || haystack.includes("ad campaigns")
+            ? "Campaign Design"
+            : haystack.includes("art direction")
+              ? "Art Direction"
+              : haystack.includes("brand") || haystack.includes("identity")
+                ? "Brand Identity"
+                : "Visual Systems";
+    setProjectType(mapped as (typeof PROJECT_TYPES)[number]);
+    setStep(2);
+  }, [publishedProjects]);
 
   const brackets = CURRENCY_META[currency].brackets;
   const selectedBudget = brackets[budgetIdx] ?? brackets[0];
