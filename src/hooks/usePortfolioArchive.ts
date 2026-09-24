@@ -33,7 +33,9 @@ export function usePortfolioArchive(filters: PortfolioFilters) {
   });
 }
 
-export async function prefetchPortfolioProject(slug: string) {
-  if (!slug) return;
-  await fetch("/api/portfolio-projects?slug=" + encodeURIComponent(slug) + "&limit=1", { headers: { Accept: "application/json" } });
+export async function prefetchPortfolioProject(slug: string): Promise<PortfolioPage> {
+  if (!slug) throw new Error("MISSING_PROJECT_SLUG");
+  const response = await fetch("/api/portfolio-projects?slug=" + encodeURIComponent(slug) + "&limit=1", { headers: { Accept: "application/json" } });
+  if (!response.ok) throw new Error("PORTFOLIO_PROJECT_PREFETCH_FAILED");
+  return (await response.json()) as PortfolioPage;
 }
