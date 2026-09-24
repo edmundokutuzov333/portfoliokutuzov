@@ -136,6 +136,7 @@ type Section =
   | "services"
   | "contact"
   | "seo"
+  | "availability"
   | "global"
   | "portfolio"
   | "clients"
@@ -216,6 +217,7 @@ function ControlRoom() {
     { id: "services" as const, label: "Services", group: "WEBSITE", Icon: Briefcase, roles: ["owner", "admin", "editor"] },
     { id: "contact" as const, label: "Contact", group: "WEBSITE", Icon: Mail, roles: ["owner", "admin", "editor"] },
     { id: "seo" as const, label: "SEO", group: "WEBSITE", Icon: Globe2, roles: ["owner", "admin", "editor"] },
+    { id: "availability" as const, label: "Availability", group: "WEBSITE", Icon: Globe2, roles: ["owner", "admin", "editor"] },
     { id: "global" as const, label: "Global Settings", group: "WEBSITE", Icon: Settings2, roles: ["owner", "admin", "editor"] },
     { id: "portfolio" as const, label: "Portfolio", group: "CONTENT", Icon: Briefcase, roles: ["owner", "admin", "editor"] },
     { id: "clients" as const, label: "Clients", group: "CONTENT", Icon: Users, roles: ["owner", "admin", "editor"] },
@@ -271,6 +273,9 @@ function ControlRoom() {
       )}
       {section === "seo" && (
         <Phase2WebsiteCMS section="seo" onNavigate={requestSection} />
+      )}
+      {section === "availability" && (
+        <Phase2WebsiteCMS section="availability" onNavigate={requestSection} />
       )}
       {section === "media" && (
         <Phase2WebsiteCMS section="media" onNavigate={requestSection} />
