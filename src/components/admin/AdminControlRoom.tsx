@@ -1,3 +1,4 @@
+import { ContentRegistryManager } from "@/components/admin/ContentRegistryManager";
 import { createLazyFileRoute } from "@tanstack/react-router";
 import { lazy, Suspense, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -226,6 +227,7 @@ function ControlRoom() {
     { id: "portfolio" as const, label: "Portfolio", group: "CONTENT", Icon: Briefcase, roles: ["owner", "admin", "editor"] },
     { id: "clients" as const, label: "Clients", group: "CONTENT", Icon: Users, roles: ["owner", "admin", "editor"] },
     { id: "media" as const, label: "Media", group: "CONTENT", Icon: ImageIcon, roles: ["owner", "admin", "editor"] },
+    { id: "contentRegistry" as const, label: "Structured Content", group: "CONTENT", Icon: FileText, roles: ["owner", "admin", "editor"] },
     { id: "inbox" as const, label: "Inbox", group: "OPERATIONS", Icon: Inbox, roles: ["owner", "admin", "finance"] },
     { id: "leads" as const, label: "Leads", group: "OPERATIONS", Icon: Users, roles: ["owner", "admin", "finance"] },
     { id: "bookings" as const, label: "Bookings", group: "OPERATIONS", Icon: FileText, roles: ["owner", "admin", "finance"] },
@@ -284,6 +286,7 @@ function ControlRoom() {
       {section === "media" && (
         <Phase2WebsiteCMS section="media" onNavigate={requestSection} />
       )}
+      {section === "contentRegistry" && <ContentRegistryManager />}
       {section === "clients" && <ClientsManager />}
       {section === "portfolio" && <PortfolioManager />}
       {section === "about" && <AboutManager />}
