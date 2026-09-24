@@ -15,6 +15,7 @@ const userAgents = [
 ];
 
 const results = [];
+const seoChecks = [];
 for (const origin of origins) {
   for (const route of routes) {
     for (const [uaName, userAgent] of userAgents) {
@@ -53,9 +54,49 @@ for (const origin of origins) {
   }
 }
 
+async function checkSeo() {
+  const checks = [
+    ["robots", "https://edmundokutuzov.art/robots.txt"],
+    ["sitemap", "https://edmundokutuzov.art/sitemap.xml"],
+    ["home", "https://edmundokutuzov.art/"],
+  ];
+  for (const [name, url] of checks) {
+    const started = performance.now();
+    try {
+      const response = await fetch(url, {
+        redirect: "manual",
+        headers: { "user-agent": "Googlebot/2.1 (+http://www.google.com/bot.html)", accept: "*/*" },
+      });
+      const body = await response.text();
+      const record = {
+        name,
+        url,
+        status: response.status,
+        ms: Math.round(performance.now() - started),
+        location: response.headers.get("location"),
+        xRobotsTag: response.headers.get("x-robots-tag"),
+        contentType: response.headers.get("content-type"),
+        hasNoindex: /noindex/i.test(body),
+      };
+      if (name === "home") {
+        const robots = body.match(/<meta[^>]+name=["']robots["'][^>]+content=["']([^"']+)/i);
+        const canonical = body.match(/<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']+)/i);
+        record.metaRobots = robots?.[1] ?? null;
+        record.canonical = canonical?.[1] ?? null;
+      }
+      seoChecks.push(record);
+    } catch (error) {
+      seoChecks.push({ name, url, status: null, error: String(error) });
+    }
+  }
+}
+
+await checkSeo();
+
 const dir = path.resolve("docs/baseline");
 await fs.mkdir(dir, { recursive: true });
 await fs.writeFile(path.join(dir, "http-audit.json"), JSON.stringify(results, null, 2) + "\n");
+await fs.writeFile(path.join(dir, "seo-audit.json"), JSON.stringify(seoChecks, null, 2) + "\n");
 
 const lines = [
   "# HTTP audit — Phase 1",
@@ -68,6 +109,9 @@ const lines = [
     `| ${r.origin} | ${r.route} | ${r.ua} | ${r.status ?? "ERROR"} | ${r.ms} | ${r.location ?? ""} | ${r.xRobotsTag ?? ""} | ${r.cacheControl ?? ""} | ${r.xVercelId ?? ""} |`,
   ),
   "",
+  "SEO evidence:",
+  JSON.stringify(seoChecks, null, 2),
+  "",
   "Expected production policy:",
   "- apex public routes should return 200 unless the route is intentionally a 404 test.",
   "- www should permanently redirect to the apex canonical origin.",
@@ -77,11 +121,13 @@ const lines = [
 await fs.writeFile(path.join(dir, "http-audit.md"), lines.join("\n") + "\n");
 
 const hardFailures = results.filter((r) => r.status === null || (r.status >= 500 && r.route !== "/__phase1_missing__"));
+const seoFailures = seoChecks.filter((r) => r.status === null || (r.name === "robots" && r.status !== 200) || (r.name === "sitemap" && r.status !== 200) || (r.name === "home" && (r.status !== 200 || r.hasNoindex || (r.metaRobots ?? "").toLowerCase().includes("noindex") || r.canonical !== "https://edmundokutuzov.art/")));
+
 const accidentalNoindex = results.filter((r) => r.origin.includes("edmundokutuzov.art") && !r.origin.includes("www.") && (r.xRobotsTag ?? "").toLowerCase().includes("noindex"));
 const badApexRedirect = results.filter((r) => !r.origin.includes("www.") && r.route !== "/__phase1_missing__" && r.status >= 300 && r.status < 400);
 const badMissing = results.filter((r) => r.route === "/__phase1_missing__" && r.status !== 404 && r.status !== 410 && !(r.origin.includes("www.") && r.status >= 300 && r.status < 400));
-if (hardFailures.length || accidentalNoindex.length || badApexRedirect.length || badMissing.length) {
-  console.error(`Phase 1 HTTP audit failed: 5xx/network=${hardFailures.length}, noindex=${accidentalNoindex.length}, apex-redirect=${badApexRedirect.length}, missing-route=${badMissing.length}`);
+if (hardFailures.length || accidentalNoindex.length || badApexRedirect.length || badMissing.length || seoFailures.length) {
+  console.error(`Phase 1 HTTP audit failed: 5xx/network=${hardFailures.length}, noindex=${accidentalNoindex.length}, apex-redirect=${badApexRedirect.length}, missing-route=${badMissing.length}, seo=${seoFailures.length}`);
   process.exit(1);
 }
 console.log(`Phase 1 HTTP audit passed for ${results.length} origin/route/user-agent combinations.`);
