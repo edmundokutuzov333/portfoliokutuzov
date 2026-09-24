@@ -26,4 +26,4 @@ The encrypted database artifact is stored in the GitHub Actions run artifact pro
 
 ## Status
 
-PENDING_CONFIRMATION — this file is not marked green until the backup workflow run is observed successful.
+BLOCKED-EXTERNAL — the backup workflow was wired to awwwards-rebuild and includes DB dump + Storage manifest, but this execution surface does not expose a successful GitHub Actions run/artifact for confirmation. No production data was changed.
