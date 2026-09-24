@@ -9,6 +9,7 @@ import {
   type DbProject,
   type DbService,
   type DbStat,
+  type DbSiteMetric,
   type SiteSettings,
 } from "@/lib/cms";
 import { toDeterministicUuid } from "@/lib/utils";
@@ -286,5 +287,27 @@ export function useMethod(includeInactive = false) {
         return [];
       }
     },
+  });
+}
+
+export function useSiteMetrics() {
+  useRealtimeInvalidate("site_metrics", ["site_metrics"]);
+  return useQuery({
+    queryKey: ["site_metrics"],
+    queryFn: async ({ signal }): Promise<DbSiteMetric[]> => {
+      try {
+        const { data, error } = await (await loadSupabase()).supabase
+          .from("site_metrics")
+          .select("id,metric_key,value,value_pt,label,label_pt,sort_order,is_active")
+          .eq("is_active", true)
+          .order("sort_order")
+          .abortSignal(boundedSignal(signal));
+        return error || !data ? [] : (data as DbSiteMetric[]);
+      } catch (_error) {
+        void _error;
+        return [];
+      }
+    },
+    staleTime: 120_000,
   });
 }
