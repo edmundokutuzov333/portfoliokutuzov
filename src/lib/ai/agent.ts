@@ -116,6 +116,7 @@ export async function processChatStream(requestId: string, sessionId: string | u
   let triggeredAction: string | undefined;
 
   try {
+    const outputBudget = Math.min(700, Math.max(1, guard.remaining));
     const { diagnostics } = await executeWithModelFallback(requestId, activeSessionId, async (ai, modelName) => {
       let iterations = 0;
       const activeContents: Content[] = [...contents];
