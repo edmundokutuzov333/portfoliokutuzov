@@ -1,0 +1,31 @@
+/* Phase 14 admin/studio token bridge. Internal Studio logic remains untouched. */
+[data-admin-studio] {
+  --admin-studio-bg: var(--color-preto, #000);
+  --admin-studio-surface: var(--color-cal, #f2f2ef);
+  --admin-studio-text: var(--color-cal, #f2f2ef);
+  --admin-studio-muted: var(--color-fumo, #b9b7b0);
+  --admin-studio-work: var(--work, #2f4bff);
+}
+[data-admin-studio] [class*="bg-[#01040A]"],
+[data-admin-studio] [class*="bg-[#030814]"],
+[data-admin-studio] [class*="bg-[#050a12]"] {
+  background-color: var(--admin-studio-bg) !important;
+}
+[data-admin-studio] [class*="bg-white/"] {
+  background-color: color-mix(in srgb, var(--admin-studio-surface) 6%, transparent) !important;
+}
+[data-admin-studio] [class*="text-sky-300"],
+[data-admin-studio] [class*="text-sky-200"] {
+  color: var(--admin-studio-work) !important;
+}
+[data-admin-studio] [class*="border-white/"] {
+  border-color: color-mix(in srgb, var(--admin-studio-text) 14%, transparent) !important;
+}
+[data-admin-studio] [class*="rounded-"] {
+  border-radius: 0 !important;
+}
+[data-admin-studio] [class*="uppercase"][class*="tracking-"] {
+  letter-spacing: normal !important;
+  text-transform: none !important;
+  font-size: 0.875rem !important;
+}
