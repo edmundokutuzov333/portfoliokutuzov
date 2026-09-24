@@ -61,4 +61,4 @@ jobs:
       - name: Performance budget
         run: npm run test:performance
       - name: Playwright smoke
-        run: npx playwright test tests/browser/portfolio.spec.ts --project=chromium --grep "home renders|portfolio archive renders|contact page validates"
+        run: npx playwright test tests/browser/portfolio.spec.ts tests/browser/case-study.spec.ts --project=chromium --grep "home renders|portfolio archive renders|contact page validates|case study"
