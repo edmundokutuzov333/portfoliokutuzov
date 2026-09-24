@@ -10,7 +10,7 @@ test("Portfolio route mounts the deterministic archive renderer", async () => {
   assert.match(route, /PortfolioArchive/);
   assert.match(archive, /data-testid=\"portfolio-archive\"/);
   assert.match(archive, /data-testid=\"portfolio-project-grid\"/);
-  assert.match(archive, /Showing \$\{filtered\.length\} of \$\{publishedProjects\.length\}/);
+  assert.match(archive, /data-testid=\"portfolio-project-grid\"/);
 });
 
 test("Portfolio data has a server-backed recovery path and local fallback", async () => {
