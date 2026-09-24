@@ -288,7 +288,7 @@ export function ServicesPagePhase9() {
   const { data: projects = [] } = useProjects();
   const { data: services = [] } = useServices();
   const { data: methods = [] } = useMethod();
-  const [activeId, setActiveId] = React.useState<ServiceDisciplineId>("identity");
+  const [activeId, setActiveId] = React.useState<ServiceDisciplineId | null>("identity");
 
   const disciplines = React.useMemo(
     () => mergeDisciplines(services),
@@ -335,7 +335,7 @@ export function ServicesPagePhase9() {
               discipline={discipline}
               projects={projects}
               expanded={activeId === discipline.id}
-              onExpand={(id) => setActiveId((current) => (current === id ? "" as ServiceDisciplineId : id))}
+              onExpand={(id) => setActiveId((current) => (current === id ? null : id))}
             />
           ))}
         </div>
@@ -415,7 +415,7 @@ export function ServicesPagePhase9() {
           <div className="flex items-end md:col-span-4 md:justify-end">
             <Link
               to="/contact"
-              search={{ service: disciplines.find((item) => item.id === activeId)?.title || "" } as never}
+              search={{ service: (activeId ? disciplines.find((item) => item.id === activeId)?.title : "") || "" } as never}
               className="inline-flex min-h-12 items-center border-2 border-current bg-black px-5 py-3 text-sm font-semibold text-[#F2F2EF] hover:bg-[#F2F2EF] hover:text-black focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F2F2EF]"
             >
               Start a project
