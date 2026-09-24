@@ -67,7 +67,7 @@ export function NewsletterForm({
       setDone(true);
       trackEvent({ action: "submit", element: `newsletter:${source}` });
 
-      if (result.alreadySubscribed) {
+      if ("alreadySubscribed" in result && result.alreadySubscribed) {
         toast.success(locale === "pt-PT" ? "Este email já está na lista." : "You're already on the list.");
       } else if ("pendingConfirmation" in result) {
         toast.success(locale === "pt-PT" ? "Verifique o email para confirmar a subscrição." : "Check your inbox to confirm your subscription.");
