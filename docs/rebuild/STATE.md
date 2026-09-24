@@ -9,7 +9,7 @@ Master execution state for SUPERPROMPT v2. This file is operational, not an appr
 | 3 | BLOCKED-EXTERNAL | — | Design system / Betão & Cor technical scope executed; predecessor gates remain unresolved |
 | 4 | BLOCKED-EXTERNAL | — | Global shell / i18n / SEO executed; external runner and Vercel build-rate limit remain |
 | 5 | BLOCKED-EXTERNAL | — | Home rebuilt; page gates cannot be verified because external runners/Vercel latest build evidence are blocked |
-| 6 | TODO | — | Selected Portfolio Reel |
+| 6 | BLOCKED-EXTERNAL | — | Reel 3D evoluído e testado por contratos; migration/analytics preparados mas não aplicados por R1 e gates predecessores |
 | 7 | TODO | — | Portfolio |
 | 8 | TODO | — | Case study |
 | 9 | TODO | — | Services |
@@ -342,3 +342,63 @@ Phase 5 Home was rebuilt on awwwards-rebuild as a five-content-block composition
 5. The global footer is the sixth closing block on Home to preserve the Phase 4 one-closing-block contract.
 
 - 771b8a0029bb50df6cd2606b1bf6e235f6d5414f — Phase 5 report
+
+
+## Phase 6 execution log
+
+Phase 6 technical scope was executed on awwwards-rebuild. The protected Selected Portfolio Reel component was deliberately changed only here, preserving the 3D fan while adding the specified accessibility, reduced-motion, virtualization, Work Colour, morph, cinema and analytics contracts.
+
+### Completed
+- Audited the existing Reel implementation and the current production project/media source.
+- Preserved the fan paradigm; no flat carousel replacement was introduced.
+- Deterministic round-robin ordering now interleaves project disciplines.
+- Render virtualization limits the active render window to active ±5.
+- Full keyboard contract: Left/Right, Home/End, Enter, Space.
+- Previous/Next controls provide a drag alternative.
+- The Reel pauses on hover, focus, outside viewport and reduced-motion.
+- Reduced-motion or unsupported 3D uses a horizontal scroll-snap row.
+- Only the active card exposes full title/client/year caption.
+- Active item defines --work through the existing Phase 3 work-color utility.
+- Active item receives a shared View Transition name for the case-study morph.
+- Fullscreen cinema mode with Radix focus management and horizontal touch swipe.
+- Analytics batching via navigator.sendBeacon and a server route with feature flag, rate limit and daily salted session hash.
+- Reversible reel_items + reel_analytics migration committed but not applied.
+- .env.example documents REEL_ANALYTICS_ENABLED=false.
+- Phase 6 contract test suite added.
+- DeferredReel wrapper was not changed.
+
+### Truth-terrain
+- public.projects: 16 published.
+- Project cover_url values: 0.
+- Project gallery rows: 0.
+- Project gallery_meta rows: 0.
+- The 3D Reel therefore uses truthful metadata/color posters for projects without real media instead of invented image URLs.
+- Production database currently has no public.reel_items or public.reel_analytics table.
+
+### Safety
+- No Supabase migration executed.
+- No DB rows modified.
+- No Storage writes/modifications.
+- Analytics route remains feature-disabled unless REEL_ANALYTICS_ENABLED=true is explicitly configured after the migration and backup gate are satisfied.
+
+### Gate status
+- Static Phase 6 contract checks: 17/17 PASS through repository inspection.
+- Lint: NOT CLAIMED GREEN.
+- Typecheck: NOT CLAIMED GREEN.
+- Vitest/node:test: NOT CLAIMED GREEN; external GitHub workflow runs remain unavailable.
+- Playwright: NOT CLAIMED GREEN.
+- Gate de Mudança: NOT CLAIMED GREEN; required browser/screenshot runner is unavailable.
+- Gate de Paridade: implementation preserves all 16 published project records and does not mutate their count; formal reel_items parity cannot be claimed because its production table does not exist yet.
+- Vercel: latest checked commit 6c241607d056316e9f733126902c0146766fc8e0 reports Vercel failure on deployment target.
+- phase-6-green tag: not created.
+- Production promotion: not attempted.
+
+### Phase 6 decisions
+1. Because production has no real project media, never invent media URLs; use data-driven color/title posters until the real media pipeline exists.
+2. Do not apply the migration because Phase 1 backup evidence is not confirmed and R1 prohibits production schema/data mutation without it.
+3. Keep analytics server-gated and disabled by default.
+4. Keep the migration's seed restricted to project rows with existing real cover media; the current dataset consequently seeds zero reel_items until media exists.
+5. Do not replace the 3D fan with a flat/Embla carousel.
+
+### Dependency decision
+Phase 6 remains BLOCKED-EXTERNAL because Phase 5 is BLOCKED-EXTERNAL. The implementation is committed as technical groundwork, but the phase cannot be promoted to GREEN under R3/A.3 until predecessor and external execution gates are verified.
