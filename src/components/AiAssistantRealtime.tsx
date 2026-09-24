@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowUpRight, Bot, Loader2, Maximize2, Mic, MicOff, Minimize2, Send, Volume2, VolumeX, X } from "lucide-react";
+import { ArrowUpRight, Bot, ExternalLink, FileText, Loader2, Maximize2, Mic, MicOff, Minimize2, Send, Volume2, VolumeX, X } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { LiveVoiceSession, type VoiceState } from "@/lib/voice/live";
 import { TTSController } from "@/lib/voice/tts";
 import { useSiteLocale } from "@/lib/site-locale";
 import { trackEvent } from "@/lib/analytics";
+import type { RagCitation } from "@/lib/ai/contracts";
 
 type Project = {
   id: string;
@@ -23,6 +24,7 @@ type Message = {
   text: string;
   projects?: Project[];
   quickPrompts?: string[];
+  citations?: RagCitation[];
   streaming?: boolean;
 };
 
@@ -99,6 +101,9 @@ export function AiAssistantRealtime() {
   const [voiceState, setVoiceState] = useState<VoiceState>("idle");
   const [audioLevel, setAudioLevel] = useState(0);
   const [speakingId, setSpeakingId] = useState<string | null>(null);
+  const panelRef = useRef<HTMLElement>(null);
+  const fabRef = useRef<HTMLButtonElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     const onOpenRequest = (event: Event) => {
