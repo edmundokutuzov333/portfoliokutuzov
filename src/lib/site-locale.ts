@@ -2,28 +2,54 @@ import { useEffect, useState } from "react";
 
 export type SiteLocale = "en" | "pt-PT";
 
-const DEFAULT_LOCALE: SiteLocale = "en";
 const listeners = new Set<(locale: SiteLocale) => void>();
 
-export function translateSiteText(value: string, _locale: SiteLocale = DEFAULT_LOCALE): string {
-  return value;
+export function localeFromPath(pathname: string): SiteLocale {
+  return pathname === "/pt" || pathname.startsWith("/pt/") ? "pt-PT" : "en";
 }
 
-export function localizeArchiveYears(value: string, _locale: SiteLocale = DEFAULT_LOCALE): string {
-  return value;
+export function stripLocalePrefix(pathname: string): string {
+  const stripped = pathname.replace(/^\/pt(?=\/|$)/, "");
+  return stripped || "/";
 }
 
-export function getSiteLocale(): SiteLocale {
-  return DEFAULT_LOCALE;
+export function localizePath(pathname: string, locale: SiteLocale): string {
+  const base = stripLocalePrefix(pathname);
+  return locale === "pt-PT" ? (base === "/" ? "/pt" : `/pt${base}`) : base;
 }
 
-export function setSiteLocale(_locale: SiteLocale = DEFAULT_LOCALE): void {
-  if (typeof document !== "undefined") document.documentElement.lang = DEFAULT_LOCALE;
-  for (const listener of listeners) listener(DEFAULT_LOCALE);
+export const UI_COPY: Record<SiteLocale, Record<string, string>> = {
+  en: {
+    menu: "Menu", close: "Close", startProject: "Start a project", search: "Search",
+    searchPortfolio: "Search portfolio", changeLanguage: "Language",
+    home: "Home", portfolio: "Portfolio", credentials: "Credentials", services: "Services",
+    contact: "Contact", studio: "Kutuzov Studio", actions: "Actions", navigation: "Navigation",
+    recent: "Recent", noResults: "No published projects match that search.",
+    openChat: "Open AI assistant", switchPortuguese: "Português", switchEnglish: "English",
+    allRights: "All rights reserved.", maputo: "Maputo time",
+    newsletterLabel: "Get occasional notes.", newsletterDescription: "New work, availability and studio news.",
+    newsletterEmail: "Email address", join: "Join",
+  },
+  "pt-PT": {
+    menu: "Menu", close: "Fechar", startProject: "Iniciar um projecto", search: "Pesquisar",
+    searchPortfolio: "Pesquisar portfolio", changeLanguage: "Idioma",
+    home: "Início", portfolio: "Portfolio", credentials: "Credenciais", services: "Serviços",
+    contact: "Contacto", studio: "Kutuzov Studio", actions: "Acções", navigation: "Navegação",
+    recent: "Recentes", noResults: "Não existem projectos publicados que correspondam à pesquisa.",
+    openChat: "Abrir assistente IA", switchPortuguese: "Português", switchEnglish: "English",
+    allRights: "Todos os direitos reservados.", maputo: "Hora de Maputo",
+    newsletterLabel: "Receba notas ocasionais.", newsletterDescription: "Novo trabalho, disponibilidade e novidades do studio.",
+    newsletterEmail: "Endereço de email", join: "Subscrever",
+  },
+};
+
+export function setSiteLocale(locale: SiteLocale): void {
+  if (typeof document !== "undefined") document.documentElement.lang = locale;
+  for (const listener of listeners) listener(locale);
 }
 
-export function installSiteLocaleDomBridge(): () => void {
-  if (typeof document !== "undefined") document.documentElement.lang = DEFAULT_LOCALE;
+export function installSiteLocaleDomBridge(pathname = typeof window !== "undefined" ? window.location.pathname : "/"): () => void {
+  setSiteLocale(localeFromPath(pathname));
   return () => {};
 }
 
@@ -33,10 +59,26 @@ export function subscribeSiteLocale(listener: (locale: SiteLocale) => void): () 
 }
 
 export function useSiteLocale(): SiteLocale {
-  const [locale, setLocale] = useState<SiteLocale>(DEFAULT_LOCALE);
+  const [locale, setLocale] = useState<SiteLocale>(() =>
+    localeFromPath(typeof window === "undefined" ? "/" : window.location.pathname),
+  );
   useEffect(() => {
-    if (typeof document !== "undefined") document.documentElement.lang = DEFAULT_LOCALE;
-    return subscribeSiteLocale(setLocale);
+    const onPath = () => {
+      const next = localeFromPath(window.location.pathname);
+      setSiteLocale(next);
+      setLocale(next);
+    };
+    onPath();
+    window.addEventListener("popstate", onPath);
+    return () => window.removeEventListener("popstate", onPath);
   }, []);
   return locale;
+}
+
+export function localizeArchiveYears(value: string): string {
+  return value;
+}
+
+export function translateSiteText(value: string): string {
+  return value;
 }
