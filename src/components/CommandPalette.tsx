@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
-import { Command, Search } from "lucide-react";
+import { useLocation, useNavigate } from "@tanstack/react-router";
+import { Command as Cmdk } from "cmdk";
+import { Search } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
+import { localizePath, UI_COPY, useSiteLocale } from "@/lib/site-locale";
 
 type SearchResult = {
   id: string;
@@ -10,22 +12,46 @@ type SearchResult = {
   year?: string;
   category?: string;
   discipline?: string;
-  description?: string;
   slug: string;
   thumbnail?: string;
-  tags?: string[];
 };
 
-const quickFilters = ["Branding", "Digital", "Campaigns", "Art Direction", "Motion", "Technology", "Fashion"];
+const QUICK_FILTERS = ["Branding", "Digital", "Campaigns", "Art Direction", "Motion", "Technology", "Fashion"];
+const RECENT_KEY = "ek_search_recent_v1";
+
+function readRecent(): SearchResult[] {
+  try {
+    const raw = localStorage.getItem(RECENT_KEY);
+    return raw ? (JSON.parse(raw) as SearchResult[]).slice(0, 5) : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeRecent(item: SearchResult) {
+  try {
+    const next = [item, ...readRecent().filter((entry) => entry.id !== item.id)].slice(0, 5);
+    localStorage.setItem(RECENT_KEY, JSON.stringify(next));
+  } catch {
+    // local storage is an enhancement only.
+  }
+}
 
 export function CommandPalette() {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const locale = useSiteLocale();
+  const copy = UI_COPY[locale];
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [recent, setRecent] = useState<SearchResult[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const controllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    setRecent(readRecent());
+  }, [open]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -41,6 +67,12 @@ export function CommandPalette() {
   }, []);
 
   useEffect(() => {
+    const onOpen = () => setOpen(true);
+    window.addEventListener("ek:open-chat", onOpen as EventListener);
+    return () => window.removeEventListener("ek:open-chat", onOpen as EventListener);
+  }, []);
+
+  useEffect(() => {
     if (!open) return;
     trackEvent({ action: "search_open", element: "command_palette" });
     requestAnimationFrame(() => inputRef.current?.focus());
@@ -53,6 +85,10 @@ export function CommandPalette() {
     const controller = new AbortController();
     controllerRef.current = controller;
     const timer = window.setTimeout(async () => {
+      if (!queryValue) {
+        setResults([]);
+        return;
+      }
       try {
         const response = await fetch(`/api/portfolio-search?q=${encodeURIComponent(queryValue)}`, {
           signal: controller.signal,
@@ -61,141 +97,181 @@ export function CommandPalette() {
         if (!response.ok) throw new Error("Search request failed");
         const payload = (await response.json()) as { results?: SearchResult[] };
         setResults(payload.results ?? []);
-        setActiveIndex(0);
       } catch (error) {
         if ((error as Error)?.name !== "AbortError") setResults([]);
       }
-    }, queryValue ? 120 : 0);
+    }, 140);
     return () => {
       window.clearTimeout(timer);
       controller.abort();
     };
   }, [open, query]);
 
-  const items = useMemo(() => {
-    if (query.trim()) return results;
-    return [];
-  }, [query, results]);
-
-  const closeAndOpen = (slug: string) => {
-    trackEvent({ action: "search_select", element: "command_palette", meta: { slug, query } });
+  const close = () => {
     setOpen(false);
     setQuery("");
-    navigate({ to: "/portfolio/$slug", params: { slug } }).catch(() => {});
   };
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "ArrowDown") {
-      event.preventDefault();
-      setActiveIndex((value) => Math.min(value + 1, Math.max(0, items.length - 1)));
-    } else if (event.key === "ArrowUp") {
-      event.preventDefault();
-      setActiveIndex((value) => Math.max(value - 1, 0));
-    } else if (event.key === "Enter" && items[activeIndex]) {
-      event.preventDefault();
-      closeAndOpen(items[activeIndex].slug);
-    }
+  const openProject = (item: SearchResult) => {
+    writeRecent(item);
+    setRecent(readRecent());
+    trackEvent({ action: "search_select", element: "command_palette", meta: { slug: item.slug, query } });
+    close();
+    navigate({ to: localizePath(`/portfolio/${item.slug}`, locale) as never, viewTransition: true }).catch(() => {});
   };
 
-  const applyFilter = (filter: string) => {
-    setQuery(filter);
-    trackEvent({ action: "search_filter", element: "command_palette", meta: { filter } });
+  const goTo = (path: string) => {
+    close();
+    navigate({ to: localizePath(path, locale) as never, viewTransition: true }).catch(() => {});
   };
 
-  return (
-    <>
+  const switchLanguage = (next: "en" | "pt-PT") => {
+    close();
+    const base = pathname.replace(/^\/pt(?=\/|$)/, "") || "/";
+    const nextPath = next === "pt-PT" ? (base === "/" ? "/pt" : `/pt${base}`) : base;
+    navigate({ to: nextPath as never, viewTransition: true }).catch(() => {});
+  };
+
+  const actionItems = useMemo(
+    () => [
+      { id: "start", label: copy.startProject, hint: "↵", run: () => goTo("/contact") },
+      { id: "chat", label: copy.openChat, hint: "AI", run: () => { close(); window.dispatchEvent(new Event("ek:open-chat")); } },
+      { id: "english", label: copy.switchEnglish, hint: "EN", run: () => switchLanguage("en") },
+      { id: "portuguese", label: copy.switchPortuguese, hint: "PT", run: () => switchLanguage("pt-PT") },
+    ],
+    [copy, locale, pathname],
+  );
+
+  const navigationItems = useMemo(
+    () => [
+      [copy.home, "/"],
+      [copy.portfolio, "/portfolio"],
+      [copy.credentials, "/credentials"],
+      [copy.services, "/services"],
+      [copy.contact, "/contact"],
+      [copy.studio, "/studio"],
+    ] as const,
+    [copy],
+  );
+
+  if (!open) {
+    return (
       <button
         type="button"
-        className="fixed bottom-5 left-5 z-40 hidden md:flex items-center gap-2 rounded-full border border-[var(--color-border-base)] bg-[var(--color-surface)]/90 px-3 py-2 text-[11px] text-[var(--color-text-secondary)] backdrop-blur-xl transition hover:border-[var(--color-border-hover)] hover:text-[var(--color-text-primary)]"
         onClick={() => setOpen(true)}
-        aria-label="Open portfolio search"
+        className="fixed bottom-5 left-5 z-40 hidden min-h-11 items-center gap-2 border-2 border-[var(--color-text-secondary)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text-secondary)] transition hover:border-[var(--work)] hover:text-[var(--color-text-primary)] md:flex"
+        aria-label={copy.searchPortfolio}
       >
-        <Search size={13} aria-hidden="true" />
-        <span>Search portfolio</span>
-        <kbd className="mono text-[9px] opacity-60">⌘K</kbd>
+        <Search size={14} aria-hidden="true" />
+        <span>{copy.searchPortfolio}</span>
+        <kbd className="ml-2 border-l-2 border-current pl-2 text-[11px]">⌘K</kbd>
       </button>
+    );
+  }
 
-      {open && (
-        <div className="fixed inset-0 z-[100] bg-black/65 backdrop-blur-sm" role="presentation" onMouseDown={() => setOpen(false)}>
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label="Search portfolio"
-            className="mx-auto mt-[12vh] w-[min(720px,calc(100vw-28px))] overflow-hidden rounded-2xl border border-white/10 bg-[#060b14] shadow-2xl"
-            onMouseDown={(event) => event.stopPropagation()}
-          >
-            <div className="flex items-center gap-3 border-b border-white/10 px-5 py-4">
-              <Search size={18} className="text-[var(--color-text-muted)]" aria-hidden="true" />
-              <input
-                ref={inputRef}
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                onKeyDown={handleKeyDown}
-                maxLength={120}
-                placeholder="Search portfolio..."
-                className="min-w-0 flex-1 bg-transparent text-base text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-muted)]"
-                aria-label="Search portfolio projects"
-                autoComplete="off"
-              />
-              <kbd className="mono hidden sm:inline-flex rounded border border-white/10 px-2 py-1 text-[9px] text-[var(--color-text-muted)]">
-                ESC
-              </kbd>
-            </div>
-
-            {!query.trim() && (
-              <div className="px-5 py-5">
-                <div className="mono mb-3 text-[9px] tracking-[0.2em] text-[var(--color-text-muted)] uppercase">
-                  Explore by discipline
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {quickFilters.map((filter) => (
-                    <button
-                      key={filter}
-                      type="button"
-                      onClick={() => applyFilter(filter)}
-                      className="rounded-full border border-white/10 px-3 py-2 text-xs text-[var(--color-text-secondary)] transition hover:border-white/20 hover:text-[var(--color-text-primary)]"
-                    >
-                      {filter}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {query.trim() && (
-              <div className="max-h-[60vh] overflow-y-auto p-2" role="listbox" aria-label="Portfolio search results">
-                {items.length === 0 ? (
-                  <div className="px-4 py-8 text-sm text-[var(--color-text-muted)]">No projects found in the published portfolio records.</div>
-                ) : (
-                  items.map((item, index) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      role="option"
-                      aria-selected={index === activeIndex}
-                      onMouseEnter={() => setActiveIndex(index)}
-                      onClick={() => closeAndOpen(item.slug)}
-                      className={`flex w-full items-center gap-4 rounded-xl p-3 text-left transition ${index === activeIndex ? "bg-white/[0.06]" : "hover:bg-white/[0.04]"}`}
-                    >
-                      <div className="h-14 w-20 shrink-0 overflow-hidden rounded-lg border border-white/10 bg-[var(--color-bg)]">
-                        {item.thumbnail ? <img src={item.thumbnail} alt="" className="h-full w-full object-cover" loading="lazy" decoding="async" /> : null}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="text-sm font-medium text-[var(--color-text-primary)]">{item.client || item.title}</div>
-                        <div className="mt-1 text-xs text-[var(--color-text-secondary)]">{item.title}</div>
-                        <div className="mono mt-1 text-[9px] tracking-[0.12em] uppercase text-[var(--color-text-muted)]">
-                          {[item.year, item.category].filter(Boolean).join(" · ")}
-                        </div>
-                      </div>
-                      {index === activeIndex ? <Command size={15} className="text-[var(--color-accent-hover)]" aria-hidden="true" /> : null}
-                    </button>
-                  ))
-                )}
-              </div>
-            )}
+  return (
+    <div className="fixed inset-0 z-[1200] bg-black/75 p-4 md:p-8" role="presentation" onMouseDown={close}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={copy.search}
+        className="mx-auto mt-[7vh] w-full max-w-[900px] border-2 border-[#f2f2ef] bg-[#000] text-[#f2f2ef]"
+        onMouseDown={(event) => event.stopPropagation()}
+      >
+        <Cmdk label={copy.search} loop shouldFilter={false}>
+          <div className="flex items-center border-b-2 border-[#f2f2ef]">
+            <Search size={20} className="mx-4" aria-hidden="true" />
+            <Cmdk.Input
+              ref={inputRef}
+              value={query}
+              onValueChange={setQuery}
+              placeholder={copy.searchPortfolio}
+              className="min-h-16 min-w-0 flex-1 bg-transparent px-0 text-lg outline-none placeholder:text-[#b9b7b0]"
+              aria-label={copy.searchPortfolio}
+            />
+            <kbd className="mr-4 border-2 border-[#f2f2ef] px-2 py-1 text-xs">ESC</kbd>
           </div>
-        </div>
-      )}
-    </>
+
+          <Cmdk.List className="max-h-[70vh] overflow-y-auto p-3">
+            <Cmdk.Empty className="p-6 text-sm text-[#b9b7b0]">{copy.noResults}</Cmdk.Empty>
+
+            {!query.trim() ? (
+              <>
+                <Cmdk.Group heading={copy.actions} className="[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:py-3 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-semibold">
+                  {actionItems.map((item) => (
+                    <Cmdk.Item
+                      key={item.id}
+                      value={item.label}
+                      onSelect={item.run}
+                      className="min-h-12 cursor-pointer border-b border-[#3f3e3b] px-3 py-3 aria-selected:bg-[#f2f2ef] aria-selected:text-black"
+                    >
+                      <span>{item.label}</span>
+                      <span className="ml-auto text-xs opacity-60">{item.hint}</span>
+                    </Cmdk.Item>
+                  ))}
+                </Cmdk.Group>
+
+                <Cmdk.Group heading={copy.navigation} className="[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:py-3 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-semibold">
+                  {navigationItems.map(([label, path]) => (
+                    <Cmdk.Item
+                      key={path}
+                      value={label}
+                      onSelect={() => goTo(path)}
+                      className="min-h-12 cursor-pointer border-b border-[#3f3e3b] px-3 py-3 aria-selected:bg-[#f2f2ef] aria-selected:text-black"
+                    >
+                      {label}
+                    </Cmdk.Item>
+                  ))}
+                </Cmdk.Group>
+
+                {recent.length > 0 ? (
+                  <Cmdk.Group heading={copy.recent} className="[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:py-3 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-semibold">
+                    {recent.map((item) => (
+                      <Cmdk.Item
+                        key={item.id}
+                        value={item.title}
+                        onSelect={() => openProject(item)}
+                        className="min-h-12 cursor-pointer border-b border-[#3f3e3b] px-3 py-3 aria-selected:bg-[#f2f2ef] aria-selected:text-black"
+                      >
+                        <span>{item.title}</span>
+                        <span className="ml-auto text-xs opacity-60">{item.year ?? ""}</span>
+                      </Cmdk.Item>
+                    ))}
+                  </Cmdk.Group>
+                ) : null}
+              </>
+            ) : results.length > 0 ? (
+              <Cmdk.Group heading={copy.portfolio}>
+                {results.map((item) => (
+                  <Cmdk.Item
+                    key={item.id}
+                    value={item.title + " " + item.client}
+                    onSelect={() => openProject(item)}
+                    className="min-h-16 cursor-pointer border-b border-[#3f3e3b] px-3 py-3 aria-selected:bg-[#f2f2ef] aria-selected:text-black"
+                  >
+                    <span className="font-semibold">{item.title}</span>
+                    <span className="ml-3 text-sm opacity-70">{item.client}</span>
+                    <span className="ml-auto text-xs opacity-60">{[item.year, item.category].filter(Boolean).join(" · ")}</span>
+                  </Cmdk.Item>
+                ))}
+              </Cmdk.Group>
+            ) : (
+              <Cmdk.Group heading="Quick filters">
+                {QUICK_FILTERS.map((filter) => (
+                  <Cmdk.Item
+                    key={filter}
+                    value={filter}
+                    onSelect={() => setQuery(filter)}
+                    className="min-h-12 cursor-pointer border-b border-[#3f3e3b] px-3 py-3 aria-selected:bg-[#f2f2ef] aria-selected:text-black"
+                  >
+                    {filter}
+                  </Cmdk.Item>
+                ))}
+              </Cmdk.Group>
+            )}
+          </Cmdk.List>
+        </Cmdk>
+      </div>
+    </div>
   );
 }
