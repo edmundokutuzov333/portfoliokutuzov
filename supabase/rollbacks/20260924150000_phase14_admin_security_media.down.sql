@@ -1,0 +1,21 @@
+-- Phase 14 rollback. Restores the pre-Phase-14 browser-write policies and removes only Phase-14 metadata.
+drop function if exists public.submit_booking_request(text,text,date,text,text,text);
+drop policy if exists "admins read bookings" on public.booking_requests;
+drop policy if exists "admins update bookings" on public.booking_requests;
+drop policy if exists "admins delete bookings" on public.booking_requests;
+create policy "admins read bookings" on public.booking_requests for select to public using (public.admin_has_permission('leads.read'));
+create policy "admins update bookings" on public.booking_requests for update to public using (public.admin_has_permission('leads.write')) with check (public.admin_has_permission('leads.write'));
+create policy "admins delete bookings" on public.booking_requests for delete to public using (public.admin_has_permission('leads.write'));
+create policy "anyone can submit booking" on public.booking_requests for insert to public with check (true);
+create policy "anyone can submit briefing" on public.briefing_submissions for insert to public with check (true);
+create policy "anyone can submit contact request" on public.contact_requests for insert to public with check (true);
+create policy "anyone can subscribe" on public.newsletter_subscribers for insert to public with check (true);
+drop policy if exists "admins upload site-assets" on storage.objects;
+drop policy if exists "admins update site-assets" on storage.objects;
+drop policy if exists "admins delete site-assets" on storage.objects;
+create policy "admins upload site-assets" on storage.objects for insert with check (bucket_id = 'site-assets' and public.is_admin());
+create policy "admins update site-assets" on storage.objects for update using (bucket_id = 'site-assets' and public.is_admin());
+create policy "admins delete site-assets" on storage.objects for delete using (bucket_id = 'site-assets' and public.is_admin());
+drop index if exists public.media_assets_dominant_color_idx;
+alter table public.media_assets drop column if exists optimized_avif_url, drop column if exists optimized_webp_url, drop column if exists optimized_height, drop column if exists optimized_width, drop column if exists dominant_color;
+alter table public.admin_users drop column if exists mfa_required;
