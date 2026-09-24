@@ -5,24 +5,16 @@ import { ArrowUpRight, CheckCircle2, Globe, Mail, MapPin, Phone } from "lucide-r
 import { useSiteSettings, useClients, useStats, useMethod } from "@/hooks/useSiteData";
 import { readSetting } from "@/lib/cms";
 import { Manifesto } from "@/components/home/Manifesto";
+import { createSeo } from "@/lib/seo";
 
 export const Route = createFileRoute("/credentials")({
-  head: () => ({
-    meta: [
-      { title: "The Credentials - Edmundo Kutuzov" },
-      {
-        name: "description",
-        content:
-          "Experience, skills and selected brands worked with as art director and graphic designer by Edmundo Kutuzov.",
-      },
-      { property: "og:title", content: "The Credentials - Edmundo Kutuzov" },
-      {
-        property: "og:description",
-        content:
-          "Experience, skills and selected brands worked with as art director and graphic designer.",
-      },
-    ],
-  }),
+  head: () =>
+    createSeo({
+      title: "The Credentials - Edmundo Kutuzov",
+      description:
+        "Experience, skills and selected brands worked with as art director and graphic designer by Edmundo Kutuzov.",
+      path: "/credentials",
+    }),
   component: CredentialsPage,
 });
 
