@@ -436,15 +436,15 @@ function ProjectDetailContent({ payload }: { payload: CaseStudyPayload }) {
                 fontVariationSettings: '"wdth" 72, "wght" 800',
               }}
             >
-              {projectDisplayName(project)}
+              {project.title}
             </h1>
 
-            {project.title !== projectDisplayName(project) ? (
+            {project.client_name ? (
               <p
                 className="mt-4 max-w-3xl text-2xl text-[#B9B7B0] md:text-4xl"
                 style={{ fontFamily: '"Newsreader Variable", serif' }}
               >
-                {project.title}
+                {project.client_name}
               </p>
             ) : null}
 
