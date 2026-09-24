@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [main, phase3-ai-intelligence]
   push:
-    branches: [phase3-ai-intelligence, ai-realtime-i18n, main, feat/studio-qa-final, awwwards-rebuild]
+    branches: [phase3-ai-intelligence, ai-realtime-i18n, main, feat/studio-qa-final, awwwards-rebuild, phase2-closeout]
 
 concurrency:
   group: control-room-browser-qa-${{ github.workflow }}-${{ github.ref }}
