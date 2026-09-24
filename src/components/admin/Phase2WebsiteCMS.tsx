@@ -97,12 +97,6 @@ function useSettingsDraft(key: string) {
     setHasSavedDraft(false);
   };
 
-  const restore = () => {
-    setDraft(merged);
-    setDirty(false);
-    setHasSavedDraft(false);
-  };
-
   const save = async () => {
     setSaving(true);
     try {
