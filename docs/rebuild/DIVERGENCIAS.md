@@ -61,3 +61,10 @@ Nenhuma correcção de dados ou migração foi feita apenas para alinhar a Parte
 27. **DV-27 — Portfolio count:** the visual brief expects 106 published projects, but production truth is 16. The archive renders the real 16 rather than fabricating records.
 28. **DV-28 — Category taxonomy:** production contains legacy labels (Branding, Campaign, Digital, Editorial, Experimental) in addition to current labels. R12 wins; the archive normalizes these legacy labels to the current public taxonomy "Digital Design" while preserving the underlying DB values.
 29. **DV-29 — Media absence:** the archive is designed for real cover/gallery media but the current project inventory has no published cover/gallery assets. Work Colour title posters are used as a truthful fallback; no image URL is invented.
+
+
+## Fase 8 — Case Studies
+
+30. **DV-30 — Case-study richness:** a Parte B/B.5 expectativa de case studies multimédia não corresponde à base actual. Os 16 projectos publicados têm 0 covers, 0 galleries, 0 videos; project_sections, project_media, project_metrics, project_credits e project_relations estão presentes no schema mas têm 0 rows. O motor novo usa fallback determinístico e não fabrica narrativa, métricas ou media.
+31. **DV-31 — Case-study source model:** existe um modelo editorial modular real no schema, além dos campos legados de public.projects. O novo template lê ambos: campos de projects como fonte factual e tabelas editoriais publicadas quando houver conteúdo.
+32. **DV-32 — Work Colour data:** as colunas dominant_color/accent_color preparadas em fases anteriores não estão confirmadas na produção actual. A Fase 8 usa palette já existente e o fallback cobalt definido pelo design system; não executa backfill nem alteração de schema.
