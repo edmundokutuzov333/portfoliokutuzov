@@ -87,3 +87,13 @@ Nenhuma correcção de dados ou migração foi feita apenas para alinhar a Parte
 39. **DV-39 — Skills:** a auditoria visual refere seis skills, mas a fonte actual contém cinco: Adobe Photoshop 95, Adobe Illustrator 75, Adobe Premiere 75, Adobe After Effects 45 e Artificial Intelligence 95. "Vibe Coding" não foi encontrado na fonte actual. A Fase 10 não inventa o sexto skill; o Toolbelt renderiza os cinco reais.
 40. **DV-40 — Clientes:** a produção tem 16 clientes activos e nenhum `logo_url`. A Fase 10 usa os 16 nomes como representação acessível e não fabrica logótipos.
 41. **DV-41 — PDF:** não existia Press Kit/CV específico de Credentials. A Fase 10 adiciona uma rota Node read-only que gera o documento a partir das fontes actuais e inclui QR para o portfolio. Nenhuma persistência é criada.
+
+
+## Fase 11 — Contact
+
+42. DV-42 — Lead source: a produção já possui briefing_submissions, crm_leads e crm_lead_profiles. A Fase 11 reutiliza briefing_submissions como entrada pública e mantém o pipeline CRM existente; não é criada uma segunda entidade de lead.
+43. DV-43 — Contact RLS: briefing_submissions tinha uma policy de INSERT público. A Fase 11 prepara migration reversível para remover esse INSERT e concentrar a escrita no server route com service-role. A migration não foi aplicada porque o backup Supabase confirmável continua indisponível.
+44. DV-44 — Rate limit: não existia tabela/RPC persistente para o Contact. A Fase 11 prepara contact_rate_limits + check_contact_rate_limit, com fallback conservador em memória enquanto a migration não for aplicada.
+45. DV-45 — Contact settings: não existe row site_settings com key='contact' na produção auditada. A página usa os fallbacks já publicados para email, localização, booking e resposta, sem inventar novos valores; response_hours permanece configurável quando a chave existir.
+46. DV-46 — Lead counts: produção auditada antes da implementação tem 0 briefing_submissions, 0 booking_requests, 0 crm_leads, 0 crm_lead_profiles e 0 newsletter_subscribers. Nenhum registo foi criado durante a Fase 11.
+47. DV-47 — Attachments: o bucket site-assets já é utilizado pelo Contact existente. A nova página preserva o upload de imagens e envia apenas URLs/metadata para briefing_submissions; não foi executado upload durante a fase.
