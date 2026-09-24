@@ -12,7 +12,7 @@ Master execution state for SUPERPROMPT v2. This file is operational, not an appr
 | 6 | BLOCKED-EXTERNAL | — | Reel 3D evoluído e testado por contratos; migration/analytics preparados mas não aplicados por R1 e gates predecessores |
 | 7 | BLOCKED-EXTERNAL | — | Portfolio archive rebuilt with Grid/Index, URL filters, pagination and Work Colour; execution gates remain external |
 | 8 | BLOCKED-EXTERNAL | — | Case study motor modular executado; formal gates continuam não verificáveis |
-| 9 | TODO | — | Services |
+| 9 | BLOCKED-EXTERNAL | — | Services rebuilt; external execution/change-gate evidence still pending |
 | 10 | TODO | — | Credentials |
 | 11 | TODO | — | Contact |
 | 12 | TODO | — | Kutuzov Studio |
@@ -508,3 +508,45 @@ Phase 8 was executed independently on awwwards-rebuild and consolidated the exis
 
 ### Decision
 Phase 8 technical scope is complete. Formal state remains BLOCKED-EXTERNAL under R3/A.3.
+
+
+## Phase 9 execution log
+
+Phase 9 rebuilt `/services` on `awwwards-rebuild` using the existing static discipline definitions plus real published portfolio metadata.
+
+### Completed
+- Billboard layout for four service disciplines.
+- Expand/collapse by hover, focus, keyboard and touch with `aria-expanded`.
+- Real selected work per discipline from the published 16-project archive.
+- URL link to filtered portfolio using `d=`.
+- Work Colour activation on real project palette values.
+- Contextual chatbot prompt.
+- `/contact?service=` handoff into the existing Project step.
+- Method ownership moved from Credentials to Services; empty production Method source remains hidden.
+- FAQ structure prepared with Radix Accordion but hidden because the live source does not exist.
+- Phase 9 static and browser tests added.
+- CI browser smoke updated to include Services.
+- No production database or Storage mutation.
+
+### Truth-terrain
+- Published projects: 16.
+- Services rows: 0.
+- About Method rows: 0.
+- FAQ table: absent.
+- Published project cover media audited: 0.
+
+### Gate status
+- Gate de Paridade: DB-preserving, 16 projects remain 16.
+- Static Phase 9 contracts: committed.
+- CI: pending/in progress at phase close; not claimed GREEN.
+- Lint: NOT CLAIMED GREEN.
+- Typecheck: NOT CLAIMED GREEN.
+- Vitest/node:test: NOT CLAIMED GREEN.
+- Playwright: NOT CLAIMED GREEN.
+- Gate de Mudança: NOT CLAIMED GREEN; screenshot diff runner not verified.
+- Supabase Backup: external backup workflow failed, but no production writes were made.
+- phase-9-green: not created.
+- Production promotion: not attempted.
+
+### Decision
+Phase 9 is code-complete but BLOCKED-EXTERNAL under R3.
