@@ -124,6 +124,7 @@ import {
   BarChart3,
   CircleDollarSign,
   RefreshCw,
+  Play,
 } from "lucide-react";
 
 export const Route = createLazyFileRoute("/admin")({
@@ -144,6 +145,8 @@ type Section =
   | "portfolio"
   | "clients"
   | "media"
+  | "reel"
+  | "contentRegistry"
   | "inbox"
   | "leads"
   | "bookings"
@@ -464,7 +467,8 @@ function ControlRoom() {
           </div>
         ) : null}
       </main>
-    </div>
+      </div>
+    </AdminMfaGate>
   );
 }
 
