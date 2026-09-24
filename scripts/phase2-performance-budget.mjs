@@ -12,7 +12,7 @@ const limits = {
   lcpImage: 150 * 1024,
 };
 
-const server = spawn("npm", ["start"], {
+const server = spawn("npx", ["nitro", "preview", "--host", "127.0.0.1", "--port", "4173"], {
 
   stdio: ["ignore", "pipe", "pipe"],
   env: { ...process.env, PORT: "4173", HOST: "127.0.0.1", NITRO_PORT: "4173", NITRO_HOST: "127.0.0.1" },
