@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, notFound } from "@tanstack/react-router";
 import { Download } from "lucide-react";
-import { SITE_EMAIL } from "@/lib/cms";
 import { useProjects } from "@/hooks/useSiteData";
 import { useCaseStudy } from "@/hooks/useCaseStudy";
 import {
@@ -570,11 +569,6 @@ function ProjectDetailContent({ payload }: { payload: CaseStudyPayload }) {
           </div>
         </div>
       </section>
-
-      <footer className="mx-auto flex max-w-[1500px] flex-wrap items-center justify-between gap-4 border-t-2 border-black px-5 py-8 text-sm md:px-10">
-        <span>{SITE_EMAIL}</span>
-        <span>edmundokutuzov.art</span>
-      </footer>
 
       {selectedMedia ? (
         <CaseStudyLightbox
