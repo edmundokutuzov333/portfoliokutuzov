@@ -42,8 +42,8 @@ test("Homepage Admin controls the complete public homepage surface", () => {
 test("Public homepage consumes CMS-controlled order and visibility with safe fallbacks", () => {
   const index = read("src/routes/index.tsx");
   assert.match(index, /readSetting<HomeSection[]>/);
-  assert.match(index, /.filter((item) => item.visible/);
-  assert.match(index, /.sort((a, b) => Number(a.order/);
+  assert.match(index, /\.filter\(\(item\) => item\.visible/);
+  assert.match(index, /\.sort\(\(a, b\) => Number\(a\.order/);
   assert.match(index, /item.id !== "footer"/);
 });
 
