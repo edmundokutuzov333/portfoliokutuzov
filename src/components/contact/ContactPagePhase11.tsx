@@ -429,16 +429,19 @@ export function ContactPagePhase11() {
         image.src = URL.createObjectURL(file);
       });
 
-      update("attachments", [
-        ...state.attachments,
-        {
-          url: data.publicUrl,
-          name: file.name,
-          size: file.size,
-          width: dimensions.width,
-          height: dimensions.height,
-        },
-      ]);
+      setState((current) => ({
+        ...current,
+        attachments: [
+          ...current.attachments,
+          {
+            url: data.publicUrl,
+            name: file.name,
+            size: file.size,
+            width: dimensions.width,
+            height: dimensions.height,
+          },
+        ],
+      }));
     }
   };
 
