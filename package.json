@@ -17,7 +17,7 @@
     "build:dev": "vite build --mode development",
     "diagnose": "node scripts/diagnose-build.mjs",
     "test": "vitest run tests/phase15-final.test.ts",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "npm run routes:generate && tsc --noEmit",
     "check": "npm run test && npm run diagnose && npm run typecheck && npm run lint && npm run build",
     "start": "node .vercel/output/functions/__server.func/index.mjs",
     "lint": "eslint . --rule 'prettier/prettier: off'",
@@ -32,7 +32,8 @@
     "test:legacy": "node --test tests/*.test.mjs",
     "test:phase15": "vitest run tests/phase15-final.test.ts",
     "audit:all": "bash scripts/audit/run-all.sh",
-    "test:audit-contract": "node --test tests/audit/phase1-audit-contract.test.mjs"
+    "test:audit-contract": "node --test tests/audit/phase1-audit-contract.test.mjs",
+    "routes:generate": "npx --yes @tanstack/router-cli@1.170.27 generate"
   },
   "dependencies": {
     "@exodus/bytes": "^1.1.0",
