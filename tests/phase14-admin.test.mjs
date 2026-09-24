@@ -24,7 +24,7 @@ test("Phase 14 TOTP path is password-manager and accessibility friendly", async(
   assert.match(ui,/supabase\.auth\.mfa\.enroll/);
   assert.match(ui,/supabase\.auth\.mfa\.challenge/);
   assert.match(ui,/supabase\.auth\.mfa\.verify/);
-  assert.match(ui,/autocomplete="one-time-code"/);
+  assert.match(ui,/autoComplete="one-time-code"/);
   assert.match(ui,/inputMode="numeric"/);
   assert.doesNotMatch(ui,/captcha|security question|cognitive/i);
 });
