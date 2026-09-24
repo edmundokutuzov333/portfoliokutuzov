@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, notFound } from "@tanstack/react-router";
-import { ArrowRight, ArrowLeft, Download } from "lucide-react";
+import { Download } from "lucide-react";
 import { SITE_EMAIL } from "@/lib/cms";
 import { useProjects } from "@/hooks/useSiteData";
 import { useCaseStudy } from "@/hooks/useCaseStudy";
@@ -320,7 +320,7 @@ function RelatedProjects({ projects }: { projects: CaseStudyPayload["related"] }
               className="group border-b-2 border-black px-5 py-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--case-work)] md:border-r-2"
               style={{ backgroundColor: darkWork, color: foreground }}
             >
-              <p className="text-sm text-black/70">{project.year || "Project"}</p>
+              <p className="text-sm opacity-70">{project.year || "Project"}</p>
               <h3
                 className="mt-16 text-3xl font-extrabold leading-none tracking-[-0.04em] transition-transform duration-200 group-hover:-translate-y-1 md:text-4xl"
                 style={{ fontFamily: '"Archivo Variable", sans-serif' }}
@@ -399,12 +399,15 @@ function ProjectDetailContent({ payload }: { payload: CaseStudyPayload }) {
   const template = getCaseStudyTemplate(payload);
   const media = getCaseStudyMedia(project, payload.media);
   const work = firstHexColor(project.palette);
+  const darkWork = darkenWorkColor(work);
+  const foreground = pickFg(darkWork);
   const reference = project.description || project.subtitle || "";
 
   useEffect(() => {
     const root = document.documentElement;
-    root.style.setProperty("--case-work", work);
-    root.style.setProperty("--case-work-fg", "#000000");
+    setWorkColor(work);
+    root.style.setProperty("--case-work", darkWork);
+    root.style.setProperty("--case-work-fg", foreground);
     root.style.setProperty("--case-cal", "#F2F2EF");
 
     return () => {
