@@ -54,3 +54,10 @@ Nenhuma correcção de dados ou migração foi feita apenas para alinhar a Parte
 24. **DV-24 — Reel media:** the visual audit describes a real 3D reel with roughly 15 image cards, but the current production project source has 16 published projects with 0 cover_url values, 0 gallery rows and 0 gallery_meta rows. R12 therefore wins: the Phase 6 component cannot fabricate image/video URLs. It renders truthful project metadata and Work Colour posters when real media is unavailable.
 25. **DV-25 — Reel persistence schema:** production has no reel_items or reel_analytics tables. A reversible migration was prepared but deliberately not applied because R1 backup evidence is not confirmed and Phase 5 remains BLOCKED-EXTERNAL.
 26. **DV-26 — Reel ordering:** the planned DR-09 round-robin ordering is implemented deterministically at runtime from the existing project categories. Admin-pinned ordering remains reserved for Phase 14.
+
+
+## Fase 7 — Portfolio
+
+27. **DV-27 — Portfolio count:** the visual brief expects 106 published projects, but production truth is 16. The archive renders the real 16 rather than fabricating records.
+28. **DV-28 — Category taxonomy:** production contains legacy labels (Branding, Campaign, Digital, Editorial, Experimental) in addition to current labels. R12 wins; the archive normalizes these legacy labels to the current public taxonomy "Digital Design" while preserving the underlying DB values.
+29. **DV-29 — Media absence:** the archive is designed for real cover/gallery media but the current project inventory has no published cover/gallery assets. Work Colour title posters are used as a truthful fallback; no image URL is invented.
