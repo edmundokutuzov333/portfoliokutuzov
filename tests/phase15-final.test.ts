@@ -121,7 +121,7 @@ describe("Phase 15 final product regression", () => {
     expect(source).toContain("supabase.auth.mfa.enroll");
     expect(source).toContain("supabase.auth.mfa.challenge");
     expect(source).toContain("supabase.auth.mfa.verify");
-    expect(source).toContain("autocomplete="one-time-code"");
+    expect(source).toContain(`autocomplete="one-time-code"`);
   });
 
   it("keeps the contact dossier at five explicit steps", async () => {
