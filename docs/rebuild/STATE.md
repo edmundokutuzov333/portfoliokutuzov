@@ -7,7 +7,7 @@ Master execution state for SUPERPROMPT v2. This file is operational, not an appr
 | 1 | BLOCKED-EXTERNAL | — | Truth-terrain, stability, SEO hotfix and safety baseline executed; external runner evidence still unavailable |
 | 2 | BLOCKED-EXTERNAL | — | Technical foundation, CI/CD and guardrails implemented; final runner gates cannot be verified from this execution surface |
 | 3 | BLOCKED-EXTERNAL | — | Design system / Betão & Cor technical scope executed; predecessor gates remain unresolved |
-| 4 | TODO | — | Global shell / i18n / SEO |
+| 4 | BLOCKED-EXTERNAL | — | Global shell / i18n / SEO executed; external runner and Vercel build-rate limit remain |
 | 5 | TODO | — | Home |
 | 6 | TODO | — | Selected Portfolio Reel |
 | 7 | TODO | — | Portfolio |
@@ -198,3 +198,91 @@ Phase 2: BLOCKED-EXTERNAL.
 Phase 3: BLOCKED-EXTERNAL.
 
 The design-system work is committed to awwwards-rebuild, but the execution record must not manufacture a green state while predecessor runner and backup evidence remains missing.
+
+
+## Phase 4 execution log
+
+Phase 4 technical scope was executed on awwwards-rebuild. The public shell was changed globally; page interiors remain reserved for their later phases.
+
+### Completed
+- Full-width Betão & Cor global header with dynamic section tone.
+- New footer with one closing CTA block, navigation, socials, quote, Maputo clock and unified newsletter entry.
+- Rectangular mobile menu and EN/PT language switch.
+- /pt, /pt/portfolio, /pt/portfolio/$slug, /pt/services, /pt/credentials, /pt/contact and /pt/studio mirrors registered in TanStack Router.
+- Root document language is SSR-aware for /pt/*.
+- Canonical, hreflang and x-default SEO infrastructure.
+- Sitemap now emits EN and PT pages plus localized project URLs.
+- Public Studio is no longer disallowed by robots.
+- Web manifest committed; root loads self-hosted Archivo/Newsreader instead of Google Fonts.
+- Native TanStack View Transitions enabled.
+- Global route loading state added through Suspense.
+- Flat 404 and Error Boundary surfaces created.
+- Command palette expanded with navigation, actions, AI-open command, language switch, search and recent projects.
+- AI assistant listens for the palette open event.
+- Newsletter server function gained rate limiting, double-opt-in flow and confirmation endpoint, feature-gated until migration is applied.
+- Studio waitlist now uses the unified newsletter function.
+- Additive newsletter migration and rollback committed; no production migration executed.
+- Availability setting added to CMS and exposed through the Control Room.
+- Route-level JSON-LD synchronization and ProfilePage/WebSite/Person base schema maintained.
+- Phase 4 contract tests added.
+- Architecture and divergence documentation updated.
+
+### Production safety
+- No Supabase data rows changed.
+- No Storage objects changed.
+- No production migration executed.
+- No secrets added to source control.
+- No public page interior was re-authored.
+- Selected Portfolio Reel was not changed.
+
+### External evidence
+- Vercel READY deployment dpl_2mKNQCGVBvWRaK2TnJQ27zySyM8s for commit dfeac8056f72272660ac61f0b665d121e9628bdd proves a code-bearing Phase 4 preview compiled before the remaining changes.
+- Latest checked commit status returned Vercel failure with target URL indicating the build-rate-limit page.
+- GitHub Actions returned no workflow runs for the latest checked commit.
+
+### Gate status
+- Phase 1: BLOCKED-EXTERNAL.
+- Phase 2: BLOCKED-EXTERNAL.
+- Phase 3: BLOCKED-EXTERNAL.
+- Phase 4: BLOCKED-EXTERNAL.
+- Lint/typecheck/node:test/Playwright: NOT CLAIMED GREEN without runner evidence.
+- Gate de Paridade: unchanged by production data mutation; no content counts were changed.
+- Gate de Mudança: NOT APPLICABLE to the shell phase.
+- phase-4-green tag: not created.
+- Production promotion: not attempted.
+
+### Phase 4 key commits
+- 5afa83c55d2caaac934f713c056dd7e83b7f458e
+- a7892224af726db677f2a1e0e7eb126a1a7cae38
+- 023aaad9073cf63a966f31b39f863e631a64cd23
+- 7340c8c79596a9c2c2cc7224f302274f5a656ddc
+- e7f9ad14172a30c098ed3a64ab7a426dc4e78e66
+- e41148b06d83c85b892c1533b95a56adb2718e75
+- 4ade83b5d57a533fa96450ecde6dc414151dfdac
+- e23b8ee08c30ab1325a323f722c916ef8ec807d9
+- 8047bb5d52d2f37c0bae037e3eb6ce66d3ef7a66
+- 6b7b0bb59e2d180f83094921939f7ef610514e64
+- 4d75e1f657f93d8e3e576aeeb8c703fb723015d9
+- e83bba563b423afcc7fce28a063e7780706713a9
+- 9a44abc208fd0f24478e13f23299a339e8ba4580
+- 874b50e889ac0b2e0bbcf6bb01a32dd47fae6944
+- db4bb06deac71a1947ef29d6006de31f29839128
+- ddbc7720bb1de2fc9b7ec8bc98af7d1aae06189
+- 6bc2e8fb7e508b77e7df0d43f9f6fcf0536c9687
+- e084ddc384edde72a9dac8f3772c7ec7e9ea1b8d
+- 9ab1e0226086d018859ff98d26523aa4f3c5fae2
+- 3ccede7b7527dda83de26859cb335e08713656a0
+- b0d884a1245dfa19cb705953390c87c8ac901716
+- 1a9768d56da28c093b07ab5538869ca554e7be33
+- cda46dfb7d9a4ee7d744873836683a6d61942cee
+- 737ac674073eb9a24eb610f3054fefef62a338ef
+- 13e5be327ec7fd7ea2e8bcf544bd54cee8a8580b
+- f1929b715333c2721a5cd5d60607e803dc66cb8d
+- 7409ef8138158fc0daa0b8850448d07b5dc309d7
+- 9f224930f5f3cbf7ebada8068c0d20aefa1de1ce
+- 6dbc681bab972f35fb94725f2777f6bd32d3feca
+- 55b3fe9d7e3bfc3cefa2d7989e39c0418f6f1e7d
+- 38a87c97cd5aa0218a69684217c905e5feb9484d
+- 62ef32fc82ee020c8bc06703fbb251c27b7d360b
+- 81e2a7bb48420060a1df8c215fd1cd3116d06cbc
+- b9bea1bd31dcfcba48d13babcb5a296795869830
