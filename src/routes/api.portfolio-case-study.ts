@@ -17,6 +17,7 @@ function response(request: Request, requestId: string, status: number, body: unk
   });
 }
 
+// @ts-expect-error Server-only TanStack route is intentionally outside generated FileRoutesByPath.
 export const Route = createFileRoute("/api/portfolio-case-study")({
   server: {
     handlers: {
