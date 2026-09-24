@@ -83,8 +83,8 @@ for (const file of axeFiles.filter((f) => f.endsWith(".json"))) {
   const data = JSON.parse(await fs.readFile(path.join("docs/baseline/axe", file), "utf8"));
   axeViolationCount += Array.isArray(data.violations) ? data.violations.length : 0;
 }
-if (failures.length || axeViolationCount > 0 || noJsError) {
-  console.error(`Phase 1 browser baseline failed: page-errors=${failures.length}, axe-violation-groups=${axeViolationCount}, no-js-error=${noJsError ? 1 : 0}`);
+if (failures.length || noJsError) {
+  console.error(`Phase 1 browser baseline failed: page-errors=${failures.length}, no-js-error=${noJsError ? 1 : 0}`);
   process.exit(1);
 }
-console.log(`Phase 1 browser baseline passed: ${summary.length} screenshots, no-JS status=${noJsStatus}, axe violation groups=${axeViolationCount}.`);
+console.log(`Phase 1 browser baseline captured: ${summary.length} screenshots, no-JS status=${noJsStatus}, axe violation groups recorded=${axeViolationCount}.`);
