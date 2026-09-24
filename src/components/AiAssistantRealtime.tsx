@@ -47,6 +47,8 @@ const copy = {
     thinking: "Thinking",
     ready: "Ready",
     fallback: "The real-time voice connection is unavailable. You can continue by typing.",
+    privacy: "AI assistant. Conversations may be processed by Google Gemini. Do not share passwords, API keys or other sensitive information.",
+    sources: "Sources",
     welcomeEyebrow: "DIRECT CREATIVE ACCESS",
     welcomeTitle: "Hello. I’m the creative desk behind Kutuzov.",
     intro:
@@ -76,6 +78,8 @@ const copy = {
     thinking: "A pensar",
     ready: "Pronto",
     fallback: "A ligação de voz em tempo real está indisponível. Pode continuar a escrever.",
+    privacy: "Assistente de IA. As conversas podem ser processadas pelo Google Gemini. Não partilhe palavras-passe, chaves de API ou outros dados sensíveis.",
+    sources: "Fontes",
     welcomeEyebrow: "ACESSO CRIATIVO DIRECTO",
     welcomeTitle: "Olá. Sou o assistente criativo digital do Kutuzov.",
     intro:
@@ -228,7 +232,10 @@ export function AiAssistantRealtime() {
       id: "welcome",
       role: "assistant",
       text: ui.intro,
-      quickPrompts: [...ui.quickPrompts],
+      quickPrompts: (() => {
+        const contextual = contextualPrompts(window.location.pathname, locale);
+        return contextual.length ? contextual : [...ui.quickPrompts];
+      })(),
     };
     setMessages((current) => {
       if (!current.length) return [welcome];
