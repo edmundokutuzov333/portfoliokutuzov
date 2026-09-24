@@ -65,5 +65,5 @@ revoke all on function public.admin_has_permission(text) from public;
 grant execute on function public.admin_has_permission(text) to authenticated;
 
 drop index if exists public.media_assets_dominant_color_idx;
-alter table public.media_assets drop column if exists optimized_avif_url, drop column if exists optimized_webp_url, drop column if exists optimized_height, drop column if exists optimized_width, drop column if exists dominant_color;
+alter table public.media_assets drop column if exists optimized_avif_url, drop column if exists optimized_avif_path, drop column if exists optimized_webp_url, drop column if exists optimized_webp_path, drop column if exists optimized_height, drop column if exists optimized_width, drop column if exists dominant_color;
 alter table public.admin_users drop column if exists mfa_required;
