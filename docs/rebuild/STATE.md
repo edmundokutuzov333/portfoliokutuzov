@@ -844,3 +844,56 @@ Phase 13 is code-complete but remains BLOCKED-EXTERNAL under R1/R3. The next pha
 - Second typecheck cycle confirms the Phase 13 AI layer introduces no remaining type errors; CI still fails on the previously documented Admin/Home/Portfolio/API debt.
 - Browser QA for the same HEAD reached browser installation and had not yet produced a GREEN conclusion.
 - Supabase Backup for the Phase 13 HEAD remains FAILURE, so R1 stays blocked.
+
+
+## Phase 14 execution log
+
+### Completed
+- Audited admin_users, is_admin, admin_has_permission and public RLS policies directly against Supabase production truth.
+- Added reversible admin security/media migration and complete rollback.
+- Hardened direct public writes for booking, briefing, contact request and newsletter tables.
+- Added secure booking submission RPC and changed BookingModal to use it.
+- Added TOTP MFA gate + password-manager-friendly challenge/enrollment UI.
+- Added per-admin mfa_required control to Users & Roles.
+- Added native image optimisation, WebP/AVIF feature detection and dominant color extraction.
+- Extended media asset metadata and cleanup of optimized variants.
+- Added structured FAQ, testimonials and site_metrics registries with bilingual nullable fields, RLS, audit and CRUD.
+- Added selected Reel registry, analytics table, deterministic project seed and admin controls.
+- Public Reel now prefers the registry and falls back to projects when the registry is unavailable.
+- Added leads/subscribers/Reel/chatbot analytics and Recharts visualizations.
+- Added ai_handoff, reel_view, reel_select and reel_open analytics events.
+- Added Admin Studio token bridge and noindex metadata without changing Studio internal logic.
+- Added Phase 14 static contract tests and browser tests.
+- Added Phase 14 browser QA to CI.
+- No production DB or Storage writes.
+
+### Truth-terrain
+- Production RLS: enabled on all audited public tables.
+- Public direct INSERT still existed on four submission tables before migration.
+- admin_users: exists; application roles are owner/admin/editor/finance.
+- analytics_events: exists and was empty at audit time.
+- media_assets: exists; no dominant-color/optimized variant columns before migration.
+- FAQ/testimonials/site_metrics: absent before migration.
+- reel_items/reel_analytics: absent before migration while /api/reel-analytics already expected reel_analytics.
+- Admin Studio logic exists and remains untouched.
+
+### Migrations prepared, not applied
+- 20260924150000_phase14_admin_security_media.sql
+- 20260924153000_phase14_content_registry.sql
+- 20260924155000_phase14_reel_registry.sql
+- Matching rollbacks are committed.
+
+### Gates
+- Lint: NOT CLAIMED GREEN.
+- Typecheck: NOT CLAIMED GREEN.
+- Vitest/node:test: NOT CLAIMED GREEN.
+- Playwright: NOT CLAIMED GREEN.
+- Gate de Paridade: PASS by zero production writes.
+- Gate de Mudança: no public page redesign in Phase 14; Admin Studio token bridge only.
+- Supabase Backup: external workflow remains failing.
+- Vercel final READY evidence: pending.
+- phase-14-green: not created.
+- Production promotion: not attempted.
+
+### Decision
+Phase 14 code is implemented but remains BLOCKED-EXTERNAL under R1/R3.
