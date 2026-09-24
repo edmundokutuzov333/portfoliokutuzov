@@ -688,6 +688,61 @@ export function GlobalSettingsManager() {
   </div>;
 }
 
+export function AvailabilityManager() {
+  const availability = useSettingsDraft("availability");
+  const enabled = Boolean(getValue(availability.draft, "enabled", true));
+  const label = String(getValue(
+    availability.draft,
+    "label",
+    "Available for projects",
+  ));
+  const year = Number(getValue(availability.draft, "year", new Date().getFullYear()));
+
+  return (
+    <div className="space-y-6">
+      <header>
+        <p className="mono text-[10px] tracking-[0.28em] text-sky-300/80">WEBSITE / AVAILABILITY</p>
+        <h2 className="display mt-1 text-3xl text-white">Availability control.</h2>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
+          One source for the public availability state and year. The footer and future page labels read this setting instead of hard-coded dates.
+        </p>
+      </header>
+
+      <Card title="Public availability" description="Changes are staged through the existing Release Management pipeline.">
+        <div className="grid gap-5 md:grid-cols-2">
+          <label className="flex min-h-12 items-center gap-3 border-2 border-white/[0.12] px-3 text-sm text-white">
+            <input
+              type="checkbox"
+              checked={enabled}
+              onChange={(event) => availability.update("enabled", event.target.checked)}
+              className="h-4 w-4 accent-sky-300"
+            />
+            Publicly available
+          </label>
+          <div className="grid gap-2">
+            <FieldLabel>Label</FieldLabel>
+            <Input value={label} onChange={(event) => availability.update("label", event.target.value)} />
+          </div>
+          <div className="grid gap-2">
+            <FieldLabel>Year</FieldLabel>
+            <Input
+              type="number"
+              min={2024}
+              max={2100}
+              value={year}
+              onChange={(event) => availability.update("year", Number(event.target.value))}
+            />
+          </div>
+        </div>
+        <div className="mt-5 flex items-center justify-between gap-4">
+          <p className="text-xs text-slate-500">Current public label: {enabled ? label + " " + year : "Not available"}</p>
+          <SaveButton saving={availability.saving} onClick={() => void availability.save()} />
+        </div>
+      </Card>
+    </div>
+  );
+}
+
 export function SeoManager() {
   const global=useSettingsDraft("seo_global");
   const pages=useSettingsDraft("seo_pages");
