@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database } from "@/integrations/supabase/types";
+import { runAiKnowledgeReindex } from "@/lib/ai/rag-index.functions";
 
 export type AdminPermission =
   | "content.read"
@@ -873,6 +874,11 @@ export const publishAdminProject = createServerFn({ method: "POST" })
       p_publish_note: data.is_published ? "Published from portfolio control" : "Unpublished from portfolio control",
     });
     if (publishError) throw new Error(publishError.message);
+    if (process.env.AI_RAG_ENABLED === "true") {
+      void runAiKnowledgeReindex("en").catch((reindexError) => {
+        console.error("[AI RAG] publish reindex failed", reindexError);
+      });
+    }
     return { ok: true, draft: saved.draft, published: published ?? [] };
   });
 
