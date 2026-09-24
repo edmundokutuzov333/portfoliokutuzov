@@ -68,3 +68,12 @@ Nenhuma correcção de dados ou migração foi feita apenas para alinhar a Parte
 30. **DV-30 — Case-study richness:** a Parte B/B.5 expectativa de case studies multimédia não corresponde à base actual. Os 16 projectos publicados têm 0 covers, 0 galleries, 0 videos; project_sections, project_media, project_metrics, project_credits e project_relations estão presentes no schema mas têm 0 rows. O motor novo usa fallback determinístico e não fabrica narrativa, métricas ou media.
 31. **DV-31 — Case-study source model:** existe um modelo editorial modular real no schema, além dos campos legados de public.projects. O novo template lê ambos: campos de projects como fonte factual e tabelas editoriais publicadas quando houver conteúdo.
 32. **DV-32 — Work Colour data:** as colunas dominant_color/accent_color preparadas em fases anteriores não estão confirmadas na produção actual. A Fase 8 usa palette já existente e o fallback cobalt definido pelo design system; não executa backfill nem alteração de schema.
+
+
+
+## Fase 9 — Services
+
+33. **DV-33 — Services source:** a Parte B pressupõe quatro disciplinas estruturadas e dados CMS activos. Na produção actual, `public.services` contém 0 rows. O novo Services usa as quatro definições estruturadas já existentes em `src/data/disciplines.ts`, sem criar rows ou alterar a BD.
+34. **DV-34 — Method source:** `public.about_method` contém 0 rows. Apesar de existir seed histórico em migrations, não é considerado conteúdo publicado actual. A secção "How the studio works" fica oculta até existir fonte editorial activa; Credentials passa a apontar para Services.
+35. **DV-35 — FAQ source:** não existe tabela pública de FAQ no schema actual. A estrutura Radix Accordion foi preparada, mas permanece oculta enquanto não houver perguntas/respostas reais.
+36. **DV-36 — Service work media:** os 16 projectos publicados têm `cover_url = null`. A ligação entre Services e Portfolio usa títulos, clientes, anos, categorias, tags e cores reais, sem inventar thumbnails ou imagens.
