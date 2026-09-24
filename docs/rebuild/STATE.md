@@ -13,7 +13,7 @@ Master execution state for SUPERPROMPT v2. This file is operational, not an appr
 | 7 | BLOCKED-EXTERNAL | — | Portfolio archive rebuilt with Grid/Index, URL filters, pagination and Work Colour; execution gates remain external |
 | 8 | BLOCKED-EXTERNAL | — | Case study motor modular executado; formal gates continuam não verificáveis |
 | 9 | BLOCKED-EXTERNAL | — | Services rebuilt; external execution/change-gate evidence still pending |
-| 10 | TODO | — | Credentials |
+| 10 | BLOCKED-EXTERNAL | — | Credentials dossier rebuilt; formal runner and change-gate evidence not yet GREEN |
 | 11 | TODO | — | Contact |
 | 12 | TODO | — | Kutuzov Studio |
 | 13 | TODO | — | Chatbot / AI |
@@ -550,3 +550,87 @@ Phase 9 rebuilt `/services` on `awwwards-rebuild` using the existing static disc
 
 ### Decision
 Phase 9 is code-complete but BLOCKED-EXTERNAL under R3.
+
+
+## Phase 10 execution log
+
+Phase 10 rebuilt `/credentials` as a Betão & Cor dossier while preserving the current production content and truth-terrain.
+
+### Completed
+- New Credentials dossier with seven chapters: Profile, Numbers, Experience, Toolbelt, Competencies, Clients, Principles.
+- H1 rendered once.
+- Direct contact converted from card to a horizontal contact strip.
+- WhatsApp direct link preserved through the existing helper.
+- Metrics read from active stats when present, otherwise current credentials CMS cards.
+- Home and Credentials now use the same credential metrics source.
+- Experience centralized and ordered newest first.
+- Ikigai role resolved to "Graphic Designer".
+- Toolbelt replaces percentage bars with Core / Fluent / Exploring grouping.
+- Current five skills preserved; no invented sixth skill.
+- Competencies remain the existing three groups and cross-link to Services.
+- Reusable ClientWall primitive created.
+- 16 real active clients displayed as accessible names because logo_url is null for all.
+- Principles moved into a full-page colour section with existing four principles and Reference.
+- Legacy ghost lettering removed.
+- Press Kit / CV PDF added at /api/credentials/press-kit.pdf.
+- PDF route runs on Node and uses pdf-lib + qrcode-generator already installed.
+- PDF reads site_settings.credentials before fallbacks.
+- Static and browser tests added; CI browser gate extended.
+- No database/storage mutation.
+
+### Truth-terrain
+- Published projects: 16.
+- Active clients: 16.
+- Active stats: 0.
+- Credentials cards: 5.
+- Credentials skills: 5.
+- Credentials experience records: 5.
+- Competency groups: 3.
+- Service disciplines: 4.
+- site_metrics table: absent.
+- experience table: absent.
+- skills table: absent.
+- client logo_url values: 0 populated.
+
+### Parity
+- Projects 16 -> 16.
+- Clients 16 -> 16.
+- Experience 5 -> 5.
+- Skills 5 -> 5.
+- Metrics 5 -> 5.
+- Competency groups 3 -> 3.
+- Service disciplines 4 -> 4.
+- Production data mutations: 0.
+
+### Gate status
+- Lint: NOT CLAIMED GREEN.
+- Typecheck: NOT CLAIMED GREEN until final workflow completes.
+- Vitest/node:test: NOT CLAIMED GREEN until final workflow completes.
+- Playwright: NOT CLAIMED GREEN until final workflow completes.
+- Vercel preview for final phase commit: NOT VERIFIED by available deployment surface.
+- Gate de Mudança: NOT CLAIMED GREEN; structural screenshot evidence is not available from the current execution surface.
+- Supabase Backup workflow: continues to fail externally; no production mutation was attempted.
+- phase-10-green tag: not created.
+- Production promotion: not attempted.
+
+### Final phase commits
+- 918b9500b3de221a2e471589869139980baf9de4
+- 99662abb0b60c3a2b86aadf4c46312024bd9f671
+- 83076499ca207b419090cd2f44bf9b790be6e652
+- f5b4d99cb612451dd90476603023c93c71330704
+- 353128d3772bc7b049e772ac7df9278757f9d8f5
+- 7e3255a3a447d9838d7291a2528632fcf51ae175
+- f37fa2e4adbf5385b3a9ff8df8c492a8c9753871
+- 468405edab6baf5a963bd2aaa536f098873c71a0
+- e71a71922f34a46defed483926ce9f31714ff154
+- 5852f8a7a0deb5de69d8b7a2540f1114cfe6e2d2
+- fcde0aa92b9e1f0e2c6abb4b9db190dc8c26ae26
+- 116f2fb3645769afdacfcc2d5533577c9932764b
+- 9863eaee0022c980d941beea16e526c80c89afb0
+- 5d0b10b0c58ffb91734f8a3732b493a15aa169cf
+- 86e10573a31fc34ddd540e1ea415df7003ba3863
+- 776fd07db9be3a7d51d672a4abac620e9a703c11
+- c6842bf9a76cf50edcf75b1481aa0e209917e7fb
+
+### Decision
+Phase 10 code is complete, but remains BLOCKED-EXTERNAL under R3. No production promotion.
