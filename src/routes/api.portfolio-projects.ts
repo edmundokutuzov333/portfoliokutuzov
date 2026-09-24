@@ -122,14 +122,6 @@ export const Route = createFileRoute("/api/portfolio-projects")({
         const query = normalizeText(url.searchParams.get("q"));
 
         const db = supabaseAdmin as any;
-          from: (table: string) => {
-            select: (fields: string) => {
-              eq: (column: string, value: unknown) => unknown;
-              order: (column: string, options: unknown) => unknown;
-              limit: (count: number) => Promise<{ data: ProjectRecord[] | null; error: { message: string } | null }>;
-            };
-          };
-        };
 
         const queryBuilder = db
           .from("projects")
