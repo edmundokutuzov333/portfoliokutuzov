@@ -372,6 +372,11 @@ export const FALLBACK_SETTINGS: SiteSettings = {
       { id: "footer", label: "Footer (global)", visible: true, order: 8 },
     ],
   },
+  availability: {
+    enabled: true,
+    label: "Available for projects",
+    year: new Date().getFullYear(),
+  },
   global: {
     site_name: "Edmundo Kutuzov",
     seo_title: "Edmundo Kutuzov - Designer & Art Director",
