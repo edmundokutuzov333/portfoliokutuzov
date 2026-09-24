@@ -590,7 +590,7 @@ export const deleteAdminMediaAsset = createServerFn({ method: "POST" })
 export const saveAdminSiteSetting = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((i: unknown) => SiteSettingSchema.parse(i))
-  .handler(async ({ data, context }) => {
+  .handler((async ({ data, context }) => {
     await assertPermission(context, "content.write");
     if (data.key === "invoice_settings") {
       await assertPermission(context, "finance.write");
@@ -603,7 +603,7 @@ export const saveAdminSiteSetting = createServerFn({ method: "POST" })
       data.value,
     );
     return { ...result, row: { key: data.key, value: data.value } };
-  });
+  }) as any);
 
 export const saveAdminClient = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -686,9 +686,9 @@ async function saveAdminEntityDraft(
 
   const liveSnapshot =
     entity_type === "site_settings"
-      ? ((live?.value ?? {}) as Record<string, unknown>)
+      ? (((live as { value?: unknown } | null)?.value ?? {}) as Record<string, unknown>)
       : ((live ?? {}) as unknown as Record<string, unknown>);
-  const liveUpdatedAt = live?.updated_at ?? null;
+  const liveUpdatedAt = (live as { updated_at?: string | null } | null)?.updated_at ?? null;
   const userId = (await context.supabase.auth.getUser()).data.user?.id ?? null;
 
   const { data: existingDraft, error: draftReadError } = await context.supabase
