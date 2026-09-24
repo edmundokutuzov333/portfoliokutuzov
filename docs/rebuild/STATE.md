@@ -11,7 +11,7 @@ Master execution state for SUPERPROMPT v2. This file is operational, not an appr
 | 5 | BLOCKED-EXTERNAL | — | Home rebuilt; page gates cannot be verified because external runners/Vercel latest build evidence are blocked |
 | 6 | BLOCKED-EXTERNAL | — | Reel 3D evoluído e testado por contratos; migration/analytics preparados mas não aplicados por R1 e gates predecessores |
 | 7 | BLOCKED-EXTERNAL | — | Portfolio archive rebuilt with Grid/Index, URL filters, pagination and Work Colour; execution gates remain external |
-| 8 | TODO | — | Case study |
+| 8 | BLOCKED-EXTERNAL | — | Case study motor modular executado; formal gates continuam não verificáveis |
 | 9 | TODO | — | Services |
 | 10 | TODO | — | Credentials |
 | 11 | TODO | — | Contact |
@@ -461,3 +461,50 @@ Phase 7 was executed independently, as allowed by the plan. The public /portfoli
 Phase 7 is an independent page phase under A.3, but it remains BLOCKED-EXTERNAL because its formal quality gates cannot be verified from this execution surface.
 
 - fd7f803fedd7af60ad23eb3017645a039f636d4c — Phase 7 report
+
+
+## Phase 8 execution log
+
+Phase 8 was executed independently on awwwards-rebuild and consolidated the existing modular case-study scaffold rather than creating a second data model.
+
+### Completed
+- /portfolio/$slug routed through the modular CaseStudyPage engine.
+- Data map created/updated for all 16 published cases.
+- Editorial and gallery fallback templates preserved.
+- Factual fallback semantics hardened: subtitle remains hero support; notes/structured outcome fields alone drive outcomes.
+- Work Colour uses existing palette, OKLab darkening and contrast-aware foreground.
+- Shared View Transition name retained for the case hero.
+- Media keeps native proportions; gallery/lightbox only render with real media.
+- Native dialog lightbox now has modal focus behaviour and Escape close.
+- Previous/next and related projects use real published project data.
+- Share uses Web Share API with clipboard fallback.
+- Node PDF endpoint uses pdf-lib + @pdf-lib/fontkit.
+- Dynamic OG endpoint is per-case and data-backed.
+- /contact?ref=<slug> preselects the Project step using the existing project-type taxonomy.
+- Phase 8 contract tests aligned to the real implementation surface.
+- No DB or Storage mutations.
+
+### Truth-terrain
+- Published cases: 16.
+- Covers: 0.
+- Galleries: 0.
+- Videos: 0.
+- project_sections: 0.
+- project_media: 0.
+- project_metrics: 0.
+- project_credits: 0.
+- project_relations: 0.
+
+### Formal gate status
+- Lint: NOT CLAIMED GREEN.
+- Typecheck: NOT CLAIMED GREEN.
+- Vitest/node:test: NOT CLAIMED GREEN.
+- Playwright: NOT CLAIMED GREEN.
+- Gate de Mudança: NOT CLAIMED GREEN.
+- Gate de Paridade: implementation preserves 16 published cases and performs no writes.
+- Vercel/GitHub runner: external verification remains unavailable/rate-limited.
+- phase-8-green: not created.
+- Production promotion: not attempted.
+
+### Decision
+Phase 8 technical scope is complete. Formal state remains BLOCKED-EXTERNAL under R3/A.3.
