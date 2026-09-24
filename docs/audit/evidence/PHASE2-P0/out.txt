@@ -1,0 +1,10 @@
+Pre-hotfix production RLS evidence from Supabase project hdmopgkbragcoirhabhi:
+public INSERT policies existed on booking_requests, briefing_submissions, contact_requests, newsletter_subscribers and analytics_events.
+Storage also had public INSERT policy "public uploads to contact-uploads prefix".
+
+P0 hotfix branch: hotfix/p0-rls-20260924
+Merged main commit: 4612414968494d0db853c6232eae9f2f14a1c937
+
+Vercel deployment list after the merge exposed no deployment for commit 4612414968494d0db853c6232eae9f2f14a1c937. The newest observed deployment remained the awwwards-rebuild preview.
+
+Production migration 20260924160000_phase2_p0_rls_boundary.sql was therefore not applied.
