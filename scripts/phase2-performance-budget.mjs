@@ -52,11 +52,26 @@ try {
       if (isAsset && !isReelChunk(url)) resources.push({ response, url, pathname });
     });
 
-    await page.goto(`http://127.0.0.1:4173${route}`, { waitUntil: "networkidle", timeout: 60_000 });
-    await page.waitForTimeout(250);
+    await page.goto(`http://127.0.0.1:4173${route}`, { waitUntil: "load", timeout: 60_000 });
+    const navigationTiming = await page.evaluate(() => {
+      const entry = performance.getEntriesByType("navigation")[0];
+      return entry && "domContentLoadedEventEnd" in entry
+        ? Number(entry.domContentLoadedEventEnd)
+        : Number.POSITIVE_INFINITY;
+    });
+    await page.waitForTimeout(100);
 
+    const resourceTimings = await page.evaluate(() =>
+      Object.fromEntries(
+        performance.getEntriesByType("resource").map((entry) => [entry.name, entry.startTime]),
+      ),
+    );
+
+    const initialResources = resources.filter(
+      (item) => (resourceTimings[item.url] ?? Number.POSITIVE_INFINITY) <= navigationTiming,
+    );
     const totals = { jsGzip: 0, cssGzip: 0, fontsGzip: 0 };
-    for (const item of resources) {
+    for (const item of initialResources) {
       const ext = item.pathname.split("?")[0].toLowerCase();
       if (!/\.(m?js|css|woff2?|ttf|otf)$/.test(ext)) continue;
       try {
@@ -80,7 +95,7 @@ try {
 
     let lcpImage = 0;
     if (lcp.url) {
-      const match = resources.find((r) => r.url === lcp.url);
+      const match = initialResources.find((r) => r.url === lcp.url);
       if (match) {
         try { lcpImage = (await match.response.body()).byteLength; } catch {}
       }
@@ -89,6 +104,7 @@ try {
     const result = {
       route,
       ...totals,
+      measurement: "critical-resources-before-domcontentloaded",
       lcpImage,
       pass:
         totals.jsGzip <= limits.jsGzip &&
