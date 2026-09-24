@@ -65,6 +65,7 @@ function ProjectLink({ project, children }: { project: DbProject; children: Reac
       params={{ slug }}
       viewTransition
       onMouseEnter={() => void queryClient.prefetchQuery({ queryKey: ["portfolio-project", slug], queryFn: () => prefetchPortfolioProject(String(slug)) })}
+      onMouseEnter={() => setWorkColor(paletteColor(project))}
       onFocus={() => { setWorkColor(paletteColor(project)); }}
       onBlur={() => setWorkColor("#2f4bff")}
       onMouseLeave={() => setWorkColor("#2f4bff")}
