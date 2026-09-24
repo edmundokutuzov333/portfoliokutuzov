@@ -1,5 +1,20 @@
 begin;
 
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'contact-uploads',
+  'contact-uploads',
+  false,
+  8388608,
+  array['image/png', 'image/jpeg', 'image/webp']::text[]
+)
+on conflict (id) do update
+set
+  name = excluded.name,
+  public = false,
+  file_size_limit = excluded.file_size_limit,
+  allowed_mime_types = excluded.allowed_mime_types;
+
 drop policy if exists "anyone can submit booking" on public.booking_requests;
 drop policy if exists "anyone can submit briefing" on public.briefing_submissions;
 drop policy if exists "anyone can submit contact request" on public.contact_requests;
