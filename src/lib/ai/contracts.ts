@@ -39,6 +39,14 @@ export interface NormalizedProjectSummary {
 export type JsonValue =
   string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
 
+export interface RagCitation {
+  id: string;
+  title: string;
+  url: string;
+  sourceTable: "case_studies" | "services" | "credentials" | "faq";
+  similarity?: number;
+}
+
 export interface ActionEvent {
   action: string;
   projectSlug?: string | null;
@@ -57,6 +65,7 @@ export interface StreamError {
 export type StreamEvent =
   | { type: "chunk"; text: string }
   | { type: "projects"; projects: NormalizedProjectSummary[] }
+  | { type: "citations"; citations: RagCitation[] }
   | { type: "project_detail"; project: Record<string, unknown> }
   | {
       type: "action";
