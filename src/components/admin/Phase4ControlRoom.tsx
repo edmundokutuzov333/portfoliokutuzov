@@ -1236,7 +1236,7 @@ export function UsersRolesCenter() {
               value={row.role}
               onChange={async (event) => {
                 try {
-                  const result = await updateRole({ data: { user_id: row.user_id, role: event.target.value as "owner"|"admin"|"editor"|"finance", mfa_required: row.mfa_required } });
+                  const result = (await updateRole({ data: { user_id: row.user_id, role: event.target.value as "owner"|"admin"|"editor"|"finance", mfa_required: row.mfa_required } })) as any;
                   setRows((current) => current.map((item) => item.id === row.id ? { ...item, role: result.row.role } : item));
                   toast.success("Role updated");
                 } catch (error) {
@@ -1256,7 +1256,7 @@ export function UsersRolesCenter() {
                 checked={Boolean(row.mfa_required)}
                 onChange={async (event) => {
                   try {
-                    const result = await updateRole({ data: { user_id: row.user_id, role: row.role as "owner"|"admin"|"editor"|"finance", mfa_required: event.target.checked } });
+                    const result = (await updateRole({ data: { user_id: row.user_id, role: row.role as "owner"|"admin"|"editor"|"finance", mfa_required: event.target.checked } })) as any;
                     setRows((current) => current.map((item) => item.id === row.id ? { ...item, mfa_required: Boolean(result.row.mfa_required) } : item));
                     toast.success(event.target.checked ? "MFA requirement enabled" : "MFA requirement disabled");
                   } catch (error) {
