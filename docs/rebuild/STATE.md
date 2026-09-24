@@ -16,7 +16,7 @@ Master execution state for SUPERPROMPT v2. This file is operational, not an appr
 | 10 | BLOCKED-EXTERNAL | — | Credentials dossier rebuilt; formal runner and change-gate evidence not yet GREEN |
 | 11 | BLOCKED-EXTERNAL | — | Contact rebuilt; production migration and formal gates remain blocked by R1/external runner evidence |
 | 12 | BLOCKED-EXTERNAL | — | Kutuzov Studio rebuilt; formal gates and unified newsletter production migration remain blocked |
-| 13 | TODO | — | Chatbot / AI |
+| 13 | BLOCKED-EXTERNAL | — | AI assistant evolved with RAG-ready grounding, citations, guardrails, tools, Live Voice context and accessible panel |
 | 14 | TODO | — | Admin / operations |
 | 15 | TODO | — | Final release |
 
@@ -778,3 +778,61 @@ Phase 12 is code-complete but remains BLOCKED-EXTERNAL under R1/R3.
 - 4fe45b013a42030f4373388f23b65cb09a96697a documents that correction.
 - Latest CI run for the current HEAD is still in progress at npm install; no gate is being claimed GREEN.
 - Latest Supabase Backup run for the current HEAD is in progress; previous Phase 12 backup runs failed.
+
+
+## Phase 13 execution log
+
+### Completed
+- Audited existing Gemini text, SSE, tool-calling, TTS and Gemini Live architecture.
+- Confirmed server-only GEMINI_API_KEY usage.
+- Preserved the existing Live Voice ephemeral-token architecture and added RAG context to its server-generated system instruction.
+- Rebuilt AiAssistantRealtime with Betão/Cor rules: 2px borders, rectangular launcher, no rounded/shadow/gradient/mono micro-labels.
+- Preserved title, subtitle, welcome card and four default suggestions.
+- Added route-aware contextual suggestions.
+- Added dialog semantics, focus trap, Escape-to-close, focus return, aria-live log and reduced obstruction.
+- Added visible privacy notice.
+- Added clickable RAG source citations.
+- Added tool-calling declarations for searchPortfolio, getCaseStudyDetails, sendContactRequest, generateOnePagePDF and checkAvailability.
+- Connected contact handoff to /contact?message= and optional service prefill.
+- Preserved existing PDF endpoints and did not create a new scheduling API.
+- Added Phase 13 RAG migration + rollback.
+- Added vector(768) HNSW knowledge_chunks, AI conversation/message schema and service-role match function.
+- Added admin-protected reindex function.
+- Added guarded reindex hooks to existing admin publish paths.
+- Added session/IP guardrails, sensitive-request refusal, scope refusal, per-response and daily token budgets.
+- Added privacy-safe hashed AI conversation logging with admin-only RLS.
+- Added 15-question golden contract and browser QA.
+- Added Phase 13 browser tests to CI.
+- No production DB or Storage writes.
+
+### Truth-terrain
+- knowledge_chunks: absent in production.
+- ai_conversations: absent in production.
+- ai_messages: absent in production.
+- vector extension: not installed in production.
+- FAQ table: absent.
+- studio_events: absent.
+- booking API: absent.
+- Existing portfolio/client/service/credential/contact counts unchanged.
+
+### Migration status
+Prepared but not applied:
+- supabase/migrations/20260924130000_phase13_ai_knowledge.sql
+- supabase/rollbacks/20260924130000_phase13_ai_knowledge.down.sql
+
+R1 remains blocking because Supabase Backup has not produced confirmed reversible evidence.
+
+### Gate status
+- Lint: NOT CLAIMED GREEN.
+- Typecheck: NOT CLAIMED GREEN.
+- Vitest/node:test: NOT CLAIMED GREEN.
+- Playwright: NOT CLAIMED GREEN.
+- Gate de Paridade: PASS by zero production writes.
+- Gate de Mudança: NOT CLAIMED GREEN pending formal screenshot edge-diff.
+- Supabase Backup: external workflow remains failing.
+- Vercel final READY evidence: not yet confirmed for final Phase 13 HEAD.
+- phase-13-green: not created.
+- Production promotion: not attempted.
+
+### Decision
+Phase 13 is code-complete but remains BLOCKED-EXTERNAL under R1/R3. The next phase may proceed independently only under the documented resilience rules.
