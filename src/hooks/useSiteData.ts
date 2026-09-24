@@ -192,7 +192,7 @@ export function useClients(includeInactive = false, kind = "client") {
         return data as DbClient[];
       } catch (_error) {
         void _error;
-        return kind === "studio" ? FALLBACK_STUDIOS : FALLBACK_CLIENTS;
+        return kind === "studio" ? FALLBACK_STUDIOS : await getFallbackClients();
       }
     },
   });
@@ -206,7 +206,7 @@ export function useProjects(includeUnpublished = false) {
     queryKey: ["projects", includeUnpublished],
     queryFn: async ({ signal }): Promise<DbProject[]> => {
       try {
-        let q = supabase.from("projects").select("*").order("sort_order");
+        let q = (await loadSupabase()).supabase.from("projects").select("*").order("sort_order");
         if (!includeUnpublished) q = q.eq("is_published", true);
         const { data, error } = await q.abortSignal(boundedSignal(signal));
         if (error || !data || data.length === 0) {
@@ -231,7 +231,7 @@ export function useProjects(includeUnpublished = false) {
             : [],
         })) as unknown as DbProject[];
       } catch {
-        return FALLBACK_PROJECTS;
+        return await getFallbackProjects();
       }
     },
   });
@@ -243,7 +243,7 @@ export function useServices(includeInactive = false) {
     queryKey: ["services", includeInactive],
     queryFn: async ({ signal }): Promise<DbService[]> => {
       try {
-        let q = supabase.from("services").select("*").order("sort_order");
+        let q = (await loadSupabase()).supabase.from("services").select("*").order("sort_order");
         if (!includeInactive) q = q.eq("is_active", true);
         const { data, error } = await q.abortSignal(boundedSignal(signal));
         return error || !data ? [] : (data as DbService[]);
@@ -260,7 +260,7 @@ export function useStats(includeInactive = false) {
     queryKey: ["stats", includeInactive],
     queryFn: async ({ signal }): Promise<DbStat[]> => {
       try {
-        let q = supabase.from("stats").select("*").order("sort_order");
+        let q = (await loadSupabase()).supabase.from("stats").select("*").order("sort_order");
         if (!includeInactive) q = q.eq("is_active", true);
         const { data, error } = await q.abortSignal(boundedSignal(signal));
         return error || !data ? [] : (data as DbStat[]);
@@ -277,7 +277,7 @@ export function useMethod(includeInactive = false) {
     queryKey: ["about_method", includeInactive],
     queryFn: async ({ signal }): Promise<DbMethod[]> => {
       try {
-        let q = supabase.from("about_method").select("*").order("sort_order");
+        let q = (await loadSupabase()).supabase.from("about_method").select("*").order("sort_order");
         if (!includeInactive) q = q.eq("is_active", true);
         const { data, error } = await q.abortSignal(boundedSignal(signal));
         return error || !data ? [] : (data as DbMethod[]);
