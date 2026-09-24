@@ -42,14 +42,13 @@ jobs:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
           umask 077
-          psql "$SUPABASE_DB_URL"             --tuples-only --no-align --field-separator 
-\t'             --command "select bucket_id, name, coalesce(version,''), coalesce(metadata::text,'{}') from storage.objects order by bucket_id, name"             > storage-manifest.tsv
-          sha256sum storage-manifest.tsv > storage-manifest.sha256
+          psql "$SUPABASE_DB_URL" --tuples-only --no-align --command "select coalesce(jsonb_agg(jsonb_build_object('bucket_id', bucket_id, 'name', name, 'version', version, 'metadata', metadata) order by bucket_id, name), '[]'::jsonb) from storage.objects" > storage-manifest.json
+          sha256sum storage-manifest.json > storage-manifest.sha256
 
       - name: Package database and Storage manifest
         run: |
           umask 077
-          tar -czf phase1-production-backup.tar.gz supabase-backup.dump storage-manifest.tsv storage-manifest.sha256
+          tar -czf phase1-production-backup.tar.gz supabase-backup.dump storage-manifest.json storage-manifest.sha256
 
       - name: Encrypt backup
         env:
@@ -57,7 +56,7 @@ jobs:
         run: |
           umask 077
           printf '%s' "$BACKUP_ENCRYPTION_KEY" | openssl enc -aes-256-cbc -pbkdf2 -salt -iter 200000 -pass stdin -in phase1-production-backup.tar.gz -out phase1-production-backup.tar.gz.enc
-          rm -f supabase-backup.dump storage-manifest.tsv storage-manifest.sha256 phase1-production-backup.tar.gz
+          rm -f supabase-backup.dump storage-manifest.json storage-manifest.sha256 phase1-production-backup.tar.gz
 
       - name: Upload encrypted backup artifact
         uses: actions/upload-artifact@v4
