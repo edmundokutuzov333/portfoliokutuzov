@@ -62,9 +62,12 @@ test("Public SEO routes own their canonical URL in SSR metadata", () => {
   const credentials = read("src/routes/credentials.tsx");
   const studio = read("src/routes/studio.tsx");
   const project = read("src/routes/portfolio.$slug.tsx");
-  assert.doesNotMatch(root, /links:\\s*\\[\.\.\.seo\\.links/);
-  assert.match(credentials, /createSeo\\([\\s\\S]*path:\\s*"\\/credentials"/);
-  assert.match(studio, /createSeo\\([\\s\\S]*path:\\s*"\\/studio"/);
-  assert.match(project, /createSeo\\([\\s\\S]*path:\\s*`\\/portfolio\\/\\$\\{params\\.slug\\}`/);
+  assert.equal(root.includes("links: [...seo.links"), false);
+  assert.match(credentials, /createSeo/);
+  assert.match(credentials, /path: "\/credentials"/);
+  assert.match(studio, /createSeo/);
+  assert.match(studio, /path: "\/studio"/);
+  assert.match(project, /createSeo/);
+  assert.match(project, /path: `\/portfolio\/\$\{params\.slug\}`/);
   assert.doesNotMatch(studio, /noindex,nofollow/i);
 });
