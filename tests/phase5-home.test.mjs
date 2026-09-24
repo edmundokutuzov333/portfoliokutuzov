@@ -34,12 +34,12 @@ test("Featured work is data-driven and supports 6–8 real featured records", ()
   assert.match(home, /projects\.length/);
   assert.match(home, /paletteColor/);
   assert.match(home, /setWorkColor/);
-  assert.match(home, /Media not supplied in current CMS/);
+  assert.match(home, /Featured project/);
 });
 
 test("Services reuse the existing source of four disciplines and are keyboard/touch expandable", () => {
   const home = read("src/components/home/HomePhase5.tsx");
-  const services = read("src/components/services/ServicesInteractive.tsx");
+  const services = read("src/data/disciplines.ts");
   assert.match(services, /export const STATIC_DISCIPLINES/);
   assert.match(home, /STATIC_DISCIPLINES\.slice\(0, 4\)/);
   assert.match(home, /aria-expanded=/);
