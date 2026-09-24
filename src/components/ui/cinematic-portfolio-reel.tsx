@@ -550,7 +550,7 @@ function ReelCard({
           <Maximize2 size={16} aria-hidden />
         </button>
       ) : null}
-    </article>
+    </motion.article>
   );
 
   return card;
