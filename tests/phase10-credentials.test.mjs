@@ -13,7 +13,7 @@ test("Phase 10 mounts the dossier Credentials page", async () => {
     assert.match(page, new RegExp(chapter));
   }
   assert.match(page, /Strategy, craft and a sharp/);
-  assert.match(page, /Press kit \\/ CV/);
+  assert.match(page, /Press kit \/ CV/);
   assert.match(page, /whatsappLink/);
   assert.match(page, /ClientWall/);
 });
