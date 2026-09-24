@@ -108,7 +108,8 @@ export const subscribeNewsletter = createServerFn({ method: "POST" })
       throw new Error("Too many subscription attempts. Please try again later.");
     }
 
-    const { db } = await import("@/integrations/supabase/server/index.server");
+    const { supabaseAdmin } = await import("@/integrations/supabase/server/index.server");
+    const db = supabaseAdmin as any;
     const source = normalizeSource(data.source);
 
     // Studio must never silently fall back to single-step subscription.
@@ -210,7 +211,8 @@ export const subscribeNewsletter = createServerFn({ method: "POST" })
 export const confirmNewsletter = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => ConfirmInput.parse(input))
   .handler(async ({ data }) => {
-    const { db } = await import("@/integrations/supabase/server/index.server");
+    const { supabaseAdmin } = await import("@/integrations/supabase/server/index.server");
+    const db = supabaseAdmin as any;
     const hash = tokenHash(data.token);
     const { data: subscriber, error } = await db
       .from("newsletter_subscribers")
