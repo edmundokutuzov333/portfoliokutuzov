@@ -149,3 +149,11 @@ DV-72 — A fase final adiciona @axe-core/playwright como dependência CI-only. 
 DV-73 — Os thresholds Lighthouse finais são executados sobre a matriz EN/PT pública. Os scores finais só entram no release report depois de existir artefacto de CI.
 
 DV-74 — A captura Awwwards produz screenshots e vídeo através de Playwright, mas permanece evidência externa até o workflow final terminar e publicar os artefactos.
+
+
+## Fase 15 — final measured blockers
+
+75. **DV-75 — Performance budget:** no último CI observado, os 7 routes públicos medidos ficaram em aproximadamente 437–443 KB gzip de JavaScript crítico e 222 KB gzip de fontes, contra os limites de 170 KB e 120 KB definidos na Fundação. A redução por lazy loading da command palette e deferimento do cliente Supabase não foi suficiente. O limite não foi alterado.
+76. **DV-76 — Lighthouse:** a Home desktop obteve Performance 0,75 contra o mínimo obrigatório de 0,90 no workflow Lighthouse. O score é tratado como falha de gate, não como valor a contornar.
+77. **DV-77 — Backup:** o workflow Supabase Backup falhou na verificação de credenciais necessárias para produzir o backup reversível. Nenhuma escrita/migration de produção foi usada para contornar R1.
+78. **DV-78 — Production SEO audit:** a auditoria HTTP da Fase 1 continua com 6 falhas de SEO/canonical no origin de produção, embora 0 falhas de rede/5xx, 0 noindex, 0 redirects incorrectos e 0 missing routes tenham sido observados. O resultado representa divergência do estado live em relação ao código de `awwwards-rebuild`.
