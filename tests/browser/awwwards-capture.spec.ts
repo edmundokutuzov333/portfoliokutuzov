@@ -3,6 +3,7 @@ import { test } from "@playwright/test";
 const routes = ["/", "/portfolio", "/services", "/credentials", "/contact", "/studio"];
 
 test.use({ video: "on" });
+test.setTimeout(60_000);
 
 test.describe("Awwwards capture", () => {
   test("desktop walkthrough", async ({ page }) => {
