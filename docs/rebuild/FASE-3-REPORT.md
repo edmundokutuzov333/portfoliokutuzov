@@ -34,7 +34,7 @@ No phase-3-green tag was created. Phase 1/2 remain BLOCKED-EXTERNAL.
 
 ## Preview Vercel
 
-Every push continues to use the awwwards-rebuild Vercel preview integration. Final preview build/runner evidence is not claimable from the current execution surface until the external status is exposed.
+Every push continues to use the awwwards-rebuild Vercel preview integration. The code-bearing Phase 3 commit ec5f44bf6fc0ef3db669c1dc65a82335c80dd536 produced deployment dpl_27wQDxu3JZ6xscwuvKTSpGVeynty and reached READY. The commits after that deployment are documentation/state-only and currently have previews queued; no public code changes were added after the READY build. The final GitHub Actions runner evidence is still not exposed by the current connector.
 
 ## Ficheiros criados/alterados
 
