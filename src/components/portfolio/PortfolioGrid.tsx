@@ -5,7 +5,6 @@ import { ArrowUpRight, Search, X, Layers, Play } from "lucide-react";
 import clsx from "clsx";
 import { useProjects } from "@/hooks/useSiteData";
 import { PROJECT_CATEGORIES, normalizeCategory, type DbProject } from "@/lib/cms";
-import type { PortfolioSearch } from "@/routes/portfolio.index";
 import { ContextualCursor } from "@/components/portfolio/ContextualCursor";
 
 const ALL_CATEGORIES = ["All", ...PROJECT_CATEGORIES] as const;
@@ -127,7 +126,7 @@ function ProjectCard({ project, index = 0 }: { project: DbProject; index?: numbe
 
 export function PortfolioGrid() {
   const { data: projects = [], isLoading } = useProjects();
-  const searchParams = useSearch({ strict: false }) as PortfolioSearch | undefined;
+  const searchParams = useSearch({ strict: false }) as { category?: string; q?: string } | undefined;
   const navigate = useNavigate();
 
   // Initialize state from URL search params if present
