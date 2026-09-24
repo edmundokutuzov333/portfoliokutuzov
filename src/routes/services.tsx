@@ -13,7 +13,7 @@ export const Route = createFileRoute("/services")({
     }),
   component: ServicesPage,
 });
-function ServicesPage() {
+export function ServicesPage() {
   return (
     <div className="bg-[var(--color-bg)] min-h-screen">
       <section className="relative px-4 md:px-8 pt-44 md:pt-48 pb-12 md:pb-16 overflow-hidden">
