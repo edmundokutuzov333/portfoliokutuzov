@@ -491,7 +491,7 @@ export function AiAssistantRealtime() {
             <span className="grid h-10 w-10 place-items-center border-2 border-cal/25 text-[var(--work)]">
               <Bot size={15} aria-hidden="true" />
             </span>
-            <span>{ui.title}</span>
+            <span id="ai-assistant-title">{ui.title}</span>
           </div>
           <div className="mt-2 text-sm text-fumo">
             {ui.subtitle}
@@ -520,7 +520,7 @@ export function AiAssistantRealtime() {
               setOpen(false);
             }}
             aria-label={ui.close}
-            className="grid h-8 w-8 place-items-center rounded-full hover:bg-white/5"
+            className="grid min-h-11 min-w-11 place-items-center border-2 border-cal/25 hover:border-[var(--work)]"
           >
             <X size={15} aria-hidden="true" />
           </button>
@@ -583,7 +583,21 @@ export function AiAssistantRealtime() {
                           ))}
                         </div>
                       ) : null}
-                      {message.citations?.length ? (\n                        <div className="mt-4 border-t-2 border-cal/15 pt-3">\n                          <div className="text-sm font-semibold text-cal">{ui.sources}</div>\n                          <div className="mt-2 space-y-2">\n                            {message.citations.slice(0, 6).map((citation) => (\n                              <a key={citation.id} href={citation.url} className="flex items-center gap-2 text-sm text-fumo underline decoration-[var(--work)] underline-offset-4 hover:text-cal">\n                                <FileText size={14} aria-hidden="true" />\n                                <span className="truncate">{citation.title}</span>\n                                <ExternalLink size={13} className="ml-auto shrink-0" aria-hidden="true" />\n                              </a>\n                            ))}\n                          </div>\n                        </div>\n                      ) : null}\n                      {message.role === "assistant" && message.text ? (
+                      {message.citations?.length ? (
+                        <div className="mt-4 border-t-2 border-cal/15 pt-3">
+                          <div className="text-sm font-semibold text-cal">{ui.sources}</div>
+                          <div className="mt-2 space-y-2">
+                            {message.citations.slice(0, 6).map((citation) => (
+                              <a key={citation.id} href={citation.url} className="flex items-center gap-2 text-sm text-fumo underline decoration-[var(--work)] underline-offset-4 hover:text-cal">
+                                <FileText size={14} aria-hidden="true" />
+                                <span className="truncate">{citation.title}</span>
+                                <ExternalLink size={13} className="ml-auto shrink-0" aria-hidden="true" />
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+                      {message.role === "assistant" && message.text ? (
                         <button type="button" onClick={() => speak(message.id, message.text)} aria-label={speakingId === message.id ? ui.stopSpeak : ui.speak} className="mt-3 inline-flex min-h-11 items-center gap-2 border-2 border-cal/20 px-3 text-sm text-fumo hover:border-[var(--work)] hover:text-cal">
                           <span aria-hidden="true">{speakingId === message.id ? <VolumeX size={14} /> : <Volume2 size={14} />}</span>
                           {speakingId === message.id ? ui.stopSpeak : ui.speak}
@@ -628,7 +642,7 @@ export function AiAssistantRealtime() {
                 type="button"
                 onClick={() => void startVoice()}
                 aria-label={voiceState !== "idle" && voiceState !== "error" ? ui.voiceOn : ui.voice}
-                className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${voiceState !== "idle" && voiceState !== "error" ? "bg-sky-400 text-slate-950" : "bg-white/5 text-white hover:bg-white/10"}`}
+                className={`grid min-h-11 min-w-11 shrink-0 place-items-center border-2 ${voiceState !== "idle" && voiceState !== "error" ? "bg-sky-400 text-slate-950" : "bg-white/5 text-white hover:bg-white/10"}`}
               >
                 {voiceState === "connecting" ? <Loader2 size={16} className="animate-spin" /> : voiceState !== "idle" && voiceState !== "error" ? <MicOff size={16} /> : <Mic size={16} />}
               </button>
