@@ -153,7 +153,7 @@ function FeaturedWorkBlock() {
 
   useEffect(() => {
     setWorkColor(activeColor);
-    return () => setWorkColor(DEFAULT_WORK);
+    return () => { setWorkColor(DEFAULT_WORK); };
   }, [activeColor]);
 
   if (!featured.length) return null;
