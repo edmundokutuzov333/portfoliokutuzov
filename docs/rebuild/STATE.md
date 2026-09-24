@@ -14,7 +14,7 @@ Master execution state for SUPERPROMPT v2. This file is operational, not an appr
 | 8 | BLOCKED-EXTERNAL | — | Case study motor modular executado; formal gates continuam não verificáveis |
 | 9 | BLOCKED-EXTERNAL | — | Services rebuilt; external execution/change-gate evidence still pending |
 | 10 | BLOCKED-EXTERNAL | — | Credentials dossier rebuilt; formal runner and change-gate evidence not yet GREEN |
-| 11 | TODO | — | Contact |
+| 11 | BLOCKED-EXTERNAL | — | Contact rebuilt; production migration and formal gates remain blocked by R1/external runner evidence |
 | 12 | TODO | — | Kutuzov Studio |
 | 13 | TODO | — | Chatbot / AI |
 | 14 | TODO | — | Admin / operations |
@@ -634,3 +634,91 @@ Phase 10 rebuilt `/credentials` as a Betão & Cor dossier while preserving the c
 
 ### Decision
 Phase 10 code is complete, but remains BLOCKED-EXTERNAL under R3. No production promotion.
+
+
+## Phase 11 execution log
+
+Phase 11 rebuilt `/contact` as a Betao & Cal five-step briefing experience and moved public submission to a server-side route.
+
+### Completed
+- Contact visual composition rebuilt with Betao background and Cal form panel.
+- Removed the old large top void.
+- H1 `Let's talk.` rendered once.
+- Five named steps: Identity, Project, Budget, Timing, References.
+- Step numbers retained because they represent a real sequence.
+- Approximate completion time shown.
+- Existing Project Types and Urgency taxonomies preserved.
+- Budget now explicitly includes `Prefer not to say`.
+- Zod validation added per step and again at final submission.
+- Inline error messages use alert/aria-live semantics.
+- Autocomplete and inputmode attributes added to identity/contact inputs.
+- Step heading receives focus after navigation.
+- Enter advances the wizard outside textarea/button controls.
+- Draft persisted in sessionStorage and restored after reload.
+- Final review summary added before submission.
+- WhatsApp, email and existing booking integration preserved.
+- `?service=` and `?ref=` handoffs preserved.
+- Contact submission moved to `POST /api/contact/submit`.
+- Server route validates input, handles honeypot, hashes IP and rate-limits.
+- Server route writes through `supabaseAdmin`, never direct anon insert.
+- Resend confirmation + internal notification path implemented server-side.
+- Persistent `contact_rate_limits` table/RPC migration prepared with rollback.
+- Resend delivery checker script added for `delivered@resend.dev`.
+- Contract tests, browser tests and CI smoke coverage added.
+- No production DB or Storage write was executed.
+
+### Truth-terrain
+- briefing_submissions: 0
+- booking_requests: 0
+- newsletter_subscribers: 0
+- crm_leads: 0
+- crm_lead_profiles: 0
+- site_settings contact row: 0
+- existing client/project/service/credential counts remain unchanged.
+
+### Migration status
+Prepared:
+- `supabase/migrations/20260924110000_phase11_contact_security.sql`
+- `supabase/rollbacks/20260924110000_phase11_contact_security.down.sql`
+
+Not applied to production because the automatic Supabase backup workflow has not produced confirmable reversible backup evidence. This is an R1 block.
+
+### E2E email status
+`scripts/phase11-resend-check.mjs` exists and checks Resend `GET /emails/{id}` until `last_event=delivered`. The environment available to this execution did not expose Resend provider credentials, so no real delivery test was claimed.
+
+### Gate status
+- Lint: NOT CLAIMED GREEN.
+- Typecheck: NOT CLAIMED GREEN.
+- Vitest/node:test: NOT CLAIMED GREEN.
+- Playwright: NOT CLAIMED GREEN.
+- Vercel final preview: NOT VERIFIED by available deployment surface.
+- Gate de Paridade: content/source counts preserved; no production rows created or removed.
+- Gate de Mudança: NOT CLAIMED GREEN because formal screenshot diff evidence is unavailable.
+- Supabase Backup: external workflow remains failing.
+- phase-11-green tag: not created.
+- Production promotion: not attempted.
+
+### Commits
+- 90522ba55196755f38e93a0bb5a5f68ec5bec793
+- 4782873f4b0289f076d3d927b171dc32c572e12a
+- 477453a7ee495551bf57d0d9cdfac936b4c9c74e
+- 9174995ac10418cc8125499a84b6f7976d69fcbc
+- c7e23d7974917a8496ca1eaf9fd84510a1cb9ea2
+- 04f41b82e4e03859e778708cd67c6257d9e3e220
+- efb496bbd5a16cb6747600fedf9b589af88adac7
+- 4dfd507f4bd9a2d0b1945b0b83c7122d659da43c
+- 82a3b0042b41d5d09a1d4f855b018a4d6582799e
+- dc47328d9ccb67aa045b46c4303cb9c847c707de
+- dec2f3e5a8e3e13342206bcae685f007b41b8fb2
+- be1467a8f11ff69c5e4f6a08de40cc16e3b70296
+- 8c523658c3d3da6a415cf35dc7d06a4e6ddbb1ba
+- 3228a39c8a3d2ba07c08bc58d30f3795a463dd3b
+- fde07c4bf894807bbfcfe4f18d7f5cb6f5be1dbe
+- 98dc630adab73a3aa1441d7d4e4b56d2d12ef1bd
+- 36f211f69cc9a132a28449373dbfa0809ac11add
+
+### Execution environment
+The execution container could not resolve github.com, so local npm install/build could not be performed. GitHub Actions and Vercel remain the authoritative external execution surfaces.
+
+### Decision
+Phase 11 is code-complete but remains BLOCKED-EXTERNAL under R1/R3. No production promotion.
