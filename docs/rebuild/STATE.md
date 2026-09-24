@@ -8,7 +8,7 @@ Master execution state for SUPERPROMPT v2. This file is operational, not an appr
 | 2 | BLOCKED-EXTERNAL | — | Technical foundation, CI/CD and guardrails implemented; final runner gates cannot be verified from this execution surface |
 | 3 | BLOCKED-EXTERNAL | — | Design system / Betão & Cor technical scope executed; predecessor gates remain unresolved |
 | 4 | BLOCKED-EXTERNAL | — | Global shell / i18n / SEO executed; external runner and Vercel build-rate limit remain |
-| 5 | TODO | — | Home |
+| 5 | BLOCKED-EXTERNAL | — | Home rebuilt; page gates cannot be verified because external runners/Vercel latest build evidence are blocked |
 | 6 | TODO | — | Selected Portfolio Reel |
 | 7 | TODO | — | Portfolio |
 | 8 | TODO | — | Case study |
@@ -286,3 +286,57 @@ Phase 4 technical scope was executed on awwwards-rebuild. The public shell was c
 - 62ef32fc82ee020c8bc06703fbb251c27b7d360b
 - 81e2a7bb48420060a1df8c215fd1cd3116d06cbc
 - b9bea1bd31dcfcba48d13babcb5a296795869830
+
+
+## Phase 5 execution log
+
+Phase 5 Home was rebuilt on awwwards-rebuild as a five-content-block composition whose sixth closing block is the homepage-aware global footer from Phase 4. The implementation follows the Phase 5 brief while preserving the protected Reel as-is.
+
+### Completed
+- Replaced the previous Home route composition with HomePhase5.
+- Hero uses the exact approved headline once, Archivo/Cartaz typography, Newsreader bio and a single Start a project CTA.
+- Availability reads the Phase 4 admin setting.
+- Protected DeferredReel is mounted inside the new Hero stage; its source/component was not edited.
+- Featured Work reads real published/featured projects from Supabase, currently six featured records. It supports up to eight without inventing records.
+- Work Colour is derived from each project's existing palette field when available, with the Phase 3 cobalt fallback.
+- Missing project media is not replaced by invented imagery; the colour block remains as composition and the absence is documented.
+- Services reuses the four real discipline definitions already used by the Services page, with hover/focus/touch expansion and aria-expanded.
+- Discipline source was extracted to src/data/disciplines.ts so the homepage does not pull the whole ServicesInteractive runtime into the initial bundle.
+- Proof reads active clients and active stats from Supabase, with the existing CMS credential cards as fallback because public.stats currently has zero rows.
+- Client wall is text-based because the current 16 active client records have no logo_url values.
+- Current role is read from the existing experience source.
+- Reference remains sourced from credentials.reference and renders GOD without the previous ghost lettering.
+- Homepage closing copy is delivered by the global footer when the route is /, preventing duplicate CTA blocks.
+- Added phase5-home contract tests.
+- No database/storage mutation was performed.
+
+### Truth-terrain at execution
+- Published projects: 16.
+- Featured published projects: 6.
+- Active clients: 16.
+- Active stats: 0.
+- Active services: 0.
+- Active subscribers: 0.
+- Studio waitlist: 2.
+- Featured project media: cover_url/gallery are empty for all six current featured records.
+- Client logo_url is null for all 16 current active client rows.
+
+### Gate status
+- Static Phase 5 contract checks performed through the repository connector: 11/11 passed.
+- Lint: NOT CLAIMED GREEN.
+- Typecheck: NOT CLAIMED GREEN.
+- Vitest/node:test through GitHub runner: NOT CLAIMED GREEN; GitHub Actions returns zero workflow runs for the latest checked commit.
+- Playwright: NOT CLAIMED GREEN.
+- Lighthouse mobile/desktop: NOT RUNNABLE from this execution surface.
+- Gate de Mudança: NOT CLAIMED GREEN because baseline screenshot files cannot be regenerated without the external browser runner.
+- Gate de Paridade: content/database counts remain unchanged: 16 published projects, 6 featured projects, 16 clients, 5 experience rows from the existing CMS fallback, 4 service definitions, 5 metric cards from the existing credentials setting, 3 competency groups.
+- Vercel: commit 91b26a31997c5458488431d3fd98c5301759f550 produced READY deployment dpl_9VdbApxzNMgmpymhvuBAE9tmNtqJ. Later Phase 5 commits are blocked by Vercel build-rate-limit status.
+- phase-5-green tag: not created.
+- Production promotion: not attempted.
+
+### Phase 5 decisions
+1. The plan expects 106 portfolio records, but truth-terrain is 16 published records; the Home uses the real 16 count.
+2. Six featured records already exist, so no feature flags or DB writes were needed.
+3. Because stats/services tables are empty, the Home uses the existing CMS credential cards and existing Services page definitions rather than fabricating new records.
+4. Because project covers, galleries and client logos are absent, no fake media or logos were introduced.
+5. The global footer is the sixth closing block on Home to preserve the Phase 4 one-closing-block contract.
