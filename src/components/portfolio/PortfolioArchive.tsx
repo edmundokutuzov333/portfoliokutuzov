@@ -64,8 +64,13 @@ function ProjectLink({ project, children }: { project: DbProject; children: Reac
       to="/portfolio/$slug"
       params={{ slug }}
       viewTransition
-      onMouseEnter={() => void queryClient.prefetchQuery({ queryKey: ["portfolio-project", slug], queryFn: () => prefetchPortfolioProject(String(slug)) })}
-      onMouseEnter={() => setWorkColor(paletteColor(project))}
+      onMouseEnter={() => {
+        void queryClient.prefetchQuery({
+          queryKey: ["portfolio-project", slug],
+          queryFn: () => prefetchPortfolioProject(String(slug)),
+        });
+        setWorkColor(paletteColor(project));
+      }}
       onFocus={() => { setWorkColor(paletteColor(project)); }}
       onBlur={() => setWorkColor("#2f4bff")}
       onMouseLeave={() => setWorkColor("#2f4bff")}
@@ -108,7 +113,10 @@ function GridView({ projects }: { projects: DbProject[] }) {
 
 function IndexView({ projects }: { projects: DbProject[] }) {
   const [preview, setPreview] = useState<{ project: DbProject; x: number; y: number } | null>(null);
-  useEffect(() => { setWorkColor(preview ? paletteColor(preview.project) : "#2f4bff"); return () => setWorkColor("#2f4bff"); }, [preview]);
+  useEffect(() => {
+    setWorkColor(preview ? paletteColor(preview.project) : "#2f4bff");
+    return () => { setWorkColor("#2f4bff"); };
+  }, [preview]);
   return (
     <div className="relative">
       <div className="hidden md:block" aria-hidden={!preview}>
