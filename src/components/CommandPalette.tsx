@@ -16,7 +16,7 @@ type SearchResult = {
   thumbnail?: string;
 };
 
-const QUICK_FILTERS = ["Branding", "Digital", "Campaigns", "Art Direction", "Motion", "Technology", "Fashion"];
+const QUICK_FILTERS = ["Social Media", "Ad Campaigns", "Digital Design", "Offline Actions", "Clothes Design", "Videos", "Web Design"];
 const RECENT_KEY = "ek_search_recent_v1";
 
 function readRecent(): SearchResult[] {
