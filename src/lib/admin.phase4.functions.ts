@@ -162,7 +162,7 @@ export const listAdminUsersPhase4 = createServerFn({ method: "POST" })
   .validator(() => ({}))
   .handler(async ({ context }) => {
     await assertPermission(context, "system.users.manage");
-    const { data, error } = await context.supabase
+    const { data, error } = await (context.supabase as any)
       .from("admin_users")
       .select("id,user_id,email,role,created_at,mfa_required")
       .order("email");
