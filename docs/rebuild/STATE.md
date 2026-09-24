@@ -771,3 +771,10 @@ The existing Phase 4 migration 20260924093000_phase4_newsletter_unified.sql rema
 
 ### Decision
 Phase 12 is code-complete but remains BLOCKED-EXTERNAL under R1/R3.
+
+
+### Phase 12 addendum
+- 86811ada2bab53e11686b72ff46867faddd8edd8 isolates the unified newsletter schema boundary behind the server-side Supabase client because generated types still describe the legacy schema.
+- 4fe45b013a42030f4373388f23b65cb09a96697a documents that correction.
+- Latest CI run for the current HEAD is still in progress at npm install; no gate is being claimed GREEN.
+- Latest Supabase Backup run for the current HEAD is in progress; previous Phase 12 backup runs failed.
