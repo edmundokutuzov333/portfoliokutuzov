@@ -151,6 +151,7 @@ const MEDIA_MIME_ALLOWLIST = new Set([
   "image/jpeg",
   "image/webp",
   "image/svg+xml",
+  "image/avif",
   "application/pdf",
   "video/mp4",
   "video/webm",
@@ -249,6 +250,13 @@ const MediaAssetSchema = z.object({
   entity_type: z.string().trim().max(120).nullable().optional(),
   entity_id: z.string().trim().max(160).nullable().optional(),
   is_public: z.boolean(),
+  dominant_color: z.string().regex(/^#[0-9a-fA-F]{6}$/).nullable().optional(),
+  optimized_webp_path: z.string().trim().max(500).nullable().optional(),
+  optimized_webp_url: z.string().url().nullable().optional(),
+  optimized_avif_path: z.string().trim().max(500).nullable().optional(),
+  optimized_avif_url: z.string().url().nullable().optional(),
+  optimized_width: z.number().int().positive().nullable().optional(),
+  optimized_height: z.number().int().positive().nullable().optional(),
 });
 
 const MediaQuerySchema = z.object({
@@ -956,6 +964,13 @@ const MediaReplaceSchema = z.object({
   width: z.number().int().positive().nullable().optional(),
   height: z.number().int().positive().nullable().optional(),
   size_bytes: z.number().int().positive().max(200 * 1024 * 1024),
+  dominant_color: z.string().regex(/^#[0-9a-fA-F]{6}$/).nullable().optional(),
+  optimized_webp_path: z.string().trim().max(500).nullable().optional(),
+  optimized_webp_url: z.string().url().nullable().optional(),
+  optimized_avif_path: z.string().trim().max(500).nullable().optional(),
+  optimized_avif_url: z.string().url().nullable().optional(),
+  optimized_width: z.number().int().positive().nullable().optional(),
+  optimized_height: z.number().int().positive().nullable().optional(),
 });
 
 export const replaceAdminMediaAsset = createServerFn({ method: "POST" })
