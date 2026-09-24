@@ -310,6 +310,8 @@ function RelatedProjects({ projects }: { projects: CaseStudyPayload["related"] }
       <div className="mt-6 grid gap-0 md:grid-cols-3">
         {projects.map((project) => {
           const work = firstHexColor(project.palette);
+          const darkWork = darkenWorkColor(work);
+          const foreground = pickFg(darkWork);
 
           return (
             <Link
