@@ -1,4 +1,8 @@
-import { getSiteLocale } from "@/lib/site-locale";
+import { localeFromPath } from "@/lib/site-locale";
+
+function getSiteLocale(pathname?: string) {
+  return localeFromPath(pathname ?? (typeof window !== "undefined" ? window.location.pathname : "/"));
+}
 
 type TranslationMap = Record<string, string>;
 
