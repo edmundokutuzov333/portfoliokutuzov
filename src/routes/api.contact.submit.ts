@@ -139,7 +139,6 @@ function shell(inner: string) {
   );
 }
 
-// @ts-expect-error TanStack route registry does not include server-only API paths in generated FileRoutesByPath.
 export const Route = createFileRoute("/api/contact/submit")({
   server: {
     handlers: {
