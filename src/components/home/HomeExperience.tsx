@@ -315,7 +315,7 @@ export function HomeExperience() {
           />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-px bg-white/[0.08] border border-white/[0.08] rounded-xl overflow-hidden shadow-2xl">
-            {NUMBERS_DATA.map((c, i) => (
+            {metrics.map((c, i) => (
               <motion.div
                 key={c.label}
                 initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 18 }}
