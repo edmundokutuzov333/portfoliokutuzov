@@ -4,6 +4,8 @@ import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { getCorsHeaders, isCorsOriginAllowed } from "@/config/server";
 
+export const runtime = "nodejs";
+
 const EventSchema = z.object({
   itemId: z.string().min(1).max(120),
   event: z.enum(["view", "hover", "open", "cinema"]),
