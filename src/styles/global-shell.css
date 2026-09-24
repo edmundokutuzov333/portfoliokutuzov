@@ -2,6 +2,7 @@
    the shell itself switches to the Betão & Cor contract. */
 
 :root {
+  scroll-padding-top: 72px;
   --shell-bg: #000000;
   --shell-fg: #f2f2ef;
   --shell-muted: #b9b7b0;
