@@ -41,7 +41,7 @@ export const Route = createFileRoute("/api/contact/attachment")({
           });
         }
 
-        const { data, error } = await supabaseAdmin.storage.from("site-assets").createSignedUrl(path, 300);
+        const { data, error } = await supabaseAdmin.storage.from("contact-uploads").createSignedUrl(path, 300);
         if (error || !data?.signedUrl) {
           return new Response(JSON.stringify({ error: "NOT_FOUND" }), {
             status: 404,
