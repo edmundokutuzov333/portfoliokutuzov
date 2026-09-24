@@ -2,6 +2,7 @@ name: CI
 on:
   push:
     branches:
+      - awwwards-rebuild
       - main
       - phase1-hardening
       - phase2-final-exec
