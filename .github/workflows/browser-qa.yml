@@ -21,6 +21,6 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - run: npm install --no-save @playwright/test
+      - run: npm install --no-save @playwright/test @axe-core/playwright@4.13.0
       - run: npx playwright install --with-deps chromium firefox webkit msedge
       - run: npx playwright test
