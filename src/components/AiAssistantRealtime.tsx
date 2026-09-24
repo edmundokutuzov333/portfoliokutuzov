@@ -551,7 +551,7 @@ export function AiAssistantRealtime() {
                             className="group flex min-h-12 items-center justify-between gap-3 border-2 border-cal/20 px-3.5 py-3 text-left text-sm font-medium text-cal transition hover:border-[var(--work)] hover:text-[var(--work)] disabled:opacity-50"
                           >
                             <span>{prompt}</span>
-                            <ArrowUpRight size={13} className="shrink-0 text-sky-300 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden="true" />
+                            <ArrowUpRight size={13} className="shrink-0 text-[var(--work)] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden="true" />
                           </button>
                         ))}
                       </div>
@@ -560,7 +560,7 @@ export function AiAssistantRealtime() {
                     <>
                       <div className="whitespace-pre-wrap text-sm leading-6 text-cal">
                         {message.text}
-                        {message.streaming ? <span className="ml-1 inline-block h-3 w-1 animate-pulse bg-sky-300" /> : null}
+                        {message.streaming ? <span className="ml-1 inline-block h-3 w-1 animate-pulse bg-[var(--work)]" /> : null}
                       </div>
                       {message.projects?.length ? (
                         <div className="mt-3 space-y-2">
@@ -636,13 +636,13 @@ export function AiAssistantRealtime() {
                 maxLength={2000}
                 placeholder={ui.placeholder}
                 aria-label={ui.placeholder}
-                className="min-h-12 flex-1 resize-none bg-transparent px-2 py-2 text-sm text-white outline-none placeholder:text-slate-500"
+                className="min-h-12 flex-1 resize-none bg-transparent px-2 py-2 text-sm text-cal outline-none placeholder:text-fumo"
               />
               <button
                 type="button"
                 onClick={() => void startVoice()}
                 aria-label={voiceState !== "idle" && voiceState !== "error" ? ui.voiceOn : ui.voice}
-                className={`grid min-h-11 min-w-11 shrink-0 place-items-center border-2 ${voiceState !== "idle" && voiceState !== "error" ? "bg-sky-400 text-slate-950" : "bg-white/5 text-white hover:bg-white/10"}`}
+                className={`grid min-h-11 min-w-11 shrink-0 place-items-center border-2 ${voiceState !== "idle" && voiceState !== "error" ? "bg-[var(--work)] text-preto" : "bg-transparent text-cal hover:border-[var(--work)]"}`}
               >
                 {voiceState === "connecting" ? <Loader2 size={16} className="animate-spin" /> : voiceState !== "idle" && voiceState !== "error" ? <MicOff size={16} /> : <Mic size={16} />}
               </button>
