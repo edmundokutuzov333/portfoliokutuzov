@@ -121,7 +121,7 @@ export const Route = createFileRoute("/api/portfolio-projects")({
         const clients = listParam(url.searchParams.get("c"));
         const query = normalizeText(url.searchParams.get("q"));
 
-        const db = supabaseAdmin as {
+        const db = supabaseAdmin as any;
           from: (table: string) => {
             select: (fields: string) => {
               eq: (column: string, value: unknown) => unknown;
