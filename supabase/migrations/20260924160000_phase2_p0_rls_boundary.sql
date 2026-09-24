@@ -37,3 +37,23 @@ create policy "admins delete subscribers" on public.newsletter_subscribers for d
 
 drop policy if exists "admins read analytics" on public.analytics_events;
 create policy "admins read analytics" on public.analytics_events for select to authenticated using (public.is_admin());
+
+
+-- P0 storage boundary: public uploads are removed; admin writes use the same admin boundary.
+drop policy if exists "public uploads to contact-uploads prefix" on storage.objects;
+drop policy if exists "admins upload site-assets" on storage.objects;
+drop policy if exists "admins update site-assets" on storage.objects;
+drop policy if exists "admins delete site-assets" on storage.objects;
+
+create policy "admins upload site-assets" on storage.objects
+for insert to authenticated
+with check (bucket_id = 'site-assets' and public.is_admin());
+
+create policy "admins update site-assets" on storage.objects
+for update to authenticated
+using (bucket_id = 'site-assets' and public.is_admin())
+with check (bucket_id = 'site-assets' and public.is_admin());
+
+create policy "admins delete site-assets" on storage.objects
+for delete to authenticated
+using (bucket_id = 'site-assets' and public.is_admin());
