@@ -107,7 +107,7 @@ function HomeHero() {
           </div>
         </div>
 
-        <div className="relative z-10 mt-auto hidden min-h-[360px] items-end md:flex">
+        <div className="relative z-10 mt-10 min-h-[300px] items-end md:mt-auto md:flex md:min-h-[360px]">
           <div className="pointer-events-auto absolute inset-x-[-1rem] bottom-[-7rem] md:inset-x-[-2rem]">
             <div className="mx-auto w-full max-w-[1500px] overflow-visible">
               <DeferredReel />
@@ -126,6 +126,7 @@ function HomeHero() {
 
 function FeaturedWorkBlock() {
   const { data: projects = [] } = useProjects();
+  const { data: settings } = useSiteSettings();
   const featured = useMemo(
     () =>
       projects
@@ -139,6 +140,7 @@ function FeaturedWorkBlock() {
     [projects],
   );
   const [activeId, setActiveId] = useState<string | null>(featured[0]?.id ?? null);
+  const featuredTitle = String(readSetting(settings, "featured_section", "title", "Selected projects."));
 
   useEffect(() => {
     if (featured.length && !featured.some((project) => project.id === activeId)) {
@@ -167,7 +169,7 @@ function FeaturedWorkBlock() {
           <div className="col-span-4 md:col-span-8">
             <p className="text-sm font-semibold">Featured work</p>
             <h2 id="featured-title" className="mt-4 max-w-[900px] font-cartaz text-[clamp(3.2rem,8vw,8.5rem)] font-extrabold leading-[0.84] tracking-[-0.06em]">
-              Selected projects.
+              {featuredTitle}
             </h2>
           </div>
           <div className="col-span-4 flex items-end justify-end md:col-span-4">
