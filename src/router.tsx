@@ -30,13 +30,13 @@ function DefaultErrorComponent({ error, reset }: { error: Error; reset: () => vo
               router.invalidate();
               reset();
             }}
-            className="inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--color-acc-blue)] px-4 py-2 text-sm font-medium text-black focus-visible:outline-2 focus-visible:outline-[var(--color-accent-hover)]"
+            className="inline-flex min-h-11 items-center justify-center border-2 border-[#f2f2ef] bg-[#f2f2ef] px-4 py-2 text-sm font-semibold text-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--work)]"
           >
             Try again
           </button>
           <a
             href="/"
-            className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/15 px-4 py-2 text-sm hover:border-white/40 focus-visible:outline-2 focus-visible:outline-[var(--color-accent-hover)]"
+            className="inline-flex min-h-11 items-center justify-center border-2 border-[#f2f2ef] px-4 py-2 text-sm hover:bg-[#f2f2ef] hover:text-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--work)]"
           >
             Go home
           </a>
