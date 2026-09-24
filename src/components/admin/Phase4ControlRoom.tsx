@@ -33,6 +33,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import { toast } from "sonner";
+import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import {
   createAdminDraft,
   discardAdminDraft,
@@ -1100,34 +1101,30 @@ export function AnalyticsCenter() {
   const [days, setDays] = useState<7 | 30 | 90>(30);
   const [data, setData] = useState<any>(null);
   const [busy, setBusy] = useState(false);
-  const refresh = async () => {
-    setBusy(true);
-    try { setData(await load({ data: { days } })); }
-    catch (error) { toast.error(error instanceof Error ? error.message : "Analytics could not be loaded"); }
-    finally { setBusy(false); }
-  };
+  const refresh = async () => { setBusy(true); try { setData(await load({ data: { days } })); } catch (error) { toast.error(error instanceof Error ? error.message : "Analytics could not be loaded"); } finally { setBusy(false); } };
   useEffect(() => { void refresh(); }, [days]);
   return <div className="space-y-6">
-    <header className="flex flex-wrap items-end justify-between gap-4">
-      <div><div className="mono text-[10px] uppercase tracking-[0.25em] text-sky-300/70">SYSTEM / ANALYTICS</div><h2 className="display mt-1 text-3xl text-metal">Site analytics.</h2><p className="mt-2 text-sm text-slate-500">Behavioural events, page activity, actions, devices and daily event volume.</p></div>
-      <div className="flex items-center gap-1 rounded-lg border border-white/[0.08] p-1">{([7,30,90] as const).map((value)=><button key={value} type="button" onClick={()=>setDays(value)} className={`rounded px-3 py-1.5 text-[10px] ${days===value?"bg-white/10 text-white":"text-slate-500"}`}>{value}d</button>)}<button type="button" onClick={()=>void refresh()} disabled={busy} className="grid h-8 w-8 place-items-center rounded text-slate-500 hover:text-white" aria-label="Refresh analytics"><RefreshCw size={12} className={busy?"animate-spin":""}/></button></div>
-    </header>
+    <header className="flex flex-wrap items-end justify-between gap-4"><div><div className="mono text-[10px] uppercase tracking-[0.25em] text-sky-300/70">SYSTEM / ANALYTICS</div><h2 className="display mt-1 text-3xl text-metal">Site analytics.</h2><p className="mt-2 text-sm text-slate-500">Leads, subscribers, Reel engagement, chatbot activity and site events.</p></div><div className="flex items-center gap-1 border border-white/[0.08] p-1">{([7,30,90] as const).map((value)=><button key={value} type="button" onClick={()=>setDays(value)} className={`px-3 py-1.5 text-[10px] ${days===value?"bg-white/10 text-white":"text-slate-500"}`}>{value}d</button>)}<button type="button" onClick={()=>void refresh()} disabled={busy} className="grid h-8 w-8 place-items-center text-slate-500 hover:text-white" aria-label="Refresh analytics"><RefreshCw size={12} className={busy?"animate-spin":""}/></button></div></header>
     {!data ? <LoadingBlock label="Loading site analytics..."/> : <>
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"><SummaryTile label="Events" value={data.summary.events}/><SummaryTile label="Sessions" value={data.summary.sessions}/><SummaryTile label="Pages touched" value={data.summary.pages}/><SummaryTile label="Actions" value={data.summary.actions}/></div>
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6"><SummaryTile label="Events" value={data.summary.events}/><SummaryTile label="Sessions" value={data.summary.sessions}/><SummaryTile label="Leads" value={data.summary.leads}/><SummaryTile label="Subscribers" value={data.summary.subscribers}/><SummaryTile label="Reel opens" value={data.reel.opens}/><SummaryTile label="AI handoff rate" value={`${Number(data.chatbot.handoff_rate ?? 0).toFixed(1)}%`}/></div>
       <div className="grid gap-5 xl:grid-cols-2">
-        <Panel kicker="Top pages" title="Where people interact"><AnalyticsList rows={data.top_pages} empty="No page activity in this window."/></Panel>
-        <Panel kicker="Top actions" title="What people do"><AnalyticsList rows={data.top_actions} empty="No action activity in this window."/></Panel>
-        <Panel kicker="Devices" title="Usage mix"><AnalyticsList rows={data.devices} empty="No device data in this window."/></Panel>
-        <Panel kicker="Daily volume" title="Event cadence"><AnalyticsList rows={data.daily.map((row:any)=>({name:row.day,count:row.count}))} empty="No daily activity."/></Panel>
+        <AnalyticsChart title="Leads over time" data={data.timeline} dataKey="leads" />
+        <AnalyticsChart title="Subscribers over time" data={data.timeline} dataKey="subscribers" />
+        <AnalyticsChart title="Reel engagement" data={data.timeline} dataKey="reel" />
+        <AnalyticsChart title="Chatbot activity" data={data.timeline} dataKey="chatbot" />
       </div>
-    </>}
-  </div>;
-}
-function AnalyticsList({ rows, empty }: { rows: Array<{name:string;count:number}>; empty:string }) {
-  const max = Math.max(...rows.map((row)=>row.count), 1);
-  return rows.length ? <div className="space-y-3">{rows.map((row)=><div key={row.name} className="grid grid-cols-[minmax(0,1fr)_70px] gap-3"><div className="min-w-0"><div className="truncate text-xs text-slate-300">{row.name}</div><div className="mt-1 h-1.5 overflow-hidden rounded-full bg-white/[0.05]"><div className="h-full rounded-full bg-sky-300/60" style={{width:`${Math.max(4,(row.count/max)*100)}%`}} /></div></div><div className="mono text-right text-[10px] text-slate-500">{row.count.toLocaleString()}</div></div>)}</div> : <div className="text-sm text-slate-600">{empty}</div>;
+      <div className="grid gap-5 xl:grid-cols-3"><Panel kicker="Top pages" title="Where people interact"><AnalyticsList rows={data.top_pages} empty="No page activity in this window."/></Panel><Panel kicker="Top actions" title="What people do"><AnalyticsList rows={data.top_actions} empty="No action activity in this window."/></Panel><Panel kicker="Devices" title="Usage mix"><AnalyticsList rows={data.devices} empty="No device data in this window."/></Panel></div>
+    </>}</div>;
 }
 
+function AnalyticsChart({ title, data, dataKey }: { title:string; data:Array<Record<string, unknown>>; dataKey:string }) {
+  return <Panel kicker="Time series" title={title}><div className="h-[280px] w-full"><ResponsiveContainer width="100%" height="100%"><LineChart data={data} margin={{top:8,right:8,left:-18,bottom:4}}><CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,.07)"/><XAxis dataKey="day" tick={{fill:"#64748b",fontSize:10}} tickFormatter={(value)=>String(value).slice(5)}/><YAxis tick={{fill:"#64748b",fontSize:10}} allowDecimals={false}/><Tooltip contentStyle={{background:"#060b14",border:"1px solid rgba(255,255,255,.12)",color:"#e2e8f0"}}/><Line type="monotone" dataKey={dataKey} stroke="#7dd3fc" strokeWidth={2} dot={false}/></LineChart></ResponsiveContainer></div></Panel>;
+}
+
+function AnalyticsList({ rows, empty }: { rows: Array<{name:string;count:number}>; empty:string }) {
+  const max = Math.max(...rows.map((row)=>row.count), 1);
+  return rows.length ? <div className="space-y-3">{rows.map((row)=><div key={row.name} className="grid grid-cols-[minmax(0,1fr)_70px] gap-3"><div className="min-w-0"><div className="truncate text-xs text-slate-300">{row.name}</div><div className="mt-1 h-1.5 overflow-hidden bg-white/[0.05]"><div className="h-full bg-sky-300/60" style={{width:`${Math.max(4,(row.count/max)*100)}%`}} /></div></div><div className="mono text-right text-[10px] text-slate-500">{row.count.toLocaleString()}</div></div>)}</div> : <div className="text-sm text-slate-600">{empty}</div>;
+}
 export function AuditCenter() {
   const load = useServerFn(getAdminAuditLogPhase4);
   const restore = useServerFn(restoreAdminAuditState);
