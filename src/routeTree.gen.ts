@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AdminStudioRouteImport } from './routes/admin.studio'
 import { Route as AdminPreviewRouteImport } from './routes/admin.preview'
+import { Route as AdminDesignSystemRouteImport } from './routes/admin.design-system'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CredentialsRouteImport } from './routes/credentials'
 import { Route as McpRouteImport } from './routes/mcp'
@@ -46,6 +47,7 @@ const IndexRoute = IndexRouteImport.update({ id: '/', path: '/', getParentRoute:
 const AdminRoute = AdminRouteImport.update({ id: '/admin', path: '/admin', getParentRoute: () => rootRouteImport } as any).lazy(() => import('./routes/admin.lazy').then((d) => d.Route))
 const AdminStudioRoute = AdminStudioRouteImport.update({ id: '/admin/studio', path: '/admin/studio', getParentRoute: () => rootRouteImport } as any)
 const AdminPreviewRoute = AdminPreviewRouteImport.update({ id: '/admin/preview', path: '/admin/preview', getParentRoute: () => rootRouteImport } as any)
+const AdminDesignSystemRoute = AdminDesignSystemRouteImport.update({ id: '/admin/design-system', path: '/admin/design-system', getParentRoute: () => rootRouteImport } as any)
 const ContactRoute = ContactRouteImport.update({ id: '/contact', path: '/contact', getParentRoute: () => rootRouteImport } as any).lazy(() => import('./routes/contact.lazy').then((d) => d.Route))
 const CredentialsRoute = CredentialsRouteImport.update({ id: '/credentials', path: '/credentials', getParentRoute: () => rootRouteImport } as any)
 const McpRoute = McpRouteImport.update({ id: '/mcp', path: '/mcp', getParentRoute: () => rootRouteImport } as any)
@@ -80,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/admin/studio': typeof AdminStudioRoute
   '/admin/preview': typeof AdminPreviewRoute
+  '/admin/design-system': typeof AdminDesignSystemRoute
   '/contact': typeof ContactRoute
   '/credentials': typeof CredentialsRoute
   '/mcp': typeof McpRoute
@@ -147,6 +150,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/admin/studio'
     | '/admin/preview'
+    | '/admin/design-system'
     | '/contact'
     | '/credentials'
     | '/mcp'
@@ -248,6 +252,7 @@ declare module '@tanstack/react-router' {
     '/admin': { id: '/admin'; path: '/admin'; fullPath: '/admin'; preLoaderRoute: typeof AdminRouteImport; parentRoute: typeof rootRouteImport }
     '/admin/studio': { id: '/admin/studio'; path: '/admin/studio'; fullPath: '/admin/studio'; preLoaderRoute: typeof AdminStudioRouteImport; parentRoute: typeof rootRouteImport }
     '/admin/preview': { id: '/admin/preview'; path: '/admin/preview'; fullPath: '/admin/preview'; preLoaderRoute: typeof AdminPreviewRouteImport; parentRoute: typeof rootRouteImport }
+    '/admin/design-system': { id: '/admin/design-system'; path: '/admin/design-system'; fullPath: '/admin/design-system'; preLoaderRoute: typeof AdminDesignSystemRouteImport; parentRoute: typeof rootRouteImport }
     '/contact': { id: '/contact'; path: '/contact'; fullPath: '/contact'; preLoaderRoute: typeof ContactRouteImport; parentRoute: typeof rootRouteImport }
     '/credentials': { id: '/credentials'; path: '/credentials'; fullPath: '/credentials'; preLoaderRoute: typeof CredentialsRouteImport; parentRoute: typeof rootRouteImport }
     '/mcp': { id: '/mcp'; path: '/mcp'; fullPath: '/mcp'; preLoaderRoute: typeof McpRouteImport; parentRoute: typeof rootRouteImport }
@@ -284,6 +289,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute,
   AdminStudioRoute,
   AdminPreviewRoute,
+  AdminDesignSystemRoute,
   ContactRoute,
   CredentialsRoute,
   McpRoute,
