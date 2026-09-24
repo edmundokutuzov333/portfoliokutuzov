@@ -20,7 +20,7 @@ export function WaitlistForm() {
     try {
       const result = await subscribe({ data: { ...values, source: "studio", consent: true } });
       reset();
-      if (result.alreadySubscribed) toast("That email is already on the list.");
+      if ("alreadySubscribed" in result && result.alreadySubscribed) toast("That email is already on the list.");
       else if ("pendingConfirmation" in result || "pendingEmail" in result) toast("Check your inbox to confirm your subscription.");
       else toast("You're on the list.");
     } catch {
