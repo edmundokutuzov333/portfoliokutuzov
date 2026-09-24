@@ -414,9 +414,6 @@ function ReferenceBlock() {
             <p className="font-cartaz text-[clamp(7rem,23vw,24rem)] font-extrabold leading-[0.72] tracking-[-0.08em] text-[#f2f2ef]">
               {reference}
             </p>
-            <p className="mt-10 max-w-2xl font-livro text-xl leading-[1.55] text-[#b9b7b0]">
-              The reference remains part of the existing content system and is presented without decorative ghost lettering.
-            </p>
           </div>
         </div>
       </div>
