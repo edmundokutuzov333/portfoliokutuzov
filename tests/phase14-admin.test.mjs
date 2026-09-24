@@ -81,5 +81,5 @@ test("Phase 14 Admin Studio stays out of indexing and keeps internal component l
 test("Phase 14 public submission code no longer inserts booking directly", async()=>{
   const modal=await read("src/components/contact/BookingModal.tsx");
   assert.doesNotMatch(modal,/from\("booking_requests"\)\.insert/);
-  assert.match(modal,/submit_booking_request/);
+  assert.match(modal,/fetch\("\/api\/booking\/submit"/);
 });
