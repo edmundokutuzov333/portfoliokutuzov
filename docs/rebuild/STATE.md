@@ -163,7 +163,8 @@ Phase 3 technical scope was executed on awwwards-rebuild without applying public
 - No change to the protected Reel component.
 
 ### Gate status
-- Contrast token gate: designed to PASS; external runner execution is still unavailable.
+- Contrast token gate: PASS by deterministic token calculation in the committed script; external GitHub runner execution is still unavailable.
+- Vercel code-bearing Phase 3 commit ec5f44bf6fc0ef3db669c1dc65a82335c80dd536 reached READY in deployment dpl_27wQDxu3JZ6xscwuvKTSpGVeynty. Later commits only updated documentation/state and were queued.
 - Lint/typecheck/npm test/Playwright: NOT CLAIMED GREEN without runner evidence.
 - Gate de Mudança: NOT APPLICABLE because Phase 3 does not change public composition.
 - Phase 3: BLOCKED-EXTERNAL because Fases 1 and 2 are still BLOCKED-EXTERNAL and no green tags exist.
