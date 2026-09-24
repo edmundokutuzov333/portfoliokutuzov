@@ -71,6 +71,7 @@ import {
 } from "@/lib/admin.phase4.functions";
 
 import { toast } from "sonner";
+import { AdminMfaGate, AdminMfaSecurity } from "@/components/admin/AdminMfaSecurity";
 import {
   createAdminProject,
   createAdminProjectsBatch,
@@ -207,6 +208,9 @@ function ControlRoom() {
     );
   }
   if (!session || !isAdmin) return <LoginForm hasSession={!!session} />;
+  if (section === "users") {
+    // MFA setup remains inside the existing Users & Roles workspace; the gate below is global when enforced.
+  }
 
   const allItems = [
     { id: "overview" as const, label: "Overview", group: "CONTROL", Icon: LayoutDashboard, roles: ["owner", "admin", "editor", "finance"] },
@@ -307,13 +311,15 @@ function ControlRoom() {
       {section === "audit" && <AuditCenter />}
       {section === "system" && <SystemHealthCenter />}
       {section === "analytics" && <AnalyticsCenter />}
-      {section === "users" && <UsersRolesCenter />}
+      {section === "users" && <><UsersRolesCenter /><AdminMfaSecurity /></>}
       {section === "advanced" && <AdvancedControlCenter onNavigate={requestSection} />}
     </>
   );
 
+
   return (
-    <div className="min-h-screen bg-[#01040A] text-slate-200 flex">
+    <AdminMfaGate>
+      <div className="min-h-screen bg-[#01040A] text-slate-200 flex">
       <a
         href="#control-room-main"
         className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[140] focus:rounded-lg focus:bg-sky-300 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-[#01040A]"
