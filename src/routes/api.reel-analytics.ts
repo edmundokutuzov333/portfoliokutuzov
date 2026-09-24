@@ -27,6 +27,7 @@ function hashIp(ip: string, date: string, secret: string) {
   return createHash("sha256").update(secret + ":" + date + ":" + ip).digest("hex");
 }
 
+// @ts-expect-error Server-only TanStack route is intentionally outside generated FileRoutesByPath.
 export const Route = createFileRoute("/api/reel-analytics")({
   server: {
     handlers: {
