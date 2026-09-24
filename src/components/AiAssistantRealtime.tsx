@@ -262,6 +262,7 @@ export function AiAssistantRealtime() {
       return;
     }
     if (action === "open_contact" || action === "start_brief") {
+      trackEvent({ action: "ai_handoff", element: "realtime_assistant", meta: { action } });
       const url = typeof payload?.url === "string" ? payload.url : "/contact";
       window.location.assign(url);
       return;
