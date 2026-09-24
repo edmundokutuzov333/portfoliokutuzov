@@ -999,3 +999,37 @@ No `phase-15-green`, no `pre-release-YYYYMMDD`, no merge to `main`, no productio
 - merge to main: not executed.
 - production deployment: not executed.
 - Phase 15: BLOCKED-EXTERNAL under R1/R3.
+
+
+## Phase 15 — final release gate closeout
+
+- HEAD assessed: `aaca4ad3e67c7ab64403c74c596091c5c2d22ea7`.
+- Status: **BLOCKED-EXTERNAL**.
+- Production promotion: **not executed**.
+- Main merge: **not executed**.
+- `phase-15-green`: **not created**.
+- `pre-release-20260924`: **not created**.
+- Production DB writes: 0.
+- Production Storage writes: 0.
+
+### Verified
+- Typecheck: PASS.
+- Production build: PASS.
+- ESLint: PASS.
+- Regression suite: PASS.
+- Contrast gate: PASS.
+- Foundation parity: PASS.
+- Foundation change gate: PASS.
+- Security gates: PASS — npm audit + Gitleaks.
+- Safe rate-limit/load smoke: PASS.
+- Awwwards Capture: PASS.
+
+### Blocking
+- Supabase Backup: FAILURE; reversible production backup is not confirmed, so R1 blocks release.
+- Lighthouse desktop Home Performance: **0.75**, below required **0.90**.
+- Performance budget: FAIL — ~437–443 KB gzip critical JS and ~222 KB gzip fonts against 170 KB / 120 KB limits.
+- Browser QA cross-browser workflow had not reached GREEN at closeout.
+- Phase 1 live-production HTTP audit still reports 6 SEO/canonical failures against the current production origin, with 0 network/5xx, 0 noindex, 0 redirect and 0 missing-route failures.
+
+### Final decision
+The release gate remains closed. No threshold was weakened, no production data was mutated to manufacture evidence, and no promotion was attempted.
