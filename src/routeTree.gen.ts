@@ -10,6 +10,13 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PtRouteImport } from './routes/pt'
+import { Route as PtPortfolioRouteImport } from './routes/pt.portfolio'
+import { Route as PtServicesRouteImport } from './routes/pt.services'
+import { Route as PtCredentialsRouteImport } from './routes/pt.credentials'
+import { Route as PtContactRouteImport } from './routes/pt.contact'
+import { Route as PtStudioRouteImport } from './routes/pt.studio'
+import { Route as PtPortfolioSlugRouteImport } from './routes/pt.portfolio.$slug'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AdminStudioRouteImport } from './routes/admin.studio'
 import { Route as AdminPreviewRouteImport } from './routes/admin.preview'
@@ -44,6 +51,13 @@ import { Route as CardTokenRouteImport } from './routes/card.$token'
 import { Route as StudioIdentityRouteImport } from './routes/studio.identity'
 
 const IndexRoute = IndexRouteImport.update({ id: '/', path: '/', getParentRoute: () => rootRouteImport } as any)
+const PtRoute = PtRouteImport.update({ id: '/pt', path: '/pt', getParentRoute: () => rootRouteImport } as any)
+const PtPortfolioRoute = PtPortfolioRouteImport.update({ id: '/pt/portfolio', path: '/pt/portfolio', getParentRoute: () => rootRouteImport } as any)
+const PtServicesRoute = PtServicesRouteImport.update({ id: '/pt/services', path: '/pt/services', getParentRoute: () => rootRouteImport } as any)
+const PtCredentialsRoute = PtCredentialsRouteImport.update({ id: '/pt/credentials', path: '/pt/credentials', getParentRoute: () => rootRouteImport } as any)
+const PtContactRoute = PtContactRouteImport.update({ id: '/pt/contact', path: '/pt/contact', getParentRoute: () => rootRouteImport } as any).lazy(() => import('./routes/pt.contact').then((d) => d.Route))
+const PtStudioRoute = PtStudioRouteImport.update({ id: '/pt/studio', path: '/pt/studio', getParentRoute: () => rootRouteImport } as any)
+const PtPortfolioSlugRoute = PtPortfolioSlugRouteImport.update({ id: '/pt/portfolio/$slug', path: '/pt/portfolio/$slug', getParentRoute: () => rootRouteImport } as any)
 const AdminRoute = AdminRouteImport.update({ id: '/admin', path: '/admin', getParentRoute: () => rootRouteImport } as any).lazy(() => import('./routes/admin.lazy').then((d) => d.Route))
 const AdminStudioRoute = AdminStudioRouteImport.update({ id: '/admin/studio', path: '/admin/studio', getParentRoute: () => rootRouteImport } as any)
 const AdminPreviewRoute = AdminPreviewRouteImport.update({ id: '/admin/preview', path: '/admin/preview', getParentRoute: () => rootRouteImport } as any)
@@ -80,6 +94,13 @@ const StudioIdentityRoute = StudioIdentityRouteImport.update({ id: '/studio/iden
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/pt': typeof PtRoute
+  '/pt/portfolio': typeof PtPortfolioRoute
+  '/pt/services': typeof PtServicesRoute
+  '/pt/credentials': typeof PtCredentialsRoute
+  '/pt/contact': typeof PtContactRoute
+  '/pt/studio': typeof PtStudioRoute
+  '/pt/portfolio/$slug': typeof PtPortfolioSlugRoute
   '/admin/studio': typeof AdminStudioRoute
   '/admin/preview': typeof AdminPreviewRoute
   '/admin/design-system': typeof AdminDesignSystemRoute
@@ -148,6 +169,13 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/pt'
+    | '/pt/portfolio'
+    | '/pt/services'
+    | '/pt/credentials'
+    | '/pt/contact'
+    | '/pt/studio'
+    | '/pt/portfolio/$slug'
     | '/admin/studio'
     | '/admin/preview'
     | '/admin/design-system'
@@ -250,6 +278,13 @@ declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
     '/': { id: '/'; path: '/'; fullPath: '/'; preLoaderRoute: typeof IndexRouteImport; parentRoute: typeof rootRouteImport }
     '/admin': { id: '/admin'; path: '/admin'; fullPath: '/admin'; preLoaderRoute: typeof AdminRouteImport; parentRoute: typeof rootRouteImport }
+    '/pt': { id: '/pt'; path: '/pt'; fullPath: '/pt'; preLoaderRoute: typeof PtRouteImport; parentRoute: typeof rootRouteImport }
+    '/pt/portfolio': { id: '/pt/portfolio'; path: '/pt/portfolio'; fullPath: '/pt/portfolio'; preLoaderRoute: typeof PtPortfolioRouteImport; parentRoute: typeof rootRouteImport }
+    '/pt/services': { id: '/pt/services'; path: '/pt/services'; fullPath: '/pt/services'; preLoaderRoute: typeof PtServicesRouteImport; parentRoute: typeof rootRouteImport }
+    '/pt/credentials': { id: '/pt/credentials'; path: '/pt/credentials'; fullPath: '/pt/credentials'; preLoaderRoute: typeof PtCredentialsRouteImport; parentRoute: typeof rootRouteImport }
+    '/pt/contact': { id: '/pt/contact'; path: '/pt/contact'; fullPath: '/pt/contact'; preLoaderRoute: typeof PtContactRouteImport; parentRoute: typeof rootRouteImport }
+    '/pt/studio': { id: '/pt/studio'; path: '/pt/studio'; fullPath: '/pt/studio'; preLoaderRoute: typeof PtStudioRouteImport; parentRoute: typeof rootRouteImport }
+    '/pt/portfolio/$slug': { id: '/pt/portfolio/$slug'; path: '/pt/portfolio/$slug'; fullPath: '/pt/portfolio/$slug'; preLoaderRoute: typeof PtPortfolioSlugRouteImport; parentRoute: typeof rootRouteImport }
     '/admin/studio': { id: '/admin/studio'; path: '/admin/studio'; fullPath: '/admin/studio'; preLoaderRoute: typeof AdminStudioRouteImport; parentRoute: typeof rootRouteImport }
     '/admin/preview': { id: '/admin/preview'; path: '/admin/preview'; fullPath: '/admin/preview'; preLoaderRoute: typeof AdminPreviewRouteImport; parentRoute: typeof rootRouteImport }
     '/admin/design-system': { id: '/admin/design-system'; path: '/admin/design-system'; fullPath: '/admin/design-system'; preLoaderRoute: typeof AdminDesignSystemRouteImport; parentRoute: typeof rootRouteImport }
@@ -287,6 +322,13 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute,
   AdminRoute,
+  PtRoute,
+  PtPortfolioRoute,
+  PtServicesRoute,
+  PtCredentialsRoute,
+  PtContactRoute,
+  PtStudioRoute,
+  PtPortfolioSlugRoute,
   AdminStudioRoute,
   AdminPreviewRoute,
   AdminDesignSystemRoute,
