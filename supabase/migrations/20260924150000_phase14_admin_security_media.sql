@@ -6,7 +6,9 @@ alter table public.admin_users
 
 alter table public.media_assets
   add column if not exists dominant_color text,
+  add column if not exists optimized_webp_path text,
   add column if not exists optimized_webp_url text,
+  add column if not exists optimized_avif_path text,
   add column if not exists optimized_avif_url text,
   add column if not exists optimized_width integer,
   add column if not exists optimized_height integer;
