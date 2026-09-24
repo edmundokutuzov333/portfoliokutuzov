@@ -235,3 +235,12 @@ A medição formal de screenshot edge-diff depende do runner externo.
 ## Estado
 
 A Fase 13 está implementada em código mas permanece BLOCKED-EXTERNAL sob R1/R3 até existirem backup, runner e edge-diff verificáveis.
+## Addendum — CI diagnostic cycles
+
+Ciclo 1 do typecheck encontrou um erro directamente introduzido pela Fase 13 em src/lib/ai/agent.ts: outputBudget era referenciado dentro do stream sem estar no scope. Commit c0e8ce3bdb72785616ee8351d4ecf2fd64bf49c2 corrigiu o scope.
+
+Ciclo 2 do typecheck confirmou que não existem erros restantes directamente na camada AI da Fase 13. Os erros reportados continuam concentrados nos defeitos históricos de Admin/Home/Portfolio/API já registados em fases anteriores: Phase2WebsiteCMS restore, HomePhase5 effect cleanup, CaseStudyPage darkWork/foreground, PortfolioArchive, PortfolioGrid, cinematic-portfolio-reel, admin.functions, case-study.server, site-locale-completion e FileRoutesByPath/API casts.
+
+O Browser QA do HEAD c0e8ce3bdb72785616ee8351d4ecf2fd64bf49c2 estava em execução no momento do fecho deste relatório, após npm ci, instalação do Playwright e instalação dos browsers; não foi certificado GREEN.
+
+O Supabase Backup correspondente ao HEAD continua a concluir com failure. Nenhuma migration foi aplicada.
