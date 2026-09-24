@@ -14,8 +14,8 @@ import { createSeo, SITE_ORIGIN, socialImageUrl } from "@/lib/seo";
 import { trackPageView } from "@/lib/analytics";
 import { installSiteLocaleDomBridge } from "@/lib/site-locale";
 import appCss from "../styles.css?url";
-import "@fontsource-variable/archivo/wdth.css";
-import "@fontsource-variable/newsreader/opsz.css";
+import "@fontsource-variable/archivo/wght.css";
+import "@fontsource-variable/newsreader/wght.css";
 import "../styles/global-shell.css";
 
 interface RouterContext {
