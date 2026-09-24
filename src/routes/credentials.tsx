@@ -2,7 +2,7 @@ import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowUpRight, CheckCircle2, Globe, Mail, MapPin, Phone } from "lucide-react";
-import { useSiteSettings, useClients, useStats, useMethod } from "@/hooks/useSiteData";
+import { useSiteSettings, useClients, useStats } from "@/hooks/useSiteData";
 import { readSetting } from "@/lib/cms";
 import { Manifesto } from "@/components/home/Manifesto";
 import { createSeo } from "@/lib/seo";
@@ -83,7 +83,6 @@ export function CredentialsPage() {
   const { data: settings } = useSiteSettings();
   const { data: clients = [] } = useClients();
   const { data: stats = [] } = useStats();
-  const { data: methods = [] } = useMethod();
   const reducedMotion = useReducedMotion();
 
   const legacy = <T,>(f: string, fb: T) => readSetting<T>(settings, "about", f, fb);
@@ -373,26 +372,19 @@ export function CredentialsPage() {
         </div>
       </section>
 
-      {/* 4B. METHOD */}
-      {methods.length > 0 && (
-        <section className="relative px-4 md:px-8 py-24 border-t border-white/[0.08]">
-          <div className="max-w-[var(--width-wide)] mx-auto">
-            <div className="mb-12 pb-6 border-b border-white/[0.08]">
-              <p className="mono text-[10px] tracking-[0.28em] text-sky-300/80 uppercase">Method</p>
-              <h2 className="display text-3xl md:text-5xl text-white mt-2 tracking-tight">How the studio works.</h2>
-            </div>
-            <div className="divide-y divide-white/[0.08]">
-              {methods.map((method) => (
-                <div key={method.id} className="grid gap-5 py-7 md:grid-cols-[100px_1fr_2fr]">
-                  <div className="mono text-xs tracking-[0.2em] text-sky-300">{method.number}</div>
-                  <h3 className="display text-2xl text-white">{method.title}</h3>
-                  <p className="text-sm md:text-base leading-relaxed text-slate-400">{method.description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+      <section className="relative px-4 md:px-8 py-10 border-t border-white/[0.08]">
+        <div className="max-w-[var(--width-wide)] mx-auto">
+          <Link
+            to="/services"
+            className="inline-flex min-h-11 items-center border-b-2 border-white px-0 py-2 text-sm font-semibold text-white hover:text-sky-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-300"
+          >
+            Explore Services
+          </Link>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400">
+            The service offer and studio method are documented on the Services page.
+          </p>
+        </div>
+      </section>
 
       {/* 4. CAPABILITIES HIERARCHY */}
       <section className="relative px-4 md:px-8 py-20 border-t border-white/[0.08] bg-[#02050c]">
