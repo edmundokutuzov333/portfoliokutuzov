@@ -1034,9 +1034,10 @@ function Field({
   error?: string;
   children: React.ReactNode;
 }) {
-  const id = React.Children.toArray(children)
-    .map((child) => (React.isValidElement(child) ? child.props.id : ""))
-    .find(Boolean);
+  const firstChild = React.Children.toArray(children).find(React.isValidElement);
+  const id = firstChild
+    ? (firstChild as React.ReactElement<{ id?: string }>).props.id
+    : undefined;
 
   return (
     <div>
