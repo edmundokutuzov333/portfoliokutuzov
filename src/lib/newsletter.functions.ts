@@ -5,6 +5,7 @@ import { z } from "zod";
 import { resolvePublicSiteUrl } from "@/config/server";
 
 const RESEND_GATEWAY = "https://connector-gateway.lovable.dev/resend";
+const UNIFIED_NEWSLETTER_ENABLED = process.env.UNIFIED_NEWSLETTER_ENABLED === "true";
 const RATE_WINDOW_MS = 10 * 60 * 1000;
 const RATE_MAX = 5;
 const rateLimits = new Map<string, { count: number; resetAt: number }>();
@@ -103,6 +104,39 @@ export const subscribeNewsletter = createServerFn({ method: "POST" })
 
     const { supabaseAdmin } = await import("@/integrations/supabase/server/index.server");
     const source = normalizeSource(data.source);
+
+    // Keep the current production schema safe until the additive Phase 4
+    // migration is applied and explicitly enabled by deployment configuration.
+    if (!UNIFIED_NEWSLETTER_ENABLED) {
+      const { data: existingLegacy } = await supabaseAdmin
+        .from("newsletter_subscribers")
+        .select("id,is_active")
+        .eq("email", data.email)
+        .maybeSingle();
+
+      if (existingLegacy) {
+        await supabaseAdmin
+          .from("newsletter_subscribers")
+          .update({
+            is_active: true,
+            name: data.name ?? null,
+            source,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", existingLegacy.id);
+        return { ok: true, alreadySubscribed: true, legacySchema: true };
+      }
+
+      const { error: legacyError } = await supabaseAdmin.from("newsletter_subscribers").insert({
+        email: data.email,
+        name: data.name ?? null,
+        source,
+        consent: true,
+        is_active: true,
+      });
+      if (legacyError) throw new Error(legacyError.message);
+      return { ok: true, alreadySubscribed: false, legacySchema: true };
+    }
     const { data: existing } = await supabaseAdmin
       .from("newsletter_subscribers")
       .select("id,is_active,confirmed_at")
