@@ -57,7 +57,7 @@ jobs:
           echo $! > /tmp/phase15-lighthouse.pid
           node -e "const deadline=Date.now()+120000; (async function wait(){while(Date.now()<deadline){try{const r=await fetch('http://127.0.0.1:4173/'); if(r.status<500)process.exit(0)}catch{} await new Promise(r=>setTimeout(r,1000))} process.exit(1)})()"
           npx --yes --package autocannon@8.0.0 node scripts/phase15-lighthouse.mjs
-          kill $(cat /tmp/phase15-lighthouse.pid) || true
+          if test -f /tmp/phase15-lighthouse.pid; then kill "$(cat /tmp/phase15-lighthouse.pid)" 2>/dev/null || { code=$?; test "$code" -eq 1; }; fi
 
   load:
     name: Safe rate-limit load smoke
