@@ -133,7 +133,7 @@ const itemFadeUp: Variants = {
   },
 };
 
-function ProjectDetailPage() {
+export function ProjectDetailPage() {
   const { slug } = Route.useParams();
   const { data: rawProjects = [], isLoading } = useProjects();
 
