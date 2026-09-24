@@ -106,3 +106,16 @@ Phase 2 does not change public content or production data. All current content-c
 - reel_items is deliberately not created in Phase 3; the Reel schema remains owned by Phase 6.
 - The local colour backfill tool is an optional developer utility and is not part of the Vercel serverless runtime.
 
+
+
+## Phase 4 global shell boundary
+
+- Public routes now inherit a full-width global shell from the root route. The shell uses the Betão & Cor semantic layer without changing page-internal content contracts.
+- The global header derives its tone from the nearest visible section and keeps one primary action: Start a project.
+- Navigation uses TanStack Router View Transitions with a reduced-motion-safe fallback; no new animation dependency was added.
+- EN is the default locale. PT is exposed through /pt/* mirror routes that reuse the existing public components and data. The locale layer changes UI chrome, document language, canonical/hreflang metadata and route paths; public content is not translated without a real source.
+- Newsletter writes remain server-only. The Phase 4 double-opt-in schema is committed but migration-gated behind UNIFIED_NEWSLETTER_ENABLED until the required production backup gate is restored. Existing subscriber and Studio waitlist records are not deleted.
+- Availability is a site_settings source with an explicit Control Room editor. Public labels read this source and derive the year from the setting instead of embedding a fixed 2026 date.
+- Command Palette keeps the existing server portfolio search and adds navigation, recent items stored only in browser localStorage, Start a project, language switching and an AI assistant open action.
+- SEO includes canonical URLs, EN/PT hreflang, sitemap entries for both locale families, a public Studio crawl path, WebSite/Person/ProfilePage structured data and route-level WebPage/ProfilePage/Article synchronization.
+- Fonts for the new shell are self-hosted Archivo Variable and Newsreader Variable. Remote Google Fonts are no longer loaded by the public root shell.
