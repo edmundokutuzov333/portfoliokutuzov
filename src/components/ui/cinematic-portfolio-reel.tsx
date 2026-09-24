@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/compone
 import { useProjects } from "@/hooks/useSiteData";
 import { type DbProject } from "@/lib/cms";
 import { darkenWorkColor, pickFg, setWorkColor } from "@/lib/work-color";
+import { trackEvent } from "@/lib/analytics";
 
 const DEFAULT_WORK = "#2f4bff";
 const RENDER_RADIUS = 5;
@@ -174,9 +175,16 @@ function ReelStage({
     [flush],
   );
 
+  const firstViewTracked = React.useRef(false);
   React.useEffect(() => {
     track(activeItem.id, "view");
-  }, [activeItem.id, track]);
+    if (!firstViewTracked.current) {
+      trackEvent({ action: "reel_view", element: "cinematic_portfolio_reel" });
+      firstViewTracked.current = true;
+    } else {
+      trackEvent({ action: "reel_select", element: "cinematic_portfolio_reel", meta: { project_id: activeItem.id, project_slug: activeItem.caseSlug } });
+    }
+  }, [activeItem.caseSlug, activeItem.id, track]);
 
   React.useEffect(() => {
     const onPageHide = () => flush();
@@ -252,6 +260,7 @@ function ReelStage({
       event.preventDefault();
       setCinema(true);
       track(activeItem.id, "open");
+      trackEvent({ action: "reel_open", element: "cinematic_portfolio_reel", meta: { project_id: activeItem.id, project_slug: activeItem.caseSlug } });
     }
   };
 
