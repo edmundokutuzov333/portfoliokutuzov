@@ -55,7 +55,8 @@ export function Footer() {
   const copyright = readSetting(settings, "global", "copyright", copy.allRights);
   const availability = readSetting(settings, "availability", "enabled", true);
   const availabilityLabel = readSetting(settings, "availability", "label", locale === "pt-PT" ? "Disponível para projectos" : "Available for projects");
-  const availabilityYear = readSetting(settings, "availability", "year", new Date().getFullYear());\n  const isHome = pathname === localizePath("/", locale);
+  const availabilityYear = readSetting(settings, "availability", "year", new Date().getFullYear());
+  const isHome = pathname === localizePath("/", locale);
   const homeClosing = "Tell me what you're building. I'll show you how to make it impossible to ignore.";
 
 
