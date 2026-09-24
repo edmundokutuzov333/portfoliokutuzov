@@ -1,3 +1,4 @@
+import { ReelManager } from "@/components/admin/ReelManager";
 import { ContentRegistryManager } from "@/components/admin/ContentRegistryManager";
 import { createLazyFileRoute } from "@tanstack/react-router";
 import { lazy, Suspense, useEffect, useMemo, useState, type ReactNode } from "react";
@@ -225,6 +226,7 @@ function ControlRoom() {
     { id: "availability" as const, label: "Availability", group: "WEBSITE", Icon: Globe2, roles: ["owner", "admin", "editor"] },
     { id: "global" as const, label: "Global Settings", group: "WEBSITE", Icon: Settings2, roles: ["owner", "admin", "editor"] },
     { id: "portfolio" as const, label: "Portfolio", group: "CONTENT", Icon: Briefcase, roles: ["owner", "admin", "editor"] },
+    { id: "reel" as const, label: "Selected Reel", group: "CONTENT", Icon: Play, roles: ["owner", "admin", "editor"] },
     { id: "clients" as const, label: "Clients", group: "CONTENT", Icon: Users, roles: ["owner", "admin", "editor"] },
     { id: "media" as const, label: "Media", group: "CONTENT", Icon: ImageIcon, roles: ["owner", "admin", "editor"] },
     { id: "contentRegistry" as const, label: "Structured Content", group: "CONTENT", Icon: FileText, roles: ["owner", "admin", "editor"] },
@@ -289,6 +291,7 @@ function ControlRoom() {
       {section === "contentRegistry" && <ContentRegistryManager />}
       {section === "clients" && <ClientsManager />}
       {section === "portfolio" && <PortfolioManager />}
+      {section === "reel" && <ReelManager />}
       {section === "about" && <AboutManager />}
       {section === "contact" && <ContactManager />}
       {section === "inbox" && <InboxHub />}
