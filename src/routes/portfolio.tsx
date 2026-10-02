@@ -17,7 +17,7 @@ export const Route = createFileRoute("/portfolio")({
   component: PortfolioPage,
 });
 
-export function PortfolioPage() {
+function PortfolioPage() {
   return (
     <section className="relative px-4 pt-48 pb-32 md:px-8" aria-labelledby="portfolio-title">
       <div className="mx-auto max-w-[var(--width-wide)]">
