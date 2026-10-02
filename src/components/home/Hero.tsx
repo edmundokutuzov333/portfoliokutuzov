@@ -10,6 +10,8 @@ const EASE_EDITORIAL: [number, number, number, number] = [0.16, 1, 0.3, 1];
 export function Hero() {
   const { data: settings } = useSiteSettings();
   const r = <T,>(f: string, fb: T) => readSetting<T>(settings, "hero", f, fb);
+  const primaryRoute = r("cta_primary_route", "/portfolio");
+  const secondaryRoute = r("cta_secondary_route", "/contact");
   return (
     <section className="relative pt-12 pb-20 px-4 md:px-8 flex flex-col justify-center bg-[var(--color-bg)]">
       <div className="max-w-[var(--width-wide)] mx-auto w-full relative z-10">
@@ -112,9 +114,9 @@ export function Hero() {
             </motion.div>
 
             <div className="flex items-center gap-4">
-              <ShinyButton to="/portfolio">{r("cta_primary", "Explore work")}</ShinyButton>
+              <ShinyButton to={primaryRoute}>{r("cta_primary", "Explore work")}</ShinyButton>
               <Link
-                to="/contact"
+                to={secondaryRoute}
                 className="group flex h-12 w-12 items-center justify-center rounded-full border border-[var(--color-border-base)] bg-[var(--color-surface)] text-[var(--color-text-primary)] transition-colors hover:border-[var(--color-accent-hover)] hover:bg-[var(--color-accent-subtle)]"
                 aria-label="Start a project"
               >
