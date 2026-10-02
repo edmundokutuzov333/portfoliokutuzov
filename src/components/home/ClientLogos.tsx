@@ -8,6 +8,8 @@ export function ClientLogos() {
   const { data: clients = [] } = useClients();
   const r = <T,>(f: string, fb: T) => readSetting<T>(settings, "clients_section", f, fb);
   const title = r("title", "Brands and teams\nI have worked with.");
+  const limit = Math.max(1, Math.min(100, Number(r("max_items", clients.length || 16))));
+  const visibleClients = clients.slice(0, limit);
 
   return (
     <section
@@ -49,7 +51,7 @@ export function ClientLogos() {
           </div>
         </div>
 
-        <CinematicLogoCloud clients={clients} className="mt-8 md:mt-12" />
+        <CinematicLogoCloud clients={visibleClients} className="mt-8 md:mt-12" />
       </div>
     </section>
   );
