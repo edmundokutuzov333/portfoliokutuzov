@@ -119,6 +119,14 @@ function ContactPage() {
   const email = r("email", SITE_EMAIL);
   const phone = r("phone", SITE_PHONE);
   const bookingUrl = r("booking_url", "");
+  const resolvedSubtitle =
+    typeof r("subtitle", "") === "string" &&
+    String(r("subtitle", "")).includes("initial process proposal")
+      ? "Tell me what you're building. I respond within 48 hours, with an initial read on the project and a clear path forward."
+      : r(
+          "subtitle",
+          "Tell me what you're building. I respond within 48 hours, with an initial read on the project and a clear path forward.",
+        );
 
   // Form State
   const [step, setStep] = useState(1);
@@ -408,10 +416,7 @@ function ContactPage() {
                 transition={{ duration: 0.8, delay: 0.2 }}
                 className="mt-6 text-[15px] md:text-[16px] text-slate-300 leading-relaxed"
               >
-                {r(
-                  "subtitle",
-                  "Tell me about your project, vision, and timeline. I review every submission personally and respond within 48 hours.",
-                )}
+                {resolvedSubtitle}
               </motion.p>
             </div>
 
