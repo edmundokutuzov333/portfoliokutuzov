@@ -3,35 +3,114 @@ import { useState, useRef } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { Link } from "@tanstack/react-router";
 import { ArrowUpRight, Check, Sparkles } from "lucide-react";
-import { useProjects, useServices } from "@/hooks/useSiteData";
+import { useProjects } from "@/hooks/useSiteData";
 import { type DbProject } from "@/lib/cms";
 
-import { STATIC_DISCIPLINES, type Discipline } from "@/data/disciplines";
+export interface Discipline {
+  id: string;
+  number: string;
+  title: string;
+  tagline: string;
+  description: string;
+  tags: string[];
+  deliverables: string[];
+  projectMatcher: (p: DbProject) => boolean;
+  defaultProjectTitle: string;
+}
+
+const DISCIPLINES: Discipline[] = [
+  {
+    id: "identity",
+    number: "01",
+    title: "Identity Visual",
+    tagline: "Strategic brand marks, typography systems & identity architecture",
+    description:
+      "Transforming strategic brand intent into unmistakable visual form. Developing comprehensive visual grammar, logo systems, bespoke typographic pairings, colour scales, and rigorous brand guideline books built for permanence.",
+    tags: ["Brand Identity", "Visual Grammar", "Typography", "Guidelines"],
+    deliverables: [
+      "Brand Architecture & Strategy",
+      "Logo Marks & Symbol Systems",
+      "Custom Typographic Scales",
+      "Comprehensive Identity Guidelines",
+    ],
+    projectMatcher: (p) =>
+      p.category === "Brand Identity" ||
+      p.category === "Web Design" ||
+      p.title.toLowerCase().includes("emose") ||
+      p.title.toLowerCase().includes("cardoso"),
+    defaultProjectTitle: "EMOSE",
+  },
+  {
+    id: "art-direction",
+    number: "02",
+    title: "Art Direction",
+    tagline: "Campaign conception, visual storytelling & photography direction",
+    description:
+      "Crafting the visual soul of campaigns and brand narratives. Directing photography, set styling, cinematic color grading, and commercial rollout systems that stop scrolling and demand attention across national and global markets.",
+    tags: ["Campaign Design", "Photography Direction", "Commercial Rollout", "Visual Hierarchy"],
+    deliverables: [
+      "Campaign Visual Concepts",
+      "Photography & Video Treatments",
+      "Master Key Visuals (KV)",
+      "Multi-Channel Rollout Systems",
+    ],
+    projectMatcher: (p) =>
+      p.category === "Ad Campaigns" ||
+      p.category === "Videos" ||
+      p.title.toLowerCase().includes("absa") ||
+      p.title.toLowerCase().includes("flying fish") ||
+      p.title.toLowerCase().includes("multichoice"),
+    defaultProjectTitle: "Absa",
+  },
+  {
+    id: "editorial",
+    number: "03",
+    title: "Editorial & Print",
+    tagline: "Tactile publications, large-format OOH & packaging design",
+    description:
+      "Bringing precision and rhythm to tangible media. Editorial compositions, annual reports, large-format outdoor billboards, product packaging, and tactile print production oversight engineered with uncompromising typographic restraint.",
+    tags: ["Publication Design", "OOH Billboards", "Packaging", "Print Production"],
+    deliverables: [
+      "Editorial Books & Publications",
+      "Large-Format OOH & Billboards",
+      "Packaging & Structural Design",
+      "Print Production & Finish Specs",
+    ],
+    projectMatcher: (p) =>
+      p.category === "Offline Actions" ||
+      p.title.toLowerCase().includes("totalenergies") ||
+      p.title.toLowerCase().includes("automotive") ||
+      p.tags.some((t) => t.toLowerCase().includes("print")),
+    defaultProjectTitle: "TotalEnergies",
+  },
+  {
+    id: "digital",
+    number: "04",
+    title: "Digital Design",
+    tagline: "Social-first content engines, motion assets & digital systems",
+    description:
+      "Designing modular digital ecosystems for continuous brand momentum. Social-first publication engines, UI/UX aesthetics, digital campaign kits, dynamic motion graphics, and interactive web interfaces optimized for high engagement.",
+    tags: ["Social Systems", "Digital Campaign Kits", "Motion Assets", "UI Design Systems"],
+    deliverables: [
+      "Social-First Content Systems",
+      "Dynamic Motion Language",
+      "Digital Design Systems",
+      "Interactive Web Experiences",
+    ],
+    projectMatcher: (p) =>
+      p.category === "Social Media" ||
+      p.category === "Digital Design" ||
+      p.title.toLowerCase().includes("vodacom") ||
+      p.title.toLowerCase().includes("multichoice"),
+    defaultProjectTitle: "Vodacom",
+  },
+];
+
 const EASE_EDITORIAL = [0.16, 1, 0.3, 1] as const;
 
 export function ServicesInteractive() {
   const { data: projects = [] } = useProjects();
-  const { data: services = [] } = useServices();
-  const disciplines = React.useMemo<Discipline[]>(() => {
-    if (!services.length) return STATIC_DISCIPLINES;
-    return services.map((service, index) => {
-      const base = STATIC_DISCIPLINES[index] || STATIC_DISCIPLINES[0];
-      return {
-        ...base,
-        id: service.id,
-        number: service.number || String(index + 1).padStart(2, "0"),
-        title: service.title,
-        tagline: (service.description || base.tagline).split(/[.!?]/)[0],
-        description: service.description || base.description,
-      };
-    });
-  }, [services]);
-  const [activeId, setActiveId] = useState<string>(STATIC_DISCIPLINES[0].id);
-  React.useEffect(() => {
-    if (disciplines.length && !disciplines.some((item) => item.id === activeId)) {
-      setActiveId(disciplines[0].id);
-    }
-  }, [disciplines, activeId]);
+  const [activeId, setActiveId] = useState<string>(DISCIPLINES[0].id);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const reducedMotion = useReducedMotion();
 
@@ -51,7 +130,7 @@ export function ServicesInteractive() {
   };
 
   const currentId = hoveredId || activeId;
-  const currentDiscipline = disciplines.find((d) => d.id === currentId) || disciplines[0];
+  const currentDiscipline = DISCIPLINES.find((d) => d.id === currentId) || DISCIPLINES[0];
 
   // Resolve matching real project from portfolio
   const matchedProject = React.useMemo(() => {
@@ -122,7 +201,7 @@ export function ServicesInteractive() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
           {/* LEFT: Disciplines Interactive List (7 cols) */}
           <div className="lg:col-span-7 flex flex-col space-y-4">
-            {disciplines.map((discipline) => {
+            {DISCIPLINES.map((discipline) => {
               const isHovered = hoveredId === discipline.id;
               const isActive = currentId === discipline.id;
               const isOtherHovered = hoveredId !== null && !isHovered;
@@ -260,7 +339,7 @@ export function ServicesInteractive() {
                   </span>
                 </div>
                 <span className="mono text-[10px] tracking-[0.15em] text-sky-300 font-semibold uppercase">
-                  {currentDiscipline.number} / {String(disciplines.length).padStart(2, "0")}
+                  {currentDiscipline.number} / 04
                 </span>
               </div>
 

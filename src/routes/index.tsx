@@ -4,6 +4,7 @@ import { DeferredReel } from "@/components/home/DeferredReel";
 import { CapabilitiesShort } from "@/components/home/CapabilitiesShort";
 import { ClientLogos } from "@/components/home/ClientLogos";
 import { HomeExperience } from "@/components/home/HomeExperience";
+import { FeaturedWork } from "@/components/home/FeaturedWork";
 import { HomeCTA } from "@/components/home/HomeCTA";
 import { createSeo } from "@/lib/seo";
 
@@ -18,13 +19,14 @@ export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
-export function HomePage() {
+function HomePage() {
   return (
     <>
       <DeferredReel />
       <Hero />
       <CapabilitiesShort />
       <ClientLogos />
+      <FeaturedWork />
       <HomeExperience />
       <HomeCTA />
     </>
