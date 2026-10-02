@@ -1,67 +1,133 @@
 import { Link } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { ArrowUpRight, Mail } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useSiteData";
-import { FALLBACK_NAVIGATION, readSetting, SITE_EMAIL } from "@/lib/cms";
+import { readSetting, SITE_EMAIL } from "@/lib/cms";
+import { NewsletterForm } from "@/components/contact/NewsletterForm";
+import { ShinyButton } from "@/components/ui/shiny-button";
 
-function getNavigation(raw: unknown) {
-  if (!Array.isArray(raw)) return FALLBACK_NAVIGATION;
-  const parsed = raw.map((item, index) => {
-    if (!item || typeof item !== "object") return null;
-    const row = item as Record<string, unknown>;
-    return {
-      id: typeof row.id === "string" ? row.id : "footer-" + String(index),
-      label: typeof row.label === "string" ? row.label : "",
-      route: typeof row.route === "string" ? row.route : "/",
-      order: typeof row.order === "number" ? row.order : index + 1,
-      visible: row.visible !== false,
-      external: row.external === true,
-      cta: row.cta === true,
-    };
-  }).filter(Boolean).filter((item) => item && item.label && item.visible && !item.cta) as typeof FALLBACK_NAVIGATION;
-  return parsed.length ? parsed.sort((a, b) => a.order - b.order) : FALLBACK_NAVIGATION.filter((item) => !item.cta);
-}
+const navLinks = [
+  { label: "Home", to: "/" as const },
+  { label: "Portfolio", to: "/portfolio" as const },
+  { label: "The Credentials", to: "/credentials" as const },
+  { label: "Contact", to: "/contact" as const },
+];
 
 export function Footer() {
   const { data: settings } = useSiteSettings();
-  const navigation = useMemo(() => getNavigation(readSetting<unknown>(settings, "navigation", "items", FALLBACK_NAVIGATION)), [settings]);
-  const footer = <T,>(field: string, fallback: T) => readSetting<T>(settings, "footer", field, fallback);
-  const social = <T,>(field: string, fallback: T) => readSetting<T>(settings, "social", field, fallback);
-  const email = String(readSetting(settings, "global", "email", footer("email", SITE_EMAIL)));
-  const copyright = String(readSetting(settings, "global", "copyright", "Edmundo Kutuzov. All rights reserved."));
+  const r = <T,>(f: string, fb: T) => readSetting<T>(settings, "footer", f, fb);
+  const s = <T,>(f: string, fb: T) => readSetting<T>(settings, "social", f, fb);
+  const email = r("email", SITE_EMAIL);
+
+  const socialLinks = [
+    { label: "Instagram", href: s("instagram", "#") },
+    { label: "LinkedIn", href: s("linkedin", "#") },
+    { label: "Facebook", href: s("facebook", "#") },
+  ];
 
   return (
-    <footer className="border-t border-[var(--color-border-subtle)] bg-[var(--color-bg)]">
-      <div className="mx-auto w-full max-w-[var(--width-standard)] px-4 py-16 md:px-8 md:py-24">
-        <div className="grid gap-12 md:grid-cols-2">
-          <div>
-            <p className="mono text-[10px] uppercase tracking-[0.2em] text-[var(--color-text-muted)]">Edmundo Kutuzov · Art Director</p>
-            <h2 className="display mt-5 max-w-3xl text-4xl leading-[0.95] tracking-[-0.03em] text-[var(--color-text-primary)] md:text-6xl">
-              {footer("title_1", "Available for")}{" "}
-              <span className="text-[var(--color-text-muted)]">{footer("title_2", "projects.")}</span>
-            </h2>
-            <a href={"mailto:" + email} className="mono mt-8 inline-block text-[10px] uppercase tracking-[0.18em] text-[var(--color-text-primary)] underline underline-offset-4">{email}</a>
+    <footer className="relative z-10 bg-[var(--color-bg)] pt-32 pb-12 border-t border-[var(--color-border-subtle)]">
+      <div className="mx-auto max-w-[var(--width-standard)] px-4 md:px-8">
+        {/* Top Section: CTA */}
+        <div className="grid md:grid-cols-12 gap-12 lg:gap-24 mb-32">
+          <div className="md:col-span-8 lg:col-span-9">
+            <p className="mono text-[10px] uppercase tracking-[0.2em] text-[var(--color-text-muted)] mb-8">
+              {r("eyebrow", "Edmundo Kutuzov — Art Director")}
+            </p>
+            <h3 className="display text-5xl md:text-7xl lg:text-[100px] leading-[0.95] tracking-[-0.03em] text-[var(--color-text-primary)]">
+              <span className="text-[var(--color-text-secondary)]">
+                {r("title_1", "Available for")}
+              </span>
+              <br />
+              <span className="text-[var(--color-text-primary)]">
+                {r("title_2", "projects in 2026.")}
+              </span>
+            </h3>
+
+            <div className="mt-12 flex flex-wrap items-center gap-4">
+              <ShinyButton to="/contact" className="!py-4 !px-8 !text-[14px]">
+                {r("cta", "Start a conversation")}
+                <ArrowUpRight
+                  size={16}
+                  strokeWidth={2}
+                  className="transition-transform group-hover:translate-x-1 group-hover:-translate-y-1"
+                />
+              </ShinyButton>
+              <a
+                href={`mailto:${email}`}
+                className="inline-flex items-center gap-3 rounded-full border border-[var(--color-border-base)] bg-[var(--color-surface)] px-8 py-4 text-[14px] text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-border-hover)] hover:text-[var(--color-text-primary)]"
+              >
+                <Mail size={16} strokeWidth={1.5} />
+                {email}
+              </a>
+            </div>
           </div>
-          <div className="grid grid-cols-2 gap-8 md:justify-self-end">
-            <div>
-              <p className="mono mb-4 text-[10px] uppercase tracking-[0.2em] text-[var(--color-text-muted)]">Navigation</p>
-              <ul className="space-y-3">
-                {navigation.map((item) => item.external
-                  ? <li key={item.id}><a href={item.route} target="_blank" rel="noreferrer" className="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]">{item.label}</a></li>
-                  : <li key={item.id}><Link to={item.route as never} className="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]">{item.label}</Link></li>
-                )}
-              </ul>
-            </div>
-            <div>
-              <p className="mono mb-4 text-[10px] uppercase tracking-[0.2em] text-[var(--color-text-muted)]">Socials</p>
-              <ul className="space-y-3">
-                {["instagram", "linkedin", "facebook"].map((key) => <li key={key}><a href={String(social(key, "#"))} target="_blank" rel="noreferrer" className="text-sm capitalize text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]">{key}</a></li>)}
-              </ul>
-            </div>
+
+          <div className="md:col-span-4 lg:col-span-3 flex flex-col justify-end">
+            <p className="mono text-[10px] uppercase tracking-[0.2em] text-[var(--color-text-muted)] mb-4">
+              Join the list
+            </p>
+            <NewsletterForm source="footer" compact />
           </div>
         </div>
-        <div className="mt-16 flex flex-col justify-between gap-3 border-t border-[var(--color-border-subtle)] pt-5 md:flex-row">
-          <p className="mono text-[9px] uppercase tracking-[0.16em] text-[var(--color-text-muted)]">© {new Date().getFullYear()} {copyright}</p>
-          <p className="mono text-[9px] uppercase tracking-[0.16em] text-[var(--color-text-muted)]">Maputo, Mozambique</p>
+
+        {/* Middle Section: Navigation */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 py-12 border-t border-[var(--color-border-subtle)]">
+          <div>
+            <p className="mono text-[10px] uppercase tracking-[0.2em] text-[var(--color-text-muted)] mb-6">
+              Navigation
+            </p>
+            <ul className="space-y-4 text-[14px] text-[var(--color-text-secondary)]">
+              {navLinks.map((link) => (
+                <li key={link.to}>
+                  <Link
+                    to={link.to}
+                    className="inline-block transition-colors hover:text-[var(--color-text-primary)]"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <p className="mono text-[10px] uppercase tracking-[0.2em] text-[var(--color-text-muted)] mb-6">
+              Socials
+            </p>
+            <ul className="space-y-4 text-[14px] text-[var(--color-text-secondary)]">
+              {socialLinks.map((link) => (
+                <li key={link.label}>
+                  <a
+                    href={link.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="group inline-flex items-center gap-2 transition-colors hover:text-[var(--color-text-primary)]"
+                  >
+                    {link.label}
+                    <ArrowUpRight
+                      size={14}
+                      strokeWidth={1.5}
+                      className="opacity-0 -translate-x-2 transition-all group-hover:opacity-100 group-hover:translate-x-0"
+                    />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="col-span-2 md:col-span-2 md:text-right flex flex-col justify-between">
+            <div className="max-w-xs ml-auto">
+              <p className="text-[13px] text-[var(--color-text-muted)] leading-relaxed italic mb-8">
+                "Design is not just what it looks like and feels like. Design is how it works."
+              </p>
+            </div>
+
+            <p className="mono text-[10px] uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
+              © {new Date().getFullYear()} Edmundo Kutuzov.
+              <br />
+              All rights reserved. The only one.
+            </p>
+          </div>
         </div>
       </div>
     </footer>

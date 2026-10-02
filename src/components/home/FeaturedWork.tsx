@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import { useProjects, useSiteSettings } from "@/hooks/useSiteData";
-import { MAX_FEATURED, readSetting, type DbProject } from "@/lib/cms";
+import { getProjectVisualUrl, MAX_FEATURED, readSetting, type DbProject } from "@/lib/cms";
 import clsx from "clsx";
 function pickFeatured(projects: DbProject[] | undefined) {
   if (!projects?.length) return [];
@@ -68,7 +68,7 @@ function FeaturedCard({ project, index }: { project: DbProject; index: number })
   const even = index % 2 === 0;
   const image = (
     <img
-      src={project.cover_url!}
+      src={getProjectVisualUrl(project)}
       alt={project.title}
       width={project.cover_width ?? undefined}
       height={project.cover_height ?? undefined}
@@ -94,7 +94,7 @@ function FeaturedCard({ project, index }: { project: DbProject; index: number })
           className="block focus-visible:outline-2 focus-visible:outline-[var(--color-accent-hover)]"
         >
           <div className="relative w-full overflow-hidden bg-[var(--color-surface)]">
-            {project.cover_url && image}
+            {image}
           </div>
           <div className="mt-6 md:mt-8 grid grid-cols-1 md:grid-cols-12 gap-4">
             <div className="md:col-span-8">
