@@ -28,6 +28,7 @@ const ProjectEntitySchema = lazy(() => import("@/components/ProjectEntitySchema"
 const ContextualRelatedWork = lazy(() => import("@/components/ContextualRelatedWork").then((m) => ({ default: m.ContextualRelatedWork })));
 const ContactDraftRecovery = lazy(() => import("@/components/ContactDraftRecovery").then((m) => ({ default: m.ContactDraftRecovery })));
 const SpeedInsights = lazy(() => import("@vercel/speed-insights/react").then((m) => ({ default: m.SpeedInsights })));
+const Analytics = lazy(() => import("@vercel/analytics/react").then((m) => ({ default: m.Analytics })));
 
 
 function NotFoundComponent() {
