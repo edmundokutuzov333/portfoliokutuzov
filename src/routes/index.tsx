@@ -1,5 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { HomePhase5 } from "@/components/home/HomePhase5";
+import { Hero } from "@/components/home/Hero";
+import { DeferredReel } from "@/components/home/DeferredReel";
+import { CapabilitiesShort } from "@/components/home/CapabilitiesShort";
+import { ClientLogos } from "@/components/home/ClientLogos";
+import { HomeExperience } from "@/components/home/HomeExperience";
+import { HomeCTA } from "@/components/home/HomeCTA";
 import { createSeo } from "@/lib/seo";
 
 export const Route = createFileRoute("/")({
@@ -13,6 +18,15 @@ export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
-export function HomePage() {
-  return <HomePhase5 />;
+function HomePage() {
+  return (
+    <>
+      <DeferredReel />
+      <Hero />
+      <CapabilitiesShort />
+      <ClientLogos />
+      <HomeExperience />
+      <HomeCTA />
+    </>
+  );
 }
