@@ -1,7 +1,6 @@
 import * as React from "react";
 import { useSiteSettings, useStats } from "@/hooks/useSiteData";
 import { readSetting } from "@/lib/cms";
-import { FALLBACK_EXPERIENCE, sortExperience } from "@/lib/credentials-data";
 import {
   motion,
   useScroll,
@@ -18,7 +17,34 @@ interface ExperienceItem {
   isCurrent?: boolean;
 }
 
-
+const EXPERIENCE_DATA: ExperienceItem[] = [
+  {
+    period: "2024 – Present",
+    role: "Art Director & Content Creator",
+    company: "WEBMASTERS",
+    isCurrent: true,
+  },
+  {
+    period: "2023 – 2024",
+    role: "Art Director",
+    company: "SPOT Comunicação",
+  },
+  {
+    period: "2023",
+    role: "Senior Graphic Designer",
+    company: "Ikigai Moçambique",
+  },
+  {
+    period: "2023",
+    role: "Marketing Assistant & Social Media Manager",
+    company: "Imperial Seguros",
+  },
+  {
+    period: "2020 – 2023",
+    role: "Graphic Designer",
+    company: "Agência Creer",
+  },
+];
 
 interface MetricItem {
   num: number;
@@ -99,18 +125,16 @@ export function HomeExperience() {
   const { data: settings } = useSiteSettings();
   const { data: stats = [] } = useStats();
   const reducedMotion = useReducedMotion();
-  const credentials = readSetting<any>(settings, "credentials", "experience", FALLBACK_EXPERIENCE);
+  const credentials = readSetting<any>(settings, "credentials", "experience", EXPERIENCE_DATA);
   const fallbackCards = readSetting<any[]>(settings, "credentials", "cards", NUMBERS_DATA);
-  const experience: ExperienceItem[] = sortExperience(
-    (Array.isArray(credentials) ? credentials : FALLBACK_EXPERIENCE)
-      .map((item) => ({
+  const experience: ExperienceItem[] = Array.isArray(credentials)
+    ? credentials.map((item) => ({
         period: String(item?.period ?? ""),
         role: String(item?.role ?? ""),
         company: String(item?.company ?? ""),
         isCurrent: String(item?.period ?? "").toLowerCase().includes("present"),
-      }))
-      .filter((item) => item.role || item.company || item.period),
-  );
+      })).filter((item) => item.role || item.company || item.period)
+    : EXPERIENCE_DATA;
   const parseMetric = (value: string, label: string): MetricItem => {
     const match = value.trim().match(/(-?\d+(?:[.,]\d+)?)/);
     const num = match ? Number(match[1].replace(",", ".")) : 0;
@@ -160,7 +184,7 @@ export function HomeExperience() {
           />
 
           <div className="space-y-0">
-            {experience.map((item, i) => (
+            {EXPERIENCE_DATA.map((item, i) => (
               <div key={`${item.role}-${item.company}-${i}`}>
                 <motion.div
                   initial="hidden"
@@ -315,7 +339,7 @@ export function HomeExperience() {
           />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-px bg-white/[0.08] border border-white/[0.08] rounded-xl overflow-hidden shadow-2xl">
-            {metrics.map((c, i) => (
+            {NUMBERS_DATA.map((c, i) => (
               <motion.div
                 key={c.label}
                 initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 18 }}
