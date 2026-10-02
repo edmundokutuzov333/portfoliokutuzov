@@ -9,19 +9,7 @@ const EASE_EDITORIAL: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 export function Hero() {
   const { data: settings } = useSiteSettings();
-  const r = <T,>(f: string, fb: T) => {
-    const value = readSetting<T>(settings, "hero", f, fb);
-    if (typeof value !== "string") return value;
-    const legacyMap: Record<string, string> = {
-      "I make ideas": "I shape ideas that",
-      "stop, take notice,": "cut through noise,",
-      "stay in memory,": "stay in memory,",
-      "and act.": "and move people.",
-      "Edmundo Kutuzov - Art Director": "Edmundo Kutuzov · Art Director · Social Media Manager · AI Expert",
-      "I'm Edmundo Kutuzov, an art director rooted in Mozambique's creative ecosystem. I design visual identities and communication pieces that capture attention and drive action - blending storytelling, visual hierarchy, and typographic craft.": "I'm Edmundo Kutuzov, an art director from Maputo operating globally, building brand systems that earn attention rather than beg for it. Six years experience. 30+ brands. One obsession: work that refuses to be ignored.",
-    };
-    return (legacyMap[value] ?? value) as T;
-  };
+  const r = <T,>(f: string, fb: T) => readSetting<T>(settings, "hero", f, fb);
   const primaryRoute = r("cta_primary_route", "/portfolio");
   const secondaryRoute = r("cta_secondary_route", "/contact");
   return (
