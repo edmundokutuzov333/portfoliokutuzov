@@ -19,7 +19,7 @@ export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
-function HomePage() {
+export function HomePage() {
   return (
     <>
       <DeferredReel />
