@@ -178,14 +178,14 @@ export const FALLBACK_NAVIGATION: NavigationItem[] = [
 
 export const FALLBACK_SETTINGS: SiteSettings = {
   hero: {
-    top_left: "Edmundo Kutuzov - Art Director",
+    top_left: "Edmundo Kutuzov · Art Director · Social Media Manager · AI Expert",
     top_right: "Maputo · Mozambique",
     eyebrow: "",
-    title_1: "I make ideas",
-    title_2: "stop, take notice,",
-    title_accent: "and act.",
+    title_1: "I shape ideas that",
+    title_2: "cut through noise,",
+    title_accent: "and move people.",
     subtitle:
-      "I'm Edmundo Kutuzov, an art director rooted in Mozambique's creative ecosystem. I design visual identities and communication pieces that capture attention and drive action - blending storytelling, visual hierarchy, and typographic craft.",
+      "I'm Edmundo Kutuzov, an art director from Maputo operating globally, building brand systems that earn attention rather than beg for it. Six years experience. 30+ brands. One obsession: work that refuses to be ignored.",
     cta_primary: "View Portfolio",
     cta_secondary: "Contact Me",
     cta_primary_route: "/portfolio",
