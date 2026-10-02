@@ -646,3 +646,8 @@ export function ProjectDetailPage({ slug }: { slug: string }) {
 
   return <ProjectDetailContent payload={payload} />;
 }
+
+
+export function CaseStudyPage({ slug }: { slug: string }) {
+  return <ProjectDetailPage slug={slug} />;
+}
