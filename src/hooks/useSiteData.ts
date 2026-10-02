@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useDevicePerformance } from "@/hooks/useDevicePerformance";
 import {
   FALLBACK_SETTINGS,
   normalizeCategory,
@@ -148,10 +149,46 @@ function subscribeToTable(table: string, listener: () => void) {
 }
 function useRealtimeInvalidate(table: string, queryKey: unknown[]) {
   const qc = useQueryClient();
-  useEffect(
-    () => subscribeToTable(table, () => void qc.invalidateQueries({ queryKey })),
-    [qc, table],
-  );
+  const { isMobileOrTablet, slowConnection } = useDevicePerformance();
+
+  useEffect(() => {
+    let cleanup = () => {};
+    let idleId: number | undefined;
+    let timerId: number | undefined;
+    let cancelled = false;
+
+    const activate = () => {
+      if (!cancelled) {
+        cleanup = subscribeToTable(table, () => void qc.invalidateQueries({ queryKey }));
+      }
+    };
+
+    if (!isMobileOrTablet) {
+      activate();
+    } else {
+      const w = window as Window & {
+        requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
+        cancelIdleCallback?: (id: number) => void;
+      };
+      const timeout = slowConnection ? 6500 : 3500;
+      if (w.requestIdleCallback) {
+        idleId = w.requestIdleCallback(activate, { timeout });
+      } else {
+        timerId = window.setTimeout(activate, timeout);
+      }
+    }
+
+    return () => {
+      cancelled = true;
+      if (idleId !== undefined) {
+        window.cancelIdleCallback?.(idleId);
+      }
+      if (timerId !== undefined) {
+        window.clearTimeout(timerId);
+      }
+      cleanup();
+    };
+  }, [isMobileOrTablet, qc, slowConnection, table]);
 }
 
 export function useSiteSettings() {
