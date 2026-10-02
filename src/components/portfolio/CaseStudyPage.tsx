@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, notFound } from "@tanstack/react-router";
-import { Download } from "lucide-react";
+import { ArrowRight, ArrowLeft, Download } from "lucide-react";
+import { SITE_EMAIL } from "@/lib/cms";
 import { useProjects } from "@/hooks/useSiteData";
 import { useCaseStudy } from "@/hooks/useCaseStudy";
 import {
@@ -14,7 +15,6 @@ import {
 } from "@/lib/case-study";
 import { CaseStudyLightbox } from "@/components/portfolio/CaseStudyLightbox";
 import { CaseStudyShareButton } from "@/components/portfolio/CaseStudyShareButton";
-import { darkenWorkColor, pickFg, setWorkColor } from "@/lib/work-color";
 
 function blockHeading(type: string): string {
   const labels: Record<string, string> = {
@@ -73,7 +73,7 @@ function FallbackSections({ payload }: { payload: CaseStudyPayload }) {
   const project = payload.project;
   const context = project.concept || project.description;
   const process = project.idea;
-  const outcome = project.notes;
+  const outcome = project.notes || project.subtitle;
 
   return (
     <div className="space-y-20 md:space-y-28">
@@ -310,8 +310,6 @@ function RelatedProjects({ projects }: { projects: CaseStudyPayload["related"] }
       <div className="mt-6 grid gap-0 md:grid-cols-3">
         {projects.map((project) => {
           const work = firstHexColor(project.palette);
-          const darkWork = darkenWorkColor(work);
-          const foreground = pickFg(darkWork);
 
           return (
             <Link
@@ -319,16 +317,16 @@ function RelatedProjects({ projects }: { projects: CaseStudyPayload["related"] }
               to="/portfolio/$slug"
               params={{ slug: project.slug || project.id }}
               className="group border-b-2 border-black px-5 py-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--case-work)] md:border-r-2"
-              style={{ backgroundColor: darkWork, color: foreground }}
+              style={{ backgroundColor: work }}
             >
-              <p className="text-sm opacity-70">{project.year || "Project"}</p>
+              <p className="text-sm text-black/70">{project.year || "Project"}</p>
               <h3
-                className="mt-16 text-3xl font-extrabold leading-none tracking-[-0.04em] transition-transform duration-200 group-hover:-translate-y-1 md:text-4xl"
+                className="mt-16 text-3xl font-extrabold leading-none tracking-[-0.04em] text-[var(--case-work-fg)] transition-transform duration-200 group-hover:-translate-y-1 md:text-4xl"
                 style={{ fontFamily: '"Archivo Variable", sans-serif' }}
               >
                 {projectDisplayName(project)}
               </h3>
-              <p className="mt-3 text-sm opacity-80">
+              <p className="mt-3 text-sm text-[var(--case-work-fg)]/80">
                 {project.category}
               </p>
             </Link>
@@ -400,15 +398,12 @@ function ProjectDetailContent({ payload }: { payload: CaseStudyPayload }) {
   const template = getCaseStudyTemplate(payload);
   const media = getCaseStudyMedia(project, payload.media);
   const work = firstHexColor(project.palette);
-  const darkWork = darkenWorkColor(work);
-  const foreground = pickFg(darkWork);
   const reference = project.description || project.subtitle || "";
 
   useEffect(() => {
     const root = document.documentElement;
-    setWorkColor(work);
-    root.style.setProperty("--case-work", darkWork);
-    root.style.setProperty("--case-work-fg", foreground);
+    root.style.setProperty("--case-work", work);
+    root.style.setProperty("--case-work-fg", "#000000");
     root.style.setProperty("--case-cal", "#F2F2EF");
 
     return () => {
@@ -437,15 +432,15 @@ function ProjectDetailContent({ payload }: { payload: CaseStudyPayload }) {
                 fontVariationSettings: '"wdth" 72, "wght" 800',
               }}
             >
-              {project.title}
+              {projectDisplayName(project)}
             </h1>
 
-            {project.client_name ? (
+            {project.title !== projectDisplayName(project) ? (
               <p
                 className="mt-4 max-w-3xl text-2xl text-[#B9B7B0] md:text-4xl"
                 style={{ fontFamily: '"Newsreader Variable", serif' }}
               >
-                {project.client_name}
+                {project.title}
               </p>
             ) : null}
 
@@ -572,6 +567,11 @@ function ProjectDetailContent({ payload }: { payload: CaseStudyPayload }) {
         </div>
       </section>
 
+      <footer className="mx-auto flex max-w-[1500px] flex-wrap items-center justify-between gap-4 border-t-2 border-black px-5 py-8 text-sm md:px-10">
+        <span>{SITE_EMAIL}</span>
+        <span>edmundokutuzov.art</span>
+      </footer>
+
       {selectedMedia ? (
         <CaseStudyLightbox
           media={selectedMedia}
@@ -645,8 +645,4 @@ export function ProjectDetailPage({ slug }: { slug: string }) {
   if (!payload) throw notFound();
 
   return <ProjectDetailContent payload={payload} />;
-}
-
-export function CaseStudyPage({ slug }: { slug: string }) {
-  return <ProjectDetailPage slug={slug} />;
 }
