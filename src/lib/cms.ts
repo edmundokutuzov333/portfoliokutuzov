@@ -292,7 +292,7 @@ export const FALLBACK_SETTINGS: SiteSettings = {
     title_1: "Let's",
     title_accent: "talk.",
     subtitle:
-      "Tell me about your project. I respond to every message within 48 hours with an initial process proposal.",
+      "Tell me what you're building. I respond within 48 hours, with an initial read on the project and a clear path forward.",
     email: SITE_EMAIL,
     phone: SITE_PHONE,
     location: 'Magoanine "C", Maputo, Mozambique',
