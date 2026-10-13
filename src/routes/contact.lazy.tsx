@@ -108,7 +108,7 @@ const STEPS = [
 
 const EASE_EDITORIAL = [0.16, 1, 0.3, 1] as const;
 
-function ContactPage() {
+export function ContactPage() {
   const { data: settings } = useSiteSettings();
   const sendEmails = useServerFn(sendBriefingEmails);
   const reducedMotion = useReducedMotion();
