@@ -5,8 +5,9 @@ import { routeTree } from "./routeTree.gen";
 import { resetKnownCorruptedState } from "@/lib/browser-safe";
 import { recordRuntimeError } from "@/lib/runtime-diagnostics";
 
-function DefaultErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+function DefaultErrorComponent({ error, reset }: { error: unknown; reset: () => void }) {
   const router = useRouter();
+  const errorMessage = error instanceof Error ? error.message : String(error ?? "Unknown error");
   useEffect(() => {
     recordRuntimeError("react", error);
   }, [error]);
@@ -15,9 +16,9 @@ function DefaultErrorComponent({ error, reset }: { error: Error; reset: () => vo
       <div className="max-w-md text-center">
         <p className="mono text-[10px] text-[var(--color-acc-blue)]">/// ERROR</p>
         <h1 className="display text-3xl mt-3 text-metal">Something went wrong</h1>
-        {import.meta.env.DEV && error.message && (
+        {import.meta.env.DEV && errorMessage && (
           <pre className="mt-4 max-h-40 overflow-auto rounded-md bg-white/5 p-3 text-left font-mono text-xs text-red-400">
-            {error.message}
+            {errorMessage}
           </pre>
         )}
         <div className="mt-6 flex items-center justify-center gap-3">
