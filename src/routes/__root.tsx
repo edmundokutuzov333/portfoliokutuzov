@@ -68,7 +68,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 function RootShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const lang = pathname === "/pt" || pathname.startsWith("/pt/") ? "pt-PT" : "en";
-  return <html lang={lang} suppressHydrationWarning><head suppressHydrationWarning><HeadContent /><script dangerouslySetInnerHTML={{ __html: earlyLocaleScript }} /><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: structuredData }} /></head><body suppressHydrationWarning><script dangerouslySetInnerHTML={{ __html: earlyRecoveryScript }} />{children}<Scripts /></body></html>;
+  return <html lang={lang} suppressHydrationWarning><head suppressHydrationWarning><HeadContent /><script dangerouslySetInnerHTML={{ __html: earlyLocaleScript }} /><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: structuredData }} /></head><body suppressHydrationWarning>{children}<script dangerouslySetInnerHTML={{ __html: earlyRecoveryScript }} /><Scripts /></body></html>;
 }
 
 function RouteShellLoader() {
