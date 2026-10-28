@@ -43,6 +43,19 @@ describe("Phase 15 final product regression", () => {
     expect(count(source, headline)).toBe(1);
   });
 
+  it("runs the blank-screen watchdog after streamed route content", async () => {
+    const source = await read("src/routes/__root.tsx");
+    const bodyStart = source.indexOf("<body suppressHydrationWarning>");
+    const childrenIndex = source.indexOf("{children}", bodyStart);
+    const recoveryScriptIndex = source.indexOf("earlyRecoveryScript", childrenIndex);
+    const scriptsIndex = source.indexOf("<Scripts />", childrenIndex);
+
+    expect(bodyStart).toBeGreaterThanOrEqual(0);
+    expect(childrenIndex).toBeGreaterThan(bodyStart);
+    expect(recoveryScriptIndex).toBeGreaterThan(childrenIndex);
+    expect(scriptsIndex).toBeGreaterThan(recoveryScriptIndex);
+  });
+
   it("keeps the Studio prelaunch contract exact and minimal", async () => {
     const source = await read("src/routes/studio.tsx");
     expect(source).toContain("A studio still finding its lines.");
