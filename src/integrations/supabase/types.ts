@@ -1727,6 +1727,17 @@ export type Database = {
           user_id: string
         }[]
       }
+      submit_booking_request: {
+        Args: {
+          p_email: string
+          p_name: string
+          p_note?: string | null
+          p_preferred_date: string
+          p_preferred_time?: string | null
+          p_timezone?: string | null
+        }
+        Returns: string
+      }
       is_admin: { Args: never; Returns: boolean }
       next_invoice_number: { Args: { prefix?: string }; Returns: string }
       slugify: { Args: { input: string }; Returns: string }
