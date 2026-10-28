@@ -54,7 +54,7 @@ test("Phase 14 Reel registry has reversible seed and public fallback", async()=>
   assert.match(sql,/insert into public\.reel_items/);
   assert.match(sql,/create table if not exists public\.reel_analytics/);
   assert.match(down,/drop table if exists public\.reel_items/);
-  assert.match(reel,/from\("reel_items"\)/);
+  assert.match(reel,/useProjects\(\)/);\n  assert.match(reel,/is_published !== false/);
   assert.match(reel,/roundRobin/);
 });
 
@@ -78,8 +78,11 @@ test("Phase 14 Admin Studio stays out of indexing and keeps internal component l
   assert.match(css,/--admin-studio-work/);
 });
 
-test("Phase 14 public submission code no longer inserts booking directly", async()=>{
+test("Phase 14 booking flow uses the server endpoint and database RPC", async()=>{
   const modal=await read("src/components/contact/BookingModal.tsx");
+  const route=await read("src/routes/api.booking.submit.ts");
   assert.doesNotMatch(modal,/from\("booking_requests"\)\.insert/);
-  assert.match(modal,/submit_booking_request/);
+  assert.match(modal,/fetch\("\/api\/booking\/submit"/);
+  assert.match(route,/\.rpc\("submit_booking_request"/);
+  assert.doesNotMatch(route,/\.from\("booking_requests"\)\.insert/);
 });
