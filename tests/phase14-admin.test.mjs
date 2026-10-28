@@ -54,7 +54,8 @@ test("Phase 14 Reel registry has reversible seed and public fallback", async()=>
   assert.match(sql,/insert into public\.reel_items/);
   assert.match(sql,/create table if not exists public\.reel_analytics/);
   assert.match(down,/drop table if exists public\.reel_items/);
-  assert.match(reel,/useProjects\(\)/);\n  assert.match(reel,/is_published !== false/);
+  assert.match(reel,/useProjects\(\)/);
+  assert.match(reel,/is_published !== false/);
   assert.match(reel,/roundRobin/);
 });
 
