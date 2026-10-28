@@ -51,23 +51,17 @@ export const Route = createFileRoute("/api/booking/submit")({
           return json(requestId, 422, { error: "VALIDATION_FAILED", issues: parsed.error.issues });
         }
 
-        const { data, error } = await supabaseAdmin
-          .from("booking_requests")
-          .insert({
-            name: parsed.data.name,
-            email: parsed.data.email,
-            preferred_date: parsed.data.preferred_date,
-            preferred_time: parsed.data.preferred_time || null,
-            timezone: parsed.data.timezone || null,
-            note: parsed.data.note || null,
-            status: "new",
-            booking_status: "requested",
-          })
-          .select("id,created_at")
-          .single();
+        const { data, error } = await supabaseAdmin.rpc("submit_booking_request", {
+          p_name: parsed.data.name,
+          p_email: parsed.data.email,
+          p_preferred_date: parsed.data.preferred_date,
+          p_preferred_time: parsed.data.preferred_time || null,
+          p_timezone: parsed.data.timezone || null,
+          p_note: parsed.data.note || null,
+        });
 
         if (error || !data) return json(requestId, 500, { error: "BOOKING_FAILED" });
-        return json(requestId, 200, { ok: true, id: data.id, created_at: data.created_at });
+        return json(requestId, 200, { ok: true, id: data });
       },
     },
   },
