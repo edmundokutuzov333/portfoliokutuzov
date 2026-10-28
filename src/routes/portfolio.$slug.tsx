@@ -46,7 +46,7 @@ export const Route = createFileRoute("/portfolio/$slug")({
         <h1 className="display text-4xl md:text-5xl text-[var(--color-text-primary)] tracking-[-0.03em]">
           Could not load this project.
         </h1>
-        <p className="mt-4 text-[15px] text-[var(--color-text-secondary)]">{error.message}</p>
+        <p className="mt-4 text-[15px] text-[var(--color-text-secondary)]">{error instanceof Error ? error.message : "An unexpected error occurred."}</p>
         <Link
           to="/portfolio"
           className="mt-12 inline-flex items-center gap-3 rounded-full bg-[var(--color-text-primary)] text-[var(--color-bg)] px-6 py-3 text-[14px] font-semibold hover:bg-[var(--color-text-secondary)] transition-colors"
