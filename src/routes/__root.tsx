@@ -40,13 +40,14 @@ function NotFoundComponent() {
   );
 }
 
-function RootErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+function RootErrorComponent({ error, reset }: { error: unknown; reset: () => void }) {
   const router = useRouter();
   const { queryClient } = Route.useRouteContext();
+  const normalizedError = error instanceof Error ? error : new Error(String(error ?? "Unknown error"));
   useEffect(() => {
     recordRuntimeError("react", error);
   }, [error]);
-  return <AppErrorFallback error={error} onReset={() => { resetKnownCorruptedState(); queryClient.clear(); router.invalidate(); reset(); }} />;
+  return <AppErrorFallback error={normalizedError} onReset={() => { resetKnownCorruptedState(); queryClient.clear(); router.invalidate(); reset(); }} />;
 }
 
 const earlyLocaleScript = `(function(){try{var p=window.location.pathname;document.documentElement.lang=(p==="/pt"||p.indexOf("/pt/")===0)?"pt-PT":"en";}catch(_){document.documentElement.lang="en";}})();`;
