@@ -186,7 +186,9 @@ function ReelStage({
 
   React.useEffect(() => {
     setWorkColor(activeItem.accentColor ?? activeItem.dominantColor);
-    return () => setWorkColor(DEFAULT_WORK);
+    return () => {
+      setWorkColor(DEFAULT_WORK);
+    };
   }, [activeItem]);
 
   React.useEffect(() => {
@@ -454,7 +456,7 @@ function ReelCard({
   );
 
   const card = (
-    <article
+    <motion.article
       role="group"
       aria-roledescription="slide"
       aria-label={[item.title, item.client, item.year].filter(Boolean).join(" · ")}
@@ -513,7 +515,7 @@ function ReelCard({
           <Maximize2 size={16} aria-hidden />
         </button>
       ) : null}
-    </article>
+    </motion.article>
   );
 
   return card;
