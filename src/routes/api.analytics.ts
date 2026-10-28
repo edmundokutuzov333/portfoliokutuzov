@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import type { Json } from "@/integrations/supabase/types";
 import { getRequestId } from "@/lib/observability";
 
 const eventSchema = z.object({
@@ -72,7 +73,7 @@ export const Route = createFileRoute("/api/analytics")({
             viewport_height: event.viewport_height ?? null,
             device: event.device ?? null,
             session_id: event.session_id ?? null,
-            meta: event.meta ?? {},
+            meta: (event.meta ?? {}) as Json,
           })),
         );
 
